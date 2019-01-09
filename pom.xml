@@ -55,7 +55,7 @@
   </distributionManagement>
 
   <modules>
-    <module>rhino-sdk</module>
+    <module>rhino-core</module>
     <module>rhino-archetype</module>
     <module>rhino-archetype-parent</module>
   </modules>
