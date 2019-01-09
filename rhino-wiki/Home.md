@@ -1,22 +1,14 @@
-Rhino is a distributed performance testing platform which comprises the Rhino backend platform, 
-web UI as well as a collection of libraries and tools which enable developers to write 
-performance tests. The tooling around the Rhino platform required for bootstrapping Rhino projects and  
-furthermore to create, store and compare performance reports and assessments. 
+Rhino is a load and performance testing tool for web services which comprises the Rhino Java 
+framework, that can be added as Maven dependency, as well as a collection of libraries and tools 
+which enable developers to write load and performance tests.
 
-Rhino does aim to solve following challenges, today we face in existing load testing platform:
+Rhino's goal: 
 
-* Scheduling without Sharepoint Calendar. 
-* Atomisation and setting boundaries of performance testing execution.
-* Test isolation.
-* Storing and mining performance metrics.
-* Reporting and assessment.
-* Regression detection.
-* Archiving the reports.
+* is to speed up load testing development,
+* to enable the integration existing Java frameworks, e.g test frameworks to make them reusable 
+in load tests,
+* to provide an intuitive framework so that the engineers don't need to re-learn the language, 
+the framework every time the need to write new load tests which they have already forgotten.
 
-Rhino is not a load testing tool, rather a performance assessment platform.
-
-
-Questions/Contributions?
----
-
-Please contact [bagdemir@adobe.com](mailto:bagdemir@adobe.com)
+Since we don't write new load tests that often, it is important to have a framework in that 
+programming language which we are native and employ it in our projects every day. 
