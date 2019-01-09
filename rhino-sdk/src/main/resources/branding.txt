@@ -1,0 +1,10 @@
+         ,
+    .-.__O\
+     `Y     `-.
+      )   ,
+  |`-\`  (@   )    Rhino ${project.version} Performance Testing
+   \_.   `  /`     https://git.corp.adobe.com/CC-Storage/rhino
+   (   >_ .` `\
+    \__//‘     `
+
+-
