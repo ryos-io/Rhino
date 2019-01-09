@@ -45,7 +45,7 @@ After creating the performance testing project, you now can open it up in your I
 writing some performance tests.
 
 
-![https://git.corp.adobe.com/CC-Storage/rhino/blob/master/wiki/images/0_1.png](https://git.corp.adobe.com/CC-Storage/rhino/blob/master/wiki/images/0_1.png)
+![https://git.corp.adobe.com/bagdemir/rhino/blob/master/wiki/images/0_1.png](https://git.corp.adobe.com/bagdemir/rhino/blob/master/wiki/images/0_1.png)
 
 Select the project directory created by the Maven archetype and after the IDE completes with 
 opening the project, in the project window you will find project files with which you can set about 
