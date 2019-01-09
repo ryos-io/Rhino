@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <groupId>com.adobe.rhino</groupId>
+  <artifactId>rhino-archetype</artifactId>
+  <version>1.1.9-SNAPSHOT</version>
+  <modelVersion>4.0.0</modelVersion>
+
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>${releaseRepositoryId}</id>
+      <name>${releaseRepositoryName}</name>
+      <url>${releaseRepositoryURL}</url>
+    </repository>
+
+    <snapshotRepository>
+      <uniqueVersion>true</uniqueVersion>
+      <id>${snapshotRepositoryId}</id>
+      <name>${snapshotRepositoryName}</name>
+      <url>${snapshotRepositoryURL}</url>
+    </snapshotRepository>
+  </distributionManagement>
+</project>

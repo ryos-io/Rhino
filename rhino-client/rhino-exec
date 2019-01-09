@@ -1,0 +1,417 @@
+#!/bin/bash
+
+#
+#
+# ADOBE CONFIDENTIAL
+# ___________________
+#
+#  Copyright 2018 Adobe Systems Incorporated
+#  All Rights Reserved.
+#
+# NOTICE:  All information contained herein is, and remains
+# the property of Adobe Systems Incorporated and its suppliers,
+# if any.  The intellectual and technical concepts contained
+# herein are proprietary to Adobe Systems Incorporated and its
+# suppliers and are protected by trade secret or copyright law.
+# Dissemination of this information or reproduction of this material
+# is strictly forbidden unless prior written permission is obtained
+# from Adobe Systems Incorporated.
+
+#
+# rhino: loadtesting CLI tool.
+# -
+# version   1.0
+# author    Erhan Bagdemir <bagdemir@adobe.com>
+
+declare -r TEST_IDENTIFIER=${TEST_IDENTIFIER:-"ccstor_1"}
+# shellcheck disable=SC2034
+declare -r PEM="${HOME}/.ssh/sc-dev-eu.pem"
+declare -r VERSION="1.3.0"
+# shellcheck disable=SC2034
+declare -r RHINO_HOME="${HOME}/.rhino"
+
+# Defaults
+CLUSTER="JellyfishECSCluster-ECSCluster-1694HTIR7RDI6"
+REGION=${REGION-"eu-west-1"}
+COUNT=1
+VERBOSE="false"
+RHINO_FAMILY=${RHINO_CONTEXT-"Rhino_Default"}
+RHINO_SERVICE=${RHINO_SERVICE:-"ccstorage"}
+bold=''
+normal=''
+
+
+#-----------------------------------------------------------------------
+# Imports
+#-----------------------------------------------------------------------
+RHINO_SCRIPTPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# shellcheck source=./create_definition.sh
+source ${RHINO_SCRIPTPATH}/create_definition.sh
+# shellcheck source=./run.sh
+source ${RHINO_SCRIPTPATH}/run.sh
+# shellcheck source=./report.sh
+source ${RHINO_SCRIPTPATH}/report.sh
+
+main()
+{
+  while [[ $# -gt 0 ]]
+  do
+    key="$1"
+    case $key in
+      -v|--verbose)
+        VERBOSE="true"
+        shift
+        ;;
+      -c|--count)
+        COUNT="$2"
+        shift
+        shift
+        ;;
+      -r|--region)
+        REGION="$2"
+        shift
+        shift
+        ;;
+      -t|--rev)
+        REV="$2"
+        shift
+        shift
+        ;;
+      --service)
+        RHINO_SERVICE="$2"
+        shift
+        shift
+        ;;
+      -p|--project)
+        RHINO_FAMILY="$2"
+        shift
+        shift
+        ;;
+      -e|--env)
+        RHINO_ENV="$2"
+        shift
+        shift
+        ;;
+      -o|--output)
+        REPORTING_DIR="$2"
+        shift
+        shift
+        ;;
+
+      help)
+        COMMAND="help"
+        shift
+        ;;
+      version)
+        COMMAND="version"
+        shift
+        ;;
+      revisions)
+        COMMAND="show_revisions"
+        shift
+        ;;
+      create-revision)
+        COMMAND="create_revision"
+        shift
+        ;;
+      show)
+        COMMAND="show_status"
+        shift
+        ;;
+      stop)
+        COMMAND="stop_test"
+        shift
+        ;;
+      list)
+        COMMAND="list_available"
+        shift
+        ;;
+      report)
+        COMMAND="report"
+        shift
+        ;;
+      run)
+        COMMAND="run"
+        shift
+        ;;
+      new)
+        COMMAND="new"
+        shift
+        ;;
+      build)
+        COMMAND="build"
+        shift
+        ;;
+      *)
+        COMMAND="help"
+        shift
+    esac
+  done;
+
+  # Execute the command.
+  case $COMMAND in
+    "run")
+      run
+      ;;
+    "install")
+      install
+      ;;
+    "help")
+      a_help
+      ;;
+    "version")
+      version
+      ;;
+    "show_revisions")
+      show_revisions
+      ;;
+    "create_revision")
+      create_definition
+      ;;
+    "show_status")
+      show_status
+      ;;
+    "list_available")
+      list_available
+      ;;
+    "stop_test")
+      stop_test
+      ;;
+    "report")
+      report
+      ;;
+  esac
+}
+
+# Command execution function. Use execute to wrap command executions.
+execute()
+{
+  if [ $# = 0 ]; then
+    echo "Please provide a command to execute."
+    exit 1
+  fi
+  cmd="$*"
+  res=$(eval "${cmd}" 2>&1)
+  if [ $? -eq 0 ]; then
+    echo $res
+  elif [[ -n "$DEBUG" ]]; then
+    echo "Command execution failed."
+    echo "-"
+    echo "$res"
+  fi
+}
+
+#-----------------------------------------------------------------------
+# $ rhino version
+#-----------------------------------------------------------------------
+version()
+{
+  branding
+  echo ""
+  info
+}
+
+branding()
+{
+  echo '         ,       '
+  echo '    .-.__O\      '
+  echo '     `Y     `-.  '
+  echo '      )   ,      '
+  echo '  |`-\`  (@   )    Rhino '${VERSION}' Load Testing Client'
+  echo '   \_.   `  /`     https://git.corp.adobe.com/bagdemir/rhino'
+  echo '   (   >_ .` `\  '
+  echo '    \__//‘     ` '
+}
+
+info()
+{
+  echo " "
+  printf "%15s   %s\n" "     CLUSTER:" "${CLUSTER}"
+  printf "%15s   %s\n" "     CONTEXT:" "${RHINO_FAMILY}"
+  printf "%15s   %s\n" "     REGION:" "${REGION}"
+  echo   ""
+}
+
+#-----------------------------------------------------------------------
+# Print functions
+#-----------------------------------------------------------------------
+p_list()
+{
+  local arr="($@)"
+
+  for t in ${!arr[@]}; do
+    printf "  %2d. %s\n" "$((t+1))" "${arr[$t]}"
+  done
+
+  echo ""
+  echo "Total ${#arr[@]} found."
+}
+
+p_header()
+{
+  echo ""
+  printf "%s\n" "$1"
+}
+
+p_status()
+{
+  printf "* %-100s [%s]\n" "$2" "$1"
+}
+
+p_ln()
+{
+  printf "  %s\n" "$1"
+}
+
+p_err()
+{
+  local res=$1
+  printf "%s\n" "$res"
+  [[ $res =~ .*ExpiredTokenException.* ]] && echo "Token expired? Use KLAM: https://klam-sj.corp.adobe.com to renew your token."
+  [[ $res =~ .*security\ token.*invalid.* ]] && echo "Token expired? Use KLAM: https://klam-sj.corp.adobe.com to renew your token."
+
+  exit 1
+}
+
+#-----------------------------------------------------------------------
+# $ rhino stop-test
+#-----------------------------------------------------------------------
+stop_test()
+{
+  p_header "Stopping test: $RHINO_FAMILY ..."
+
+  local res=`aws ecs list-tasks --family ${RHINO_FAMILY} --cluster ${CLUSTER} --region ${REGION} --desired-status RUNNING 2>&1`
+  if [ $? = 0 ] && [[ ! $res =~ .*error\ occurred.* ]]; then
+    local tasks=(`echo $res | jq '.' | grep "arn"`)
+    echo ""
+    for t in "${tasks[@]}"; do
+      local task=`echo $t | cut -d"\"" -f2`
+      echo "* Stopping task $task."
+      local id=`echo $t | cut -d"/" -f2 | cut -d"\"" -f1`
+      local result=`aws ecs stop-task --cluster ${CLUSTER} --task $id --region ${REGION}`
+    done
+
+    echo ""
+    echo "Stopped total ${#tasks[@]}."
+  else
+    p_err "$res"
+  fi
+}
+
+#-----------------------------------------------------------------------
+# $ rhino show
+#-----------------------------------------------------------------------
+show_status()
+{
+  p_header "Querying load-test status: $RHINO_FAMILY ..."
+  local res=`aws ecs list-tasks --family ${RHINO_FAMILY} --cluster ${CLUSTER} --region ${REGION} 2>&1`
+  if [ $? = 0 ] && [[ ! $res =~ .*error\ occurred.* ]]; then
+    local result=(`echo $res | jq '.' | grep "arn" | cut -d"\"" -f2`)
+    for status in "${result[@]}"; do
+      p_status "RUNNING" "$status"
+    done
+    echo ""
+    echo "Total ${#result[@]} found."
+  else
+    p_err "$res"
+  fi
+}
+
+#-----------------------------------------------------------------------
+# $ rhino revisions
+#-----------------------------------------------------------------------
+show_revisions()
+{
+  p_header "Listing load-test revisions for: ${RHINO_FAMILY}"
+  local res=`aws ecs list-task-definitions --family-prefix ${RHINO_FAMILY} --max-items 1000 --region ${REGION} 2>&1`
+  if [ $? = 0 ] && [[ ! $res =~ .*error\ occurred.* ]]; then
+    local result=(`echo $res | jq '.taskDefinitionArns[]' | cut -d"_" -f2 | tr -d "\""`)
+    p_list "${result[@]}"
+  else
+    p_err "$res"
+  fi
+}
+
+#-----------------------------------------------------------------------
+# $ rhino list
+#-----------------------------------------------------------------------
+list_available()
+{
+  if [ ! -d "src/test/scala" ]; then
+    p_err "Can not find source files under src/test/scala. Are you in project's root?"
+  fi
+
+  local result=$(for f in `find ./src/test/scala | grep ".*\.scala"`; do grep -irnl "extends Simulation" $f |cut -d":" -f1|cut -d"/" -f5-|sed s/\.scala//g|sed s/\\//./g 2>&1; done)
+  if [ $? -eq 0 ] && [[ ! $result =~ .*error\ occurred.* ]]; then
+    p_header "Listing available runnable load-tests in the project:"
+    echo ""
+    p_list "${result[@]}"
+  else
+    p_err "${result}"
+  fi
+}
+
+
+#-----------------------------------------------------------------------
+# $ rhino help
+#-----------------------------------------------------------------------
+a_help()
+{
+  branding
+  echo ""
+  echo "Usage: rhino COMMAND [<-param value>...]"
+  echo ""
+  echo "where command includes:"
+
+  printf "\n\t%s\n" "${bold}list${normal}"
+  printf "\t\t%s\n" "Lists available load tests."
+  printf "\t\t%s\n" "The load tests are stored as task families on the ECS."
+  printf "\t\t%s\n" "Each task family contains at least one task revision."
+
+  printf "\n\t%s\n" "${bold}revisions${normal}"
+  printf "\t\t%s\n" "Lists available revisions of a load test."
+  printf "\t\t%s\n" "It is the revision of the task definition on the ECS."
+  printf "\t\t%s\n" "The latest revision is the most recent load test."
+
+  printf "\n\t%s\n" "${bold}report${normal}"
+  printf "\t\t%s\n" "Creates report for the load test default in the home"
+  printf "\t\t%s\n" "directory of rhino: \${HOME}/.rhino/results. You can override"
+  printf "\t\t%s\n" "the output directory with -o option parameter."
+  printf "\n\t%s\n" "    OPTIONS"
+  printf "\t\t%-20s %s\n" "-o, --output"   "Output directory."
+
+  printf "\n\t%s\n" "${bold}show${normal}"
+  printf "\t\t%s\n" "Lists running load tests."
+  printf "\t\t%s\n" "If no task exists, either the load test has not been started, or"
+  printf "\t\t%s\n" "it has already been completed."
+
+  printf "\n\t%s\n" "${bold}stop${normal}"
+  printf "\t\t%s\n" "Stop all running tasks for the load test."
+
+  printf "\n\t%s\n" "${bold}run${normal}"
+  printf "\t\t%s\n" "Runs a revision of load test."
+  printf "\t\t%s\n" "It will spin up new tasks on the ECS cluster."
+  printf "\n\t%s\n" "    ARGUMENTS"
+  printf "\t\t%-20s %s\n" "--service"   "Defines the task to run (default: ccstorage)."
+  printf "\t\t%-20s %s\n" ""   "For each service different kind of options can be"
+  printf "\t\t%-20s %s\n" ""   "applied via environment variables defined"
+  printf "\t\t%-20s %s\n" ""   "in an environment file."
+  printf "\t\t%-20s %s\n" ""   'By default ~/.rhino/env is used'
+  printf "\t\t%-20s %s\n" ""   'but can be changed via $ENV_FILE'
+  printf "\n\t%s\n" "    OPTIONS"
+  printf "\t\t%-20s %s\n" "-t, --rev"   "Revision of the load test."
+  printf "\t\t%-20s %s\n" "-p, --project"   "Load testing project."
+  printf "\t\t%-20s %s\n" "-e, --environment"   "DEV, STAGE, PROD."
+  printf "\t\t%-20s %s\n" "-c, --count" "The number of nodes."
+  printf "\n\t%s\n" "    EXAMPLE"
+  printf "\t\t%s\n" "rhino run -t 5 -e STAGE -p my-test-project -c 3"
+
+  printf "\n\t%s\n" "${bold}help${normal}"
+  printf "\t\t%s\n" "Runs a revision of load test."
+  echo ""
+}
+
+#-----------------------------------------------------------------------
+# $ main function call.
+#-----------------------------------------------------------------------
+main "$@"
