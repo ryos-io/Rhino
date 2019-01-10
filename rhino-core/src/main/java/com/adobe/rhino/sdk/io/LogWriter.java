@@ -24,12 +24,19 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   private static final Logger LOG = LogManager.getLogger(LogWriter.class);
 
+  private final LogFormatter logFormatter;
+
   private Writer writer;
 
-  private LogFormatter logFormatter;
-
-  public static <T extends LogFormatter> Props props(final String pathToLogFile,
-      final T logFormatter) {
+  /**
+   * Static factory method to create a new instance of {@link LogFormatter}.
+   *
+   * @param pathToLogFile Path to the log file.
+   * @param logFormatter Log formatter instance.
+   * @param <T> A type of {@link LogFormatter}.
+   * @return {@link LogFormatter} instance.
+   */
+  public static <T extends LogFormatter> Props props(final String pathToLogFile, final T logFormatter) {
     return Props.create(LogWriter.class, () -> new LogWriter(pathToLogFile, logFormatter));
   }
 
@@ -41,6 +48,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
    */
   public LogWriter(final String logFile, final LogFormatter formatter) {
     this.logFormatter = formatter;
+
     try { // do not close the stream till the load test completes.
       this.writer = new BufferedWriter(new FileWriter(new File(Objects.requireNonNull(logFile))));
     } catch (IOException e) {
@@ -50,16 +58,12 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   @Override
   public void report(final LogEvent report) {
-    try {
-      writer.write(logFormatter.format(report));
-      writer.flush();
-    } catch (IOException e) {
-      LOG.error(e);
-    }
+    report(logFormatter.format(report));
   }
 
   @Override
   public void report(final String report) {
+
     try {
       writer.write(report);
       writer.flush();
@@ -70,6 +74,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   @Override
   public void close() throws IOException {
+    // Nothing to close.
   }
 
   @Override

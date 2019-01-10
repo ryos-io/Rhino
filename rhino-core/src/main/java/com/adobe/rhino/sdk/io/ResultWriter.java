@@ -4,7 +4,8 @@ import com.adobe.rhino.sdk.reporting.LogEvent;
 import java.io.Closeable;
 
 /**
- * Simulation result writer logs the benchmark metrics into a flat file.
+ * Simulation result writer logs the benchmark metrics into a flat file, that is the simulation
+ * file.
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  */

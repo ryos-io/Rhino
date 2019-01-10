@@ -24,12 +24,20 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Cyclic iterator iterates over the list provided, and once the list is over it starts from the
+ * beginning till it is stopped by calling {@link #stop()} to do so, explicitly. The iterator is
+ * used as generator for the load generator system.
+ *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  */
 public class CyclicIterator<T> implements Iterator<T> {
 
+  // Cursor point to the current item.
   private final AtomicInteger cursor = new AtomicInteger(-1);
+
+  // The list to be iterated over.
   private final List<T> list;
+
   private volatile boolean hasNext = true;
 
   public CyclicIterator(final List<T> list) {
@@ -43,6 +51,7 @@ public class CyclicIterator<T> implements Iterator<T> {
 
   @Override
   public T next() {
+
     if (!hasNext()) {
       throw new NoSuchElementException();
     }
