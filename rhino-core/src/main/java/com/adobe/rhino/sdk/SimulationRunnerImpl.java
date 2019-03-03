@@ -72,6 +72,8 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
   public void start() {
 
+    System.out.println("! Starting load test for " + simulation.getDuration() + " minutes ...");
+
     final UserRepository userRepository = simulation.getUserRepository();
 
     // We need to wait till all users are logged in.

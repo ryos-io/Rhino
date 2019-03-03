@@ -18,9 +18,39 @@
 
 package com.adobe.rhino.sdk.users;
 
-public interface OAuthUser {
-    String getAccessToken();
-    String getRefreshToken();
-    String getScope();
-    String getClientId();
+/**
+ * Represents an authenticated user.
+ *
+ * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
+ * @since 1.0.0
+ */
+public interface OAuthUser extends User {
+
+  /**
+   * Access token.
+   *
+   * @return Access token.
+   */
+  String getAccessToken();
+
+  /**
+   * Refresh token.
+   *
+   * @return Refresh token.
+   */
+  String getRefreshToken();
+
+  /**
+   * Authorized scope.
+   *
+   * @return Authorized scope.
+   */
+  String getScope();
+
+  /**
+   * Client id of the user.
+   *
+   * @return Client id.
+   */
+  String getClientId();
 }

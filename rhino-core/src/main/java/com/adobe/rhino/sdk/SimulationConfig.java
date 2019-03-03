@@ -108,12 +108,20 @@ public class SimulationConfig {
     return properties.getProperty(environment + ".auth.clientSecret");
   }
 
+  String getEndpoint() {
+    return properties.getProperty(environment + ".endpoint");
+  }
+
   String getAuthGrantType() {
     return properties.getProperty(environment + ".auth.grantType");
   }
 
   String getPackageToScan() {
     return instance.getProperty(PACKAGE_TO_SCAN);
+  }
+
+  public static String getServiceEndpoint() {
+    return instance.getEndpoint();
   }
 
   public static String getPackage() {

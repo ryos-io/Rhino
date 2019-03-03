@@ -18,6 +18,12 @@
 
 package com.adobe.rhino.sdk.users;
 
+/**
+ * Implementation of authenticated user representation.
+ *
+ * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
+ * @since 1.0.0
+ */
 public class OAuthUserImpl extends UserImpl implements OAuthUser {
 
   private String accessToken;

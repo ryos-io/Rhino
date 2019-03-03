@@ -71,7 +71,7 @@ public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        LOG.error("Cannot login user:" + response.getStatus());
+        LOG.error("Cannot login user, status=" + response.getStatus() + ", message=" + response.readEntity(String.class));
       }
 
       final String s = response.readEntity(String.class);

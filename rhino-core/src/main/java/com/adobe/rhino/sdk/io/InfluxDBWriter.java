@@ -25,13 +25,12 @@ import com.adobe.rhino.sdk.SimulationConfig;
 import com.adobe.rhino.sdk.reporting.LogEvent;
 import com.adobe.rhino.sdk.reporting.SimulationEvent;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDB.LogLevel;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
 
 /**
  * Writer implementation for Influx DB. It must be activated by using @Influx annotation.
@@ -41,8 +40,25 @@ import java.util.concurrent.CompletableFuture;
  */
 public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEvent> {
 
+  private static final String RHINO_TEST_DB = "rhino_test_db_";
+
   public static <T extends InfluxDBWriter> Props props() {
     return Props.create(InfluxDBWriter.class, InfluxDBWriter::new);
+  }
+
+  private final InfluxDB influxDB;
+  private final String dbName;
+
+  public InfluxDBWriter() {
+
+    this.dbName =
+        Optional.ofNullable(SimulationConfig.getInfluxDBName())
+            .orElse(RHINO_TEST_DB + System.currentTimeMillis());
+    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL());
+    this.influxDB.setLogLevel(LogLevel.NONE);
+
+    System.out.println("Creating DB for name: " + dbName);
+    this.influxDB.createDatabase(dbName);
   }
 
   @Override
@@ -63,25 +79,22 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
       return;
     }
 
-    var writeQuery = String.format("%s,status=%s,step=%s pt=%d",
-        report.scenario,
-        report.status,
-        report.step.replace(" ", "\\ "),
-        report.elapsed);
-
-    var client = HttpClient.newHttpClient();
-    var request = HttpRequest.newBuilder()
-        .uri(URI.create(
-            SimulationConfig.getInfluxURL() + "/write?db=" + SimulationConfig.getInfluxDBName()))
-        .POST(BodyPublishers.ofString(writeQuery))
+    BatchPoints batchPoints = BatchPoints
+        .database(dbName)
+        .tag("async", "true")
+        // .retentionPolicy("rhino_retention_policy")
+        .consistency(InfluxDB.ConsistencyLevel.ALL)
         .build();
 
-    try {
-      final CompletableFuture<HttpResponse<String>> httpResponseCompletableFuture = client
-          .sendAsync(request, BodyHandlers.ofString());
-    } catch (Throwable t) {
-      System.out.println("ERROR: " + t.getMessage());
-    }
+    Point.Builder builder = Point.measurement(report.scenario);
+    builder.addField("status", report.status);
+    builder.addField("step", report.step);
+    builder.addField("pt", report.elapsed);
+
+    Point point = builder.build();
+    batchPoints.point(point);
+
+    influxDB.write(batchPoints);
   }
 
   @Override
