@@ -1,6 +1,17 @@
 Rhino Java Framework CHANGELOG
 ===
 
+## 1.1.10
+- Changelog update for 1.1.9 added.
+
+## 1.1.9
+- Reflective method call exception handling.
+- Server endpoint configuration per environment.
+- InfluxDB Java library dependency.
+- Removed Jersey Client usage in InfluxDB calls.
+- Duration clue at start-up.
+- Javadocs improved.
+
 ## 1.1.8
 
 * Javadocs added. 

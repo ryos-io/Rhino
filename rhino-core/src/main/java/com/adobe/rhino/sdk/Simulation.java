@@ -245,18 +245,20 @@ public class Simulation {
   }
 
   public void prepare(UserSession userSession) {
-    final Object cleanUpInstance = simulationInstanceFactory.get();
-    injectSession(userSession, cleanUpInstance);
-    feedInjections(cleanUpInstance);
-    injectUser(userSession.getUser(), cleanUpInstance);
+    final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(prepareMethod, cleanUpInstance);
   }
 
-  public void cleanUp(UserSession userSession) {
+  private Object prepareMethodCall(final UserSession userSession) {
     final Object cleanUpInstance = simulationInstanceFactory.get();
     injectSession(userSession, cleanUpInstance);
     feedInjections(cleanUpInstance);
     injectUser(userSession.getUser(), cleanUpInstance);
+    return cleanUpInstance;
+  }
+
+  public void cleanUp(UserSession userSession) {
+    prepareMethodCall(userSession);
     executeMethod(cleanupMethod, userSession);
   }
 
