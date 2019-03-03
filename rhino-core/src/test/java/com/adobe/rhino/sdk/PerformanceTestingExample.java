@@ -30,8 +30,7 @@ import com.adobe.rhino.sdk.data.UserSession;
 import com.adobe.rhino.sdk.feeders.UUIDFeeder;
 import com.adobe.rhino.sdk.reporting.GatlingLogFormatter;
 import com.adobe.rhino.sdk.users.IMSUserRepositoryFactoryImpl;
-import com.adobe.rhino.sdk.users.OAuthUserImpl;
-import com.adobe.rhino.sdk.users.User;
+import com.adobe.rhino.sdk.users.OAuthUser;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -41,7 +40,7 @@ import javax.ws.rs.core.Response;
 public class PerformanceTestingExample {
 
   @UserFeeder(max = 1, factory = IMSUserRepositoryFactoryImpl.class)
-  private User user;
+  private OAuthUser user;
 
   @SessionFeeder
   private UserSession userSession;
@@ -57,16 +56,11 @@ public class PerformanceTestingExample {
   @Scenario(name = "Discovery")
   public void performDiscovery(Recorder recorder) {
 
-    OAuthUserImpl authUser = null;
-    if (user instanceof OAuthUserImpl) {
-      authUser = (OAuthUserImpl) user;
-    }
-
     final Client client = ClientBuilder.newClient();
     final Response response = client
         .target("https://cc-api-storage-stage.adobe.io/")
         .request()
-        .header("Authorization", "Bearer " + authUser.getAccessToken())
+        .header("Authorization", "Bearer " + user.getAccessToken())
         .header("X-Request-Id", "Rhino-" + uuid)
         .header("X-API-Key", "CCStorage")
         .get();
@@ -80,11 +74,6 @@ public class PerformanceTestingExample {
 
   @Scenario(name = "Health")
   public void performHealth(Recorder recorder) {
-
-    OAuthUserImpl authUser = null;
-    if (user instanceof OAuthUserImpl) {
-      authUser = (OAuthUserImpl) user;
-    }
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
@@ -103,11 +92,6 @@ public class PerformanceTestingExample {
 
   @Scenario(name = "KO OK")
   public void performKO(Recorder recorder) {
-
-    OAuthUserImpl authUser = null;
-    if (user instanceof OAuthUserImpl) {
-      authUser = (OAuthUserImpl) user;
-    }
 
     final Client client = ClientBuilder.newClient();
     final Response response = client

@@ -19,11 +19,39 @@
 package com.adobe.rhino.sdk.users;
 
 /**
+ * Representation of a User, that is used in requests against the backend. Every request is
+ * associated with an user.
+ *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
+ * @since 1.0.0
  */
 public interface User {
+
+  /**
+   * User name.
+   *
+   * @return User name.
+   */
   String getUsername();
+
+  /**
+   * Password, if authentication is required.
+   *
+   * @return Password.
+   */
   String getPassword();
+
+  /**
+   * Scope of the user.
+   *
+   * @return Authorization scope.
+   */
   String getScope();
+
+  /**
+   * A unique id to distinguish the user from others.
+   *
+   * @return The id of the user.
+   */
   int getId();
 }

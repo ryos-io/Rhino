@@ -23,9 +23,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 /**
- * TODO Fix the doc. Created on 14.10.18.
+ * Entity to deserialize the JSON responses from the IMS.
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
+ * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OAuthEntity implements Serializable {

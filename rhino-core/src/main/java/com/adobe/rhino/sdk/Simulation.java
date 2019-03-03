@@ -266,6 +266,7 @@ public class Simulation {
         method.invoke(simulationInstance);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
+      LOG.error(e.getCause().getMessage());
       throw new RuntimeException(
           "Cannot invoke the method with step: " + method.getName() + "()", e);
     }
@@ -276,8 +277,8 @@ public class Simulation {
     try {
       scenario.getMethod().invoke(simulationInstance, recorder);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e);
-      throw new RuntimeException(e); //TODO change the exception type.
+      LOG.error(e.getCause().getMessage());
+      throw new RuntimeException(e.getCause());
     }
   }
 
