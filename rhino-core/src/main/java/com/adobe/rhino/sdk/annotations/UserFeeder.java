@@ -50,6 +50,13 @@ public @interface UserFeeder {
   int max() default -1;
 
   /**
+   * Delay between login requests while requesting token from IMS.
+   *
+   * @return Delay in millis.
+   */
+  long delay() default 0;
+
+  /**
    * Factory implementation of {@link UserRepositoryFactory}.
    *
    * @return The class type of the factory.

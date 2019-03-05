@@ -39,7 +39,7 @@ import javax.ws.rs.core.Response;
 @Logging(file = "/Users/bagdemir/sims/simulation.log", formatter = GatlingLogFormatter.class)
 public class PerformanceTestingExample {
 
-  @UserFeeder(max = 1, factory = IMSUserRepositoryFactoryImpl.class)
+  @UserFeeder(max = 1, delay = 1000, factory = IMSUserRepositoryFactoryImpl.class)
   private OAuthUser user;
 
   @SessionFeeder

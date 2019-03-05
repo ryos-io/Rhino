@@ -30,19 +30,16 @@ import com.adobe.rhino.sdk.data.UserSession;
 public class IMSUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
 
   private final String pathToUsers;
+  private final long loginDelay;
 
-  public IMSUserRepositoryFactoryImpl(final String pathToUsers) {
-    this.pathToUsers = pathToUsers;
-  }
-
-  public IMSUserRepositoryFactoryImpl() {
+  public IMSUserRepositoryFactoryImpl(final long loginDelay) {
     final String userSource = SimulationConfig.getUserSource();
-    final String absolutePath = userSource.replace("classpath://", "");
-    this.pathToUsers = absolutePath;
+    this.pathToUsers = userSource.replace("classpath://", "");
+    this.loginDelay = loginDelay;
   }
 
   @Override
   public UserRepository<UserSession> create() {
-    return new IMSUserRepositoryImpl(new ClasspathUserProviderImpl(pathToUsers)).authenticateAll();
+    return new IMSUserRepositoryImpl(new ClasspathUserProviderImpl(pathToUsers), loginDelay).authenticateAll();
   }
 }
