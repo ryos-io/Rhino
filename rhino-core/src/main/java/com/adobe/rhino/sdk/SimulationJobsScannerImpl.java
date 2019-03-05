@@ -31,9 +31,12 @@ import com.adobe.rhino.sdk.annotations.UserFeeder;
 import com.adobe.rhino.sdk.data.Scenario;
 import com.adobe.rhino.sdk.exceptions.SimulationNotFoundException;
 import com.adobe.rhino.sdk.users.DefaultUserRepositoryFactoryImpl;
+import com.adobe.rhino.sdk.users.UserRepository;
+import com.adobe.rhino.sdk.users.UserRepositoryFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
@@ -80,7 +83,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
       // Search for classes in development environment. The IDE runs the project in an exploded
       // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path)).orElseThrow();
+      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
+          .orElseThrow();
       var files = new File(resourceURL.toURI()).listFiles();
       if (files != null) {
         return Arrays.stream(files).
@@ -167,8 +171,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     var stepMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-        .anyMatch(a -> a instanceof com.adobe.rhino.sdk.annotations.Scenario))
-        .map(s -> new Scenario(s.getDeclaredAnnotation(com.adobe.rhino.sdk.annotations.Scenario.class).name(), s))
+            .anyMatch(a -> a instanceof com.adobe.rhino.sdk.annotations.Scenario))
+        .map(s -> new Scenario(
+            s.getDeclaredAnnotation(com.adobe.rhino.sdk.annotations.Scenario.class).name(), s))
         .collect(toList());
 
     if (stepMethods.isEmpty()) {
@@ -180,7 +185,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var injectAnnotationField = getFieldByAnnotation(clazz, UserFeeder.class);
     var maxUserInject = injectAnnotationField.map(p -> p.second.max()).orElse(10);
     var userRepo = injectAnnotationField.map(p -> createUserRepository(p.second))
-            .orElse(new DefaultUserRepositoryFactoryImpl().create());
+        .orElse(new DefaultUserRepositoryFactoryImpl(0L).create());
 
     return new Simulation.Builder().
         withSimulationClass(clazz).
@@ -206,7 +211,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     try {
       var newFile = simFile.createNewFile();
       if (!newFile && !simFile.canWrite()) {
-        throw new IOException("Not sufficient permissions to write the simulation file: " + simFile);
+        throw new IOException(
+            "Not sufficient permissions to write the simulation file: " + simFile);
       }
     } catch (IOException e) {
       System.err.println(String.format("! Simulation log file is invalid: \"%s\"", simFile));
@@ -215,20 +221,36 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private com.adobe.rhino.sdk.users.UserRepository createUserRepository(final UserFeeder feeder) {
+  private UserRepository createUserRepository(final UserFeeder feeder) {
 
     var factory = feeder.factory();
+    var loginDelay = feeder.delay();
 
     try {
-      return factory.getDeclaredConstructor().newInstance().create();
-    } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor =
+          factory.getConstructor(long.class);
+      final UserRepositoryFactory userRepositoryFactory = factoryConstructor.newInstance(loginDelay);
+      return userRepositoryFactory.create();
+    } catch (NoSuchMethodException nsme) {
+      return createWithDefaultConstructor(factory);
+    } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
       LOG.error(e);
     }
 
     throw new RuntimeException("No user repository found.");
   }
 
-  private <T extends Annotation> Optional<Method> findMethodWith(Class<?> clazz, Class<T> annotation) {
+  private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {
+    try {
+      return factory.getDeclaredConstructor().newInstance().create();
+    } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      LOG.error(e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private <T extends Annotation> Optional<Method> findMethodWith(Class<?> clazz,
+      Class<T> annotation) {
     return Arrays.stream(clazz.getDeclaredMethods()).
         filter(m -> Arrays.stream(m.getDeclaredAnnotations()).
             anyMatch(annotation::isInstance)).
