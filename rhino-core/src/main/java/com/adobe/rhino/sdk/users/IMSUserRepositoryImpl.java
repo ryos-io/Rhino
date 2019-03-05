@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,27 +34,38 @@ public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
   private final List<User> users;
   private final ExecutorService executorService;
   private final AtomicInteger cursor = new AtomicInteger(-1);
-
+  private final long loginDelay;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public IMSUserRepositoryImpl(final UserProvider userProvider) {
+  public IMSUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
     Objects.requireNonNull(userProvider);
     this.users = userProvider.readUsers();
     this.authUsers = new ArrayList<>(users.size());
+    this.loginDelay = loginDelay;
     this.executorService = Executors.newFixedThreadPool(1);
   }
 
 
   public IMSUserRepositoryImpl authenticateAll() {
-    System.out.println("! Found " + users.size() + " users. Authenticating...");
+    System.out.println(String.format("! Found %d users. Authenticating with delay: %d ms ...",
+        users.size(), loginDelay));
     users.forEach(u -> executorService.submit(() -> {
-      authUsers.add(new UserSessionImpl(authenticate(u)));
+      delay();
+      authenticate(u).ifPresent(a -> authUsers.add(new UserSessionImpl(a)));
     }));
 
     return this;
   }
 
-  private User authenticate(User user) {
+  private void delay() {
+    try {
+      Thread.sleep(loginDelay);
+    } catch (InterruptedException e) {
+      // interrupted
+    }
+  }
+
+  private Optional<User> authenticate(User user) {
     try {
       Form form = new Form();
       form.param(CLIENT_ID, SimulationConfig.getClientId());
@@ -72,23 +84,24 @@ public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
         LOG.error("Cannot login user, status=" + response.getStatus() + ", message=" + response.readEntity(String.class));
+        return Optional.empty();
       }
 
       final String s = response.readEntity(String.class);
       final OAuthEntity o = objectMapper.readValue(s, OAuthEntity.class);
 
-      return new OAuthUserImpl(user.getUsername(),
+      return Optional.of(new OAuthUserImpl(user.getUsername(),
           user.getPassword(),
           o.getAccessToken(),
           o.getRefreshToken(),
           user.getScope(),
           SimulationConfig.getClientId(),
-          user.getId());
+          user.getId()));
     } catch (Exception e) {
       LOG.error(e);
     }
 
-    return null;
+    return Optional.empty();
   }
 
   @Override
