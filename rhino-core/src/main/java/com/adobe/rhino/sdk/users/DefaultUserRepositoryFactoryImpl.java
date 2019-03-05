@@ -27,6 +27,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
+ * User repository, if nothing else provided.
+ *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  */
 public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
