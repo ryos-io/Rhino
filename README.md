@@ -1,9 +1,12 @@
-Rhino
+Rhino: Performance Assessment Platform (PAP)
 ---
 
-Rhino is a load and performance testing tool for web services which comprises the Rhino Java 
+Rhino PAP is a load and performance testing tool for web services which comprises the Rhino Java 
 framework, that can be added as Maven dependency, as well as a collection of libraries and tools 
 which enable developers to write load and performance tests.
+
+Original proposal document: https://wiki.corp.adobe.com/display/~bagdemir/Rhino%3A+Performance+Assessment+Platform
+
 
 Rhino's goal: 
 
