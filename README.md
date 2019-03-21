@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://git.corp.adobe.com/rhino/rhino-pap/blob/master/Rhino.png" width="300"/>
+</p>
+
 Rhino: Performance Assessment Platform (PAP)
 ---
 
