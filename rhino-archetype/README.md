@@ -1,4 +1,4 @@
-rhino-archetype
+Archetype
 ==
 
 Maven archetype project allows developers to create new rhino load testing projects. Currently under development. 
