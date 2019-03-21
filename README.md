@@ -2,26 +2,33 @@
   <img src="https://git.corp.adobe.com/rhino/rhino-pap/blob/master/Rhino.png" width="300"/>
 </p>
 
-Rhino: Performance Assessment Platform (PAP)
----
+## What is Rhino?
 
-Rhino PAP is a load and performance testing tool for web services which comprises the Rhino Java 
-framework, that can be added as Maven dependency, as well as a collection of libraries and tools 
-which enable developers to write load and performance tests.
+Rhino is a distributed performance testing platform which comprises the Rhino backend platform, 
+web UI as well as a collection of libraries and tools which enable developers to write 
+performance tests. The tooling around the Rhino platform required for bootstrapping Rhino projects and  
+furthermore to create, store and compare performance reports and assessments. 
 
-Original proposal document: https://wiki.corp.adobe.com/display/~bagdemir/Rhino%3A+Performance+Assessment+Platform
+Rhino does aim to solve following challenges, today we face in existing load testing platform:
 
+* Scheduling without Sharepoint Calendar. 
+* Atomisation and setting boundaries of performance testing execution.
+* Test isolation.
+* Storing and mining performance metrics.
+* Reporting and assessment.
+* Regression detection.
+* Archiving the reports.
 
-Rhino's goal: 
+Rhino is not a load testing tool, rather a performance assessment platform.
 
-* is to speed up load testing development,
-* to enable the integration existing Java frameworks, e.g test frameworks to make them reusable 
-in load tests,
-* to provide an intuitive framework so that the engineers don't need to re-initiate the learning 
-process for  the language and the framework every time the need to write new load tests which they 
-have already forgotten. Since we don't write new load tests that often, it is important to have a
- framework in that programming language which we are native and employ it in our projects every day. 
+## Projects
 
+The platform project comprises following sub-projects: 
+* [Rhino Core](https://git.corp.adobe.com/rhino/rhino-pap/wiki/Core:-Getting-Started): The SDK to develop Rhino performance tests. 
+* [Rhino Archetype](https://git.corp.adobe.com/rhino/rhino-pap/tree/master/rhino-archetype): The Maven Archetype to create load test projects.
+* Rhino Agent: Java agent to collect application metrics. 
+* Rhino UI: Management and Monitoring Console.
+* And System Security and Architecture.
 
 Questions/Contributions?
 ---
