@@ -6,6 +6,7 @@
   <img src="https://scbuild.eur.adobe.com/buildStatus/icon?job=Rhino-CI"/>
   <img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/>
   <img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" />
+  <img src="https://img.shields.io/badge/agent-0.0.0-yellowgreen.svg" />
 </p>
 
 
