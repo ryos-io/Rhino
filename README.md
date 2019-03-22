@@ -2,6 +2,12 @@
   <img src="https://git.corp.adobe.com/rhino/rhino-pap/blob/master/Rhino.png" width="300"/>
 </p>
 
+<p align="center">
+  <img src="https://scbuild.eur.adobe.com/buildStatus/icon?job=Rhino-CI"/>
+  <img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/>
+</p>
+
+
 ## What is Rhino?
 
 Rhino is a distributed performance testing platform which comprises the Rhino backend platform, 
