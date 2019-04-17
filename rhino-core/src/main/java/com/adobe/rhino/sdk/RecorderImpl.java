@@ -18,14 +18,15 @@
 
 package com.adobe.rhino.sdk;
 
-import static com.fasterxml.jackson.core.JsonToken.NOT_AVAILABLE;
-
 import com.adobe.rhino.sdk.reporting.LogEvent;
 import com.adobe.rhino.sdk.reporting.SimulationEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Recorder implementation which measures elapsed time from beginning the execution of the
+ * scenario.
+ *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  */
 public class RecorderImpl implements Recorder {

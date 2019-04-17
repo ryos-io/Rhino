@@ -98,8 +98,8 @@ public class SimulationRunnerImpl implements SimulationRunner {
         .viaMat(KillSwitches.single(), Keep.right());
 
     var doneCompletionStage = source.buffer(BUFFER_SIZE, OverflowStrategy.backpressure())
-        .takeWhile((p) -> checkDuration())
-        .map((p) -> CompletableFuture.supplyAsync(() -> simulation.run((UserSession) p.first, (Scenario) p.second), materializer.executionContext()))
+        .takeWhile(p -> checkDuration())
+        .map(p -> CompletableFuture.supplyAsync(() -> simulation.run((UserSession) p.first, (Scenario) p.second), materializer.executionContext()))
         .async()
         .runWith(Sink.ignore(), materializer);
 
@@ -161,11 +161,11 @@ public class SimulationRunnerImpl implements SimulationRunner {
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach((us) -> simulation.prepare(us));
+    userSessions.forEach(us -> simulation.prepare(us));
   }
 
   private void cleanupUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach((us) -> simulation.cleanUp(us));
+    userSessions.forEach(us -> simulation.cleanUp(us));
   }
 
   private void waitUsers(UserRepository userRepository) {
