@@ -52,7 +52,7 @@ public class Application {
         System.out.println(bufferedReader.readLine());
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      System.err.println("Can not start the application:" + e.getMessage());
     }
   }
 }

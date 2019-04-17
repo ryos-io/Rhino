@@ -28,10 +28,11 @@ import java.lang.annotation.Target;
  * The prepare methods are useful to allocate resources and shared among scenarios run by the
  * same user. The test developers might create some resources in prepare method, and scenarios
  * access the same resources without having need of creating them repeatedly.
+ * <p>
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
- * @since 1.1.0
  * @see com.adobe.rhino.sdk.data.UserSession
+ * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

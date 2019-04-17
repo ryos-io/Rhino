@@ -28,7 +28,8 @@ import java.lang.annotation.RetentionPolicy;
  * written into the log file where this annotation points.
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
- * @since 1.0
+ * @see LogFormatter
+ * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Logging {

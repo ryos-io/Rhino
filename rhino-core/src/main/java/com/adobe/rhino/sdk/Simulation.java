@@ -62,8 +62,10 @@ import scala.concurrent.Future;
  * Simulation entities do comprise scenarios, that are run per user on a single thread. For each
  * scenario there will be a new Simulation instance created so as to run the scenario isolated on
  * a single thread.
+ * <p>
  *
- * <p>The job instances are created by {@link SimulationJobsScanner} classes.
+ * The job instances are created by {@link SimulationJobsScanner} classes.
+ * <p>
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  * @see com.adobe.rhino.sdk.annotations.Simulation
@@ -218,7 +220,8 @@ public class Simulation {
       influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
     }
 
-    loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter), LogWriter.class.getName());
+    loggerActor = system
+        .actorOf(LogWriter.props(reportingURI, formatter), LogWriter.class.getName());
 
     if (formatter instanceof GatlingLogFormatter) {
       loggerActor.tell(
@@ -320,7 +323,6 @@ public class Simulation {
    * @return Recorder instance which contains simulation logs.
    */
   public Recorder run(final UserSession userSession, final Scenario scenario) {
-
     final User user = userSession.getUser();
     final Object simulationInstance = simulationInstanceFactory.get();
 
@@ -358,7 +360,9 @@ public class Simulation {
     recorder.record(userEventEnd);
 
     recorder.getEvents().forEach(e -> loggerActor.tell(e, ActorRef.noSender()));
-    if (enableInflux) recorder.getEvents().forEach(e -> influxActor.tell(e, ActorRef.noSender()));
+    if (enableInflux) {
+      recorder.getEvents().forEach(e -> influxActor.tell(e, ActorRef.noSender()));
+    }
 
     executeMethod(afterMethod, simulationInstance);
 
@@ -459,6 +463,7 @@ public class Simulation {
     private UserRepository<UserSession> userRepository;
 
     /**
+     * The reporting URI in String.
      */
     private String reportingURI;
 
