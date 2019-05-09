@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.ryos.rhino</groupId>
     <artifactId>parent</artifactId>
-    <version>1.1.12-SNAPSHOT</version>
+    <version>1.1.11-SNAPSHOT</version>
   </parent>
 
   <artifactId>rhino-archetype-parent</artifactId>
@@ -14,8 +14,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docker.base.image>rhino-archetype-base:latest</docker.base.image>
-    <docker-registry.hostname />
-    <docker-registry.hostname.release />
+    <docker-registry.hostname/>
+    <docker-registry.hostname.release/>
     <docker-maven-plugin.version>0.20.0</docker-maven-plugin.version>
   </properties>
 
@@ -161,7 +161,7 @@
     <dependency>
       <groupId>io.ryos.rhino</groupId>
       <artifactId>rhino-core</artifactId>
-      <version>1.1.12-SNAPSHOT</version>
+      <version>1.1.11-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.inject</groupId>
