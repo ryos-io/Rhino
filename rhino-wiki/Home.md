@@ -1,4 +1,4 @@
-Rhino is a load and performance testing tool for web services which comprises the Rhino Java 
+Rhino is a load and performance testing framework for web services which comprises the Rhino Java 
 framework, that can be added as Maven dependency, as well as a collection of libraries and tools 
 which enable developers to write load and performance tests.
 
