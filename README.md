@@ -6,37 +6,14 @@
   <img src="https://scbuild.eur.adobe.com/buildStatus/icon?job=Rhino-CI"/>
   <img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/>
   <img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" />
-  <img src="https://img.shields.io/badge/agent-0.0.0-yellowgreen.svg" />
 </p>
 
 
 ## What is Rhino?
 
-Rhino is a distributed performance testing platform which comprises the Rhino backend platform, 
-web UI as well as a collection of libraries and tools which enable developers to write 
-performance tests. The tooling around the Rhino platform required for bootstrapping Rhino projects and  
-furthermore to create, store and compare performance reports and assessments. 
+Rhino is a JUnit-style load testing framework, tailored for testing web services and enables 
+developers to start writing load and performance tests in the most intuitive way.
 
-Rhino does aim to solve following challenges, today we face in existing load testing platform:
-
-* Scheduling without Sharepoint Calendar. 
-* Atomisation and setting boundaries of performance testing execution.
-* Test isolation.
-* Storing and mining performance metrics.
-* Reporting and assessment.
-* Regression detection.
-* Archiving the reports.
-
-Rhino is not a load testing tool, rather a performance assessment platform.
-
-## Projects
-
-The platform project comprises following sub-projects: 
-* [Rhino Core](https://git.corp.adobe.com/rhino/rhino-pap/wiki/Core:-Getting-Started): The SDK to develop Rhino performance tests. 
-* [Rhino Archetype](https://git.corp.adobe.com/rhino/rhino-pap/tree/master/rhino-archetype): The Maven Archetype to create load test projects.
-* Rhino Agent: Java agent to collect application metrics. 
-* Rhino UI: Management and Monitoring Console.
-* And System Security and Architecture.
 
 Questions/Contributions?
 ---
