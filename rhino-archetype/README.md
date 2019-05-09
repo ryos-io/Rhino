@@ -12,7 +12,7 @@ after having successfully installed the archetype, you can now create a new Rhin
 
 ```bash
 mvn archetype:generate \
-  -DarchetypeGroupId=com.adobe.rhino \
+  -DarchetypeGroupId=io.ryos.rhino \
   -DarchetypeArtifactId=rhino-archetype \
   -DarchetypeVersion=1.1.4 \
   -DgroupId=my-group-id \
@@ -25,4 +25,4 @@ Need Help?
 ---
 Please refer to the Wiki page, ask questions by using Github issues, or contact 
 
-bagdemir@adobe.com for further questions.
+erhan@ryos.io for further questions.

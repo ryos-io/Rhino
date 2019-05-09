@@ -1,5 +1,5 @@
 /*
-  Copyright 2018 Adobe.
+  Copyright 2018 Ryos.io.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package ${groupId}.benchmark;
 
-import com.adobe.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.User;
 
-import com.adobe.rhino.sdk.Recorder;
-import com.adobe.rhino.sdk.annotations.CleanUp;
-import com.adobe.rhino.sdk.annotations.Feeder;
-import com.adobe.rhino.sdk.annotations.Logging;
-import com.adobe.rhino.sdk.annotations.Prepare;
-import com.adobe.rhino.sdk.annotations.Scenario;
-import com.adobe.rhino.sdk.annotations.Simulation;
-import com.adobe.rhino.sdk.annotations.UserFeeder;
-import com.adobe.rhino.sdk.feeders.UUIDFeeder;
-import com.adobe.rhino.sdk.reporting.GatlingLogFormatter;
+import io.ryos.rhino.sdk.Recorder;
+import io.ryos.rhino.sdk.annotations.CleanUp;
+import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Logging;
+import io.ryos.rhino.sdk.annotations.Prepare;
+import io.ryos.rhino.sdk.annotations.Scenario;
+import io.ryos.rhino.sdk.annotations.Simulation;
+import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.feeders.UUIDFeeder;
+import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 
 /**
  * An example for annotated entity of benchmark job.
