@@ -20,17 +20,17 @@ import com.adobe.rhino.sdk.SimulationConfig;
 import com.adobe.rhino.sdk.data.UserSession;
 
 /**
- * Factory class for IMS user repository which creates a new {@link UserRepository} provides
+ * Factory class for OAuth user repository which creates a new {@link UserRepository} provides
  * {@link User} instances authenticated.
  *
  * @author <a href="mailto:bagdemir@adobe.com">Erhan Bagdemir</a>
  */
-public class IMSUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
+public class OAuthUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
 
   private final String pathToUsers;
   private final long loginDelay;
 
-  public IMSUserRepositoryFactoryImpl(final long loginDelay) {
+  public OAuthUserRepositoryFactoryImpl(final long loginDelay) {
     final String userSource = SimulationConfig.getUserSource();
     this.pathToUsers = userSource.replace("classpath://", "");
     this.loginDelay = loginDelay;
@@ -38,6 +38,6 @@ public class IMSUserRepositoryFactoryImpl implements UserRepositoryFactory<UserS
 
   @Override
   public UserRepository<UserSession> create() {
-    return new IMSUserRepositoryImpl(new ClasspathUserProviderImpl(pathToUsers), loginDelay).authenticateAll();
+    return new OAuthUserRepositoryImpl(new ClasspathUserProviderImpl(pathToUsers), loginDelay).authenticateAll();
   }
 }
