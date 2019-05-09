@@ -28,13 +28,29 @@
     <system>GitHub Issues</system>
   </issueManagement>
 
+  <organization>
+    <name>Adobe</name>
+    <url>https://www.adobe.com</url>
+  </organization>
+
   <licenses>
     <license>
       <name>Apache 2.0 License</name>
-      <url>https://github.com/bagdemir/rhino/blob/7df4f18887029edd32b17bd5073a259799b55810/LICENSE</url>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
   <scm>
     <connection>scm:git:${project.link}</connection>
@@ -42,22 +58,6 @@
     <url>${project.url}</url>
     <tag>HEAD</tag>
   </scm>
-
-  <distributionManagement>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>${releaseRepositoryId}</id>
-      <name>${releaseRepositoryName}</name>
-      <url>${releaseRepositoryURL}</url>
-    </repository>
-
-    <snapshotRepository>
-      <uniqueVersion>true</uniqueVersion>
-      <id>${snapshotRepositoryId}</id>
-      <name>${snapshotRepositoryName}</name>
-      <url>${snapshotRepositoryURL}</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <modules>
     <module>rhino-core</module>
@@ -88,6 +88,53 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <quiet>true</quiet>
+          </configuration>
+          <executions>
+            <execution>
+              <id>javadoc</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <goals>deploy -DskipTests -Prelease</goals>
+            <preparationGoals>clean install</preparationGoals>
+            <tagNameFormat>@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+          <extensions>true</extensions>
+          <configuration>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            <nexusUrl>
+              https://oss.sonatype.org/
+            </nexusUrl>
+            <serverId>ossrh</serverId>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
