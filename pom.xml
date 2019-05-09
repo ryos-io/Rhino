@@ -7,6 +7,9 @@
   <version>1.1.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <description>Rhino: Annotation-based JUnit-style load and performance testing framework</description>
+  <url>https://github.com/bagdemir/rhino</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.link>git@github.com:bagdemir/rhino.git</project.link>
