@@ -70,6 +70,8 @@ simulation name provided, so the names must be unique.
 
 If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
 
+* [Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
+* [Simulations](https://github.com/bagdemir/rhino/wiki/Simulations)
 
 Questions/Contributions?
 ---
