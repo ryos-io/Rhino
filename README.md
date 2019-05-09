@@ -5,14 +5,15 @@
 </p>
 
 
-## What is Rhino?
+## Rhino: Load and Performance Testing
 
-Rhino is a small annotation-based JUnit-style load and performance testing framework tailored for 
+Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
+for 
 testing web services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project.
 
-Rhino's philosophy is basically: 
+**Rhino's philosophy is basically:**
 
 * to speed up load and performance test development,
 * a debuggable test framework written in Java, so that you can go through the breakpoints while 
@@ -27,12 +28,10 @@ with Apache 2.0 License, now.
 
 ## How do the load tests look like?
 
-Simulation is a test entity which will be executed and it generates load according to the 
-implementation provided in the test classes against instance under test, for instance,  a web 
-service. As simulations are running, the metrics thereof collected and assessed. It contains a 
-set of rules and the implementation how the load is generated. 
-
-So as to create a new simulation entity, create a plain Java object with `@Simulation` annotation: 
+Simulation is a test entity which will be executed and generates load according to the 
+implementation provided in the test classes against the instance under test, e.g a web 
+service. So as to create a new simulation entity, create a plain Java object with `@Simulation` 
+annotation: 
 
 ```java
 @Simulation(name = "Example Simulation")
@@ -64,8 +63,8 @@ public class PerformanceTestingExample {
 ```
 
 The name of the simulation is important. In a performance testing project, it is very likely that 
-you will have multiple simulations. Rhino does know which simulation is to be run, with the 
-simulation name, so they must be unique. 
+you will have multiple simulations. Rhino does know which simulation is to be run from the 
+simulation name provided, so the names must be unique. 
 
 ## Get Started
 
@@ -75,5 +74,5 @@ If you think that the Rhino is the right framework for you, you can follow the w
 Questions/Contributions?
 ---
 
-Feel free to fork the project and open PR. For bigger proposals, 
-please contact [bagdemir@adobe.com](mailto:bagdemir@adobe.com) to align the expectations.
+Feel free to fork the project and make contributions in terms of Pull Requests. For bigger 
+proposals, architectural discussions and bug reports, use the Github's issue tracker.

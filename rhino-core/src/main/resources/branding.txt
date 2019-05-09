@@ -3,7 +3,7 @@
      `Y     `-.
       )   ,
   |`-\`  (@   )    Rhino ${project.version} Performance Testing
-   \_.   `  /`     https://git.corp.adobe.com/rhino/rhino
+   \_.   `  /`     https://github.com/bagdemir/rhino
    (   >_ .` `\
     \__//‘     `
 
