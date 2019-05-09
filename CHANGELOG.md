@@ -64,6 +64,6 @@ All releases up to 1.0.7 was to setup the build pipeline. The initial release of
 * Initial release including the minimal feature set.
 * Runnable simulations with scenarios.
 * Custom feeders.
-* Native UserFeeder and IMS support.
+* Native UserFeeder and OAuth authorization server support.
 * After/Before set-up and cleanUp methods.
 * Classpath CSV user source.

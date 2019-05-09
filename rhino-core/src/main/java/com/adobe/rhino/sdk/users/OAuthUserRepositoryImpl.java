@@ -36,9 +36,9 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
+public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
-  private static final Logger LOG = LogManager.getLogger(IMSUserRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(OAuthUserRepositoryImpl.class);
   private static final String CLIENT_ID = "client_id";
   private static final String CLIENT_SECRET = "client_secret";
   private static final String GRANT_TYPE = "grant_type";
@@ -53,7 +53,7 @@ public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
   private final long loginDelay;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public IMSUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
+  public OAuthUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
     Objects.requireNonNull(userProvider);
     this.users = userProvider.readUsers();
     this.authUsers = new ArrayList<>(users.size());
@@ -62,7 +62,7 @@ public class IMSUserRepositoryImpl implements UserRepository<UserSession> {
   }
 
 
-  public IMSUserRepositoryImpl authenticateAll() {
+  public OAuthUserRepositoryImpl authenticateAll() {
     System.out.println(String.format("! Found %d users. Authenticating with delay: %d ms ...",
         users.size(), loginDelay));
     users.forEach(u -> executorService.submit(() -> {
