@@ -2,18 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-archetype</artifactId>
-  <version>1.1.12-SNAPSHOT</version>
+  <version>1.1.11-SNAPSHOT</version>
   <modelVersion>4.0.0</modelVersion>
 
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
     <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <uniqueVersion>false</uniqueVersion>
+      <id>${releaseRepositoryId}</id>
+      <name>${releaseRepositoryName}</name>
+      <url>${releaseRepositoryURL}</url>
     </repository>
-  </distributionManagement>
 
+    <snapshotRepository>
+      <uniqueVersion>true</uniqueVersion>
+      <id>${snapshotRepositoryId}</id>
+      <name>${snapshotRepositoryName}</name>
+      <url>${snapshotRepositoryURL}</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
