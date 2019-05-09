@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://scbuild.eur.adobe.com/buildStatus/icon?job=Rhino-CI"/>
+  <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master"/>
   <img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/>
   <img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" />
 </p>
@@ -15,7 +15,7 @@ testing web services which consists of the Rhino Java framework as well as a col
 
 **Rhino's philosophy is basically:**
 
-* to speed up load and performance test development,
+* to speed up load and performance tCIest development,
 * a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
 * to enable the integration with the existing code, e.g your integration test frameworks to 
