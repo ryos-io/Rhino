@@ -33,13 +33,13 @@ after having successfully installed the archetype, you can now create a new Rhin
 
 ```bash
 mvn archetype:generate \
-  -DarchetypeGroupId=com.adobe.rhino \
+  -DarchetypeGroupId=io.ryos.rhino \
   -DarchetypeArtifactId=rhino-archetype \
   -DarchetypeVersion=1.1.8 \
   -DgroupId=my-group-id \
   -DartifactId=my-artifact-id
 ```
-For groupId, you need to enter the group-id of your project like com.adobe.myteam and the 
+For groupId, you need to enter the group-id of your project like io.ryos.myteam and the 
 artifactId is some artifactId specific to the project like `my-test-project`. 
 After creating the performance testing project, you now can open it up in your IDE and start off 
 writing some performance tests.
@@ -111,6 +111,6 @@ section:
 
 ```properties
 packageToScan=com.myproject.tests
-testName=CCStorage
+testName=HelloWorld
 
 ```

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.adobe.rhino</groupId>
+  <groupId>io.ryos.rhino</groupId>
   <artifactId>parent</artifactId>
   <version>1.1.11-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -19,7 +19,7 @@
   <developers>
     <developer>
       <name>Erhan Bagdemir</name>
-      <email>erhan.bagdemir@adobe.com</email>
+      <email>bagdemir@ryos.io</email>
     </developer>
   </developers>
 
@@ -29,8 +29,8 @@
   </issueManagement>
 
   <organization>
-    <name>Adobe</name>
-    <url>https://www.adobe.com</url>
+    <name>Ryos</name>
+    <url>https://www.ryos.io</url>
   </organization>
 
   <licenses>

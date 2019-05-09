@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.adobe.rhino</groupId>
+    <groupId>io.ryos.rhino</groupId>
     <artifactId>rhino-archetype-parent</artifactId>
     <version>1.1.4</version>
   </parent>
@@ -14,13 +14,13 @@
   <version>${version}</version>
   <packaging>jar</packaging>
   <name>Yet another Rhino performance testing project [It's your project. Change the name]</name>
-  <url>http://www.adobe.com</url>
+  <url>http://www.ryos.io</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docker.base.image>rhino-archetype-base:latest</docker.base.image>
-    <docker-registry.hostname>docker2-sharedcloud-snapshot-local.dr-uw2.adobeitc.com</docker-registry.hostname>
-    <docker-registry.hostname.release>docker2-sharedcloud-release-local.dr-uw2.adobeitc.com</docker-registry.hostname.release>
+    <docker-registry.hostname/>
+    <docker-registry.hostname.release/>
     <docker.image.name>testing/${project.artifactId}</docker.image.name>
     <docker-maven-plugin.version>0.20.0</docker-maven-plugin.version>
   </properties>

@@ -53,7 +53,7 @@ recorders. Each load generator scenario gets recorder instance passed, so the lo
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://cc-api-storage-stage.adobe.io/server-status/health")
+        .target("https://your-service/server-status/health")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
         .header("X-API-Key", "CCStorage")
@@ -80,7 +80,7 @@ will be broken down in multiple charts on dashboards:
 
     final Client client = ClientBuilder.newClient();
     final Response response1 = client
-        .target("https://cc-api-storage-stage.adobe.io/server-status/health")
+        .target("https://your-service/server-status/health")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
         .header("X-API-Key", "CCStorage")
@@ -89,7 +89,7 @@ will be broken down in multiple charts on dashboards:
     recorder.record("Health API Call", response1.getStatus());
     
         final Response response2 = client
-            .target("https://cc-api-storage-stage.adobe.io/server-status/version")
+            .target("https://your-service/server-status/version")
             .request()
             .header("X-Request-Id", "Rhino-" + uuid)
             .header("X-API-Key", "CCStorage")

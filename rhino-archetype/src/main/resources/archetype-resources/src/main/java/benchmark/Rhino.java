@@ -1,8 +1,8 @@
 package ${groupId}.benchmark;
 
-import com.adobe.rhino.sdk.SimulationSpec;
-import com.adobe.rhino.sdk.SimulationSpecImpl;
-import com.adobe.rhino.sdk.utils.Environment;
+import io.ryos.rhino.sdk.SimulationSpec;
+import io.ryos.rhino.sdk.SimulationSpecImpl;
+import io.ryos.rhino.sdk.utils.Environment;
 
 public class Rhino {
     public static void main(String ... args) {
