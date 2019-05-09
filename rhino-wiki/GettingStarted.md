@@ -1,5 +1,5 @@
 The goal of the document is provide a comprehensive guide for programmers and contributors whose 
-aim is to write performance tests as well as contribute Rhino framework and its platform. Rhino is 
+aim is to write performance tests as well as contribute Rhino framework. Rhino is 
 started as a hobby project in Hamburg, Germany early 2019 and matured with regular contributions.
 
 ### Prerequisites
