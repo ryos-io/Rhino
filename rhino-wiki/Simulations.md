@@ -56,7 +56,7 @@ recorders. Each load generator scenario gets recorder instance passed, so the lo
         .target("https://your-service/server-status/health")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
-        .header("X-API-Key", "CCStorage")
+        .header("X-API-Key", "Your-Key")
         .get();
 
     recorder.record("Health API Call", response.getStatus());
@@ -83,7 +83,7 @@ will be broken down in multiple charts on dashboards:
         .target("https://your-service/server-status/health")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
-        .header("X-API-Key", "CCStorage")
+        .header("X-API-Key", "Your-Key")
         .get();
 
     recorder.record("Health API Call", response1.getStatus());
@@ -92,7 +92,7 @@ will be broken down in multiple charts on dashboards:
             .target("https://your-service/server-status/version")
             .request()
             .header("X-Request-Id", "Rhino-" + uuid)
-            .header("X-API-Key", "CCStorage")
+            .header("X-API-Key", "Your-Key")
             .get();
     
         recorder.record("Version API Call", response2.getStatus());
