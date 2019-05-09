@@ -70,7 +70,7 @@ simulation name, so they must be unique.
 ## Get Started
 
 If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
-* [bagdemir@adobe.com](mailto:bagdemir@adobe.com)
+
 
 Questions/Contributions?
 ---
