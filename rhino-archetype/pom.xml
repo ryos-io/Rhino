@@ -6,18 +6,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <distributionManagement>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>${releaseRepositoryId}</id>
-      <name>${releaseRepositoryName}</name>
-      <url>${releaseRepositoryURL}</url>
-    </repository>
-
     <snapshotRepository>
-      <uniqueVersion>true</uniqueVersion>
-      <id>${snapshotRepositoryId}</id>
-      <name>${snapshotRepositoryName}</name>
-      <url>${snapshotRepositoryURL}</url>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
   </distributionManagement>
+
 </project>
