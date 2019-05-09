@@ -9,26 +9,26 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.link>git@git.corp.adobe.com:rhino/rhino.git</project.link>
-    <project.url>https://git.corp.adobe.com/rhino/rhino.git</project.url>
+    <project.link>git@github.com:bagdemir/rhino.git</project.link>
+    <project.url>https://github.com/bagdemir/rhino</project.url>
   </properties>
   
   <developers>
     <developer>
       <name>Erhan Bagdemir</name>
-      <email>bagdemir@adobe.com</email>
+      <email>erhan.bagdemir@adobe.com</email>
     </developer>
   </developers>
 
   <issueManagement>
-    <url>https://git.corp.adobe.com/rhino/rhino/issues</url>
+    <url>https://github.com/bagdemir/rhino/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
   <licenses>
     <license>
-      <name>Adobe License</name>
-      <url>https://git.corp.adobe.com/rhino/rhino/blob/master/README.md</url>
+      <name>Apache 2.0 License</name>
+      <url>https://github.com/bagdemir/rhino/blob/7df4f18887029edd32b17bd5073a259799b55810/LICENSE</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
