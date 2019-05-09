@@ -9,8 +9,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.link>git@git.corp.adobe.com:bagdemir/rhino.git</project.link>
-    <project.url>https://git.corp.adobe.com/bagdemir/rhino.git</project.url>
+    <project.link>git@git.corp.adobe.com:rhino/rhino.git</project.link>
+    <project.url>https://git.corp.adobe.com/rhino/rhino.git</project.url>
   </properties>
   
   <developers>
@@ -21,14 +21,14 @@
   </developers>
 
   <issueManagement>
-    <url>https://git.corp.adobe.com/bagdemir/rhino/issues</url>
+    <url>https://git.corp.adobe.com/rhino/rhino/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
   <licenses>
     <license>
       <name>Adobe License</name>
-      <url>https://git.corp.adobe.com/bagdemir/rhino/blob/master/README.md</url>
+      <url>https://git.corp.adobe.com/rhino/rhino/blob/master/README.md</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
