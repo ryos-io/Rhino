@@ -4,6 +4,7 @@
   <artifactId>rhino-archetype</artifactId>
   <version>1.0.4-SNAPSHOT</version>
   <modelVersion>4.0.0</modelVersion>
+  <name>Rhino Archetype</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

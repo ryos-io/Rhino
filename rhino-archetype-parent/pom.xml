@@ -10,6 +10,7 @@
   <artifactId>rhino-archetype-parent</artifactId>
   <packaging>pom</packaging>
   <url>http://www.ryos.io</url>
+  <name>Rhino Archetype Parent</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

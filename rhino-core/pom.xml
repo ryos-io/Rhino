@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>rhino-core</artifactId>
+  <name>Rhino Core</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
