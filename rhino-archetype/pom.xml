@@ -5,10 +5,53 @@
   <version>1.0.6-SNAPSHOT</version>
   <modelVersion>4.0.0</modelVersion>
   <name>Rhino Archetype</name>
+  <description>Rhino: Annotation-based JUnit-style load and performance testing framework</description>
+  <url>https://github.com/bagdemir/rhino</url>
+
+  <developers>
+    <developer>
+      <name>Erhan Bagdemir</name>
+      <email>bagdemir@ryos.io</email>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0 License</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:${project.link}</connection>
+    <developerConnection>scm:git:${project.link}</developerConnection>
+    <url>${project.url}</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.link>git@github.com:bagdemir/rhino.git</project.link>
+    <project.url>https://github.com/bagdemir/rhino</project.url>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   
   <distributionManagement>
     <snapshotRepository>
