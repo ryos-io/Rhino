@@ -28,6 +28,18 @@ the framework every time they need to write new load tests.
 Considering all these aspects, we began with Project Rhino in 2018 and it is available as OSS  
 with Apache 2.0 License, now.
 
+## How to use?
+
+Add maven dependency into your project:
+
+```xml
+<dependency>
+  <groupId>io.ryos.rhino</groupId>
+  <artifactId>rhino-core</artifactId>
+  <version>1.0.7</version>
+</dependency>
+```
+
 ## How do the load tests look like?
 
 Simulation is a test entity which will be executed and generates load according to the 
