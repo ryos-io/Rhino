@@ -7,6 +7,8 @@
   <version>1.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <name>Rhino</name>
+  
   <description>Rhino: Annotation-based JUnit-style load and performance testing framework
   </description>
   <url>https://github.com/bagdemir/rhino</url>
