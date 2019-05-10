@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master"/>
-  <img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/>
-  <img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" />
+  <!-- img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/ -->
+  <!-- img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" / -->
 </p>
 
 
