@@ -122,7 +122,7 @@
           <version>2.5.3</version>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
-            <goals>install -Ppush-to-artifactory -Ddocker-registry.hostname=${docker-registry.hostname.release}</goals>
+            <goals>install -Ppush-to-dockerhub -Ddocker-registry.hostname=${docker-registry.hostname.release}</goals>
             <preparationGoals>clean install</preparationGoals>
             <tagNameFormat>@{project.version}</tagNameFormat>
           </configuration>
@@ -133,7 +133,7 @@
 
   <profiles>
     <profile>
-      <id>push-to-artifactory</id>
+      <id>push-to-dockerhub</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
