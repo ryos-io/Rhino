@@ -4,6 +4,7 @@
   <!-- img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" / -->
 </p>
 
+**I am currently working on open sourcing the project under Apache 2.0. on Github. Once the onboarding completed, the project will be released from 1.1.11** 
 
 ## Rhino: Load and Performance Testing
 
