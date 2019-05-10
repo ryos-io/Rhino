@@ -16,7 +16,7 @@ testing web services which consists of the Rhino Java framework as well as a col
 
 **Rhino's philosophy is basically:**
 
-* to speed up load and performance tCIest development,
+* to speed up load and performance test development,
 * a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
 * to enable the integration with the existing code, e.g your integration test frameworks to 
