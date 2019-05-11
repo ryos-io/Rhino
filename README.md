@@ -14,7 +14,7 @@ Rhino is a lightweight annotation-based JUnit-style load and performance testing
 for 
 testing web services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
- added as library dependency into your project.
+ added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
 
 **Rhino's philosophy is basically:**
 
@@ -87,6 +87,9 @@ If you think that the Rhino is the right framework for you, you can follow the w
 
 * [Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
 * [Simulations](https://github.com/bagdemir/rhino/wiki/Simulations)
+* [Feeders](https://github.com/bagdemir/rhino/wiki/Feeders)
+* [Configuration of Tests](https://github.com/bagdemir/rhino/wiki/Configuration)
+* [Users in your Tests](https://github.com/bagdemir/rhino/wiki/Testing-with-Users)
 
 Questions/Contributions?
 ---
