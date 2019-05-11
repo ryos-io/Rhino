@@ -4,8 +4,8 @@
 
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-1.0.7-%2364b53a.svg" />
-  <img src="https://img.shields.io/badge/archetype-1.0.7-%233e81be.svg" />
+  <img src="https://img.shields.io/badge/rhino--core-1.0.10-65b53a.svg" />
+  <img src="https://img.shields.io/badge/archetype-1.0.10-3c80bb.svg" />
 </p>
 
 ## Rhino: Load and Performance Testing
@@ -37,7 +37,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.10</version>
 </dependency>
 ```
 
