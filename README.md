@@ -1,11 +1,12 @@
 <p align="center">
-  <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master"/>
-  <!-- img src="https://img.shields.io/badge/rhino%20sdk-1.1.11-green.svg"/ -->
-  <!-- img src="https://img.shields.io/badge/archetype-1.1.11-blue.svg" / -->
+  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
 </p>
 
-**I am currently working on open sourcing the project under Apache 2.0. on Github. Once the 
-on-boarding completed, the project will be released from 1.0.0** 
+<p align="center">
+  <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
+  <img src="https://img.shields.io/badge/rhino--core-1.0.7-%2364b53a.svg" />
+  <img src="https://img.shields.io/badge/archetype-1.0.7-%233e81be.svg" />
+</p>
 
 ## Rhino: Load and Performance Testing
 
@@ -27,6 +28,18 @@ the framework every time they need to write new load tests.
 
 Considering all these aspects, we began with Project Rhino in 2018 and it is available as OSS  
 with Apache 2.0 License, now.
+
+## How to use?
+
+Add maven dependency into your project:
+
+```xml
+<dependency>
+  <groupId>io.ryos.rhino</groupId>
+  <artifactId>rhino-core</artifactId>
+  <version>1.0.7</version>
+</dependency>
+```
 
 ## How do the load tests look like?
 
