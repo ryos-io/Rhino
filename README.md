@@ -5,8 +5,8 @@
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
   <img src="https://img.shields.io/badge/rhino--core-1.0.11-%2371c247.svg" />
-  <img src="https://img.shields.io/badge/archetype-1.0.10-3c80bb.svg" />
   <img src="https://img.shields.io/badge/archetype-1.0.11-a0c146.svg" />
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
 ## Rhino: Load and Performance Testing
