@@ -21,7 +21,6 @@ import io.ryos.rhino.sdk.users.User;
 import io.ryos.rhino.sdk.Recorder;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Feeder;
-import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -32,7 +31,7 @@ import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 /**
  * An example for annotated entity of benchmark job.
  */
-@Simulation(name = "Test Simulation")
+@Simulation(name = "helloWorld")
 @Logging(file = "/var/tmp/simulation.log", formatter = GatlingLogFormatter.class)
 public class RhinoEntity {
 
@@ -47,9 +46,9 @@ public class RhinoEntity {
         System.out.println("Preparing the test with user:" + user.getUsername());
     }
 
-    @Scenario(name = "Hello World")
+    @Scenario(name = "hello)
     public void run(Recorder recorder) {
-        System.out.println("Running test with user:" + user.getUsername());
+        System.out.println("Hello World! Running test with user:" + user.getUsername());
     }
 
     @CleanUp

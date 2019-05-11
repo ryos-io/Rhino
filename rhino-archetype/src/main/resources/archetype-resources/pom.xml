@@ -6,40 +6,21 @@
   <parent>
     <groupId>io.ryos.rhino</groupId>
     <artifactId>rhino-archetype-parent</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.11</version>
   </parent>
 
   <groupId>${groupId}</groupId>
   <artifactId>${artifactId}</artifactId>
   <version>${version}</version>
   <packaging>jar</packaging>
+
   <name>Yet another Rhino performance testing project [It's your project. Change the name]</name>
   <url>http://www.ryos.io</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <docker.base.image>rhino-archetype-base:latest</docker.base.image>
-    <docker-registry.hostname/>
-    <docker-registry.hostname.release/>
     <docker.image.name>testing/${project.artifactId}</docker.image.name>
-    <docker-maven-plugin.version>0.20.0</docker-maven-plugin.version>
   </properties>
-
-  <distributionManagement>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>${releaseRepositoryId}</id>
-      <name>${releaseRepositoryName}</name>
-      <url>${releaseRepositoryURL}</url>
-    </repository>
-
-    <snapshotRepository>
-      <uniqueVersion>true</uniqueVersion>
-      <id>${snapshotRepositoryId}</id>
-      <name>${snapshotRepositoryName}</name>
-      <url>${snapshotRepositoryURL}</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <build>
     <plugins>
@@ -58,6 +39,19 @@
       <plugin>
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>./</classpathPrefix>
+              <mainClass>${groupId}.benchmark.Rhino</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
 
