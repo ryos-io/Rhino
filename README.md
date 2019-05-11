@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
+</p>
 
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
