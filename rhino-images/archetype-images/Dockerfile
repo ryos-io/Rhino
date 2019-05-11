@@ -3,7 +3,7 @@ FROM adoptopenjdk/openjdk11:jdk-11.28-alpine as staging_area
 RUN jlink \
     --module-path $JAVA_HOME/jmods \
     --verbose \
-    --add-modules java.base,java.logging,java.xml,jdk.unsupported,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument \
+    --add-modules java.base,java.logging,java.xml,jdk.unsupported,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,java.scripting \
     --compress 2 \
     --no-header-files \
     --no-man-pages \
