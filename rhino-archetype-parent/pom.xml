@@ -14,7 +14,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <docker.base.image>rhino-archetype-base:latest</docker.base.image>
+    <docker.base.image>bagdemir/rhino:latest</docker.base.image>
     <docker-registry.hostname />
     <docker-registry.hostname.release />
     <docker-maven-plugin.version>0.20.0</docker-maven-plugin.version>
@@ -88,7 +88,7 @@
               <image>
                 <name>testing/${project.artifactId}</name>
                 <build>
-                  <from>rhino-archetype-base:latest</from>
+                  <from>bagdemir/rhino:latest</from>
                   <maintainer>erhan@ryos.io</maintainer>
                   <tags>
                     <tag>latest</tag>
