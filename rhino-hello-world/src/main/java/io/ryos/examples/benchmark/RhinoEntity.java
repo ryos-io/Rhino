@@ -48,7 +48,7 @@ public class RhinoEntity {
 
     @Scenario(name = "hello")
     public void run(Recorder recorder) {
-        System.out.println("Hello World! Running test with user:" + user.getUsername());
+        System.out.println(uuid + " Hello World! Running test with user:" + user.getUsername());
     }
 
     @CleanUp
