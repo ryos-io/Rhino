@@ -32,7 +32,7 @@ import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
  * An example for annotated entity of benchmark job.
  */
 @Simulation(name = "helloWorld")
-@Logging(file = "/var/tmp/simulation.log", formatter = GatlingLogFormatter.class)
+@Logging(file = "/var/log/simulation.log", formatter = GatlingLogFormatter.class)
 public class RhinoEntity {
 
     @UserFeeder(max = 10)
@@ -46,7 +46,7 @@ public class RhinoEntity {
         System.out.println("Preparing the test with user:" + user.getUsername());
     }
 
-    @Scenario(name = "hello)
+    @Scenario(name = "hello")
     public void run(Recorder recorder) {
         System.out.println("Hello World! Running test with user:" + user.getUsername());
     }
