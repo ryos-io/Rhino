@@ -6,5 +6,4 @@ target/
 .settings
 .classpath
 .factorypath
-**/*.csv
 **/*.pem
