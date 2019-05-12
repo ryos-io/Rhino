@@ -14,8 +14,9 @@
   limitations under the License.
 */
 
-package ${groupId}.benchmark;
+package io.ryos.examples.benchmark;
 
+import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.users.User;
 
 import io.ryos.rhino.sdk.Recorder;
@@ -26,13 +27,12 @@ import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.feeders.UUIDFeeder;
-import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 
 /**
  * An example for annotated entity of benchmark job.
  */
 @Simulation(name = "helloWorld")
-@Logging(file = "/var/log/simulation.log", formatter = GatlingLogFormatter.class)
+@Logging(file="/var/log/sim.out")
 public class RhinoEntity {
 
     @UserFeeder(max = 10)
@@ -48,7 +48,7 @@ public class RhinoEntity {
 
     @Scenario(name = "hello")
     public void run(Recorder recorder) {
-        System.out.println("Hello World! Running test with user:" + user.getUsername());
+        System.out.println(uuid + " Hello World! Running test with user:" + user.getUsername());
     }
 
     @CleanUp

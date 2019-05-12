@@ -203,6 +203,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   }
 
   private String validateLogFile(final String logFile) {
+    if (logFile == null) {
+      return null;
+    }
 
     var simFile = new File(logFile);
 

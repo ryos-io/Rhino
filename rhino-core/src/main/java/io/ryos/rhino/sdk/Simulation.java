@@ -55,11 +55,10 @@ import org.apache.logging.log4j.Logger;
 import scala.concurrent.Future;
 
 /**
- * {@link Simulation} is representation of a single performance testing job. The instances of
- * {@link Simulation} is created by using the metadata provided on annotated benchmark entities.
- * Simulation entities do comprise scenarios, that are run per user on a single thread. For each
- * scenario there will be a new Simulation instance created so as to run the scenario isolated on
- * a single thread.
+ * {@link Simulation} is representation of a single performance testing job. The instances of {@link
+ * Simulation} is created by using the metadata provided on annotated benchmark entities. Simulation
+ * entities do comprise scenarios, that are run per user on a single thread. For each scenario there
+ * will be a new Simulation instance created so as to run the scenario isolated on a single thread.
  * <p>
  *
  * The job instances are created by {@link SimulationJobsScanner} classes.
@@ -236,11 +235,12 @@ public class Simulation {
   private LogFormatter getLogFormatter() {
     final Optional<Logging> loggingAnnotation = getClassLevelAnnotation(simulationClass,
         Logging.class);
-    final Logging logging =
-        loggingAnnotation.orElseThrow(() -> new RuntimeException("Please use @Logging annotation "
-            + "and provide log path for simulation logs. Please refer to rhino wiki how to use "
-            + "logging in Rhino projects."));
-    //TODO Logging optional.
+    final Logging logging = loggingAnnotation.orElseGet(() -> null);
+
+    if (logging == null) {
+      return null;
+    }
+
     final Optional<? extends LogFormatter> logFormatterInstance = instanceOf(logging.formatter());
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
@@ -439,8 +439,8 @@ public class Simulation {
     private Method prepareMethod;
 
     /**
-     * The {@link java.lang.reflect.Method} instance for cleaning up the test.
-     * The clean up method will be run after performance test execution.
+     * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
+     * will be run after performance test execution.
      */
     private Method cleanUpMethod;
 
@@ -450,8 +450,8 @@ public class Simulation {
     private Method beforeMethod;
 
     /**
-     * The {@link java.lang.reflect.Method} instance for cleaning up the test.
-     * The clean up method will be run after performance test execution.
+     * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
+     * will be run after performance test execution.
      */
     private Method afterMethod;
 

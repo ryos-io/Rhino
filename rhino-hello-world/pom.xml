@@ -1,35 +1,33 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>io.ryos.rhino</groupId>
-    <artifactId>rhino-archetype-parent</artifactId>
-    <version>1.0.12</version>
+    <artifactId>parent</artifactId>
+    <version>1.0.11</version>
   </parent>
 
-  <groupId>${groupId}</groupId>
-  <artifactId>${artifactId}</artifactId>
-  <version>${version}</version>
-  <packaging>jar</packaging>
+  <groupId>io.ryos.examples</groupId>
+  <artifactId>rhino-hello-world</artifactId>
+  <version>1.0-SNAPSHOT</version>
 
   <name>Yet another Rhino performance testing project [It's your project. Change the name]</name>
   <url>http://www.ryos.io</url>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docker.image.name>testing/${project.artifactId}</docker.image.name>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <build>
+    <finalName>rhino-hello-world</finalName>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
@@ -37,28 +35,25 @@
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>./</classpathPrefix>
-              <mainClass>${groupId}.benchmark.Rhino</mainClass>
+              <mainClass>io.ryos.examples.benchmark.Rhino</mainClass>
             </manifest>
           </archive>
         </configuration>
       </plugin>
     </plugins>
-
-    <finalName>${artifactId}</finalName>
   </build>
 
   <dependencies>
     <dependency>
       <groupId>io.ryos.rhino</groupId>
       <artifactId>rhino-core</artifactId>
-      <version>1.0.12</version>
+      <version>1.0.11</version>
     </dependency>
   </dependencies>
 </project>

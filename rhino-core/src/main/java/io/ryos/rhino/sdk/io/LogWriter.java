@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Log writer is a result writer implementation creates simulation logs containing simulation
  * metrics.
+ * <p>
  *
  * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
  */
@@ -40,7 +41,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   private static final Logger LOG = LogManager.getLogger(LogWriter.class);
 
-  private final LogFormatter logFormatter;
+  private LogFormatter logFormatter;
 
   private Writer writer;
 
@@ -52,7 +53,8 @@ public class LogWriter extends AbstractActor implements ResultWriter {
    * @param <T> A type of {@link LogFormatter}.
    * @return {@link LogFormatter} instance.
    */
-  public static <T extends LogFormatter> Props props(final String pathToLogFile, final T logFormatter) {
+  public static <T extends LogFormatter> Props props(final String pathToLogFile,
+      final T logFormatter) {
     return Props.create(LogWriter.class, () -> new LogWriter(pathToLogFile, logFormatter));
   }
 
@@ -63,6 +65,10 @@ public class LogWriter extends AbstractActor implements ResultWriter {
    * @param formatter Log formatter.
    */
   public LogWriter(final String logFile, final LogFormatter formatter) {
+    if (formatter == null) {
+      return;
+    }
+
     this.logFormatter = formatter;
 
     try { // do not close the stream till the load test completes.
@@ -74,7 +80,9 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   @Override
   public void report(final LogEvent report) {
-    report(logFormatter.format(report));
+    if (logFormatter != null) {
+      report(logFormatter.format(report));
+    }
   }
 
   @Override
