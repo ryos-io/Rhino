@@ -33,10 +33,6 @@
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
-      <plugin>
         <groupId>io.fabric8</groupId>
         <artifactId>docker-maven-plugin</artifactId>
       </plugin>
@@ -57,4 +53,12 @@
 
     <finalName>${artifactId}</finalName>
   </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.ryos.rhino</groupId>
+      <artifactId>rhino-core</artifactId>
+      <version>1.0.11</version>
+    </dependency>
+  </dependencies>
 </project>
