@@ -82,6 +82,27 @@ The name of the simulation is important. In a performance testing project, it is
 you will have multiple simulations. Rhino does know which simulation is to be run from the 
 simulation name provided, so the names must be unique. 
 
+A simple Rhino application would look like:
+```java
+public class Rhino {
+    public static void main(String ... args) {
+        SimulationSpec simulation = new SimulationSpecImpl("classpath:///rhino.properties",
+            "helloWorld");
+        simulation.start();
+    }
+}
+```
+
+## How to run? 
+
+If you choose to use the Rhino archetype, the maven project is configured to create a Docker container:
+
+```shell
+$ mvn -e clean install
+$ docker run -t yourproject:latest
+```
+
+
 ## Get Started
 
 If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
