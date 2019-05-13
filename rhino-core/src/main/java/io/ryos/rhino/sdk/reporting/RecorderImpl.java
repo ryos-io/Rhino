@@ -14,10 +14,8 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.reporting;
 
-import io.ryos.rhino.sdk.reporting.LogEvent;
-import io.ryos.rhino.sdk.reporting.SimulationEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +42,7 @@ public class RecorderImpl implements Recorder {
     final LogEvent lastEvent = events.get(events.size() - 1);
     final long start = lastEvent.end;
 
-    final SimulationEvent simLog = new SimulationEvent();
+    final ScenarioEvent simLog = new ScenarioEvent();
     simLog.elapsed = end - start;
     simLog.start = start;
     simLog.end = end;
@@ -56,7 +54,7 @@ public class RecorderImpl implements Recorder {
     events.add(simLog);
   }
 
-  void record(final LogEvent event) {
+  public void record(final LogEvent event) {
     events.add(event);
   }
 

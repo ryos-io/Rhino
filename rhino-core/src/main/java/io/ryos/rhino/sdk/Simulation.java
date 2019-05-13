@@ -38,6 +38,9 @@ import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.LogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
+import io.ryos.rhino.sdk.reporting.Recorder;
+import io.ryos.rhino.sdk.reporting.RecorderImpl;
+import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.users.User;
 import io.ryos.rhino.sdk.users.UserRepository;
@@ -148,6 +151,8 @@ public class Simulation {
    */
   private ActorRef influxActor;
 
+  private ActorRef stdOutReptorter;
+
   /**
    * Enable influx db integration.
    */
@@ -213,12 +218,13 @@ public class Simulation {
     final String reportingURI = builder.reportingURI;
     final LogFormatter formatter = getLogFormatter();
 
+    this.stdOutReptorter = system.actorOf(StdoutReporter.props(), StdoutReporter.class.getName());
+    this.loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter),
+        LogWriter.class.getName());
+
     if (enableInflux) {
       influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
     }
-
-    loggerActor = system
-        .actorOf(LogWriter.props(reportingURI, formatter), LogWriter.class.getName());
 
     if (formatter instanceof GatlingLogFormatter) {
       loggerActor.tell(
@@ -289,17 +295,14 @@ public class Simulation {
     final Optional<Pair<Field, SessionFeeder>> fieldAnnotation = getFieldByAnnotation(
         simulationClass,
         SessionFeeder.class);
-    fieldAnnotation.ifPresent(f -> {
-      setValueToInjectionPoint(userSession, f.first, simulationInstance);
-    });
+    fieldAnnotation
+        .ifPresent(f -> setValueToInjectionPoint(userSession, f.first, simulationInstance));
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
     final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
         UserFeeder.class);
-    fieldAnnotation.ifPresent(f -> {
-      setValueToInjectionPoint(user, f.first, simulationInstance);
-    });
+    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(user, f.first, simulationInstance));
   }
 
   private <T> void setValueToInjectionPoint(final T object, final Field f,
@@ -357,14 +360,24 @@ public class Simulation {
     userEventEnd.id = user.getId();
     recorder.record(userEventEnd);
 
-    recorder.getEvents().forEach(e -> loggerActor.tell(e, ActorRef.noSender()));
-    if (enableInflux) {
-      recorder.getEvents().forEach(e -> influxActor.tell(e, ActorRef.noSender()));
-    }
+    dispatchEvents(recorder);
 
     executeMethod(afterMethod, simulationInstance);
 
     return recorder;
+  }
+
+  private void dispatchEvents(final RecorderImpl recorder) {
+    recorder.getEvents().forEach(e -> {
+
+      loggerActor.tell(e, ActorRef.noSender());
+
+      stdOutReptorter.tell(e, ActorRef.noSender());
+
+      if (enableInflux) {
+        influxActor.tell(e, ActorRef.noSender());
+      }
+    });
   }
 
   public void stop() {

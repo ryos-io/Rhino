@@ -21,7 +21,7 @@ import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.reporting.LogEvent;
-import io.ryos.rhino.sdk.reporting.SimulationEvent;
+import io.ryos.rhino.sdk.reporting.ScenarioEvent;
 import java.util.Optional;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.LogLevel;
@@ -70,9 +70,9 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
   @Override
   public void report(final LogEvent logEvent) {
 
-    SimulationEvent report;
-    if (logEvent instanceof SimulationEvent) {
-      report = (SimulationEvent) logEvent;
+    ScenarioEvent report;
+    if (logEvent instanceof ScenarioEvent) {
+      report = (ScenarioEvent) logEvent;
     } else {
       return;
     }

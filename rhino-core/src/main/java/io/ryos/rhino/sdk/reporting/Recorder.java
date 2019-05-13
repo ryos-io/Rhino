@@ -17,9 +17,20 @@
 package io.ryos.rhino.sdk.reporting;
 
 /**
+ * Recorder is used in performance tests to record the result of execution. Recorded metrics will
+ * be flushed into the storage registered.
+ * <p>
+ *
  * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
  */
-public class SimulationEvent extends LogEvent {
-  public String status;
-  public String step;
+public interface Recorder {
+
+  /**
+   * Call record(String, int) to record the temporal metrics.
+   * <p>
+   *
+   * @param stepName The name of the step.
+   * @param status HTTP status of the load execution.
+   */
+  void record(final String stepName, final int status);
 }

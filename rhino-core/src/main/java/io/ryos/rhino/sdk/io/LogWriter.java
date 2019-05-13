@@ -97,7 +97,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // Nothing to close.
   }
 

@@ -24,7 +24,6 @@ public class LogEvent {
   public String username;
   public int userId;
   public String scenario;
-
   public long start;
   public long end;
   public long elapsed;

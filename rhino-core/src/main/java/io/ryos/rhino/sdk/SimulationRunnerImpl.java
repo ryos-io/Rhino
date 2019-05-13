@@ -70,7 +70,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
   public void start() {
 
-    System.out.println("! Starting load test for " + simulation.getDuration() + " minutes ...");
+    System.out.println("Starting load test for " + simulation.getDuration() + " minutes ...");
 
     final UserRepository userRepository = simulation.getUserRepository();
 
@@ -83,12 +83,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
     var materializer = ActorMaterializer.create(system);
 
-    scheduler.scheduleAtFixedRate(() -> {
-      if (elapsed % REPORTING_PERIOD == 0) {
-        System.out.println("* Ping? Pong! Running ... " + elapsed + " seconds.");
-      }
-      shutdownIfCompleted();
-    }, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(() -> shutdownIfCompleted(), INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
 
     // Fetch users from circular linked-list, i.e infinite source.
     var source = Source.from(Streams
@@ -178,6 +173,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
       }
     }
 
-    System.out.println("! User login completed.");
+    System.out.println("User login completed.");
   }
 }

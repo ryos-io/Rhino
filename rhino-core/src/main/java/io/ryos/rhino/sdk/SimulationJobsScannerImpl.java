@@ -27,6 +27,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.users.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.UserRepository;
@@ -238,7 +239,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
       LOG.error(e);
     }
 
-    throw new RuntimeException("No user repository found.");
+    throw new RepositoryNotFoundException();
   }
 
   private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {

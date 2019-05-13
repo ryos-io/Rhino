@@ -45,8 +45,8 @@ public class GatlingLogFormatter implements LogFormatter {
    */
   @Override
   public String format(final LogEvent event) {
-    if (event instanceof SimulationEvent) {
-      return convert((SimulationEvent) event);
+    if (event instanceof ScenarioEvent) {
+      return convert((ScenarioEvent) event);
     }
 
     if (event instanceof UserEvent) {
@@ -56,7 +56,7 @@ public class GatlingLogFormatter implements LogFormatter {
     return "N/A";
   }
 
-  private String convert(SimulationEvent event) {
+  private String convert(ScenarioEvent event) {
     return String.format("REQUEST\t%s\t\t%s\t%s\t%s\t%s\t \n",
         event.userId,
         event.step,
