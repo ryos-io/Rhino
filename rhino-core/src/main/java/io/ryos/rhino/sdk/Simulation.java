@@ -21,6 +21,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
+import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Terminated;
@@ -47,6 +48,7 @@ import io.ryos.rhino.sdk.users.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -77,84 +79,106 @@ public class Simulation {
 
   private static Logger LOG = LogManager.getLogger(Simulation.class);
 
-  /*
+  /**
    * The name of the simulation, used in reports as well as to start a specific simulation among
    * others, selectively.
+   * <p>
    */
   private String simulationName;
 
-  /*
+  /**
    * Duration of the simulation in minutes.
+   * <p>
    */
   private int duration;
 
-  /*
+  /**
    * The number of users to be injected during the benchmark job execution. It
    * is the maximum number of users making benchmark requests against the
    * back-end.
+   * <p>
    */
   private int injectUser;
 
-  /*
+  /**
    * The number of users to be injected per second.
+   * <p>
    */
   private int rampUp;
 
-  /*
-   * SimulationSpec class
+  /**
+   * SimulationSpec class.
+   * <p>
    */
   private Class simulationClass;
 
-  /*
+  /**
    * SimulationSpec object factory. All reflection calls should be run on this single instance.
+   * <p>
    */
   private Supplier<Object> simulationInstanceFactory =
       () -> instanceOf(simulationClass).orElseThrow();
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for running the test.
+   * <p>
    */
   private List<Scenario> runnableScenarios;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
+   * <p>
    */
   private Method beforeMethod;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for cleaning up the scenario. The
    * clean up method will be run after scenario test execution.
+   * <p>
    */
   private Method afterMethod;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for preparing the simulation.
+   * <p>
    */
   private Method prepareMethod;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for cleaning up the test. The
    * clean up method will be run after performance simulation execution.
+   * <p>
    */
   private Method cleanupMethod;
 
-  // User repository.
+  /**
+   * User repository.
+   * <p>
+   */
   private UserRepository<UserSession> userRepository;
 
-  /*
+  /**
    * Reporter actor reference is the reference to the actor which receives reporting events.
+   * <p>
    */
   private ActorRef loggerActor;
 
   /**
    * Reporter actor reference to report log events to the Influx DB.
+   * <p>
    */
   private ActorRef influxActor;
 
+  /**
+   * StdOut reporter is to write out about the test execution to the stdout. It can be considered
+   * as heartbeat about the running test.
+   * <p>
+   */
   private ActorRef stdOutReptorter;
 
   /**
-   * Enable influx db integration.
+   * Enable Influx DB integration.
+   * <p>
    */
   private boolean enableInflux;
 
@@ -218,7 +242,8 @@ public class Simulation {
     final String reportingURI = builder.reportingURI;
     final LogFormatter formatter = getLogFormatter();
 
-    this.stdOutReptorter = system.actorOf(StdoutReporter.props(), StdoutReporter.class.getName());
+    this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now()),
+        StdoutReporter.class.getName());
     this.loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter),
         LogWriter.class.getName());
 

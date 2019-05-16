@@ -19,25 +19,33 @@ package io.ryos.rhino.sdk.reporting;
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 /**
+ * Stdout reporter outputs the current status of the test run. It gives out information like number
+ * of requests per scenario, and avg. response times.
  *
+ * @author bagdemir
  */
 public class StdoutReporter extends AbstractActor {
 
   private static final long DELAY = 1000L;
-  private static final long PERIOD = 1000L; // TODO make configurable.
-  public static final String BORDER_LINE_BOLD = "==========================================================================";
-  private String startTime;
-  private String endTime;
-  private String numberOfUsers;
+  private static final long PERIOD = 1000L * 5; // TODO make configurable.
+  private static final String BORDER_LINE_BOLD =
+      "==========================================================================";
+
+  private Instant startTime;
+  private int numberOfUsers;
 
   private Timer timer; //TODO shutdown on exit.
 
@@ -50,20 +58,21 @@ public class StdoutReporter extends AbstractActor {
    */
   private final Map<String, Long> metrics = new HashMap<>();
 
-  public static Props props() {
-    return Props.create(StdoutReporter.class, StdoutReporter::new);
+  // Akka static factory.
+  public static Props props(int numberOfUsers, Instant startTime) {
+    return Props.create(StdoutReporter.class, () -> new StdoutReporter(numberOfUsers, startTime));
   }
 
-  public StdoutReporter() {
+  private StdoutReporter(int numberOfUsers, Instant startTime) {
+    this.numberOfUsers = numberOfUsers;
+    this.startTime = startTime;
     this.timer = new Timer("Stdout Report Timer");
-
     final TimerTask timerTask = new TimerTask() {
       @Override
       public void run() {
-        flushReport();
+        flushReport(null);
       }
     };
-
     timer.schedule(timerTask, DELAY, PERIOD);
   }
 
@@ -71,7 +80,12 @@ public class StdoutReporter extends AbstractActor {
   public Receive createReceive() {
     return ReceiveBuilder.create()
         .match(ScenarioEvent.class, this::persist)
+        .match(EndTestEvent.class, this::endTest)
         .build();
+  }
+
+  private void endTest(final EndTestEvent endEvent) {
+    flushReport(endEvent);
   }
 
   private void persist(final ScenarioEvent logEvent) {
@@ -101,7 +115,7 @@ public class StdoutReporter extends AbstractActor {
     metrics.put(responseTypeKey, currElapsed + logEvent.elapsed);
   }
 
-  private void flushReport() {
+  private void flushReport(EndTestEvent event) {
     if (metrics.isEmpty()) {
       System.out.println("There was no measurement in Recorder. Test is still running...");
       return;
@@ -134,18 +148,27 @@ public class StdoutReporter extends AbstractActor {
 
     final long avgRT = overAllResponseTime / totalNumberOfRequests;
 
+    System.out.println("Number of users logged in : " + numberOfUsers);
+    System.out.println("Tests started on : " + startTime);
+    System.out.println("Tests end on : " + Optional.ofNullable(event).map(e -> DateTimeFormatter.ofLocalizedTime(
+        FormatStyle.SHORT).format(e.endTestTime)).orElse(
+        "n/a"));
     System.out.println(BORDER_LINE_BOLD);
-    System.out.println("-- Number of executions "
-        + "--------------------------------------------------");
+    System.out
+        .println("-- Number of executions --------------------------------------------------");
     System.out.println(String.join("\n", countMetrics));
-    System.out.println("-- Response Time "
-        + "---------------------------------------------------------");
+    System.out
+        .println("-- Response Time ---------------------------------------------------------");
     System.out.println(String.join("\n", responseTypeMetrics));
     System.out.println(BORDER_LINE_BOLD);
 
     System.out.println(String.format("%50s %9s ms", "Average Response Time", avgRT));
     System.out.println(String.format("%50s %9s ", "Total Request", totalNumberOfRequests));
     System.out.println(BORDER_LINE_BOLD);
+    System.out.println("\n");
+    if (event != null) {
+      System.out.println("Bye!");
+    }
     System.out.println("\n");
   }
 
@@ -163,5 +186,10 @@ public class StdoutReporter extends AbstractActor {
     String[] split = normalizedStr.split("/");
 
     return String.format("> %-15.15s  %-15.15s %25s", split);
+  }
+
+  public static class EndTestEvent {
+
+    public Instant endTestTime;
   }
 }

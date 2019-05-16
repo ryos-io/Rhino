@@ -83,7 +83,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
     var materializer = ActorMaterializer.create(system);
 
-    scheduler.scheduleAtFixedRate(() -> shutdownIfCompleted(), INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(this::shutdownIfCompleted, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
 
     // Fetch users from circular linked-list, i.e infinite source.
     var source = Source.from(Streams
@@ -136,7 +136,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
         }, system.dispatcher());
 
         simulation.stop();
-
         scheduler.shutdownNow();
       }
     }
