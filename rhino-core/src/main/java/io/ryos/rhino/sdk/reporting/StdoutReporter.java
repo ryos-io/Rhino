@@ -22,6 +22,7 @@ import akka.japi.pf.ReceiveBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ public class StdoutReporter extends AbstractActor {
 
   private static final long DELAY = 1000L;
   private static final long PERIOD = 1000L; // TODO make configurable.
+  public static final String BORDER_LINE_BOLD = "==========================================================================";
   private String startTime;
   private String endTime;
   private String numberOfUsers;
@@ -43,8 +45,7 @@ public class StdoutReporter extends AbstractActor {
    * Key format is scenario_step_$metric e.g
    * <p>
    *
-   * moneyTransfer_checkDebit_responseTime = 15ms
-   * moneyTransfer_checkDebit_OK = 250
+   * moneyTransfer_checkDebit_responseTime = 15ms moneyTransfer_checkDebit_OK = 250
    * moneyTransfer_checkDebit_NOTFOUND = 2
    */
   private final Map<String, Long> metrics = new HashMap<>();
@@ -97,11 +98,12 @@ public class StdoutReporter extends AbstractActor {
     metrics.put(countKey, ++currVal);
 
     Long currElapsed = metrics.get(responseTypeKey);
-    metrics.put(responseTypeKey, ++currElapsed);
+    metrics.put(responseTypeKey, currElapsed + logEvent.elapsed);
   }
 
   private void flushReport() {
     if (metrics.isEmpty()) {
+      System.out.println("There was no measurement in Recorder. Test is still running...");
       return;
     }
 
@@ -114,26 +116,52 @@ public class StdoutReporter extends AbstractActor {
     final List<String> responseTypeMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith("ResponseTime/"))
-        .map(e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()))
+        .map(
+            e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
         .collect(Collectors.toList());
 
-    System.out.println("==================================================");
-    System.out.println("-- Metrics ---------------------------------------");
+    final long overAllResponseTime = metrics.entrySet()
+        .stream()
+        .filter(e -> e.getKey().startsWith("ResponseTime/"))
+        .map(Entry::getValue)
+        .reduce(Long::sum).orElse(0L);
+
+    final long totalNumberOfRequests = metrics.entrySet()
+        .stream()
+        .filter(e -> e.getKey().startsWith("Count/"))
+        .map(Entry::getValue)
+        .reduce(Long::sum).orElse(0L);
+
+    final long avgRT = overAllResponseTime / totalNumberOfRequests;
+
+    System.out.println(BORDER_LINE_BOLD);
+    System.out.println("-- Number of executions "
+        + "--------------------------------------------------");
     System.out.println(String.join("\n", countMetrics));
-    System.out.println("-- Response Time ---------------------------------");
+    System.out.println("-- Response Time "
+        + "---------------------------------------------------------");
     System.out.println(String.join("\n", responseTypeMetrics));
-    System.out.println("==================================================");
+    System.out.println(BORDER_LINE_BOLD);
+
+    System.out.println(String.format("%50s %9s ms", "Average Response Time", avgRT));
+    System.out.println(String.format("%50s %9s ", "Total Request", totalNumberOfRequests));
+    System.out.println(BORDER_LINE_BOLD);
     System.out.println("\n");
   }
 
-  private double getAvgResponseTime(String key, long totalElapsed) {
+  private long getAvgResponseTime(String key, long totalElapsed) {
     final Long totalCount = metrics.get(key.replace("ResponseTime/", "Count/"));
     return totalElapsed / totalCount;
   }
 
   private String formatKey(String key) {
-    return "> " + key
+
+    String normalizedStr = key
         .replace("ResponseTime/", "")
         .replace("Count/", "");
+
+    String[] split = normalizedStr.split("/");
+
+    return String.format("> %-15.15s  %-15.15s %25s", split);
   }
 }
