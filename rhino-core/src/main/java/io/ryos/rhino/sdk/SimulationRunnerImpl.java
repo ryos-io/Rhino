@@ -173,6 +173,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
       }
     }
 
-    System.out.println("User login completed.");
+    System.out.println("User login completed. Total user: " + simulation.getInjectUser());
   }
 }
