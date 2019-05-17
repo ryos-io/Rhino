@@ -26,7 +26,6 @@ import akka.actor.ActorSystem;
 import akka.actor.Terminated;
 import akka.dispatch.OnComplete;
 import akka.pattern.Patterns;
-import akka.util.Timeout;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
@@ -50,19 +49,16 @@ import io.ryos.rhino.sdk.users.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scala.concurrent.Await;
-import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
 
 /**
@@ -99,9 +95,8 @@ public class Simulation {
   private int duration;
 
   /**
-   * The number of users to be injected during the benchmark job execution. It
-   * is the maximum number of users making benchmark requests against the
-   * back-end.
+   * The number of users to be injected during the benchmark job execution. It is the maximum number
+   * of users making benchmark requests against the back-end.
    * <p>
    */
   private int injectUser;
@@ -138,8 +133,8 @@ public class Simulation {
   private Method beforeMethod;
 
   /**
-   * The {@link java.lang.reflect.Method} instance for cleaning up the scenario. The
-   * clean up method will be run after scenario test execution.
+   * The {@link java.lang.reflect.Method} instance for cleaning up the scenario. The clean up method
+   * will be run after scenario test execution.
    * <p>
    */
   private Method afterMethod;
@@ -151,8 +146,8 @@ public class Simulation {
   private Method prepareMethod;
 
   /**
-   * The {@link java.lang.reflect.Method} instance for cleaning up the test. The
-   * clean up method will be run after performance simulation execution.
+   * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
+   * will be run after performance simulation execution.
    * <p>
    */
   private Method cleanupMethod;
@@ -176,8 +171,8 @@ public class Simulation {
   private ActorRef influxActor;
 
   /**
-   * StdOut reporter is to write out about the test execution to the stdout. It can be considered
-   * as heartbeat about the running test.
+   * StdOut reporter is to write out about the test execution to the stdout. It can be considered as
+   * heartbeat about the running test.
    * <p>
    */
   private ActorRef stdOutReptorter;
@@ -246,7 +241,7 @@ public class Simulation {
     final String reportingURI = builder.reportingURI;
     final LogFormatter formatter = getLogFormatter();
 
-    this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now()),
+    this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now(), duration),
         StdoutReporter.class.getName());
     this.loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter),
         LogWriter.class.getName());
@@ -430,7 +425,7 @@ public class Simulation {
     try {
       Await.result(ask, FiniteDuration.Inf());
     } catch (Exception e) {
-      LOG.debug(e); // expect timeoeut
+      LOG.debug(e); // expected exception is a Timeout. It is ok.
     }
   }
 

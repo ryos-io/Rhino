@@ -19,9 +19,13 @@ package io.ryos.rhino.sdk.reporting;
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +48,10 @@ public class StdoutReporter extends AbstractActor {
   private static final String BORDER_LINE_BOLD =
       "==========================================================================";
   private static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-  public static final String NOT_AVAILABLE = "N/A";
+  private static final String NOT_AVAILABLE = "N/A";
 
   private Instant startTime;
+  private int duration;
   private int numberOfUsers;
   private boolean terminated;
 
@@ -62,11 +67,13 @@ public class StdoutReporter extends AbstractActor {
   private final Map<String, Long> metrics = new HashMap<>();
 
   // Akka static factory.
-  public static Props props(int numberOfUsers, Instant startTime) {
-    return Props.create(StdoutReporter.class, () -> new StdoutReporter(numberOfUsers, startTime));
+  public static Props props(int numberOfUsers, Instant startTime, int duration) {
+    return Props.create(StdoutReporter.class, () -> new StdoutReporter(numberOfUsers, startTime,
+        duration));
   }
 
-  private StdoutReporter(int numberOfUsers, Instant startTime) {
+  private StdoutReporter(int numberOfUsers, Instant startTime, int duration) {
+    this.duration = duration;
     this.numberOfUsers = numberOfUsers;
     this.startTime = startTime;
     this.timer = new Timer("Stdout Report Timer");
@@ -160,10 +167,17 @@ public class StdoutReporter extends AbstractActor {
 
     StringBuilder output = new StringBuilder();
     output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
-    output.append("Tests started on : ").append(formatDate(startTime)).append('\n');
-    output.append("Tests end on : ")
-        .append(Optional.ofNullable(event).map(e -> formatDate(e.getEndTestTime())).orElse("N/A"))
-        .append('\n');
+    output.append("Tests started : ").append(formatDate(startTime)).append('\n');
+    output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
+        .append(
+            " secs ETA : ")
+        .append(formatDate(startTime.plus(duration, ChronoUnit.MINUTES))).append('\n');
+
+    if (event != null) {
+      output.append("Tests ended : ")
+          .append(formatDate(event.getEndTestTime()))
+          .append('\n');
+    }
     output.append(BORDER_LINE_BOLD).append('\n');
     output.append("-- Number of executions --------------------------------------------------")
         .append('\n');
