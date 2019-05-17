@@ -21,15 +21,16 @@ public class PerformanceTestingExampleWithoutUser {
     //System.out.println("Preparing the test with user:" + user.getUsername());
   }
 
-  @Scenario(name = "Hello")
+  @Scenario(name = "Hellolololoolololloloolollolo")
   public void performDiscovery(Recorder recorder) throws InterruptedException {
     // System.out.println("Hello");
     //Thread.sleep(1000L);
-    recorder.record("test1 as as", 200);
+    recorder.record("test1 as as as as as as as as as", 200);
     //Thread.sleep(100L);
     recorder.record("test1", 404);
     //Thread.sleep(100L);
     recorder.record("test2", 200);
+
   }
 
   @After

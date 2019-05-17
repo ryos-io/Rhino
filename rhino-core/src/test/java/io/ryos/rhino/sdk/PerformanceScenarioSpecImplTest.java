@@ -9,5 +9,9 @@ public class PerformanceScenarioSpecImplTest {
 
     SimulationSpec simulation = new SimulationSpecImpl("classpath:///rhino.properties",
         "Server-Status Simulation Without User");
+    simulation.start();
+    Thread.sleep(5000L);
+    simulation.stop();
+    Thread.sleep(5000L);
   }
 }
