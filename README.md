@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-## Rhino: Load and Performance Testing
+## Rhino: Service Load and Performance Testing
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
