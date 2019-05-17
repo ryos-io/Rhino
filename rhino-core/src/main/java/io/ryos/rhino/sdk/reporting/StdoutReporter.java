@@ -35,8 +35,9 @@ import java.util.stream.Collectors;
 /**
  * Stdout reporter outputs the current status of the test run. It gives out information like number
  * of requests per scenario, and avg. response times.
+ * <p>
  *
- * @author bagdemir
+ * <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
  */
 public class StdoutReporter extends AbstractActor {
 
@@ -46,13 +47,14 @@ public class StdoutReporter extends AbstractActor {
       "==========================================================================";
   private static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
   private static final String NOT_AVAILABLE = "N/A";
+  public static final int MSG_OK = 200;
 
   private Instant startTime;
   private int duration;
   private int numberOfUsers;
   private boolean terminated;
 
-  private Timer timer; //TODO shutdown on exit.
+  private Timer timer;
 
   /**
    * Key format is scenario_step_$metric e.g
@@ -93,13 +95,14 @@ public class StdoutReporter extends AbstractActor {
 
   private void endTest(final EndTestEvent endEvent) {
     if (terminated) {
-      sender().tell(200, self());
+      sender().tell(MSG_OK, self());
       return;
     }
-    flushReport(endEvent);
 
-    sender().tell(200, self());
-    terminated = true;
+    this.timer.cancel();
+    flushReport(endEvent);
+    sender().tell(MSG_OK, self());
+    this.terminated = true;
   }
 
   private void persist(final ScenarioEvent logEvent) {
@@ -166,9 +169,12 @@ public class StdoutReporter extends AbstractActor {
     output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
     output.append("Tests started : ").append(formatDate(startTime)).append('\n');
     output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
-        .append(
-            " secs ETA : ")
-        .append(formatDate(startTime.plus(duration, ChronoUnit.MINUTES))).append('\n');
+        .append(" secs ETA : ")
+        .append(formatDate(startTime.plus(duration, ChronoUnit.MINUTES)))
+        .append(" (duration ")
+        .append(duration)
+        .append(" mins)")
+        .append('\n');
 
     if (event != null) {
       output.append("Tests ended : ")
