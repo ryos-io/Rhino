@@ -25,13 +25,13 @@ import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.CyclicIterator;
 import io.ryos.rhino.sdk.users.UserRepository;
-import com.google.common.collect.Streams;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -96,11 +96,15 @@ public class SimulationRunnerImpl implements SimulationRunner {
         .async()
         .runWith(Sink.ignore(), materializer);
 
-    doneCompletionStage.thenRun(system::terminate);
+    doneCompletionStage.thenRun(() -> {
+      simulation.stop();
+      system.terminate();
+    });
 
     // Exceptional shutdown.
     doneCompletionStage.exceptionally(t -> {
 
+      simulation.stop();
       final Future<Terminated> terminate = system.terminate();
       terminate.onComplete(new OnComplete<>() {
         @Override
@@ -108,7 +112,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
           if (throwable != null) {
             System.err.println(throwable.getMessage());
           }
-
           System.exit(-1);
         }
       }, system.dispatcher());
@@ -120,22 +123,21 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private void shutdownIfCompleted() {
 
     synchronized (SimulationRunnerImpl.this) {
-
       if (++elapsed > duration * 60) {
 
         System.out.println("! Performance test is now completed. Shutting down the system ...");
-
         var terminate = system.terminate();
-
         terminate.onComplete(new OnComplete<>() {
 
           @Override
           public void onComplete(final Throwable throwable, final Terminated terminated) {
+
+            simulation.stop();
+
             System.exit(0);
           }
         }, system.dispatcher());
 
-        simulation.stop();
         scheduler.shutdownNow();
       }
     }
@@ -149,7 +151,9 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
   @Override
   public void stop() {
+    System.out.println("Someone pushed the stop() button on runner. Leaving simulation.");
     scenarioCyclicIterator.stop();
+    simulation.stop();
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {

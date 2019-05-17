@@ -20,8 +20,8 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +43,12 @@ public class StdoutReporter extends AbstractActor {
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
   private static final String BORDER_LINE_BOLD =
       "==========================================================================";
+  private static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+  public static final String NOT_AVAILABLE = "N/A";
 
   private Instant startTime;
   private int numberOfUsers;
+  private boolean terminated;
 
   private Timer timer; //TODO shutdown on exit.
 
@@ -85,7 +88,14 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private void endTest(final EndTestEvent endEvent) {
+    if (terminated) {
+      sender().tell(200, self());
+      return;
+    }
     flushReport(endEvent);
+
+    sender().tell(200, self());
+    terminated = true;
   }
 
   private void persist(final ScenarioEvent logEvent) {
@@ -121,55 +131,63 @@ public class StdoutReporter extends AbstractActor {
       return;
     }
 
-    final List<String> countMetrics = metrics.entrySet()
+    List<String> countMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith("Count/"))
         .map(e -> formatKey(e.getKey()) + " " + e.getValue())
         .collect(Collectors.toList());
 
-    final List<String> responseTypeMetrics = metrics.entrySet()
+    List<String> responseTypeMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith("ResponseTime/"))
         .map(
             e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
         .collect(Collectors.toList());
 
-    final long overAllResponseTime = metrics.entrySet()
+    long overAllResponseTime = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith("ResponseTime/"))
         .map(Entry::getValue)
         .reduce(Long::sum).orElse(0L);
 
-    final long totalNumberOfRequests = metrics.entrySet()
+    long totalNumberOfRequests = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith("Count/"))
         .map(Entry::getValue)
         .reduce(Long::sum).orElse(0L);
 
-    final long avgRT = overAllResponseTime / totalNumberOfRequests;
+    long avgRT = overAllResponseTime / totalNumberOfRequests;
 
-    System.out.println("Number of users logged in : " + numberOfUsers);
-    System.out.println("Tests started on : " + startTime);
-    System.out.println("Tests end on : " + Optional.ofNullable(event).map(e -> DateTimeFormatter.ofLocalizedTime(
-        FormatStyle.SHORT).format(e.endTestTime)).orElse(
-        "n/a"));
-    System.out.println(BORDER_LINE_BOLD);
-    System.out
-        .println("-- Number of executions --------------------------------------------------");
-    System.out.println(String.join("\n", countMetrics));
-    System.out
-        .println("-- Response Time ---------------------------------------------------------");
-    System.out.println(String.join("\n", responseTypeMetrics));
-    System.out.println(BORDER_LINE_BOLD);
+    StringBuilder output = new StringBuilder();
+    output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
+    output.append("Tests started on : ").append(formatDate(startTime)).append('\n');
+    output.append("Tests end on : ")
+        .append(Optional.ofNullable(event).map(e -> formatDate(e.getEndTestTime())).orElse("N/A"))
+        .append('\n');
+    output.append(BORDER_LINE_BOLD).append('\n');
+    output.append("-- Number of executions --------------------------------------------------")
+        .append('\n');
+    output.append(String.join("\n", countMetrics)).append('\n');
+    output.append("-- Response Time ---------------------------------------------------------")
+        .append('\n');
+    output.append(String.join("\n", responseTypeMetrics)).append('\n').append('\n');
+    output.append(BORDER_LINE_BOLD).append('\n');
+    output.append(String.format("%50s %9s ms", "Average Response Time", avgRT)).append('\n');
+    output.append(String.format("%50s %9s ", "Total Request", totalNumberOfRequests)).append('\n');
+    output.append(BORDER_LINE_BOLD).append('\n');
 
-    System.out.println(String.format("%50s %9s ms", "Average Response Time", avgRT));
-    System.out.println(String.format("%50s %9s ", "Total Request", totalNumberOfRequests));
-    System.out.println(BORDER_LINE_BOLD);
-    System.out.println("\n");
     if (event != null) {
-      System.out.println("Bye!");
+      output.append("\n").append("Bye!").append('\n');
     }
-    System.out.println("\n");
+    System.out.println(output.toString());
+  }
+
+  private String formatDate(Instant dateTime) {
+    if (dateTime == null) {
+      return NOT_AVAILABLE;
+    }
+    return DateTimeFormatter.ofPattern(DATETIME_PATTERN).withZone(ZoneId.systemDefault())
+        .format(dateTime);
   }
 
   private long getAvgResponseTime(String key, long totalElapsed) {
@@ -190,6 +208,14 @@ public class StdoutReporter extends AbstractActor {
 
   public static class EndTestEvent {
 
-    public Instant endTestTime;
+    private final Instant endTestTime;
+
+    public EndTestEvent(final Instant endTestTime) {
+      this.endTestTime = endTestTime;
+    }
+
+    public Instant getEndTestTime() {
+      return endTestTime;
+    }
   }
 }

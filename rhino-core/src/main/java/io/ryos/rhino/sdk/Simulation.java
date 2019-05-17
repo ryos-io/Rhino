@@ -21,11 +21,12 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
-import akka.actor.ActorContext;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Terminated;
 import akka.dispatch.OnComplete;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
@@ -42,22 +43,27 @@ import io.ryos.rhino.sdk.reporting.LogFormatter;
 import io.ryos.rhino.sdk.reporting.Recorder;
 import io.ryos.rhino.sdk.reporting.RecorderImpl;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
+import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.users.User;
 import io.ryos.rhino.sdk.users.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import scala.concurrent.Await;
 import scala.concurrent.Future;
+import scala.concurrent.duration.FiniteDuration;
 
 /**
  * {@link Simulation} is representation of a single performance testing job. The instances of {@link
@@ -215,10 +221,8 @@ public class Simulation {
         .forEach(ip -> feed(simulationInstance, ip));
   }
 
-  /**
+  /*
    * Uses a builder to construct the instance.
-   *
-   * @param builder Builder to instantiate the class.
    */
   private Simulation(final Builder builder) {
     this.duration = builder.duration;
@@ -276,7 +280,7 @@ public class Simulation {
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
 
-  public void prepare(UserSession userSession) {
+  void prepare(UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(prepareMethod, cleanUpInstance);
   }
@@ -289,7 +293,7 @@ public class Simulation {
     return cleanUpInstance;
   }
 
-  public void cleanUp(UserSession userSession) {
+  void cleanUp(UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(cleanupMethod, userSession);
   }
@@ -405,38 +409,44 @@ public class Simulation {
     });
   }
 
-  public void stop() {
-    final Future<Terminated> terminate = system.terminate();
+  void stop() {
+
+    reportTermination();
+
+    var terminate = system.terminate();
+
     terminate.onComplete(new OnComplete<>() {
+
       @Override
-      public void onComplete(final Throwable throwable, final Terminated terminated)
-          throws Throwable {
+      public void onComplete(final Throwable throwable, final Terminated terminated) {
         system = null;
       }
+
     }, system.dispatcher());
   }
 
-  public String getSimulationName() {
-    return simulationName;
+  private void reportTermination() {
+    var ask = Patterns.ask(stdOutReptorter, new EndTestEvent(Instant.now()), 5000L);
+    try {
+      Await.result(ask, FiniteDuration.Inf());
+    } catch (Exception e) {
+      LOG.debug(e); // expect timeoeut
+    }
   }
 
-  public int getInjectUser() {
+  int getInjectUser() {
     return injectUser;
   }
 
-  public int getRampUp() {
-    return rampUp;
-  }
-
-  public UserRepository<UserSession> getUserRepository() {
+  UserRepository<UserSession> getUserRepository() {
     return userRepository;
   }
 
-  public int getDuration() {
+  int getDuration() {
     return duration;
   }
 
-  public List<Scenario> getRunnableScenarios() {
+  List<Scenario> getRunnableScenarios() {
     return runnableScenarios;
   }
 
