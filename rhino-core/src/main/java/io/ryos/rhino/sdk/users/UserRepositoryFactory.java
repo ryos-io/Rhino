@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 
 /**
  * Use {@link UserRepositoryFactory} instance to create custom {@link UserRepository} instances.
+ * <p>
  *
  * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
  */
@@ -27,6 +28,7 @@ public interface UserRepositoryFactory<T extends UserSession> {
 
   /**
    * Creates a new instance of {@link UserRepository}.
+   * <p>
    *
    * @return An instance of {@link UserRepository}.
    */

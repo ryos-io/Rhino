@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.users;
 
+import io.ryos.rhino.sdk.users.data.User;
+
 /**
  *
  * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>

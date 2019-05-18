@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.data;
 
-import io.ryos.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.data.User;
 
 /**
  * User session is a stash to store objects and share them among scenarios per user session. A

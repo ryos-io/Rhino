@@ -16,6 +16,9 @@
 
 package io.ryos.rhino.sdk.users;
 
+import io.ryos.rhino.sdk.users.data.OAuthUser;
+import io.ryos.rhino.sdk.users.data.User;
+
 public class OAuthAuthenticatorImpl implements UserAuthenticator<User, OAuthUser> {
 
     @Override

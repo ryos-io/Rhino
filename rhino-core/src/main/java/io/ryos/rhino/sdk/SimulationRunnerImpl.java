@@ -52,7 +52,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private static final int BUFFER_SIZE = 2000;
   private static final long INITIAL_DELAY = 0L;
   private static final long PERIOD = 1L;
-  private static final int REPORTING_PERIOD = 5;
 
   private Simulation simulation;
   private ActorSystem system = ActorSystem.create("rhino");

@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.annotations;
 
 import io.ryos.rhino.sdk.users.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.UserRepositoryFactory;
-import io.ryos.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.data.User;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

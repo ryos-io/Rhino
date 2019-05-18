@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.users;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.users.data.User;
 
 /**
  * Factory class for OAuth user repository which creates a new {@link UserRepository} provides

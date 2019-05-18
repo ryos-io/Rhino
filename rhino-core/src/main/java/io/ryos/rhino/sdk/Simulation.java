@@ -44,7 +44,7 @@ import io.ryos.rhino.sdk.reporting.RecorderImpl;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

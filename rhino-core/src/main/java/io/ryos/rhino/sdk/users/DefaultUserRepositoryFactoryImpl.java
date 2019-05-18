@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.users;
 import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.util.UUID;
 import java.util.stream.IntStream;
 

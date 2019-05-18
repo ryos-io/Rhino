@@ -22,14 +22,14 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Simulation configuration instances are used to configure benchmark tests. The
- * {@link SimulationConfig} instances are passed the configuration parameters to construct
- * the {@link SimulationSpecImpl} objects. Once the {@link SimulationSpecImpl} is fully configured, the
+ * Simulation configuration instances are used to configure benchmark tests. The {@link
+ * SimulationConfig} instances are passed the configuration parameters to construct the {@link
+ * SimulationSpecImpl} objects. Once the {@link SimulationSpecImpl} is fully configured, the
  * instances thereof are ready to run which starts off the benchmark test.
  *
  * @author Erhan Bagdemir
- * @since 1.0
  * @see SimulationSpecImpl
+ * @since 1.0
  */
 public class SimulationConfig {
 
@@ -56,13 +56,14 @@ public class SimulationConfig {
     return instance;
   }
 
-  String getProperty(String prop) {
+  String getProperty(final String prop) {
     return properties.getProperty(prop);
   }
 
   private void loadConfig(final String path) {
     // currently we do only support classpath configuration.
-    final InputStream resourceAsStream = getClass().getResourceAsStream(path.replace("classpath://", ""));
+    final InputStream resourceAsStream = getClass()
+        .getResourceAsStream(path.replace("classpath://", ""));
     try {
       properties.load(resourceAsStream);
     } catch (IOException e) {
@@ -100,6 +101,22 @@ public class SimulationConfig {
 
   String getAuthEndpoint() {
     return properties.getProperty(environment + ".auth.endpoint");
+  }
+
+  String getAuthVaultEndpoint() {
+    return properties.getProperty(environment + ".auth.vault.endpoint");
+  }
+
+  String getAuthVaultToken() {
+    return properties.getProperty(environment + ".auth.vault.token");
+  }
+
+  String getAuthVaultPath() {
+    return properties.getProperty(environment + ".auth.vault.path");
+  }
+
+  String getAuthVaultKey() {
+    return properties.getProperty(environment + ".auth.vault.key");
   }
 
   String getAuthClientSecret() {
@@ -164,5 +181,21 @@ public class SimulationConfig {
 
   public static String getInfluxPassword() {
     return instance.getDBSupportInfluxPassword();
+  }
+
+  public static String getVaultEndpoint() {
+    return instance.getAuthVaultEndpoint();
+  }
+
+  public static String getVaultToken() {
+    return instance.getAuthVaultToken();
+  }
+
+  public static String getVaultPath() {
+    return instance.getAuthVaultPath();
+  }
+
+  public static String getVaultKey() {
+    return instance.getAuthVaultKey();
   }
 }

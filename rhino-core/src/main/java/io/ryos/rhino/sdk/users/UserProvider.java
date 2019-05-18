@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.users;
 
+import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
 
 /**
@@ -25,5 +26,11 @@ import java.util.List;
  */
 public interface UserProvider {
 
-  List<User> readUsers();
+  /**
+   * Returns a list of {@link User}s.
+   * <p>
+   *
+   * @return List of users.
+   */
+  List<User> getUsers();
 }

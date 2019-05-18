@@ -20,6 +20,8 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
+import io.ryos.rhino.sdk.users.data.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,7 +57,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   public OAuthUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
     Objects.requireNonNull(userProvider);
-    this.users = userProvider.readUsers();
+    this.users = userProvider.getUsers();
     this.authUsers = new ArrayList<>(users.size());
     this.loginDelay = loginDelay;
     this.executorService = Executors.newFixedThreadPool(1);
