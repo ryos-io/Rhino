@@ -16,47 +16,32 @@
 
 package io.ryos.rhino.sdk.users;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collections;
+import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Classpath file implementation of {@link UserProvider}.
+ */
 public class ClasspathUserProviderImpl implements UserProvider {
+
   private static final Logger LOG = LogManager.getLogger(ClasspathUserProviderImpl.class);
 
   private final String pathToFile;
-  private final AtomicInteger counter = new AtomicInteger(0);
+  private final UserParser parser = new VaultUserParserImpl();
 
   public ClasspathUserProviderImpl(final String pathToCSVFile) {
     this.pathToFile = pathToCSVFile;
   }
 
   @Override
-  public List<User> readUsers() {
-
-    try (var isr = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(pathToFile)))) {
-
-      final List<User> collect = isr.lines()
-          .map(line -> line.split(";"))
-          .filter(arr -> arr.length == 3)
-          .map(arr -> new UserImpl(arr[0], arr[1], counter.incrementAndGet(), arr[2]))
-          .collect(Collectors.toList());
-
-      if (collect.isEmpty()) {
-        LOG.info("No valid user found in " + pathToFile + ". The CSV file should contain lines in"
-            + " the following format: username;password;scope");
-      }
-
-      return collect;
-
-    } catch (IOException e) {
-      LOG.error(e);
-      return Collections.emptyList();
+  public List<User> getUsers() {
+    List<User> userList = parser.unmarshall(getClass().getResourceAsStream(pathToFile));
+    if (userList.isEmpty()) {
+      LOG.info("No valid user found in " + pathToFile + ". The CSV file should contain lines in"
+          + " the following format: username;password;scope");
     }
+    return userList;
   }
 }
