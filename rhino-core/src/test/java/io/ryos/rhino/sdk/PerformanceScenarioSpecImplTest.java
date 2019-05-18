@@ -9,6 +9,5 @@ public class PerformanceScenarioSpecImplTest {
 
     SimulationSpec simulation = new SimulationSpecImpl("classpath:///rhino.properties",
         "Server-Status Simulation Without User");
-
   }
 }
