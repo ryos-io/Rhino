@@ -28,7 +28,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.UUIDFeeder;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.Recorder;
-import io.ryos.rhino.sdk.users.OAuthUser;
+import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.OAuthUserRepositoryFactoryImpl;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
