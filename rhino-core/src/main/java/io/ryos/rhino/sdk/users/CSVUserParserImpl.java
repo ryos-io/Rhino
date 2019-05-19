@@ -37,6 +37,9 @@ public class CSVUserParserImpl implements UserParser {
 
   @Override
   public List<User> unmarshall(InputStream inputStream) {
+    if (inputStream == null) {
+      throw new RuntimeException("User file not found.");
+    }
     var userList = new ArrayList<User>();
     try (var isr = new BufferedReader(new InputStreamReader(inputStream))) {
       return isr.lines()
