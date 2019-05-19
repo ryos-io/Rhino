@@ -16,10 +16,6 @@
 
 package io.ryos.examples.benchmark;
 
-import io.ryos.rhino.sdk.annotations.Logging;
-import io.ryos.rhino.sdk.users.User;
-
-import io.ryos.rhino.sdk.Recorder;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Prepare;
@@ -27,32 +23,34 @@ import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.feeders.UUIDFeeder;
+import io.ryos.rhino.sdk.reporting.Recorder;
+import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
 /**
  * An example for annotated entity of benchmark job.
  */
 @Simulation(name = "helloWorld")
-@Logging(file="/var/log/sim.out")
 public class RhinoEntity {
 
-    @UserFeeder(max = 10)
-    private User user;
+  @UserFeeder(max = 10, factory = OAuthUserRepositoryFactoryImpl.class)
+  private User user;
 
-    @Feeder(factory = UUIDFeeder.class)
-    private String uuid;
+  @Feeder(factory = UUIDFeeder.class)
+  private String uuid;
 
-    @Prepare
-    public void prepare() {
-        System.out.println("Preparing the test with user:" + user.getUsername());
-    }
+  @Prepare
+  public void prepare() {
+    System.out.println("Preparing the test with user:" + user.getUsername());
+  }
 
-    @Scenario(name = "hello")
-    public void run(Recorder recorder) {
-        System.out.println(uuid + " Hello World! Running test with user:" + user.getUsername());
-    }
+  @Scenario(name = "hello")
+  public void run(Recorder recorder) {
+    System.out.println(uuid + " Hello World! Running test with user:" + user.getUsername());
+  }
 
-    @CleanUp
-    public void cleanUp() {
-        System.out.println("Clean up the test.");
-    }
+  @CleanUp
+  public void cleanUp() {
+    System.out.println("Clean up the test.");
+  }
 }

@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.users.provider;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * User provider is the source for the users which are used in performance tests.
@@ -45,7 +46,9 @@ public interface UserProvider {
       userProvider = new VaultUserProviderImpl();
     }
     if (userSource.equals(SourceType.FILE)) {
-      var path = SimulationConfig.getUserFileSource().replace("classpath://", "");
+      var path = Optional.ofNullable(SimulationConfig.getUserFileSource())
+          .map(s -> s.replace("classpath://", ""))
+          .orElseThrow(() -> new RuntimeException("<env>.users.file property is missing."));
       userProvider = new ClasspathUserProviderImpl(path);
     }
 
