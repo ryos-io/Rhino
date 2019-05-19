@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 /**
  * Scenario representation.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @version 1.0
  */
 public class Scenario {

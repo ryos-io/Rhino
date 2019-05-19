@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.reporting;
 
 /**
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class ScenarioEvent extends LogEvent {
   public String status;

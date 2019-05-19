@@ -23,7 +23,7 @@ import java.io.Serializable;
 /**
  * Entity to deserialize the JSON responses from the IMS.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

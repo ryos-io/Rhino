@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.exceptions;
 /**
  * Exception type thrown during job execution.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
 public class JobExecutionException extends RuntimeException {

@@ -28,7 +28,7 @@ package io.ryos.rhino.sdk.reporting;
  * Gatling step log might change in future, so the current format is associated with the
  * version defined with GATLING_VERSION.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
 public class GatlingLogFormatter implements LogFormatter {

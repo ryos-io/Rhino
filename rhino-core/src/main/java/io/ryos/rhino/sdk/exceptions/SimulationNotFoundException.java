@@ -19,13 +19,12 @@ package io.ryos.rhino.sdk.exceptions;
 /**
  * Thrown, if the step is not found.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
 public class SimulationNotFoundException extends RuntimeException {
-    private String benchmark;
 
-    public SimulationNotFoundException(String benchmarkName) {
-        this.benchmark = benchmarkName;
-    }
+  public SimulationNotFoundException(String msg) {
+    super(msg);
+  }
 }

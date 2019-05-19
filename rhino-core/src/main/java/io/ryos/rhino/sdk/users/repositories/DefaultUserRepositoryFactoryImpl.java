@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
 /**
  * User repository, if nothing else provided.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
 

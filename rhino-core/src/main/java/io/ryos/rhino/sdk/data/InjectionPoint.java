@@ -20,7 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class InjectionPoint<T extends Annotation> {
 

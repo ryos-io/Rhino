@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.exceptions;
 /**
  * Exception to terminate the re-execution of a benchmark test, if it is already terminated.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
 public class SimulationAlreadyTerminatedException extends RuntimeException {

@@ -16,16 +16,25 @@
 
 package io.ryos.rhino.sdk;
 
+import io.ryos.rhino.sdk.exceptions.ConfigurationNotFoundException;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.RhinoIOException;
+import io.ryos.rhino.sdk.users.provider.UserProvider;
+import io.ryos.rhino.sdk.users.provider.UserProvider.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
+import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
  * SimulationConfig} instances are passed the configuration parameters to construct the {@link
  * SimulationSpecImpl} objects. Once the {@link SimulationSpecImpl} is fully configured, the
  * instances thereof are ready to run which starts off the benchmark test.
+ * <p>
  *
  * @author Erhan Bagdemir
  * @see SimulationSpecImpl
@@ -33,7 +42,9 @@ import java.util.Properties;
  */
 public class SimulationConfig {
 
+  private static final Logger LOG = LogManager.getLogger(SimulationConfig.class);
   private static final String PACKAGE_TO_SCAN = "packageToScan";
+  private static final String SOURCE_CLASSPATH = "classpath://";
   private static SimulationConfig instance;
 
   private final Properties properties;
@@ -56,83 +67,99 @@ public class SimulationConfig {
     return instance;
   }
 
-  String getProperty(final String prop) {
-    return properties.getProperty(prop);
-  }
-
   private void loadConfig(final String path) {
     // currently we do only support classpath configuration.
-    final InputStream resourceAsStream = getClass()
-        .getResourceAsStream(path.replace("classpath://", ""));
+    var normPath = path.replace(SOURCE_CLASSPATH, "");
+    var resourceAsStream = getClass().getResourceAsStream(normPath);
+
     try {
-      properties.load(resourceAsStream);
+      properties.load(Optional.ofNullable(resourceAsStream)
+          .orElseThrow(() -> new ConfigurationNotFoundException(
+              "Properties file not found in path: " + path)));
+
+      PropsValidatorImpl propsValidator = new PropsValidatorImpl();
+      propsValidator.validate(properties);
+
     } catch (IOException e) {
-      e.printStackTrace();
+      ExceptionUtils.rethrow(e, RhinoIOException.class, "Cannot read rhino.properties file.");
     }
   }
 
-  String getDBSupportInfluxURL() {
+  private String getProperty(final String prop) {
+    return properties.getProperty(prop);
+  }
+
+  private String getDBSupportInfluxURL() {
     return properties.getProperty("db.influx.url");
   }
 
-  String getDBSupportInfluxDBName() {
+  private String getDBSupportInfluxDBName() {
     return properties.getProperty("db.influx.dbName");
   }
 
-  String getDBSupportInfluxUsername() {
+  private String getDBSupportInfluxUsername() {
     return properties.getProperty("db.influx.username");
   }
 
-  String getDBSupportInfluxPassword() {
+  private String getDBSupportInfluxPassword() {
     return properties.getProperty("db.influx.password");
   }
 
-  String getAuthUserSource() {
-    return properties.getProperty(environment + ".auth.userSource");
+  private UserProvider.SourceType getUsersSource() {
+    var source = properties.getProperty(environment + ".users.source", "file");
+    return UserProvider.SourceType.valueOf(source.toUpperCase());
   }
 
-  String getAuthClientId() {
+  private String getAuthUserFileSource() {
+    return properties.getProperty(environment + ".users.file");
+  }
+
+  private String getAuthClientId() {
     return properties.getProperty(environment + ".auth.clientId");
   }
 
-  String getAuthApiKey() {
+  private String getAuthApiKey() {
     return properties.getProperty(environment + ".auth.apiKey");
   }
 
-  String getAuthEndpoint() {
+  private String getAuthEndpoint() {
     return properties.getProperty(environment + ".auth.endpoint");
   }
 
-  String getAuthVaultEndpoint() {
-    return properties.getProperty(environment + ".auth.vault.endpoint");
+  private String getAuthVaultEndpoint() {
+    return properties.getProperty(environment + ".users.vault.endpoint");
   }
 
-  String getAuthVaultToken() {
-    return properties.getProperty(environment + ".auth.vault.token");
+  private String getAuthVaultToken() {
+    return properties.getProperty(environment + ".users.vault.token");
   }
 
-  String getAuthVaultPath() {
-    return properties.getProperty(environment + ".auth.vault.path");
+  private String getAuthVaultPath() {
+    return properties.getProperty(environment + ".users.vault.path");
   }
 
-  String getAuthVaultKey() {
-    return properties.getProperty(environment + ".auth.vault.key");
+  private String getAuthVaultKey() {
+    return properties.getProperty(environment + ".users.vault.key");
   }
 
-  String getAuthClientSecret() {
+  private String getAuthClientSecret() {
     return properties.getProperty(environment + ".auth.clientSecret");
   }
 
-  String getEndpoint() {
+  private String getEndpoint() {
     return properties.getProperty(environment + ".endpoint");
   }
 
-  String getAuthGrantType() {
+  private String getAuthGrantType() {
     return properties.getProperty(environment + ".auth.grantType");
   }
 
   String getPackageToScan() {
     return instance.getProperty(PACKAGE_TO_SCAN);
+  }
+
+  public static SourceType getUserSource() {
+    return instance.getUsersSource();
   }
 
   public static String getServiceEndpoint() {
@@ -163,8 +190,8 @@ public class SimulationConfig {
     return instance.getAuthEndpoint();
   }
 
-  public static String getUserSource() {
-    return instance.getAuthUserSource();
+  public static String getUserFileSource() {
+    return instance.getAuthUserFileSource();
   }
 
   public static String getInfluxURL() {

@@ -24,7 +24,7 @@ import io.ryos.rhino.sdk.users.data.User;
  * execution.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public interface UserSession extends Context {

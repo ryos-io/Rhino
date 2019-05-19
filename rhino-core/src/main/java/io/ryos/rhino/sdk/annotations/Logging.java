@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
  * Class annotation to provide metadata about logging strategy. The benchmark metrics will be
  * written into the log file where this annotation points.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see LogFormatter
  * @since 1.0.0
  */

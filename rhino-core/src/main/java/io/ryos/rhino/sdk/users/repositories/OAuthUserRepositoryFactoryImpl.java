@@ -14,30 +14,45 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
-import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.provider.UserProvider;
 
 /**
- * Factory class for OAuth user repository which creates a new {@link UserRepository} provides
- * {@link User} instances authenticated.
+ * Factory class for user repository with OAuth support which creates a new {@link UserRepository}
+ * provides {@link User} instances authenticated.
+ * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class OAuthUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
 
-  private final String pathToUsers;
+  /**
+   * Planned delay between two login attempts. Some authorization servers throttles requests if the
+   * number of requests exceeds some limit. The configuration is to cope with this limitation.
+   */
   private final long loginDelay;
 
+  /**
+   * Creates a new {@link OAuthUserRepositoryFactoryImpl} instance.
+   * <p>
+   *
+   * @param loginDelay Delay between two login attempts.
+   */
   public OAuthUserRepositoryFactoryImpl(final long loginDelay) {
-    final String userSource = SimulationConfig.getUserSource();
-    this.pathToUsers = userSource.replace("classpath://", "");
     this.loginDelay = loginDelay;
   }
 
+  /**
+   * Creates a new repository {@link OAuthUserRepositoryFactoryImpl} instance.
+   * <p>
+   *
+   * @return New repository instance.
+   */
   public UserRepository<UserSession> create() {
-    return new OAuthUserRepositoryImpl(new ClasspathUserProviderImpl(pathToUsers), loginDelay).authenticateAll();
+    return new OAuthUserRepositoryImpl(UserProvider.createProvider(), loginDelay)
+        .authenticateAll();
   }
 }

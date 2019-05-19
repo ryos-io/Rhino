@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
  * <p>
  *
  * @param <T> UserSession.
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public interface UserRepository<T extends UserSession> {
   // To be honest, I am not really happy about having two concepts here, the Users and

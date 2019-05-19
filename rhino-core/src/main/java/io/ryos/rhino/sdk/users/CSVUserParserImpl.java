@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.users;
 
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
+import io.ryos.rhino.sdk.users.provider.ClasspathUserProviderImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

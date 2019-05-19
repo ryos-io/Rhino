@@ -22,8 +22,9 @@ import java.util.List;
  * Scanner, used to search for annotated benchmark entities within the package provided. The with
  * {@link io.ryos.rhino.sdk.annotations.Simulation} annotated entities will be packaged along
  * with the SDK into a JAR file, so the scanner searches for entities in the JAR artifact.
+ * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see io.ryos.rhino.sdk.annotations.Simulation
  * @see Simulation
  * @since 1.0

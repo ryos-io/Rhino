@@ -21,7 +21,7 @@ package io.ryos.rhino.sdk.reporting;
  * be flushed into the storage registered.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public interface Recorder {
 

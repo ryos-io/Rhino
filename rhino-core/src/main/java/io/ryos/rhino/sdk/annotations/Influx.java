@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Marker annotation to activate Influx DB writer.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.4
  */
 @Retention(RetentionPolicy.RUNTIME)

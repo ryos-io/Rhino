@@ -23,7 +23,7 @@ import java.util.List;
  * Recorder implementation which measures elapsed time from beginning the execution of the
  * scenario.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class RecorderImpl implements Recorder {
 

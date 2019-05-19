@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.provider;
 
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.users.UserParser;
+import io.ryos.rhino.sdk.users.VaultUserParserImpl;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.net.URI;
@@ -27,18 +30,14 @@ import java.util.Optional;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Vault implementation of {@link UserProvider}.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class VaultUserProviderImpl implements UserProvider {
-
-  private static final Logger LOG = LogManager.getLogger(VaultUserProviderImpl.class);
   private static final String PATH_ROOT_CONTEXT = "v1/secret/data";
   private static final String X_VAULT_TOKEN = "X-Vault-Token";
   private static final String VAULT_TOKEN = "VAULT_TOKEN";
@@ -47,13 +46,16 @@ public class VaultUserProviderImpl implements UserProvider {
 
   @Override
   public List<User> getUsers() {
-    URI uri = getVaultURI();
+    var uri = getVaultURI();
+    var token = Optional
+        .ofNullable(SimulationConfig.getVaultToken())
+        .orElseGet(() -> System.getProperty(VAULT_TOKEN));
 
-    var token = Optional.ofNullable(SimulationConfig.getVaultToken()).orElse(System.getProperty(
-        VAULT_TOKEN));
     if (token == null) {
-      throw new RuntimeException();
+      throw new VaultTokenNotFoundException("<env>.auth.vault.token is missing in rhino"
+          + ".properties.");
     }
+
     var client = ClientBuilder.newClient();
     var response = client.target(uri)
         .request()
@@ -76,7 +78,8 @@ public class VaultUserProviderImpl implements UserProvider {
           .path(SimulationConfig.getVaultPath())
           .build();
     } catch (URISyntaxException e) {
-      LOG.error(e); //TODO
+      ExceptionUtils.rethrow(e, RuntimeException.class, "<env>.auth.vault.endpoint is missing in "
+          + "rhino.properties.");
     }
     return uri;
   }

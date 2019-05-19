@@ -14,14 +14,16 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
 import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.provider.UserProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

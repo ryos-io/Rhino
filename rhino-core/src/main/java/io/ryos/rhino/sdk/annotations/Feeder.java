@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation to mark the {@link Feeder} injection point. Feeders are data providers.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see Feeder
  * @since 1.1.0
  */

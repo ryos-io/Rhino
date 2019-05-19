@@ -31,7 +31,7 @@ import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.CyclicIterator;
-import io.ryos.rhino.sdk.users.UserRepository;
+import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -44,6 +44,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scala.concurrent.Future;
 
+/**
+ * @author Erhan Bagdemir
+ */
 public class SimulationRunnerImpl implements SimulationRunner {
 
   private static final Logger LOG = LogManager.getLogger(SimulationRunnerImpl.class);
@@ -130,13 +133,10 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
           @Override
           public void onComplete(final Throwable throwable, final Terminated terminated) {
-
             simulation.stop();
-
             System.exit(0);
           }
         }, system.dispatcher());
-
         scheduler.shutdownNow();
       }
     }

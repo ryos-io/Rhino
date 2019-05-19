@@ -14,8 +14,10 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.provider;
 
+import io.ryos.rhino.sdk.users.UserParser;
+import io.ryos.rhino.sdk.users.VaultUserParserImpl;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Classpath file implementation of {@link UserProvider}.
+ *
+ * @author Erhan Bagdemir
  */
 public class ClasspathUserProviderImpl implements UserProvider {
 

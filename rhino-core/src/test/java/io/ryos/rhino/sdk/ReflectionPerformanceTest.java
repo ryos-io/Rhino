@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.junit.Test;
 
 /**
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class ReflectionPerformanceTest {
 

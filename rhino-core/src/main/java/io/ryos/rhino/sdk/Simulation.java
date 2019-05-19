@@ -45,7 +45,7 @@ import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.UserRepository;
+import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -71,15 +71,14 @@ import scala.concurrent.duration.FiniteDuration;
  * The job instances are created by {@link SimulationJobsScanner} classes.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see io.ryos.rhino.sdk.annotations.Simulation
  * @since 1.0.0
  */
 public class Simulation {
 
   private static final String ACTOR_SYS_NAME = "benchmark";
-
-  private static Logger LOG = LogManager.getLogger(Simulation.class);
+  private static final Logger LOG = LogManager.getLogger(Simulation.class);
 
   /**
    * The name of the simulation, used in reports as well as to start a specific simulation among

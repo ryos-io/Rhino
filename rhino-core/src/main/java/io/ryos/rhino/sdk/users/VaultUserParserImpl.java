@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  * Vault implementation of {@link UserParser}.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class VaultUserParserImpl implements UserParser {
   private static final Logger LOG = LogManager.getLogger(VaultUserParserImpl.class);

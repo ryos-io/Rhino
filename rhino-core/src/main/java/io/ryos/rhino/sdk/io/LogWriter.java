@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * metrics.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class LogWriter extends AbstractActor implements ResultWriter {
 

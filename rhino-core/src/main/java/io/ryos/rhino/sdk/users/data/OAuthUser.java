@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.users.data;
 /**
  * Represents an authenticated user.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 public interface OAuthUser extends User {

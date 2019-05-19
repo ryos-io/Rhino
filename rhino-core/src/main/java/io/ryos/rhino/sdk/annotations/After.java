@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Method annotation to mark clean up methods, that is run after test execution. Use clean-up
  * methods, for instance, to release resources and clean up testing environment.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)

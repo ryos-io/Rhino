@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Scenario annotation is to mark the benchmark testing steps. The methods annotated with this
  * annotation will be run during benchmark within a step.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)

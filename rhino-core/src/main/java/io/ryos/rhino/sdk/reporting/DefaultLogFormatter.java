@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.reporting;
 /**
  * Default log formatter used in step log results.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class DefaultLogFormatter implements LogFormatter {
 

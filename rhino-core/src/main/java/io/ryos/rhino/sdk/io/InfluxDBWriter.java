@@ -32,7 +32,7 @@ import org.influxdb.dto.Point;
 /**
  * Writer implementation for Influx DB. It must be activated by using @Influx annotation.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.4
  */
 public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEvent> {

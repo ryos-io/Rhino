@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * access the same resources without having need of creating them repeatedly.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see UserSession
  * @since 1.1.0
  */

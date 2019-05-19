@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.users.data.User;
  * user will be created before the simulation starts, and it will existing during the simulation
  * execution.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public class UserSessionImpl extends ContextImpl implements UserSession {
