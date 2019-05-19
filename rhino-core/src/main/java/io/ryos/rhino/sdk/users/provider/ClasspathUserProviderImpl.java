@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.users.provider;
 
+import io.ryos.rhino.sdk.users.CSVUserParserImpl;
 import io.ryos.rhino.sdk.users.UserParser;
 import io.ryos.rhino.sdk.users.VaultUserParserImpl;
 import io.ryos.rhino.sdk.users.data.User;
@@ -33,7 +34,7 @@ public class ClasspathUserProviderImpl implements UserProvider {
   private static final Logger LOG = LogManager.getLogger(ClasspathUserProviderImpl.class);
 
   private final String pathToFile;
-  private final UserParser parser = new VaultUserParserImpl();
+  private final UserParser parser = new CSVUserParserImpl();
 
   public ClasspathUserProviderImpl(final String pathToCSVFile) {
     this.pathToFile = pathToCSVFile;
@@ -43,8 +44,8 @@ public class ClasspathUserProviderImpl implements UserProvider {
   public List<User> getUsers() {
     List<User> userList = parser.unmarshall(getClass().getResourceAsStream(pathToFile));
     if (userList.isEmpty()) {
-      LOG.info("No valid user found in " + pathToFile + ". The CSV file should contain lines in"
-          + " the following format: username;password;scope");
+      throw new RuntimeException("No valid user found in " + pathToFile + ". The CSV file should contain "
+          + "lines in the following format: username;password;scope");
     }
     return userList;
   }
