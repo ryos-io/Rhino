@@ -86,24 +86,42 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
   }
 
   private Optional<User> authenticate(User user) {
+
     try {
-      Form form = new Form();
-      form.param(CLIENT_ID, SimulationConfig.getClientId());
-      form.param(CLIENT_SECRET, SimulationConfig.getClientSecret());
-      form.param(GRANT_TYPE, SimulationConfig.getGrantType());
-      form.param(SCOPE, user.getScope());
+      var form = new Form();
+
+      if (SimulationConfig.getClientId() != null) {
+        form.param(CLIENT_ID, SimulationConfig.getClientId());
+      }
+
+      if (SimulationConfig.getClientSecret() != null) {
+        form.param(CLIENT_SECRET, SimulationConfig.getClientSecret());
+      }
+
+      if (SimulationConfig.getGrantType() != null) {
+        form.param(GRANT_TYPE, SimulationConfig.getGrantType());
+      }
+
+      if (user.getScope() != null) {
+        form.param(SCOPE, user.getScope());
+      }
+
+      if (user.getPassword() != null) {
+        form.param(PASSWORD, user.getPassword());
+      }
+
       form.param(USERNAME, user.getUsername());
-      form.param(PASSWORD, user.getPassword());
 
-      final Client client = ClientBuilder.newClient();
-
-      final Response response = client
+      var client = ClientBuilder.newClient();
+      var response = client
           .target(SimulationConfig.getAuthServer())
           .request()
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        LOG.error("Cannot login user, status=" + response.getStatus() + ", message=" + response.readEntity(String.class));
+        System.out.println(
+            "Cannot login user, status=" + response.getStatus() + ", message=" + response
+                .readEntity(String.class));
         return Optional.empty();
       }
 
