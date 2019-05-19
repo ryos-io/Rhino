@@ -23,7 +23,7 @@ import java.io.Closeable;
  * Simulation result writer logs the benchmark metrics into a flat file, that is the simulation
  * file.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public interface ResultWriter<T extends LogEvent> extends Closeable {
 

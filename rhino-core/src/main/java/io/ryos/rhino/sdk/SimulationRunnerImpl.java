@@ -25,13 +25,13 @@ import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.CyclicIterator;
-import io.ryos.rhino.sdk.users.UserRepository;
-import com.google.common.collect.Streams;
+import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -44,6 +44,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scala.concurrent.Future;
 
+/**
+ * @author Erhan Bagdemir
+ */
 public class SimulationRunnerImpl implements SimulationRunner {
 
   private static final Logger LOG = LogManager.getLogger(SimulationRunnerImpl.class);
@@ -52,7 +55,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private static final int BUFFER_SIZE = 2000;
   private static final long INITIAL_DELAY = 0L;
   private static final long PERIOD = 1L;
-  private static final int REPORTING_PERIOD = 5;
 
   private Simulation simulation;
   private ActorSystem system = ActorSystem.create("rhino");
@@ -70,7 +72,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
   public void start() {
 
-    System.out.println("! Starting load test for " + simulation.getDuration() + " minutes ...");
+    System.out.println("Starting load test for " + simulation.getDuration() + " minutes ...");
 
     final UserRepository userRepository = simulation.getUserRepository();
 
@@ -83,12 +85,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
     var materializer = ActorMaterializer.create(system);
 
-    scheduler.scheduleAtFixedRate(() -> {
-      if (elapsed % REPORTING_PERIOD == 0) {
-        System.out.println("* Ping? Pong! Running ... " + elapsed + " seconds.");
-      }
-      shutdownIfCompleted();
-    }, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
+    scheduler.scheduleAtFixedRate(this::shutdownIfCompleted, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
 
     // Fetch users from circular linked-list, i.e infinite source.
     var source = Source.from(Streams
@@ -101,11 +98,15 @@ public class SimulationRunnerImpl implements SimulationRunner {
         .async()
         .runWith(Sink.ignore(), materializer);
 
-    doneCompletionStage.thenRun(system::terminate);
+    doneCompletionStage.thenRun(() -> {
+      simulation.stop();
+      system.terminate();
+    });
 
     // Exceptional shutdown.
     doneCompletionStage.exceptionally(t -> {
 
+      simulation.stop();
       final Future<Terminated> terminate = system.terminate();
       terminate.onComplete(new OnComplete<>() {
         @Override
@@ -113,7 +114,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
           if (throwable != null) {
             System.err.println(throwable.getMessage());
           }
-
           System.exit(-1);
         }
       }, system.dispatcher());
@@ -125,23 +125,18 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private void shutdownIfCompleted() {
 
     synchronized (SimulationRunnerImpl.this) {
-
       if (++elapsed > duration * 60) {
 
         System.out.println("! Performance test is now completed. Shutting down the system ...");
-
         var terminate = system.terminate();
-
         terminate.onComplete(new OnComplete<>() {
 
           @Override
           public void onComplete(final Throwable throwable, final Terminated terminated) {
+            simulation.stop();
             System.exit(0);
           }
         }, system.dispatcher());
-
-        simulation.stop();
-
         scheduler.shutdownNow();
       }
     }
@@ -155,7 +150,9 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
   @Override
   public void stop() {
+    System.out.println("Someone pushed the stop() button on runner. Leaving simulation.");
     scenarioCyclicIterator.stop();
+    simulation.stop();
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
@@ -178,6 +175,6 @@ public class SimulationRunnerImpl implements SimulationRunner {
       }
     }
 
-    System.out.println("! User login completed.");
+    System.out.println("User login completed. Total user: " + simulation.getInjectUser());
   }
 }

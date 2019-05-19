@@ -28,7 +28,7 @@ package io.ryos.rhino.sdk.reporting;
  * Gatling step log might change in future, so the current format is associated with the
  * version defined with GATLING_VERSION.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
 public class GatlingLogFormatter implements LogFormatter {
@@ -45,8 +45,8 @@ public class GatlingLogFormatter implements LogFormatter {
    */
   @Override
   public String format(final LogEvent event) {
-    if (event instanceof SimulationEvent) {
-      return convert((SimulationEvent) event);
+    if (event instanceof ScenarioEvent) {
+      return convert((ScenarioEvent) event);
     }
 
     if (event instanceof UserEvent) {
@@ -56,7 +56,7 @@ public class GatlingLogFormatter implements LogFormatter {
     return "N/A";
   }
 
-  private String convert(SimulationEvent event) {
+  private String convert(ScenarioEvent event) {
     return String.format("REQUEST\t%s\t\t%s\t%s\t%s\t%s\t \n",
         event.userId,
         event.step,

@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * resource beforehand and store the reference of the resource in the session so as to access it
  * in scenario methods.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

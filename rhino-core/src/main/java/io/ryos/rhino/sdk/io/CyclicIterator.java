@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * beginning till it is stopped by calling {@link #stop()} to do so, explicitly. The iterator is
  * used as generator for the load generator system.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class CyclicIterator<T> implements Iterator<T> {
 

@@ -14,23 +14,41 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.users.data;
 
 /**
- * Recorder is used in performance tests to record the result of execution. Recorded metrics will
- * be flushed into the storage registered.
- * <p>
+ * Represents an authenticated user.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
+ * @since 1.0.0
  */
-public interface Recorder {
+public interface OAuthUser extends User {
 
   /**
-   * Call record(String, int) to record the temporal metrics.
-   * <p>
+   * Access token.
    *
-   * @param stepName The name of the step.
-   * @param status HTTP status of the load execution.
+   * @return Access token.
    */
-  void record(final String stepName, final int status);
+  String getAccessToken();
+
+  /**
+   * Refresh token.
+   *
+   * @return Refresh token.
+   */
+  String getRefreshToken();
+
+  /**
+   * Authorized scope.
+   *
+   * @return Authorized scope.
+   */
+  String getScope();
+
+  /**
+   * Client id of the user.
+   *
+   * @return Client id.
+   */
+  String getClientId();
 }

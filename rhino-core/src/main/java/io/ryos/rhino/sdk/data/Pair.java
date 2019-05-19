@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.data;
 /**
  * The type holding pair of objects.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @version 1.0
  */
 public class Pair<T, E> {

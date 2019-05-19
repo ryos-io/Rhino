@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.utils;
 
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.exceptions.Exceptions;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Reflection utility methods.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class ReflectionUtils {
 
@@ -71,7 +71,7 @@ public class ReflectionUtils {
     try {
       return Optional.of(clazz.getConstructor());
     } catch (NoSuchMethodException e) {
-      Exceptions.rethrow(e, RuntimeException.class);
+      ExceptionUtils.rethrow(e, RuntimeException.class);
       LOG.error(e);
     }
     return Optional.empty();

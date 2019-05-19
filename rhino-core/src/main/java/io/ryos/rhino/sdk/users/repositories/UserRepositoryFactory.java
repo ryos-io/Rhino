@@ -14,16 +14,23 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
-import java.util.List;
+import io.ryos.rhino.sdk.data.UserSession;
 
 /**
- * User provider is the source for the users which are used in performance tests.
+ * Use {@link UserRepositoryFactory} instance to create custom {@link UserRepository} instances.
+ * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
-public interface UserProvider {
+public interface UserRepositoryFactory<T extends UserSession> {
 
-  List<User> readUsers();
+  /**
+   * Creates a new instance of {@link UserRepository}.
+   * <p>
+   *
+   * @return An instance of {@link UserRepository}.
+   */
+  UserRepository<T> create();
 }

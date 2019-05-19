@@ -17,8 +17,12 @@
 package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.data.ContextImpl;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.ProfileNotFoundException;
+import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.utils.Environment;
 import io.ryos.rhino.sdk.data.Context;
+import io.ryos.rhino.sdk.validators.PropsValidationException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -26,9 +30,9 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Supervisor type which manages set up and run benchmark tests. The class follows the steps
- * required to initiate a test execution i.e configure and search for benchmark jobs by using
- * {@link SimulationJobsScanner}. Once jobs are ready to execute, the implementation starts each
- * one while providing a context to them.
+ * required to initiate a test execution i.e configure and search for benchmark jobs by using {@link
+ * SimulationJobsScanner}. Once jobs are ready to execute, the implementation starts each one while
+ * providing a context to them.
  *
  * <p>A {@link Context} instance is a storage associated with each
  * benchmark job.
@@ -41,13 +45,14 @@ import org.apache.logging.log4j.Logger;
  */
 public class SimulationSpecImpl implements SimulationSpec {
 
+  private static final String KEY_PROFILE = "profile";
   private static Logger LOG = LogManager.getLogger(Simulation.class);
   private static final String JOB = "job";
 
   /**
    * A list of simulation runner instances.
    */
-  private final List<SimulationRunner> simulationRunners;
+  private List<SimulationRunner> simulationRunners;
 
   /**
    * Constructs a new instance of {@link SimulationSpecImpl}.
@@ -57,32 +62,36 @@ public class SimulationSpecImpl implements SimulationSpec {
    */
   public SimulationSpecImpl(final String path, final String simulationName) {
 
-    Application.showBranding();
+    try {
+      Application.showBranding();
 
-    final Environment environment = getEnvironment();
+      final Environment environment = getEnvironment();
 
-    var simulationConfig = SimulationConfig.newInstance(path, environment);
-    var jobs = SimulationJobsScanner.create().scan(simulationName,
-        simulationConfig.getPackageToScan());
-    this.simulationRunners = jobs
-        .stream()
-        .map(this::getContext)
-        .map(SimulationRunnerImpl::new)
-        .collect(Collectors.toList());
+      var simulationConfig = SimulationConfig.newInstance(path, environment);
+      var jobs = SimulationJobsScanner.create().scan(simulationName,
+          simulationConfig.getPackageToScan());
+      this.simulationRunners = jobs
+          .stream()
+          .map(this::getContext)
+          .map(SimulationRunnerImpl::new)
+          .collect(Collectors.toList());
+    } catch (Throwable pe) {
+      System.out.println(pe.getMessage());
+      System.exit(-1);
+    }
   }
 
   private Environment getEnvironment() {
 
-    final String profile = System.getProperty("profile", "DEV");
+    var profile = System.getProperty(KEY_PROFILE, Environment.DEV.toString());
 
     try {
-      return Environment.valueOf(profile);
+      return Environment.valueOf(profile.toUpperCase());
     } catch (IllegalArgumentException e) {
-      System.out.println("! Profile not found: " + profile);
+      ExceptionUtils.rethrow(e, ProfileNotFoundException.class, "ERROR: Environment profile '"
+          + profile + "' not found. Dev, Stage, Prod are known environment profiles. Pass "
+          + "a valid VM argument e.g -Dprofile=dev");
     }
-
-    System.exit(-1);
-
     return null;
   }
 
@@ -94,11 +103,16 @@ public class SimulationSpecImpl implements SimulationSpec {
 
   @Override
   public void start() {
-    if (simulationRunners.isEmpty()) {
-      System.out
-          .println("No Simulation entity was found in package: " + SimulationConfig.getPackage());
+    try {
+      if (simulationRunners.isEmpty()) {
+        throw new SimulationNotFoundException(
+            "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
+      }
+      simulationRunners.forEach(SimulationRunner::start);
+    } catch (Throwable t) {
+      System.out.println(t.getMessage());
+      System.exit(-1);
     }
-    simulationRunners.forEach(SimulationRunner::start);
   }
 
   @Override

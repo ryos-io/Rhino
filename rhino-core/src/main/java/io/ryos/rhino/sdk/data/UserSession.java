@@ -16,20 +16,22 @@
 
 package io.ryos.rhino.sdk.data;
 
-import io.ryos.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.data.User;
 
 /**
- * User session is a stash to store objects and share them among scenarios per user session. A
- * user will be created before the simulation starts, and it will existing during the simulation
+ * User session is a stash to store objects and share them among scenarios per user session. A user
+ * will be created before the simulation starts, and it will existing during the simulation
  * execution.
+ * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public interface UserSession extends Context {
 
   /**
    * Returns the user of the current session.
+   * <p>
    *
    * @return The user of the current session.
    */

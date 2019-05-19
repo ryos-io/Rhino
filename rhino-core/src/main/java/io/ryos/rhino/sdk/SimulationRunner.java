@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk;
 /**
  * Simulation runner. The implementations of this type run the simulation instances.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @version 1.0
  * @see Simulation
  */

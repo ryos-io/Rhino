@@ -17,18 +17,19 @@
 package io.ryos.rhino.sdk.exceptions;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
  * Exception utils.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0
  */
-public class Exceptions {
+public class ExceptionUtils {
 
-  private static final Logger LOG = LogManager.getLogger(Exceptions.class);
+  private static final Logger LOG = LogManager.getLogger(ExceptionUtils.class);
 
   /**
    * Rethrow any instance of {@link RuntimeException} by wrapping it into a new one, of which type
@@ -36,19 +37,23 @@ public class Exceptions {
    *
    * @param e Exception instance, that is caught.
    * @param exception The new exception to be rethrown.
-   * @param logMsg Log message.
+   * @param message Detailed message, that is output in the stdout.
    */
-  public static void rethrow(Exception e, Class<? extends RuntimeException> exception,
-      String logMsg) {
-    if (logMsg != null) {
-      LOG.error(logMsg, e);
-    }
+  public static void rethrow(final Exception e,
+      final Class<? extends RuntimeException> exception,
+      final String message) {
+
     final Constructor<? extends Exception> declaredConstructor;
     try {
-      declaredConstructor = exception.getDeclaredConstructor(Throwable.class);
-      throw declaredConstructor.newInstance(e);
-    } catch (Exception e1) {
-      LOG.error(e1);
+      if (exception.getDeclaredConstructor(Throwable.class, String.class) != null) {
+        declaredConstructor = exception.getDeclaredConstructor(Throwable.class, String.class);
+        throw (RuntimeException) declaredConstructor.newInstance(e, message);
+      } else {
+        declaredConstructor = exception.getDeclaredConstructor(Throwable.class);
+        throw (RuntimeException) declaredConstructor.newInstance(e);
+      }
+    } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+      LOG.error(ex);
     }
   }
 

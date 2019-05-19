@@ -25,6 +25,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Terminated;
 import akka.dispatch.OnComplete;
+import akka.pattern.Patterns;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
@@ -38,12 +39,17 @@ import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.LogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
+import io.ryos.rhino.sdk.reporting.Recorder;
+import io.ryos.rhino.sdk.reporting.RecorderImpl;
+import io.ryos.rhino.sdk.reporting.StdoutReporter;
+import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.users.User;
-import io.ryos.rhino.sdk.users.UserRepository;
+import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +58,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scala.concurrent.Future;
+import scala.concurrent.Await;
+import scala.concurrent.duration.FiniteDuration;
 
 /**
  * {@link Simulation} is representation of a single performance testing job. The instances of {@link
@@ -64,92 +71,114 @@ import scala.concurrent.Future;
  * The job instances are created by {@link SimulationJobsScanner} classes.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @see io.ryos.rhino.sdk.annotations.Simulation
  * @since 1.0.0
  */
 public class Simulation {
 
   private static final String ACTOR_SYS_NAME = "benchmark";
+  private static final Logger LOG = LogManager.getLogger(Simulation.class);
 
-  private static Logger LOG = LogManager.getLogger(Simulation.class);
-
-  /*
+  /**
    * The name of the simulation, used in reports as well as to start a specific simulation among
    * others, selectively.
+   * <p>
    */
   private String simulationName;
 
-  /*
+  /**
    * Duration of the simulation in minutes.
+   * <p>
    */
   private int duration;
 
-  /*
-   * The number of users to be injected during the benchmark job execution. It
-   * is the maximum number of users making benchmark requests against the
-   * back-end.
+  /**
+   * The number of users to be injected during the benchmark job execution. It is the maximum number
+   * of users making benchmark requests against the back-end.
+   * <p>
    */
   private int injectUser;
 
-  /*
+  /**
    * The number of users to be injected per second.
+   * <p>
    */
   private int rampUp;
 
-  /*
-   * SimulationSpec class
+  /**
+   * SimulationSpec class.
+   * <p>
    */
   private Class simulationClass;
 
-  /*
+  /**
    * SimulationSpec object factory. All reflection calls should be run on this single instance.
+   * <p>
    */
   private Supplier<Object> simulationInstanceFactory =
       () -> instanceOf(simulationClass).orElseThrow();
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for running the test.
+   * <p>
    */
   private List<Scenario> runnableScenarios;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
+   * <p>
    */
   private Method beforeMethod;
 
-  /*
-   * The {@link java.lang.reflect.Method} instance for cleaning up the scenario. The
-   * clean up method will be run after scenario test execution.
+  /**
+   * The {@link java.lang.reflect.Method} instance for cleaning up the scenario. The clean up method
+   * will be run after scenario test execution.
+   * <p>
    */
   private Method afterMethod;
 
-  /*
+  /**
    * The {@link java.lang.reflect.Method} instance for preparing the simulation.
+   * <p>
    */
   private Method prepareMethod;
 
-  /*
-   * The {@link java.lang.reflect.Method} instance for cleaning up the test. The
-   * clean up method will be run after performance simulation execution.
+  /**
+   * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
+   * will be run after performance simulation execution.
+   * <p>
    */
   private Method cleanupMethod;
 
-  // User repository.
+  /**
+   * User repository.
+   * <p>
+   */
   private UserRepository<UserSession> userRepository;
 
-  /*
+  /**
    * Reporter actor reference is the reference to the actor which receives reporting events.
+   * <p>
    */
   private ActorRef loggerActor;
 
   /**
    * Reporter actor reference to report log events to the Influx DB.
+   * <p>
    */
   private ActorRef influxActor;
 
   /**
-   * Enable influx db integration.
+   * StdOut reporter is to write out about the test execution to the stdout. It can be considered as
+   * heartbeat about the running test.
+   * <p>
+   */
+  private ActorRef stdOutReptorter;
+
+  /**
+   * Enable Influx DB integration.
+   * <p>
    */
   private boolean enableInflux;
 
@@ -186,10 +215,8 @@ public class Simulation {
         .forEach(ip -> feed(simulationInstance, ip));
   }
 
-  /**
+  /*
    * Uses a builder to construct the instance.
-   *
-   * @param builder Builder to instantiate the class.
    */
   private Simulation(final Builder builder) {
     this.duration = builder.duration;
@@ -213,12 +240,14 @@ public class Simulation {
     final String reportingURI = builder.reportingURI;
     final LogFormatter formatter = getLogFormatter();
 
+    this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now(), duration),
+        StdoutReporter.class.getName());
+    this.loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter),
+        LogWriter.class.getName());
+
     if (enableInflux) {
       influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
     }
-
-    loggerActor = system
-        .actorOf(LogWriter.props(reportingURI, formatter), LogWriter.class.getName());
 
     if (formatter instanceof GatlingLogFormatter) {
       loggerActor.tell(
@@ -245,7 +274,7 @@ public class Simulation {
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
 
-  public void prepare(UserSession userSession) {
+  void prepare(UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(prepareMethod, cleanUpInstance);
   }
@@ -258,7 +287,7 @@ public class Simulation {
     return cleanUpInstance;
   }
 
-  public void cleanUp(UserSession userSession) {
+  void cleanUp(UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(cleanupMethod, userSession);
   }
@@ -289,17 +318,14 @@ public class Simulation {
     final Optional<Pair<Field, SessionFeeder>> fieldAnnotation = getFieldByAnnotation(
         simulationClass,
         SessionFeeder.class);
-    fieldAnnotation.ifPresent(f -> {
-      setValueToInjectionPoint(userSession, f.first, simulationInstance);
-    });
+    fieldAnnotation
+        .ifPresent(f -> setValueToInjectionPoint(userSession, f.first, simulationInstance));
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
     final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
         UserFeeder.class);
-    fieldAnnotation.ifPresent(f -> {
-      setValueToInjectionPoint(user, f.first, simulationInstance);
-    });
+    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(user, f.first, simulationInstance));
   }
 
   private <T> void setValueToInjectionPoint(final T object, final Field f,
@@ -357,48 +383,64 @@ public class Simulation {
     userEventEnd.id = user.getId();
     recorder.record(userEventEnd);
 
-    recorder.getEvents().forEach(e -> loggerActor.tell(e, ActorRef.noSender()));
-    if (enableInflux) {
-      recorder.getEvents().forEach(e -> influxActor.tell(e, ActorRef.noSender()));
-    }
+    dispatchEvents(recorder);
 
     executeMethod(afterMethod, simulationInstance);
 
     return recorder;
   }
 
-  public void stop() {
-    final Future<Terminated> terminate = system.terminate();
+  private void dispatchEvents(final RecorderImpl recorder) {
+    recorder.getEvents().forEach(e -> {
+
+      loggerActor.tell(e, ActorRef.noSender());
+
+      stdOutReptorter.tell(e, ActorRef.noSender());
+
+      if (enableInflux) {
+        influxActor.tell(e, ActorRef.noSender());
+      }
+    });
+  }
+
+  void stop() {
+
+    reportTermination();
+
+    var terminate = system.terminate();
+
     terminate.onComplete(new OnComplete<>() {
+
       @Override
-      public void onComplete(final Throwable throwable, final Terminated terminated)
-          throws Throwable {
+      public void onComplete(final Throwable throwable, final Terminated terminated) {
         system = null;
       }
+
     }, system.dispatcher());
   }
 
-  public String getSimulationName() {
-    return simulationName;
+  private void reportTermination() {
+    var ask = Patterns.ask(stdOutReptorter, new EndTestEvent(Instant.now()), 5000L);
+    try {
+      Await.result(ask, FiniteDuration.Inf());
+    } catch (Exception e) {
+      LOG.debug(e); // expected exception is a Timeout. It is ok.
+    }
   }
 
-  public int getInjectUser() {
+  int getInjectUser() {
     return injectUser;
   }
 
-  public int getRampUp() {
-    return rampUp;
-  }
-
-  public UserRepository<UserSession> getUserRepository() {
+  UserRepository<UserSession> getUserRepository() {
     return userRepository;
   }
 
-  public int getDuration() {
+  int getDuration() {
     return duration;
   }
 
-  public List<Scenario> getRunnableScenarios() {
+  List<Scenario> getRunnableScenarios() {
     return runnableScenarios;
   }
 

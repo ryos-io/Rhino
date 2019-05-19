@@ -16,9 +16,9 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.users.DefaultUserRepositoryFactoryImpl;
-import io.ryos.rhino.sdk.users.UserRepositoryFactory;
-import io.ryos.rhino.sdk.users.User;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
+import io.ryos.rhino.sdk.users.data.User;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * authentication strategy.
  * <p>
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)

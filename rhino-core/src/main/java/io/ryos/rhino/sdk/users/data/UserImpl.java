@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.data;
 
 public class UserImpl implements User {
 

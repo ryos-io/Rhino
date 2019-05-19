@@ -8,9 +8,9 @@ import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.feeders.UUIDFeeder;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
+import io.ryos.rhino.sdk.reporting.Recorder;
 
 @Simulation(name = "Server-Status Simulation Without User")
-@Logging(file = "/Users/bagdemir/sims/simulation.log", formatter = GatlingLogFormatter.class)
 public class PerformanceTestingExampleWithoutUser {
 
   @Feeder(factory = UUIDFeeder.class)
@@ -21,9 +21,16 @@ public class PerformanceTestingExampleWithoutUser {
     //System.out.println("Preparing the test with user:" + user.getUsername());
   }
 
-  @Scenario(name = "Hello")
-  public void performDiscovery(Recorder recorder) {
-    System.out.println("Hello");
+  @Scenario(name = "Hellolololoolololloloolollolo")
+  public void performDiscovery(Recorder recorder) throws InterruptedException {
+    // System.out.println("Hello");
+    //Thread.sleep(1000L);
+    recorder.record("test1 as as as as as as as as as", 200);
+    //Thread.sleep(100L);
+    recorder.record("test1", 404);
+    //Thread.sleep(100L);
+    recorder.record("test2", 200);
+
   }
 
   @After

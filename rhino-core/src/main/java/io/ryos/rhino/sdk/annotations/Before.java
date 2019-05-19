@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Method annotation to mark preparation methods, that is run before every test execution. Use
  * these to set up your benchmarks.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -14,13 +14,13 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.data;
 
 /**
  * Representation of a User, that is used in requests against the backend. Every request is
  * associated with an user.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.0.0
  */
 public interface User {

@@ -14,16 +14,23 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.reporting;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import java.util.List;
+/**
+ * Recorder is used in performance tests to record the result of execution. Recorded metrics will
+ * be flushed into the storage registered.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ */
+public interface Recorder {
 
-public interface UserRepository<T extends UserSession> {
-
-  boolean has(int numberOfUsers);
-
-  List<T> getUserSessions();
-
-  T take();
+  /**
+   * Call record(String, int) to record the temporal metrics.
+   * <p>
+   *
+   * @param stepName The name of the step.
+   * @param status HTTP status of the load execution.
+   */
+  void record(final String stepName, final int status);
 }

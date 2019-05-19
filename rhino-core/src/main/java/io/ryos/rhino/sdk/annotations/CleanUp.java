@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * The annotation is to mark the methods which are to be run after the user session completes.
  * The clean-up methods are useful to free resources which are allocated in prepare methods.
  *
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

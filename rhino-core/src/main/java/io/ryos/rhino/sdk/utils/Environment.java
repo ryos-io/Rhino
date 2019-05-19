@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.utils;
 
 /**
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
     */
 public enum Environment {
   DEV,

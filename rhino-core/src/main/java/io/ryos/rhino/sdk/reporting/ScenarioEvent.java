@@ -14,12 +14,12 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.reporting;
 
-public class OAuthAuthenticatorImpl implements UserAuthenticator<User, OAuthUser> {
-
-    @Override
-    public OAuthUser authenticate(User user) {
-        return null;
-    }
+/**
+ * @author Erhan Bagdemir
+ */
+public class ScenarioEvent extends LogEvent {
+  public String status;
+  public String step;
 }

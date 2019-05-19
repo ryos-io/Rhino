@@ -17,14 +17,13 @@
 package io.ryos.rhino.sdk.reporting;
 
 /**
- * @author <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  */
 public class LogEvent {
 
   public String username;
   public int userId;
   public String scenario;
-
   public long start;
   public long end;
   public long elapsed;
