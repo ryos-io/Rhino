@@ -115,15 +115,15 @@ public class SimulationConfig {
   }
 
   private String getAuthClientId() {
-    return properties.getProperty(environment + ".auth.clientId");
+    return properties.getProperty(environment + ".oauth.clientId");
   }
 
   private String getAuthApiKey() {
-    return properties.getProperty(environment + ".auth.apiKey");
+    return properties.getProperty(environment + ".oauth.apiKey");
   }
 
   private String getAuthEndpoint() {
-    return properties.getProperty(environment + ".auth.endpoint");
+    return properties.getProperty(environment + ".oauth.endpoint");
   }
 
   private String getAuthVaultEndpoint() {
@@ -143,7 +143,7 @@ public class SimulationConfig {
   }
 
   private String getAuthClientSecret() {
-    return properties.getProperty(environment + ".auth.clientSecret");
+    return properties.getProperty(environment + ".oauth.clientSecret");
   }
 
   private String getEndpoint() {
@@ -151,7 +151,7 @@ public class SimulationConfig {
   }
 
   private String getAuthGrantType() {
-    return properties.getProperty(environment + ".auth.grantType");
+    return properties.getProperty(environment + ".oauth.grantType");
   }
 
   String getPackageToScan() {
