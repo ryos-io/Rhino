@@ -16,10 +16,12 @@
 
 package io.ryos.rhino.sdk.users.repositories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
 import io.ryos.rhino.sdk.users.data.User;
@@ -31,18 +33,15 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
-  private static final Logger LOG = LogManager.getLogger(OAuthUserRepositoryImpl.class);
   private static final String CLIENT_ID = "client_id";
   private static final String CLIENT_SECRET = "client_secret";
   private static final String GRANT_TYPE = "grant_type";
@@ -136,7 +135,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
           SimulationConfig.getClientId(),
           user.getId()));
     } catch (Exception e) {
-      LOG.error(e);
+      ExceptionUtils.rethrow(e, UserLoginException.class, "Login failed.");
     }
 
     return Optional.empty();
