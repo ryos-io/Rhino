@@ -17,7 +17,7 @@ testing web services which consists of the Rhino Java framework as well as a col
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
 
-**Rhino's philosophy is basically:**
+**Rhino's philosophy is:**
 
 * to speed up load and performance test development,
 * a debuggable test framework written in Java, so that you can go through the breakpoints while 
