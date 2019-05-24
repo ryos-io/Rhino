@@ -25,7 +25,7 @@ import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.feeders.UUIDFeeder;
+import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.Recorder;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
@@ -44,7 +44,7 @@ public class PerformanceTestingExample {
   @SessionFeeder
   private UserSession userSession;
 
-  @Feeder(factory = UUIDFeeder.class)
+  @Feeder(factory = UUIDProvider.class)
   private String uuid;
 
   @Before
