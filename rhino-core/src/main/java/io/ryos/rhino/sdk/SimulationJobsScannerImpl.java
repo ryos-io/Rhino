@@ -182,8 +182,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
     var injectAnnotationField = getFieldByAnnotation(clazz, UserFeeder.class);
-    var maxUserInject = injectAnnotationField.map(p -> p.second.max()).orElse(10);
-    var userRepo = injectAnnotationField.map(p -> createUserRepository(p.second))
+    var maxUserInject = injectAnnotationField.map(p -> p.getSecond().max()).orElse(10);
+    var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
     return new Simulation.Builder().

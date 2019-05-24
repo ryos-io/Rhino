@@ -33,11 +33,12 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 /**
- * Stdout reporter outputs the current status of the test run. It gives out information like number
- * of requests per scenario, and avg. response times.
+ * The actor outputs the current status of the test run. It gives out information to
+ * stdout like number of requests per scenario, and avg. response times.
  * <p>
  *
  * <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @since 1.1.0
  */
 public class StdoutReporter extends AbstractActor {
 
@@ -45,15 +46,26 @@ public class StdoutReporter extends AbstractActor {
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
   private static final String BORDER_LINE_BOLD =
       "==========================================================================";
-  private static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+  private static final String DATETIME_PATTERN = "HH:mm:ss";
   private static final String NOT_AVAILABLE = "N/A";
-  public static final int MSG_OK = 200;
+  private static final int MSG_OK = 200;
+  private static final String COUNT = "Count/";
+  private static final String RESPONSE_TIME = "ResponseTime/";
 
   private Instant startTime;
   private int duration;
   private int numberOfUsers;
-  private boolean terminated;
 
+  /**
+   * Indicates whether the termination event has been received.
+   * <p>
+   */
+  private volatile boolean receivedTerminationEvent;
+
+  /**
+   * The timer for flushing output.
+   * <p>
+   */
   private Timer timer;
 
   /**
@@ -72,6 +84,7 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private StdoutReporter(int numberOfUsers, Instant startTime, int duration) {
+    this.receivedTerminationEvent = false;
     this.duration = duration;
     this.numberOfUsers = numberOfUsers;
     this.startTime = startTime;
@@ -82,27 +95,27 @@ public class StdoutReporter extends AbstractActor {
         flushReport(null);
       }
     };
-    timer.schedule(timerTask, DELAY, PERIOD);
+    this.timer.schedule(timerTask, DELAY, PERIOD);
   }
 
   @Override
   public Receive createReceive() {
     return ReceiveBuilder.create()
         .match(ScenarioEvent.class, this::persist)
-        .match(EndTestEvent.class, this::endTest)
+        .match(EndTestEvent.class, this::activateTermination)
         .build();
   }
 
-  private void endTest(final EndTestEvent endEvent) {
-    if (terminated) {
+  private void activateTermination(final EndTestEvent endEvent) {
+    if (receivedTerminationEvent) {
       sender().tell(MSG_OK, self());
       return;
     }
 
+    this.receivedTerminationEvent = true;
     this.timer.cancel();
     flushReport(endEvent);
     sender().tell(MSG_OK, self());
-    this.terminated = true;
   }
 
   private void persist(final ScenarioEvent logEvent) {
@@ -140,30 +153,33 @@ public class StdoutReporter extends AbstractActor {
 
     List<String> countMetrics = metrics.entrySet()
         .stream()
-        .filter(e -> e.getKey().startsWith("Count/"))
+        .filter(e -> e.getKey().startsWith(COUNT))
         .map(e -> formatKey(e.getKey()) + " " + e.getValue())
         .collect(Collectors.toList());
 
     List<String> responseTypeMetrics = metrics.entrySet()
         .stream()
-        .filter(e -> e.getKey().startsWith("ResponseTime/"))
+        .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
         .map(
             e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
         .collect(Collectors.toList());
 
     long overAllResponseTime = metrics.entrySet()
         .stream()
-        .filter(e -> e.getKey().startsWith("ResponseTime/"))
+        .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
         .map(Entry::getValue)
         .reduce(Long::sum).orElse(0L);
 
     long totalNumberOfRequests = metrics.entrySet()
         .stream()
-        .filter(e -> e.getKey().startsWith("Count/"))
+        .filter(e -> e.getKey().startsWith(COUNT))
         .map(Entry::getValue)
         .reduce(Long::sum).orElse(0L);
 
-    long avgRT = overAllResponseTime / totalNumberOfRequests;
+    long avgRT = -1;
+    if (totalNumberOfRequests > 0) {
+      avgRT = overAllResponseTime / totalNumberOfRequests;
+    }
 
     StringBuilder output = new StringBuilder();
     output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
@@ -193,9 +209,6 @@ public class StdoutReporter extends AbstractActor {
     output.append(String.format("%50s %9s ", "Total Request", totalNumberOfRequests)).append('\n');
     output.append(BORDER_LINE_BOLD).append('\n');
 
-    if (event != null) {
-      output.append("\n").append("Bye!").append('\n');
-    }
     System.out.println(output.toString());
   }
 
@@ -208,15 +221,18 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private long getAvgResponseTime(String key, long totalElapsed) {
-    final Long totalCount = metrics.get(key.replace("ResponseTime/", "Count/"));
-    return totalElapsed / totalCount;
+    final Long totalCount = metrics.get(key.replace(RESPONSE_TIME, COUNT));
+    if (totalCount > 0) {
+      return totalElapsed / totalCount;
+    }
+    return -1;
   }
 
   private String formatKey(String key) {
 
     String normalizedStr = key
-        .replace("ResponseTime/", "")
-        .replace("Count/", "");
+        .replace(RESPONSE_TIME, "")
+        .replace(COUNT, "");
 
     String[] split = normalizedStr.split("/");
 

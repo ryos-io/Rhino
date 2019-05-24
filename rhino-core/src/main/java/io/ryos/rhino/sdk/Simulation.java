@@ -319,13 +319,13 @@ public class Simulation {
         simulationClass,
         SessionFeeder.class);
     fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(userSession, f.first, simulationInstance));
+        .ifPresent(f -> setValueToInjectionPoint(userSession, f.getFirst(), simulationInstance));
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
     final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
         UserFeeder.class);
-    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(user, f.first, simulationInstance));
+    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }
 
   private <T> void setValueToInjectionPoint(final T object, final Field f,
