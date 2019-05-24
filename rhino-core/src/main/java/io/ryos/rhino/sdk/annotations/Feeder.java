@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.feeders.Feed;
+import io.ryos.rhino.sdk.feeders.Feedable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -40,5 +40,5 @@ public @interface Feeder {
    *
    * @return Factory implementation.
    */
-  Class<? extends Feed> factory();
+  Class<? extends Feedable> factory();
 }

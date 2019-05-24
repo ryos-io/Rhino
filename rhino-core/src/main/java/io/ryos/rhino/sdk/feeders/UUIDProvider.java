@@ -19,9 +19,13 @@ package io.ryos.rhino.sdk.feeders;
 import java.util.UUID;
 
 /**
- * Standard feeder which feeds UUID.
+ * Provider, which creates UUIDs.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @version 1.0.0
  */
-public class UUIDFeeder implements Feed<String> {
+public class UUIDProvider implements Feedable<String> {
 
   @Override
   public String take() {

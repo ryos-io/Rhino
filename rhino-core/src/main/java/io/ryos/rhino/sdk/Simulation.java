@@ -26,7 +26,6 @@ import akka.actor.ActorSystem;
 import akka.actor.Terminated;
 import akka.dispatch.OnComplete;
 import akka.pattern.Patterns;
-import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
@@ -34,7 +33,7 @@ import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.feeders.Feed;
+import io.ryos.rhino.sdk.feeders.Feedable;
 import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.LogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
@@ -184,17 +183,17 @@ public class Simulation {
 
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
-  // Predicate to search fields for Feeder annotation.
+  // Predicate to search fields for Feedable annotation.
   private final Predicate<Field> hasFeeder = (f) -> Arrays
       .stream(f.getDeclaredAnnotations())
-      .anyMatch(Feeder.class::isInstance);
+      .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
-  private final Function<Field, InjectionPoint<Feeder>> ipCreator =
-      (f) -> new InjectionPoint<>(f, f.getDeclaredAnnotation(Feeder.class));
+  private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
+      (f) -> new InjectionPoint<>(f, f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
-  // Feed the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Feeder> ip) {
-    Feed o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
+  // Feedable the feeder value into the field.
+  private void feed(final Object instance, final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
+    Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
     Object value = o.take();
     try {
       Field field = ip.getField();
@@ -203,7 +202,7 @@ public class Simulation {
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } catch (IllegalArgumentException e) {
-      LOG.error("Feeder's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 
