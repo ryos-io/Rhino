@@ -16,42 +16,38 @@
 
 package io.ryos.rhino.sdk;
 
-import akka.actor.ActorSystem;
-import akka.actor.Terminated;
-import akka.dispatch.OnComplete;
-import akka.stream.ActorMaterializer;
-import akka.stream.KillSwitches;
-import akka.stream.OverflowStrategy;
-import akka.stream.javadsl.Keep;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.StreamConverters;
+import static reactor.core.publisher.Flux.fromStream;
+
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.CyclicIterator;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Flow.Subscriber;
+import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
-import scala.concurrent.Future;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
- * Simulation runner is the load generator engine based on Akka streams. The implementation
- * creates two cyclic iterator, one of them is for {@link UserSession} instances, the other one
- * is for {@link Scenario} instances, both of them will be zipped into Pair during stream
- * processing. Cyclic iterators delivers {@link UserSession} and {@link Scenario} instances
- * infinitely, unless the stop method is explicitly called. The simulation will be run with
- * UserSession and Scenario pair, e.g <UserA, scenario1> in parallel. If the generators are not
- * stopped explicitly, the stream becomes a perpetual stream, that runs infinitely.
+ * Simulation runner is the load generator engine based on Akka streams. The implementation creates
+ * two cyclic iterator, one of them is for {@link UserSession} instances, the other one is for
+ * {@link Scenario} instances, both of them will be zipped into Pair during stream processing.
+ * Cyclic iterators delivers {@link UserSession} and {@link Scenario} instances infinitely, unless
+ * the stop method is explicitly called. The simulation will be run with UserSession and Scenario
+ * pair, e.g <UserA, scenario1> in parallel. If the generators are not stopped explicitly, the
+ * stream becomes a perpetual stream, that runs infinitely.
  * <p>
  *
- * The {@link SimulationRunner} terminates either by calling the stop method explicitly, or
- * the completes, it is the elapsed time exceeds the test duration defined in
- * {@link io.ryos.rhino.sdk.annotations.Simulation} annotation.
+ * The {@link SimulationRunner} terminates either by calling the stop method explicitly, or the
+ * completes, it is the elapsed time exceeds the test duration defined in {@link
+ * io.ryos.rhino.sdk.annotations.Simulation} annotation.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -63,17 +59,12 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
-  private static final int BUFFER_SIZE = 2000;
-  private static final long INITIAL_DELAY = 0L;
-  private static final long PERIOD = 1L;
 
   private Simulation simulation;
-  private ActorSystem system = ActorSystem.create("rhino");
   private CyclicIterator<Scenario> scenarioCyclicIterator;
   private ScheduledExecutorService scheduler;
-  private volatile long elapsed;
-  private volatile int duration;
   private volatile boolean shutdownInitiated;
+  private Disposable subscribe;
 
   /**
    * Creates a new {@link SimulationRunnerImpl} instance.
@@ -85,82 +76,45 @@ public class SimulationRunnerImpl implements SimulationRunner {
     this.simulation = context.<Simulation>get(JOB).orElseThrow();
     this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getRunnableScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
-    this.duration = simulation.getDuration();
   }
 
   public void start() {
 
     System.out.println("Starting load test for " + simulation.getDuration() + " minutes ...");
 
-    final UserRepository userRepository = simulation.getUserRepository();
+    var userRepository = simulation.getUserRepository();
 
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
 
     prepareUserSessions(userRepository.getUserSessions());
 
-    // two streams will be zipped and materialized.
-    var userStream =
-        StreamConverters
-            .fromJavaStream(() -> Stream.generate((Supplier<UserSession>) userRepository::take));
-    var scenarioStream =
-        StreamConverters.fromJavaStream(() -> Stream.generate(scenarioCyclicIterator::next));
+    var users = Stream.generate(userRepository::take);
+    var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
-    var materializer = ActorMaterializer.create(system);
+    this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
+        .take(Duration.ofMinutes(simulation.getDuration()))
+        .parallel(10)
+        .runOn(Schedulers.elastic())
+        .doOnTerminate(this::stop)
+        .subscribe((t) -> simulation.run(t.getT1(), t.getT2()));
 
-    // Scheduler to determine the end of simulation.
-    scheduler
-        .scheduleAtFixedRate(this::shutdownIfCompleted, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
-
-    // Fetch users from circular linked-list, i.e infinite source.
-    var doneCompletionStage = userStream.zip(scenarioStream)
-        .viaMat(KillSwitches.single(), Keep.right())
-        .buffer(BUFFER_SIZE, OverflowStrategy.backpressure())
-        .takeWhile(p -> checkDuration())
-        .map(p -> simulation.run(p.first(), p.second()))
-        .async()
-        .runWith(Sink.ignore(), materializer);
-
-    doneCompletionStage.thenRun(() -> system.terminate());
-
-    // Exceptional shutdown.
-    doneCompletionStage.exceptionally(t -> {
-      shutDown(-1);
-      return null;
-    });
-  }
-
-  private void shutdownIfCompleted() {
-    synchronized (this) {
-      ++elapsed;
+    try {
+      Thread.sleep(1000 * 60);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
-    if (isCompleted()) {
-      System.out.println("! Performance test is now completed. Shutting down the system ...");
-      shutDown(0);
-    }
-  }
-
-  private boolean checkDuration() {
-    synchronized (SimulationRunnerImpl.this) {
-      return elapsed < duration * 60;
-    }
-  }
-
-  private boolean isCompleted() {
-    return elapsed >= duration * 60;
+    shutdown();
+    System.exit(0);
   }
 
   @Override
   public void stop() {
-    stop(0);
-  }
-
-  public void stop(int statusCode) {
     System.out.println("Someone pushed the stop() button on runner.");
-    shutDown(statusCode);
+    shutdown();
   }
 
-  private void shutDown(int status) {
+  private void shutdown() {
     if (shutdownInitiated) {
       return;
     }
@@ -169,40 +123,28 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
     System.out.println("Stopping the simulation...");
 
-    final Future<Terminated> terminature = system.terminate();
-    terminature.onComplete(new OnComplete<>() {
-      @Override
-      public void onComplete(final Throwable throwable, final Terminated terminated) {
-        if (throwable != null) {
-          // shutdown failed.
-          System.err.println(throwable.getMessage());
-        }
+    subscribe.dispose();
+    // run cleanup.
+    System.out.println("Cleaning up.");
+    final UserRepository<UserSession> userRepository = simulation.getUserRepository();
+    cleanupUserSessions(userRepository.getUserSessions());
 
-        // run cleanup.
-        System.out.println("Cleaning up.");
-        final UserRepository<UserSession> userRepository = simulation.getUserRepository();
-        cleanupUserSessions(userRepository.getUserSessions());
+    // proceed with shutdown.
+    System.out.println("Shutting down the system ...");
+    scenarioCyclicIterator.stop();
+    simulation.stop();
 
-        // proceed with shutdown.
-        System.out.println("Shutting down the system ...");
-        scenarioCyclicIterator.stop();
-        simulation.stop();
+    System.out.println("Shutting down the scheduler ...");
+    scheduler.shutdown();
+    int retry = 0;
+    while (!scheduler.isShutdown() && ++retry < 5) {
+      waitForASec();
+    }
 
-        System.out.println("Shutting down the scheduler ...");
-        scheduler.shutdown();
-        int retry = 0;
-        while (!scheduler.isShutdown() && ++retry < 5) {
-          waitForASec();
-        }
+    scheduler.shutdownNow();
 
-        scheduler.shutdownNow();
-
-        System.out.println("Shutting down completed ...");
-        System.out.println("Bye!");
-
-        System.exit(status);
-      }
-    }, system.dispatcher());
+    System.out.println("Shutting down completed ...");
+    System.out.println("Bye!");
   }
 
   private void waitForASec() {
@@ -240,7 +182,8 @@ public class SimulationRunnerImpl implements SimulationRunner {
               + "@Simulation annotation. Required "
               + simulation.getInjectUser() + " user.");
 
-      shutDown(-1);
+      shutdown();
+      System.exit(-1);
     }
 
     System.out.println("User login completed. Total user: " + simulation.getInjectUser());
