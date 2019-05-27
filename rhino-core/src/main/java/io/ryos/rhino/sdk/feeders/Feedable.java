@@ -16,6 +16,22 @@
 
 package io.ryos.rhino.sdk.feeders;
 
-public interface Feed<T> {
-    T take();
+/**
+ * Feedable is object provider to create new instances of type, T, to inject them into injection
+ * points annotated with {@link Feedable}.
+ * <p>
+ *
+ * @param <T> Type of object being fed.
+ * @author Erhan Bagdemir
+ * @version 1.0.0
+ */
+public interface Feedable<T> {
+
+  /**
+   * Instance to be fed into injection point.
+   * <p>
+   *
+   * @return Instance to be injected.
+   */
+  T take();
 }

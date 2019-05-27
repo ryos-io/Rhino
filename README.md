@@ -108,7 +108,7 @@ $ docker run -t yourproject:latest
 If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
 
 * [Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
-* [Simulations](https://github.com/bagdemir/rhino/wiki/Simulations)
+* [Simulations and Scenarios](https://github.com/bagdemir/Rhino/wiki/Simulations-and-Scenarios)
 * [Feeders](https://github.com/bagdemir/rhino/wiki/Feeders)
 * [Configuration of Tests](https://github.com/bagdemir/rhino/wiki/Configuration)
 * [Users in your Tests](https://github.com/bagdemir/rhino/wiki/Testing-with-Users)
