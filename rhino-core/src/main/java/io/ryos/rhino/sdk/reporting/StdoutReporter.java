@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ import java.util.stream.Collectors;
  * stdout like number of requests per scenario, and avg. response times.
  * <p>
  *
- * <a href="mailto:erhan@ryos.io">Erhan Bagdemir</a>
+ * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public class StdoutReporter extends AbstractActor {
@@ -53,7 +52,7 @@ public class StdoutReporter extends AbstractActor {
   private static final String RESPONSE_TIME = "ResponseTime/";
 
   private Instant startTime;
-  private int duration;
+  private Duration duration;
   private int numberOfUsers;
 
   /**
@@ -78,12 +77,12 @@ public class StdoutReporter extends AbstractActor {
   private final Map<String, Long> metrics = new HashMap<>();
 
   // Akka static factory.
-  public static Props props(int numberOfUsers, Instant startTime, int duration) {
+  public static Props props(int numberOfUsers, Instant startTime, Duration duration) {
     return Props.create(StdoutReporter.class, () -> new StdoutReporter(numberOfUsers, startTime,
         duration));
   }
 
-  private StdoutReporter(int numberOfUsers, Instant startTime, int duration) {
+  private StdoutReporter(int numberOfUsers, Instant startTime, Duration duration) {
     this.receivedTerminationEvent = false;
     this.duration = duration;
     this.numberOfUsers = numberOfUsers;
@@ -186,9 +185,9 @@ public class StdoutReporter extends AbstractActor {
     output.append("Tests started : ").append(formatDate(startTime)).append('\n');
     output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
         .append(" secs ETA : ")
-        .append(formatDate(startTime.plus(duration, ChronoUnit.MINUTES)))
+        .append(formatDate(startTime.plus(duration)))
         .append(" (duration ")
-        .append(duration)
+        .append(duration.toMinutes())
         .append(" mins)")
         .append('\n');
 

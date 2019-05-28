@@ -24,7 +24,6 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.CyclicIterator;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -92,23 +91,36 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
     this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
-        .take(Duration.ofMinutes(simulation.getDuration()))
+        .take((simulation.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
-        .doOnTerminate(this::stop)
-        .subscribe(t -> simulation.run(t.getT1(), t.getT2()));
+        .doOnTerminate(this::notifyAwaiting)
+        .doOnNext(t -> simulation.run(t.getT1(), t.getT2()))
+        .subscribe();
 
-    try {
-      Thread.sleep(1000 * 60);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    await();
+    stop();
+  }
+
+  private void await() {
+    synchronized (this) {
+      try {
+        wait(simulation.getDuration().toMillis() + 1000);
+      } catch (InterruptedException e) {
+        // Intentionally left empty.
+      }
     }
-    shutdown();
-    System.exit(0);
+  }
+
+  private void notifyAwaiting() {
+    synchronized (this) {
+      notify();
+    }
   }
 
   @Override
   public void stop() {
+
     System.out.println("Someone pushed the stop() button on runner.");
     shutdown();
   }

@@ -48,6 +48,7 @@ import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -95,7 +96,7 @@ public class Simulation {
    * Duration of the simulation in minutes.
    * <p>
    */
-  private int duration;
+  private Duration duration;
 
   /**
    * The number of users to be injected during the benchmark job execution. It is the maximum number
@@ -448,7 +449,7 @@ public class Simulation {
     return userRepository;
   }
 
-  int getDuration() {
+  Duration getDuration() {
     return duration;
   }
 
@@ -532,7 +533,7 @@ public class Simulation {
     /**
      * Duration of the performance test.
      */
-    private int duration;
+    private Duration duration;
 
     /**
      * Enables the influx db integration.
@@ -609,7 +610,7 @@ public class Simulation {
       return this;
     }
 
-    public Builder withDuration(final int duration) {
+    public Builder withDuration(final Duration duration) {
       this.duration = duration;
       return this;
     }

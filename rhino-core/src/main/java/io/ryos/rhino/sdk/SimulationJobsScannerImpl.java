@@ -41,6 +41,7 @@ import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -192,7 +193,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
             DefaultSimulationRunner.class).
         withSimulation(simAnnotation.name()).
-        withDuration(simAnnotation.durationInMins()).
+        withDuration(Duration.ofMinutes(simAnnotation.durationInMins())).
         withInjectUser(maxUserInject).
         withLogWriter(validateLogFile(logger)).
         withInflux(enableInflux).
