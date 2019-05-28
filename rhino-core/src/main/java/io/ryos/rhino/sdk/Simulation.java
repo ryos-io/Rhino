@@ -80,6 +80,11 @@ public class Simulation {
   private static final Logger LOG = LogManager.getLogger(Simulation.class);
 
   /**
+   * Runner.
+   */
+  private Class<? extends SimulationRunner> runner;
+
+  /**
    * The name of the simulation, used in reports as well as to start a specific simulation among
    * others, selectively.
    * <p>
@@ -189,10 +194,12 @@ public class Simulation {
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
   private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
-      (f) -> new InjectionPoint<>(f, f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+      (f) -> new InjectionPoint<>(f,
+          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
+  private void feed(final Object instance,
+      final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
     Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
     Object value = o.take();
     try {
@@ -230,6 +237,7 @@ public class Simulation {
     this.afterMethod = builder.afterMethod;
     this.userRepository = builder.userRepository;
     this.enableInflux = builder.enableInflux;
+    this.runner = builder.runner;
 
     /*
      * Log writer is the {@link java.io.Closeable} instance to write the execution
@@ -324,7 +332,8 @@ public class Simulation {
   private void injectUser(final User user, final Object simulationInstance) {
     final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
         UserFeeder.class);
-    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
+    fieldAnnotation
+        .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }
 
   private <T> void setValueToInjectionPoint(final T object, final Field f,
@@ -427,6 +436,10 @@ public class Simulation {
     }
   }
 
+  public Class<? extends SimulationRunner> getRunner() {
+    return runner;
+  }
+
   int getInjectUser() {
     return injectUser;
   }
@@ -468,6 +481,11 @@ public class Simulation {
      * annotation.
      */
     private Class<?> simulationClass;
+
+    /**
+     * Runner implementation.
+     */
+    private Class<? extends SimulationRunner> runner;
 
     /**
      * The {@link java.lang.reflect.Method} instance of the run method.
@@ -543,6 +561,11 @@ public class Simulation {
 
     public Builder withSimulationClass(final Class<?> simulationClass) {
       this.simulationClass = simulationClass;
+      return this;
+    }
+
+    public Builder withRunner(final Class<? extends SimulationRunner> runner) {
+      this.runner = runner;
       return this;
     }
 

@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk;
 
 import static reactor.core.publisher.Flux.fromStream;
 
+import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -27,8 +28,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Flow.Subscriber;
-import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 import reactor.core.Disposable;
@@ -54,7 +53,7 @@ import reactor.core.scheduler.Schedulers;
  * @see CyclicIterator
  * @since 1.0.0
  */
-public class SimulationRunnerImpl implements SimulationRunner {
+public class DefaultSimulationRunner implements SimulationRunner {
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
@@ -67,12 +66,12 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private Disposable subscribe;
 
   /**
-   * Creates a new {@link SimulationRunnerImpl} instance.
+   * Creates a new {@link DefaultSimulationRunner} instance.
    * <p>
    *
    * @param context {@link ContextImpl} instance.
    */
-  SimulationRunnerImpl(ContextImpl context) {
+  public DefaultSimulationRunner(Context context) {
     this.simulation = context.<Simulation>get(JOB).orElseThrow();
     this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getRunnableScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -94,10 +93,10 @@ public class SimulationRunnerImpl implements SimulationRunner {
 
     this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
         .take(Duration.ofMinutes(simulation.getDuration()))
-        .parallel(10)
+        .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::stop)
-        .subscribe((t) -> simulation.run(t.getT1(), t.getT2()));
+        .subscribe(t -> simulation.run(t.getT1(), t.getT2()));
 
     try {
       Thread.sleep(1000 * 60);
@@ -150,7 +149,7 @@ public class SimulationRunnerImpl implements SimulationRunner {
   private void waitForASec() {
     System.out.println("Wait ...");
     try {
-      Thread.sleep(SimulationRunnerImpl.ONE_SEC);
+      Thread.sleep(DefaultSimulationRunner.ONE_SEC);
     } catch (InterruptedException e) {
       // intentionally left empty.
     }

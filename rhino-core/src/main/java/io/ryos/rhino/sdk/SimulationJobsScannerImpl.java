@@ -163,11 +163,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private Simulation createBenchmarkJob(final Class clazz) {
 
-    var scenarioAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
+    var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
-
+    var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
-
     var stepMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.Scenario))
@@ -189,8 +189,10 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new Simulation.Builder().
         withSimulationClass(clazz).
         withUserRepository(userRepo).
-        withSimulation(scenarioAnnotation.name()).
-        withDuration(scenarioAnnotation.durationInMins()).
+        withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
+            DefaultSimulationRunner.class).
+        withSimulation(simAnnotation.name()).
+        withDuration(simAnnotation.durationInMins()).
         withInjectUser(maxUserInject).
         withLogWriter(validateLogFile(logger)).
         withInflux(enableInflux).
@@ -231,7 +233,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     try {
       final Constructor<? extends UserRepositoryFactory> factoryConstructor =
           factory.getConstructor(long.class);
-      final UserRepositoryFactory userRepositoryFactory = factoryConstructor.newInstance(loginDelay);
+      final UserRepositoryFactory userRepositoryFactory = factoryConstructor
+          .newInstance(loginDelay);
       return userRepositoryFactory.create();
     } catch (NoSuchMethodException nsme) {
       return createWithDefaultConstructor(factory);
@@ -242,7 +245,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     throw new RepositoryNotFoundException();
   }
 
-  private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {
+  private UserRepository createWithDefaultConstructor(
+      Class<? extends UserRepositoryFactory> factory) {
     try {
       return factory.getDeclaredConstructor().newInstance().create();
     } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
