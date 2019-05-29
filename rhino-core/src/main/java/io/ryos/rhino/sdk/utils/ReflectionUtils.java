@@ -24,10 +24,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Reflection utility methods.
@@ -37,6 +35,9 @@ import org.apache.logging.log4j.Logger;
 public class ReflectionUtils {
 
   private static final Logger LOG = LogManager.getLogger(ReflectionUtils.class);
+
+  private ReflectionUtils() {
+  }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
   public static <T extends Annotation> Pair<Optional<Field>, T> findFieldByAnnotation(Class clazz,

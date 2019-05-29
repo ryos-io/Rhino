@@ -45,6 +45,8 @@ public class SimulationConfig {
   private static final Logger LOG = LogManager.getLogger(SimulationConfig.class);
   private static final String PACKAGE_TO_SCAN = "packageToScan";
   private static final String SOURCE_CLASSPATH = "classpath://";
+  public static final int PAR_RATIO = 5;
+  public static final int MAX_PAR = 1000;
   private static SimulationConfig instance;
 
   private final Properties properties;
@@ -110,6 +112,11 @@ public class SimulationConfig {
     return UserProvider.SourceType.valueOf(source.toUpperCase());
   }
 
+  private String getRunnerParallelisation() {
+    return properties.getProperty("runner.parallelisim",
+        Integer.toString(Runtime.getRuntime().availableProcessors() * PAR_RATIO));
+  }
+
   private String getAuthUserFileSource() {
     return properties.getProperty(environment + ".users.file");
   }
@@ -156,6 +163,12 @@ public class SimulationConfig {
 
   String getPackageToScan() {
     return instance.getProperty(PACKAGE_TO_SCAN);
+  }
+
+  public static int getParallelisation() {
+    var runnerParallelisation = instance.getRunnerParallelisation();
+    var par = Integer.parseInt(runnerParallelisation);
+    return Integer.min(par, MAX_PAR);
   }
 
   public static SourceType getUserSource() {
