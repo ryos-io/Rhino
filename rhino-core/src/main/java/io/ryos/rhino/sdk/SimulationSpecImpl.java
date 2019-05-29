@@ -16,17 +16,16 @@
 
 package io.ryos.rhino.sdk;
 
+import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
+import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.ProfileNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.utils.Environment;
-import io.ryos.rhino.sdk.data.Context;
-import io.ryos.rhino.sdk.validators.PropsValidationException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Supervisor type which manages set up and run benchmark tests. The class follows the steps
@@ -46,16 +45,17 @@ import org.apache.logging.log4j.Logger;
 public class SimulationSpecImpl implements SimulationSpec {
 
   private static final String KEY_PROFILE = "profile";
-  private static Logger LOG = LogManager.getLogger(Simulation.class);
   private static final String JOB = "job";
 
   /**
    * A list of simulation runner instances.
+   * <p>
    */
   private List<SimulationRunner> simulationRunners;
 
   /**
    * Constructs a new instance of {@link SimulationSpecImpl}.
+   * <p>
    *
    * @param path Path to properties file.
    * @param simulationName Simulation name.
@@ -65,20 +65,36 @@ public class SimulationSpecImpl implements SimulationSpec {
     try {
       Application.showBranding();
 
-      final Environment environment = getEnvironment();
-
+      var environment = getEnvironment();
       var simulationConfig = SimulationConfig.newInstance(path, environment);
       var jobs = SimulationJobsScanner.create().scan(simulationName,
           simulationConfig.getPackageToScan());
       this.simulationRunners = jobs
           .stream()
-          .map(this::getContext)
-          .map(SimulationRunnerImpl::new)
+          .map(simulation -> new Pair<Simulation, Context>(simulation, getContext(simulation)))
+          .map(pair -> getRunner(
+              pair.getFirst().getRunner(), pair.getSecond()))
           .collect(Collectors.toList());
+
     } catch (Throwable pe) {
       System.out.println(pe.getMessage());
       System.exit(-1);
     }
+  }
+
+  private SimulationRunner getRunner(
+      final Class<? extends SimulationRunner> runnerClass,
+      final Context context) {
+
+    try {
+      var declaredConstructor = runnerClass.getDeclaredConstructor(Context.class);
+      return declaredConstructor.newInstance(context);
+    } catch (NoSuchMethodException nsm) {
+      // implement default constructor creation.
+    } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+      System.err.println(e.getMessage());
+    }
+    throw new IllegalArgumentException("Runner class: " + runnerClass.getName() + " is invalid.");
   }
 
   private Environment getEnvironment() {

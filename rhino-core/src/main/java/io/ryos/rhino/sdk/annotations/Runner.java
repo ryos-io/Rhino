@@ -16,7 +16,8 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.feeders.Feedable;
+import io.ryos.rhino.sdk.DefaultSimulationRunner;
+import io.ryos.rhino.sdk.SimulationRunner;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,16 +25,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark the {@link Feeder} injection point. Feeders are data providers.
+ * Annotation to declare which implementation of {@link SimulationRunner} will be used. Default
+ * runner, that is {@link DefaultSimulationRunner}, is implemented in push-style, so that the
+ * generated load will cause the scenarios to get called. If the scenario implementation is
+ * blocking, then the caller thread will get blocked, as well.
+ * <p>
+ *
+ * The number of threads which will be employed, can be configured in rhino.properties file with
+ * the property, "runner.parallelisation".
+ * <p>
  *
  * @author Erhan Bagdemir
- * @see Feeder
+ * @see SimulationRunner
  * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Documented
-public @interface Feeder {
+public @interface Runner {
 
-  Class<? extends Feedable> factory();
+  Class<? extends SimulationRunner> clazz() default DefaultSimulationRunner.class;
 }
