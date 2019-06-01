@@ -14,7 +14,9 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.runners;
+
+import io.ryos.rhino.sdk.Simulation;
 
 /**
  * Simulation runner. The implementations of this type run the simulation instances.
