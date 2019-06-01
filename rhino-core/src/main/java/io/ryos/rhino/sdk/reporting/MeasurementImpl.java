@@ -20,24 +20,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Recorder implementation which measures elapsed time from beginning the execution of the
+ * Measurement implementation which measures elapsed time from beginning the execution of the
  * scenario.
  *
  * @author Erhan Bagdemir
  */
-public class RecorderImpl implements Recorder {
+public class MeasurementImpl implements Measurement {
 
   private final List<LogEvent> events = new ArrayList<>();
   private final String scenarioName;
   private final int userId;
 
-  public RecorderImpl(final String scenarioName, final int userId) {
+  public MeasurementImpl(final String scenarioName, final int userId) {
     this.scenarioName = scenarioName;
     this.userId = userId;
   }
 
   @Override
-  public void record(final String stepName, final int status) {
+  public void measure(final String stepName, final String status) {
     final long end = System.currentTimeMillis();
     final LogEvent lastEvent = events.get(events.size() - 1);
     final long start = lastEvent.end;
@@ -49,7 +49,7 @@ public class RecorderImpl implements Recorder {
     simLog.step = stepName;
     simLog.scenario = scenarioName;
     simLog.userId = userId;
-    simLog.status = Integer.toString(status);
+    simLog.status = status;
 
     events.add(simLog);
   }

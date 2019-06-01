@@ -17,20 +17,20 @@
 package io.ryos.rhino.sdk.reporting;
 
 /**
- * Recorder is used in performance tests to record the result of execution. Recorded metrics will
+ * Measurement is used in performance tests to measure the result of execution. Recorded metrics will
  * be flushed into the storage registered.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public interface Recorder {
+public interface Measurement {
 
   /**
-   * Call record(String, int) to record the temporal metrics.
+   * Call measure(String, int) to measure the temporal metrics.
    * <p>
    *
    * @param stepName The name of the step.
    * @param status HTTP status of the load execution.
    */
-  void record(final String stepName, final int status);
+  void measure(final String stepName, final String status);
 }
