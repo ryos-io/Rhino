@@ -27,7 +27,7 @@ import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
-import io.ryos.rhino.sdk.reporting.Recorder;
+import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import javax.ws.rs.client.Client;
@@ -49,11 +49,11 @@ public class PerformanceTestingExample {
 
   @Before
   public void setUp() {
-    System.out.println("Before the test with user:" + user.getUsername());
+    // System.out.println("Before the test with user:" + user.getUsername());
   }
 
   @Scenario(name = "Discovery")
-  public void performDiscovery(Recorder recorder) {
+  public void performDiscovery(Measurement measurement) {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
@@ -67,11 +67,11 @@ public class PerformanceTestingExample {
         + user.getUsername()
         + " got  " + response.readEntity(String.class));
 
-    recorder.record("Discovery API Call", response.getStatus());
+    measurement.measure("Discovery API Call", response.toString());
   }
 
   @Scenario(name = "Health")
-  public void performHealth(Recorder recorder) {
+  public void performHealth(Measurement measurement) {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
@@ -84,11 +84,11 @@ public class PerformanceTestingExample {
         + user.getUsername()
         + " got  " + response.readEntity(String.class));
 
-    recorder.record("Health API Call", response.getStatus());
+    measurement.measure("Health API Call", response.toString());
   }
 
   @Scenario(name = "KO OK")
-  public void performKO(Recorder recorder) {
+  public void performKO(Measurement measurement) {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
@@ -99,7 +99,7 @@ public class PerformanceTestingExample {
     System.out.println(Thread.currentThread().getName() + " - Fail:" + user.getUsername() + " got"
         + " " + response.readEntity(String.class));
 
-    recorder.record("Broken Call", response.getStatus());
+    measurement.measure("Broken Call", response.toString());
   }
 
   @After
