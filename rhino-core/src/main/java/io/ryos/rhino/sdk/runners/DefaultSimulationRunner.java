@@ -14,15 +14,17 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.runners;
 
 import static reactor.core.publisher.Flux.fromStream;
 
+import io.ryos.rhino.sdk.Simulation;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.io.CyclicIterator;
+import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
