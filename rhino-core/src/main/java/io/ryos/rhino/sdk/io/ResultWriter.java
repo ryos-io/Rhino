@@ -32,12 +32,12 @@ public interface ResultWriter<T extends LogEvent> extends Closeable {
    *
    * @param report Log event.
    */
-  void report(T report);
+  void write(T report);
 
   /**
    * Adds a new log event as string into the simulation logging source.
    *
    * @param report Log event.
    */
-  void report(String report);
+  void write(String report);
 }
