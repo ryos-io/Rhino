@@ -20,12 +20,12 @@ might have multiple scenarios defined which are run during testing, independentl
 public class PerformanceTestingExample {
 
   @Scenario(name = "Hello World")
-  public void testHelloWorld(Recorder recorder) {
+  public void testHelloWorld(Measurement measurement) {
     // hello world
   }
 
   @Scenario(name = "Health Check")
-  public void testHealthCheck(Recorder recorder) {
+  public void testHealthCheck(Measurement measurement) {
     // healthcheck 
   }
 }
@@ -38,13 +38,13 @@ simulation name, so they must be unique.
 #### Recording metrics
 
 While simulation is running and so the scenarios, respectively, the metrics will be collected by 
-recorders. Each load generator scenario gets recorder instance passed, so the load metrics can be
- stored in the recorder. The following example scenario records the service response along with the 
+recorders. Each load generator scenario gets measurement instance passed, so the load metrics can be
+ stored in the measurement. The following example scenario records the service response along with the 
  step name:
  
 ```java
   @Scenario(name = "Health")
-  public void performHealth(Recorder recorder) {
+  public void performHealth(Measurement measurement) {
 
     OAuthUserImpl authUser = null;
     if (user instanceof OAuthUserImpl) {
@@ -59,7 +59,7 @@ recorders. Each load generator scenario gets recorder instance passed, so the lo
         .header("X-API-Key", "Your-Key")
         .get();
 
-    recorder.record("Health API Call", response.getStatus());
+    measurement.record("Health API Call", response.getStatus());
   }
   
 ```
@@ -71,7 +71,7 @@ will be broken down in multiple charts on dashboards:
 
 ```java
   @Scenario(name = "Health")
-  public void performHealth(Recorder recorder) {
+  public void performHealth(Measurement measurement) {
 
     OAuthUserImpl authUser = null;
     if (user instanceof OAuthUserImpl) {
@@ -86,7 +86,7 @@ will be broken down in multiple charts on dashboards:
         .header("X-API-Key", "Your-Key")
         .get();
 
-    recorder.record("Health API Call", response1.getStatus());
+    measurement.record("Health API Call", response1.getStatus());
     
         final Response response2 = client
             .target("https://your-service/server-status/version")
@@ -95,7 +95,7 @@ will be broken down in multiple charts on dashboards:
             .header("X-API-Key", "Your-Key")
             .get();
     
-        recorder.record("Version API Call", response2.getStatus());
+        measurement.record("Version API Call", response2.getStatus());
   }
 ````
 
