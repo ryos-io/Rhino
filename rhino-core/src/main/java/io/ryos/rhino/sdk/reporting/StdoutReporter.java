@@ -32,8 +32,8 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 /**
- * The actor outputs the current status of the test run. It gives out information to
- * stdout like number of requests per scenario, and avg. response times.
+ * The actor outputs the current status of the test run. It gives out information to stdout like
+ * number of requests per scenario, and avg. response times.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -146,7 +146,7 @@ public class StdoutReporter extends AbstractActor {
 
   private void flushReport(EndTestEvent event) {
     if (metrics.isEmpty()) {
-      System.out.println("There was no measurement in Recorder. Test is still running...");
+      System.out.println("There was no record in measurement. Test is still running...");
       return;
     }
 
@@ -181,7 +181,9 @@ public class StdoutReporter extends AbstractActor {
     }
 
     StringBuilder output = new StringBuilder();
-    output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
+    if (numberOfUsers > 0) {
+      output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
+    }
     output.append("Tests started : ").append(formatDate(startTime)).append('\n');
     output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
         .append(" secs ETA : ")
