@@ -48,7 +48,7 @@ public class GrafanaGateway {
    * Creates a new dashboard for the simulation.
    * <p>
    */
-  public void setUpDashboard(final String simulationName, final String... scenarios) {
+  public void setUpDashboard(final String simulationName, final String ... scenarios) {
     var resourceAsStream = getClass().getResourceAsStream(GRAFANA_DASHBOARD_TEMPLATE);
 
     if (resourceAsStream != null) {
@@ -57,9 +57,13 @@ public class GrafanaGateway {
       var request = ClientBuilder.newClient()
           .target(getUri())
           .request();
+
+      if (getStrippedToken() != null) {
+          request = request.header(HEADER_AUTHORIZATION, "Bearer " + getStrippedToken());
+      }
       var createDashboardResponse = request
-          .header(HEADER_AUTHORIZATION, "Bearer " + getStrippedToken())
           .post(Entity.entity(dbTemplate, MediaType.APPLICATION_JSON));
+
       if (createDashboardResponse.getStatus() != Status.OK.getStatusCode() &&
           createDashboardResponse.getStatus() != Status.PRECONDITION_FAILED.getStatusCode()) {
         throw new GrafanaSetupException(
@@ -69,6 +73,13 @@ public class GrafanaGateway {
   }
 
   private String getStrippedToken() {
+    var grafanaToken = SimulationConfig.getGrafanaToken();
+    if (grafanaToken == null || grafanaToken.length() == 0) {
+      return null;
+    }
+    if (grafanaToken.length() < 2) {
+      throw new RuntimeException("Invalid Grafana token.");
+    }
     return SimulationConfig.getGrafanaToken()
         .substring(1, SimulationConfig.getGrafanaToken().length() - 1);
   }
