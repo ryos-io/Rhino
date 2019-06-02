@@ -25,7 +25,6 @@ import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -36,7 +35,7 @@ public class RhinoEntity {
 
     private static final long WAIT_FOR = 500L;
 
-    @UserFeeder(max = 10, factory = OAuthUserRepositoryFactoryImpl.class)
+    @UserFeeder(max = 1)
     private User user;
 
     @Feeder(factory = UUIDProvider.class)
@@ -54,9 +53,9 @@ public class RhinoEntity {
         measurement.measure("Request", Status.OK.toString());
     }
 
-    private void waitFor(long waitFor) {
+    private void waitFor(long waitForMillis) {
         try {
-            Thread.sleep(waitFor);
+            Thread.sleep(waitForMillis);
         } catch (InterruptedException e) {
             //
         }
