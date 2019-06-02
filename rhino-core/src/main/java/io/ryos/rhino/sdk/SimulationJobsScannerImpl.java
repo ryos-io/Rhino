@@ -29,6 +29,7 @@ import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
+import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
