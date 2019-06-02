@@ -44,6 +44,7 @@ import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
+import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.lang.reflect.Field;
@@ -283,7 +284,7 @@ public class Simulation {
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
 
-  void prepare(UserSession userSession) {
+  public void prepare(UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(prepareMethod, cleanUpInstance);
   }
@@ -296,7 +297,7 @@ public class Simulation {
     return cleanUpInstance;
   }
 
-  void cleanUp(UserSession userSession) {
+  public void cleanUp(UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(cleanupMethod, userSession);
   }
@@ -411,7 +412,7 @@ public class Simulation {
     });
   }
 
-  void stop() {
+  public void stop() {
 
     reportTermination();
 
@@ -440,19 +441,19 @@ public class Simulation {
     return runner;
   }
 
-  int getInjectUser() {
+  public int getInjectUser() {
     return injectUser;
   }
 
-  UserRepository<UserSession> getUserRepository() {
+  public UserRepository<UserSession> getUserRepository() {
     return userRepository;
   }
 
-  Duration getDuration() {
+  public Duration getDuration() {
     return duration;
   }
 
-  List<Scenario> getRunnableScenarios() {
+  public List<Scenario> getRunnableScenarios() {
     return runnableScenarios;
   }
 
