@@ -5,18 +5,16 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.TestSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 
-@Simulation
+@Simulation(name="Reactive Test")
 @Runner(clazz = ReactiveSimulationRunner.class)
 public class ReactiveTestSimulation {
 
   @TestSpec
   public Spec discoveryCallSpec() {
-    return new Spec() {
-      @Override
-      public int hashCode() {
-        return super.hashCode();
-      }
-    };
+    return Spec.http()
+        .target("https://www.google.com")
+        .queryParam("test", "value")
+        .headers("X-Request-Id", "value")
+        .get();
   }
-
 }

@@ -43,6 +43,7 @@ import io.ryos.rhino.sdk.reporting.RecorderImpl;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
+import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.lang.reflect.Field;
@@ -128,7 +129,13 @@ public class Simulation {
    * The {@link java.lang.reflect.Method} instance for running the test.
    * <p>
    */
-  private List<Scenario> runnableScenarios;
+  private List<Scenario> scenarios;
+
+  /**
+   * A list of {@link Spec} instances defined in specs methods.
+   * <p>
+   */
+  private List<Spec> specs;
 
   /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
@@ -190,13 +197,12 @@ public class Simulation {
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
   // Predicate to search fields for Feedable annotation.
-  private final Predicate<Field> hasFeeder = (f) -> Arrays
+  private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
   private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
-      (f) -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+      f -> new InjectionPoint<>(f, f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
   private void feed(final Object instance,
@@ -222,8 +228,9 @@ public class Simulation {
         .forEach(ip -> feed(simulationInstance, ip));
   }
 
-  /*
+  /**
    * Uses a builder to construct the instance.
+   * <p>
    */
   private Simulation(final Builder builder) {
     this.duration = builder.duration;
@@ -231,7 +238,8 @@ public class Simulation {
     this.injectUser = builder.injectUser;
     this.rampUp = builder.rampUp;
     this.simulationClass = builder.simulationClass;
-    this.runnableScenarios = builder.runnerMethod;
+    this.scenarios = builder.scenarios;
+    this.specs = builder.specs;
     this.prepareMethod = builder.prepareMethod;
     this.cleanupMethod = builder.cleanUpMethod;
     this.beforeMethod = builder.beforeMethod;
@@ -239,6 +247,7 @@ public class Simulation {
     this.userRepository = builder.userRepository;
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
+
 
     /*
      * Log writer is the {@link java.io.Closeable} instance to write the execution
@@ -453,8 +462,12 @@ public class Simulation {
     return duration;
   }
 
-  List<Scenario> getRunnableScenarios() {
-    return runnableScenarios;
+  List<Scenario> getScenarios() {
+    return scenarios;
+  }
+
+  public List<Spec> getSpecs() {
+    return specs;
   }
 
   /**
@@ -491,7 +504,13 @@ public class Simulation {
     /**
      * The {@link java.lang.reflect.Method} instance of the run method.
      */
-    private List<Scenario> runnerMethod;
+    private List<Scenario> scenarios;
+
+    /**
+     * List of {@link Spec} instances.
+     */
+    private List<Spec> specs;
+
 
     /**
      * The {@link java.lang.reflect.Method} instance for preparing the test.
@@ -571,7 +590,12 @@ public class Simulation {
     }
 
     public Builder withScenarios(final List<Scenario> scenarios) {
-      this.runnerMethod = scenarios;
+      this.scenarios = scenarios;
+      return this;
+    }
+
+    public Builder withSpecs(final List<Spec> specs) {
+      this.specs = specs;
       return this;
     }
 

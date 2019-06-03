@@ -72,7 +72,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
    */
   public DefaultSimulationRunner(Context context) {
     this.simulation = context.<Simulation>get(JOB).orElseThrow();
-    this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getRunnableScenarios());
+    this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
   }
 

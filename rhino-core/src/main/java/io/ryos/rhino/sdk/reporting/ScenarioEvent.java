@@ -16,9 +16,6 @@
 
 package io.ryos.rhino.sdk.reporting;
 
-/**
- * @author Erhan Bagdemir
- */
 public class ScenarioEvent extends LogEvent {
   public String status;
   public String step;
