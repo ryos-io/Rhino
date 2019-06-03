@@ -294,7 +294,7 @@ public class Simulation {
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
 
-  void prepare(UserSession userSession) {
+  public void prepare(UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(prepareMethod, cleanUpInstance);
   }
@@ -452,19 +452,19 @@ public class Simulation {
     return runner;
   }
 
-  int getInjectUser() {
+  public int getInjectUser() {
     return injectUser;
   }
 
-  UserRepository<UserSession> getUserRepository() {
+  public UserRepository<UserSession> getUserRepository() {
     return userRepository;
   }
 
-  Duration getDuration() {
+  public Duration getDuration() {
     return duration;
   }
 
-  List<Scenario> getScenarios() {
+  public List<Scenario> getScenarios() {
     return scenarios;
   }
 

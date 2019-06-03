@@ -16,10 +16,11 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import io.ryos.rhino.sdk.CyclicIterator;
+import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.io.CyclicIterator;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;

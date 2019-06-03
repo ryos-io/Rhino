@@ -88,7 +88,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
-          simulation.getRunnableScenarios()
+          simulation.getScenarios()
               .stream()
               .map(Scenario::getDescription)
               .toArray(String[]::new));
