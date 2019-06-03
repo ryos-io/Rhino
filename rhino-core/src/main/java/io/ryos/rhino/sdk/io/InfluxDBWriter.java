@@ -22,8 +22,11 @@ import akka.japi.pf.ReceiveBuilder;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.reporting.LogEvent;
 import io.ryos.rhino.sdk.reporting.ScenarioEvent;
+import io.ryos.rhino.sdk.reporting.UserEvent;
+import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import java.util.Optional;
 import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDB.ConsistencyLevel;
 import org.influxdb.InfluxDB.LogLevel;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.BatchPoints;
@@ -31,72 +34,90 @@ import org.influxdb.dto.Point;
 
 /**
  * Writer implementation for Influx DB. It must be activated by using @Influx annotation.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.4
+ * @since 1.1.0
  */
 public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEvent> {
 
   private static final String RHINO_TEST_DB = "rhino_test_db_";
+  private final InfluxDB influxDB;
+  private final String dbName;
 
   public static <T extends InfluxDBWriter> Props props() {
     return Props.create(InfluxDBWriter.class, InfluxDBWriter::new);
   }
 
-  private final InfluxDB influxDB;
-  private final String dbName;
-
   public InfluxDBWriter() {
+    this.dbName = Optional.ofNullable(SimulationConfig.getInfluxDBName())
+        .orElse(RHINO_TEST_DB + System.currentTimeMillis());
 
-    this.dbName =
-        Optional.ofNullable(SimulationConfig.getInfluxDBName())
-            .orElse(RHINO_TEST_DB + System.currentTimeMillis());
-    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL());
-    this.influxDB.setLogLevel(LogLevel.NONE);
+    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL())
+        .setLogLevel(LogLevel.NONE)
+        .setConsistency(ConsistencyLevel.ONE);
 
-    System.out.println("Creating DB for name: " + dbName);
-    this.influxDB.createDatabase(dbName);
+    influxDB.createDatabase(dbName);
   }
 
   @Override
   public Receive createReceive() {
 
     return ReceiveBuilder.create()
-        .match(String.class, this::report)
-        .match(LogEvent.class, this::report)
+        .match(String.class, this::write)
+        .match(LogEvent.class, this::write)
         .build();
   }
 
   @Override
-  public void report(final LogEvent logEvent) {
+  public void write(final LogEvent logEvent) {
 
-    ScenarioEvent report;
     if (logEvent instanceof ScenarioEvent) {
-      report = (ScenarioEvent) logEvent;
-    } else {
-      return;
+      createPoint((ScenarioEvent) logEvent);
     }
 
-    BatchPoints batchPoints = BatchPoints
+    if (logEvent instanceof UserEvent) {
+      createPoint((UserEvent) logEvent);
+    }
+  }
+
+  private void createPoint(ScenarioEvent report) {
+    var batchPoints = BatchPoints
         .database(dbName)
-        .tag("async", "true")
-        // .retentionPolicy("rhino_retention_policy")
         .consistency(InfluxDB.ConsistencyLevel.ALL)
         .build();
 
-    Point.Builder builder = Point.measurement(report.scenario);
-    builder.addField("status", report.status);
-    builder.addField("step", report.step);
-    builder.addField("pt", report.elapsed);
+    var builder = Point.measurement("simulation_" + SimulationConfig.getSimulationId())
+        .tag("step", report.step)
+        .addField("scenario", report.scenario)
+        .addField("status", report.status)
+        .addField("pt", report.elapsed)
+        .addField("node", SimulationConfig.getNode());
 
-    Point point = builder.build();
-    batchPoints.point(point);
-
+    batchPoints.point(builder.build());
     influxDB.write(batchPoints);
   }
 
+  private void createPoint(UserEvent report) {
+    if (report.eventType == EventType.END) {
+      var batchPoints = BatchPoints
+          .database(dbName)
+          .consistency(InfluxDB.ConsistencyLevel.ALL)
+          .build();
+
+      var builder =
+          Point.measurement("user_" + SimulationConfig.getSimulationId())
+              .tag("scenario", report.scenario)
+              .addField("id", Integer.toString(report.id))
+              .addField("node", SimulationConfig.getNode())
+              .addField("pt", report.elapsed);
+      batchPoints.point(builder.build());
+      influxDB.write(batchPoints);
+    }
+  }
+
   @Override
-  public void report(final String report) {
+  public void write(final String report) {
     System.out.println("string");
   }
 

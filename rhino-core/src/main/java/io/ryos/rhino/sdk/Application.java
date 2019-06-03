@@ -26,7 +26,7 @@ import java.io.InputStreamReader;
  * method. This class is for testing purposes.
  *
  * @author Erhan Bagdemir
- * @since 1.0
+ * @since 1.0.0
  */
 public class Application {
 

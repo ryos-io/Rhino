@@ -14,15 +14,19 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.runners;
 
 import static reactor.core.publisher.Flux.fromStream;
 
+import io.ryos.rhino.sdk.Simulation;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.io.CyclicIterator;
+import io.ryos.rhino.sdk.CyclicIterator;
+import io.ryos.rhino.sdk.io.Out;
+import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
@@ -78,13 +82,20 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    System.out.println("Starting load test for " + simulation.getDuration() + " minutes ...");
+    Out.info("Starting load test for " + simulation.getDuration().toMinutes() + " minutes ...");
 
     var userRepository = simulation.getUserRepository();
+    if (SimulationConfig.isGrafanaEnabled()) {
+      Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+      new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
+          simulation.getRunnableScenarios()
+              .stream()
+              .map(Scenario::getDescription)
+              .toArray(String[]::new));
+    }
 
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
-
     prepareUserSessions(userRepository.getUserSessions());
 
     var users = Stream.generate(userRepository::take);

@@ -37,12 +37,11 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Erhan Bagdemir
  */
-public class LogWriter extends AbstractActor implements ResultWriter {
+public class SimulationLogWriter extends AbstractActor implements ResultWriter {
 
-  private static final Logger LOG = LogManager.getLogger(LogWriter.class);
+  private static final Logger LOG = LogManager.getLogger(SimulationLogWriter.class);
 
   private LogFormatter logFormatter;
-
   private Writer writer;
 
   /**
@@ -55,7 +54,8 @@ public class LogWriter extends AbstractActor implements ResultWriter {
    */
   public static <T extends LogFormatter> Props props(final String pathToLogFile,
       final T logFormatter) {
-    return Props.create(LogWriter.class, () -> new LogWriter(pathToLogFile, logFormatter));
+    return Props.create(
+        SimulationLogWriter.class, () -> new SimulationLogWriter(pathToLogFile, logFormatter));
   }
 
   /**
@@ -64,7 +64,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
    * @param logFile Path to the log file.
    * @param formatter Log formatter.
    */
-  public LogWriter(final String logFile, final LogFormatter formatter) {
+  public SimulationLogWriter(final String logFile, final LogFormatter formatter) {
     if (formatter == null) {
       return;
     }
@@ -79,14 +79,14 @@ public class LogWriter extends AbstractActor implements ResultWriter {
   }
 
   @Override
-  public void report(final LogEvent report) {
+  public void write(final LogEvent report) {
     if (logFormatter != null) {
-      report(logFormatter.format(report));
+      write(logFormatter.format(report));
     }
   }
 
   @Override
-  public void report(final String report) {
+  public void write(final String report) {
 
     try {
       writer.write(report);
@@ -103,7 +103,7 @@ public class LogWriter extends AbstractActor implements ResultWriter {
 
   @Override
   public Receive createReceive() {
-    return ReceiveBuilder.create().match(String.class, this::report
-    ).match(LogEvent.class, this::report).build();
+    return ReceiveBuilder.create().match(String.class, this::write
+    ).match(LogEvent.class, this::write).build();
   }
 }

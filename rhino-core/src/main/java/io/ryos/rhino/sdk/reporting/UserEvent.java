@@ -20,7 +20,20 @@ package io.ryos.rhino.sdk.reporting;
  * @author Erhan Bagdemir
  */
 public class UserEvent extends LogEvent {
-  public String eventType; // always USER for user events.
+  public enum EventType { START, END };
+  public EventType eventType; // always USER for user events.
   public String eventStatus; // START or END
   public int id;
+
+  public EventType getEventType() {
+    return eventType;
+  }
+
+  public String getEventStatus() {
+    return eventStatus;
+  }
+
+  public int getId() {
+    return id;
+  }
 }

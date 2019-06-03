@@ -27,4 +27,28 @@ public class LogEvent {
   public long start;
   public long end;
   public long elapsed;
+
+  public String getUsername() {
+    return username;
+  }
+
+  public int getUserId() {
+    return userId;
+  }
+
+  public String getScenario() {
+    return scenario;
+  }
+
+  public long getStart() {
+    return start;
+  }
+
+  public long getEnd() {
+    return end;
+  }
+
+  public long getElapsed() {
+    return elapsed;
+  }
 }

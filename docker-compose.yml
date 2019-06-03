@@ -1,0 +1,19 @@
+influxdb:
+  image: influxdb:latest
+  container_name: influxdb
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+    - "8090:8090"
+  volumes:
+    # Data persistency
+    # sudo mkdir -p /srv/docker/influxdb/data
+    - ~/.rhino/data/influxdb:/var/lib/influxdb
+
+grafana:
+  image: bagdemir/rhino-grafana:1.0.0
+  container_name: grafana
+  ports:
+    - "3000:3000"
+  links:
+    - influxdb

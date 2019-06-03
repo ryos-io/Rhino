@@ -16,8 +16,8 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.DefaultSimulationRunner;
-import io.ryos.rhino.sdk.SimulationRunner;
+import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
+import io.ryos.rhino.sdk.runners.SimulationRunner;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.runners;
 
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.Scenario;

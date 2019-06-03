@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk;
 
+import io.ryos.rhino.sdk.runners.SimulationRunner;
+
 /**
  * SimulationSpec runner controller. Within a performance testing project, it is likely that there are
  * multiple test classes. The controller runs each test case in an isolated execution context.

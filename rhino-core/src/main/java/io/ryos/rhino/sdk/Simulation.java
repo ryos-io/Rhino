@@ -35,14 +35,16 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.Feedable;
 import io.ryos.rhino.sdk.io.InfluxDBWriter;
-import io.ryos.rhino.sdk.io.LogWriter;
+import io.ryos.rhino.sdk.io.SimulationLogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
-import io.ryos.rhino.sdk.reporting.Recorder;
-import io.ryos.rhino.sdk.reporting.RecorderImpl;
+import io.ryos.rhino.sdk.reporting.Measurement;
+import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
+import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
+import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -176,7 +178,7 @@ public class Simulation {
   private ActorRef loggerActor;
 
   /**
-   * Reporter actor reference to report log events to the Influx DB.
+   * Reporter actor reference to write log events to the Influx DB.
    * <p>
    */
   private ActorRef influxActor;
@@ -197,12 +199,13 @@ public class Simulation {
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
   // Predicate to search fields for Feedable annotation.
-  private final Predicate<Field> hasFeeder = f -> Arrays
+  private final Predicate<Field> hasFeeder = (f) -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
   private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
-      f -> new InjectionPoint<>(f, f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+      (f) -> new InjectionPoint<>(f,
+          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
   private void feed(final Object instance,
@@ -259,8 +262,8 @@ public class Simulation {
 
     this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now(), duration),
         StdoutReporter.class.getName());
-    this.loggerActor = system.actorOf(LogWriter.props(reportingURI, formatter),
-        LogWriter.class.getName());
+    this.loggerActor = system.actorOf(SimulationLogWriter.props(reportingURI, formatter),
+        SimulationLogWriter.class.getName());
 
     if (enableInflux) {
       influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
@@ -304,7 +307,7 @@ public class Simulation {
     return cleanUpInstance;
   }
 
-  void cleanUp(UserSession userSession) {
+  public void cleanUp(UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(cleanupMethod, userSession);
   }
@@ -321,7 +324,7 @@ public class Simulation {
     }
   }
 
-  private void executeScenario(final Scenario scenario, final RecorderImpl recorder,
+  private void executeScenario(final Scenario scenario, final MeasurementImpl recorder,
       final Object simulationInstance) {
     try {
       scenario.getMethod().invoke(simulationInstance, recorder);
@@ -362,11 +365,11 @@ public class Simulation {
    *
    * @param userSession User session, to be injected.
    * @param scenario Scenario, to be run.
-   * @return Recorder instance which contains simulation logs.
+   * @return Measurement instance which contains simulation logs.
    */
-  public Recorder run(final UserSession userSession, final Scenario scenario) {
-    final User user = userSession.getUser();
-    final Object simulationInstance = simulationInstanceFactory.get();
+  public Measurement run(final UserSession userSession, final Scenario scenario) {
+    var user = userSession.getUser();
+    var simulationInstance = simulationInstanceFactory.get();
 
     injectUser(user, simulationInstance);// Each thread will run as the same user.
     injectSession(userSession, simulationInstance);
@@ -375,15 +378,14 @@ public class Simulation {
 
     feedInjections(simulationInstance);
 
-    var recorder = new RecorderImpl(scenario.getDescription(), user.getId());
+    var recorder = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
-
-    final UserEvent userEventStart = new UserEvent();
+    var userEventStart = new UserEvent();
     userEventStart.elapsed = 0;
     userEventStart.start = start;
     userEventStart.end = start;
     userEventStart.scenario = scenario.getDescription();
-    userEventStart.eventType = "START";
+    userEventStart.eventType = EventType.START;
     userEventStart.id = user.getId();
 
     recorder.record(userEventStart);
@@ -392,12 +394,12 @@ public class Simulation {
 
     var elapsed = System.currentTimeMillis() - start;
 
-    final UserEvent userEventEnd = new UserEvent();
+    var userEventEnd = new UserEvent();
     userEventEnd.elapsed = elapsed;
     userEventEnd.start = start;
     userEventEnd.end = start + elapsed;
     userEventEnd.scenario = scenario.getDescription();
-    userEventEnd.eventType = "END";
+    userEventEnd.eventType = EventType.END;
     userEventEnd.id = user.getId();
     recorder.record(userEventEnd);
 
@@ -408,7 +410,7 @@ public class Simulation {
     return recorder;
   }
 
-  private void dispatchEvents(final RecorderImpl recorder) {
+  private void dispatchEvents(final MeasurementImpl recorder) {
     recorder.getEvents().forEach(e -> {
 
       loggerActor.tell(e, ActorRef.noSender());
@@ -421,7 +423,7 @@ public class Simulation {
     });
   }
 
-  void stop() {
+  public void stop() {
 
     reportTermination();
 

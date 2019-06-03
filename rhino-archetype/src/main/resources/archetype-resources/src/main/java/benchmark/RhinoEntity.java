@@ -16,15 +16,16 @@
 
 package ${groupId}.benchmark;
 
-import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.reporting.Recorder;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
-import io.ryos.rhino.sdk.feeders.UUIDFeeder;
+import io.ryos.rhino.sdk.feeders.UUIDProvider;
+import io.ryos.rhino.sdk.reporting.Measurement;
+import io.ryos.rhino.sdk.users.data.User;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * An example for annotated entity of benchmark job.
@@ -32,10 +33,12 @@ import io.ryos.rhino.sdk.feeders.UUIDFeeder;
 @Simulation(name = "helloWorld")
 public class RhinoEntity {
 
-    @UserFeeder(max = 10)
+    private static final long WAIT_FOR = 500L;
+
+    @UserFeeder(max = 1)
     private User user;
 
-    @Feeder(factory = UUIDFeeder.class)
+    @Feeder(factory = UUIDProvider.class)
     private String uuid;
 
     @Prepare
@@ -44,8 +47,18 @@ public class RhinoEntity {
     }
 
     @Scenario(name = "hello")
-    public void run(Recorder recorder) {
-        System.out.println("Hello World! Running test with user:" + user.getUsername());
+    public void testHelloWorld(Measurement measurement) {
+        System.out.println(uuid + " Hello World! Running test with user:" + user.getUsername());
+        waitFor(WAIT_FOR);
+        measurement.measure("Request", Status.OK.toString());
+    }
+
+    private void waitFor(long waitForMillis) {
+        try {
+            Thread.sleep(waitForMillis);
+        } catch (InterruptedException e) {
+            //
+        }
     }
 
     @CleanUp

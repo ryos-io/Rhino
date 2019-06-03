@@ -2,8 +2,8 @@
     .-.__O\
      `Y     `-.
       )   ,
-  |`-\`  (@   )    Rhino ${project.version} Performance Testing
-   \_.   `  /`     https://github.com/bagdemir/rhino
+  |`-\`  (@   )    Rhino ${project.version} Load and Performance Testing
+   \_.   `  /`     http://ryos.io
    (   >_ .` `\
     \__//‘     `
 

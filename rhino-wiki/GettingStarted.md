@@ -88,12 +88,12 @@ public class PerformanceTestingExample {
   }
 
   @Scenario(name = "Hello World")
-  public void testHelloWorld(Recorder recorder) {
+  public void testHelloWorld(Measurement measurement) {
     // hello world
   }
 
   @Scenario(name = "Health Check")
-  public void testHealthCheck(Recorder recorder) {
+  public void testHealthCheck(Measurement measurement) {
     // healthcheck 
   }
 

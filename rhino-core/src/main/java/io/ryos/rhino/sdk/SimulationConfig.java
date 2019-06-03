@@ -26,8 +26,7 @@ import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.UUID;
 
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
@@ -42,20 +41,25 @@ import org.apache.logging.log4j.Logger;
  */
 public class SimulationConfig {
 
-  private static final Logger LOG = LogManager.getLogger(SimulationConfig.class);
   private static final String PACKAGE_TO_SCAN = "packageToScan";
   private static final String SOURCE_CLASSPATH = "classpath://";
   private static final int PAR_RATIO = 5;
   private static final int MAX_PAR = 1000;
   public static final int MAX_CONN = 1000;
+  private static final String SIM_ID = "SIM_ID";
   private static SimulationConfig instance;
 
   private final Properties properties;
   private final String environment;
+  private final String simulationId;
 
   private SimulationConfig(final String path, final Environment environment) {
     this.properties = new Properties();
     this.environment = environment.toString();
+    this.simulationId =
+        Optional
+            .ofNullable(System.getenv().get(SIM_ID))
+            .orElse(UUID.randomUUID().toString());
 
     loadConfig(path);
   }
@@ -92,6 +96,28 @@ public class SimulationConfig {
     return properties.getProperty(prop);
   }
 
+  // Grafana Configs
+  private String enableGrafana() {
+    return properties.getProperty("grafana.enable");
+  }
+
+  private String getGrafanaURL() {
+    return properties.getProperty("grafana.endpoint");
+  }
+
+  private String grafanaToken() {
+    return properties.getProperty("grafana.token");
+  }
+
+  private String grafanaUsername() {
+    return properties.getProperty("grafana.username");
+  }
+
+  private String grafanaPassword() {
+    return properties.getProperty("grafana.password");
+  }
+
+  // Influx DB Configuration
   private String getDBSupportInfluxURL() {
     return properties.getProperty("db.influx.url");
   }
@@ -106,6 +132,10 @@ public class SimulationConfig {
 
   private String getDBSupportInfluxPassword() {
     return properties.getProperty("db.influx.password");
+  }
+
+  private String getNodeName() {
+    return properties.getProperty("node");
   }
 
   private UserProvider.SourceType getUsersSource() {
@@ -165,6 +195,10 @@ public class SimulationConfig {
 
   private String getAuthGrantType() {
     return properties.getProperty(environment + ".oauth.grantType");
+  }
+
+  private String getSimId() {
+    return simulationId;
   }
 
   String getPackageToScan() {
@@ -247,7 +281,31 @@ public class SimulationConfig {
     return instance.getAuthVaultPath();
   }
 
-  public static String getVaultKey() {
-    return instance.getAuthVaultKey();
+  public static String getNode() {
+    return instance.getNodeName();
+  }
+
+  public static String getSimulationId() {
+    return instance.getSimId();
+  }
+
+  public static String getGrafanaEndpoint() {
+    return instance.getGrafanaURL();
+  }
+
+  public static String getGrafanaToken() {
+    return instance.grafanaToken();
+  }
+
+  public static String getGrafanaUser() {
+    return instance.grafanaUsername();
+  }
+
+  public static String getGrafanaPassword() {
+    return instance.grafanaPassword();
+  }
+
+  public static boolean isGrafanaEnabled() {
+    return Boolean.valueOf(instance.enableGrafana());
   }
 }
