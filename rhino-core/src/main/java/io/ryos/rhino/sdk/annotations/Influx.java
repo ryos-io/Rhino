@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
  * Marker annotation to activate Influx DB writer.
  *
  * @author Erhan Bagdemir
- * @since 1.1.4
+ * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Influx {
