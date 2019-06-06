@@ -99,11 +99,6 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
-  public Mono<HttpClientResponse> toMono() {
-    return null; // does nothing
-  }
-
-  @Override
   public Spec withSpecName(final String name) {
     this.enclosingSpec = name;
     return this;
