@@ -9,7 +9,8 @@ public class PerformanceScenarioSpecImplTest {
   @Test
   public void testRun() {
 
-    SimulationSpec simulation = new SimulationSpecImpl("classpath:///rhino.properties",
-        "Server-Status Simulation Without User");
+    SimulationSpec
+        .create("classpath:///rhino.properties", "Reactive Test")
+        .start();
   }
 }

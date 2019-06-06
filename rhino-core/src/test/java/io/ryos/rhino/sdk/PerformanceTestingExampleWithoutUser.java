@@ -7,7 +7,8 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.Recorder;
+import io.ryos.rhino.sdk.reporting.Measurement;
+import javax.ws.rs.core.Response.Status;
 
 @Simulation(name = "Server-Status Simulation Without User")
 @Influx
@@ -29,12 +30,12 @@ public class PerformanceTestingExampleWithoutUser {
   }
 
   @Scenario(name = "scenario2")
-  public void scenario2(Recorder recorder) throws InterruptedException {
+  public void scenario2(Measurement measurement) throws InterruptedException {
     //System.out.println("scenario2 - on " + Thread.currentThread().getName());
     waitASec();
-    recorder.record("a2", 200);
+    measurement.measure("a2", Status.OK.toString());
     waitASec();
-    recorder.record("discovery call", 200);
+    measurement.measure("discovery call", Status.OK.toString());
   }
 
   @After
