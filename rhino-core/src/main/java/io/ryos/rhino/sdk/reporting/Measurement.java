@@ -33,4 +33,6 @@ public interface Measurement {
    * @param status HTTP status of the load execution.
    */
   void measure(final String stepName, final String status);
+
+  void record(final LogEvent event);
 }
