@@ -23,11 +23,11 @@ package io.ryos.rhino.sdk.io;
  */
 public class Out {
 
-  public static void error(final String err) {
+  public static void error(final Object err) {
     System.err.println(err);
   }
 
-  public static void info(final String info) {
+  public static void info(final Object info) {
     System.out.println(info);
   }
 }
