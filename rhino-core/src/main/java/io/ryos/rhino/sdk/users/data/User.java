@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.users.data;
 
 /**
- * Representation of a User, that is used in requests against the backend. Every request is
+ * Representation of a User, that is used in requests against the backend. Every requestFor is
  * associated with an user.
  *
  * @author Erhan Bagdemir

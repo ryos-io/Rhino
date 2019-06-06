@@ -1,44 +1,36 @@
 package io.ryos.rhino.sdk.specs;
 
-import io.ryos.rhino.sdk.SimulationConfig;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.HttpClientResponse;
-import reactor.netty.resources.ConnectionProvider;
 
 public class HttpSpecImpl implements HttpSpec {
 
+  private String enclosingSpec;
+  private String stepName;
   private String target;
-  private Map<String, List<String>> queryParams = new HashMap<>();
-  private Map<String, List<String>> headers = new HashMap<>();
+  private Map<String, String> queryParams = new HashMap<>();
+  private Map<String, List<Object>> headers = new HashMap<>();
   private Map<String, String> matrixParams = new HashMap<>();
-  private HttpClient client = HttpClient.create(ConnectionProvider.fixed("rhino",
-      SimulationConfig.getMaxConnections()));
-  private Mono<HttpClientResponse> responseMono;
+  private Method httpMethod;
+
+  public HttpSpecImpl(String stepName) {
+    this.stepName = stepName;
+  }
 
   @Override
   public HttpSpec get() {
-
-    this.responseMono = client
-        .baseUrl(target)
-        .get()
-        .response();
-
+    this.httpMethod = Method.GET;
     return this;
   }
 
   @Override
   public HttpSpec head() {
-    this.responseMono = client
-        .baseUrl(target)
-        .head()
-        .response();
-
+    this.httpMethod = Method.HEAD;
     return this;
   }
 
@@ -80,8 +72,8 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
-  public HttpSpec queryParam(final String name, final String... values) {
-    this.queryParams.put(name, Arrays.asList(values));
+  public HttpSpec queryParam(final String name, final String value) {
+    this.queryParams.put(name, value);
     return this;
   }
 
@@ -92,7 +84,43 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
+  public Method getMethod() {
+    return httpMethod;
+  }
+
+  @Override
+  public Map<String, List<Object>> getHeaders() {
+    return headers;
+  }
+
+  @Override
+  public Map<String, String> getQueryParameters() {
+    return queryParams;
+  }
+
+  @Override
   public Mono<HttpClientResponse> toMono() {
-    return responseMono; // does nothing
+    return null; // does nothing
+  }
+
+  @Override
+  public Spec withSpecName(final String name) {
+    this.enclosingSpec = name;
+    return this;
+  }
+
+  @Override
+  public String getTarget() {
+    return target;
+  }
+
+  @Override
+  public String getEnclosingSpec() {
+    return enclosingSpec;
+  }
+
+  @Override
+  public String getStepName() {
+    return stepName;
   }
 }

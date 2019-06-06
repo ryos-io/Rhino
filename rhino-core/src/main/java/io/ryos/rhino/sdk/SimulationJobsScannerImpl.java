@@ -27,7 +27,9 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.TestSpec;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
@@ -90,8 +92,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
       // Search for classes in development environment. The IDE runs the project in an exploded
       // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
-          .orElseThrow();
+      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path)).orElseThrow();
       var files = new File(resourceURL.toURI()).listFiles();
       if (files != null) {
         return Arrays.stream(files).
@@ -185,7 +186,10 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var specMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.TestSpec))
-        .map(s -> ReflectionUtils.<Spec>executeMethod(s, instanceOf(clazz).orElseThrow()))
+        .map(s -> new Pair<String, Spec>(s.getDeclaredAnnotation(TestSpec.class).name(),
+            ReflectionUtils.<Spec>executeMethod(s,
+            instanceOf(clazz).orElseThrow())))
+        .map(p -> p.getSecond().withSpecName(p.getFirst()))
         .collect(toList());
 
     if (stepMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {

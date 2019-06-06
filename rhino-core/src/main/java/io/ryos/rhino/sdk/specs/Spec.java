@@ -13,10 +13,12 @@ import reactor.netty.http.client.HttpClientResponse;
  */
 public interface Spec {
 
-  static HttpSpec http() {
-    return new HttpSpecImpl();
+  static HttpSpec http(String stepName) {
+    return new HttpSpecImpl(stepName);
   }
 
   //TODO This method and underlying reactive framework is to be abstracted away.
   Mono<HttpClientResponse> toMono();
+
+  Spec withSpecName(String name);
 }

@@ -282,9 +282,8 @@ public class Simulation {
   }
 
   private LogFormatter getLogFormatter() {
-    final Optional<Logging> loggingAnnotation = getClassLevelAnnotation(simulationClass,
-        Logging.class);
-    final Logging logging = loggingAnnotation.orElseGet(() -> null);
+    var loggingAnnotation = getClassLevelAnnotation(simulationClass, Logging.class);
+    var logging = loggingAnnotation.orElseGet(() -> null);
 
     if (logging == null) {
       return null;
@@ -410,7 +409,7 @@ public class Simulation {
     return recorder;
   }
 
-  private void dispatchEvents(final MeasurementImpl recorder) {
+  public void dispatchEvents(final MeasurementImpl recorder) {
     recorder.getEvents().forEach(e -> {
 
       loggerActor.tell(e, ActorRef.noSender());

@@ -38,4 +38,17 @@ public interface SimulationSpec {
    * Stop all running tests.
    */
   void stop();
+
+
+  /**
+   * Static factory method to create a new {@link SimulationSpec} instance for convenience.
+   * <p>
+   *
+   * @param path Path to the rhino.properties file.
+   * @param simulationToRun Simulation name to be run.
+   * @return SimulationSpec instance.
+   */
+  static SimulationSpec create(String path, String simulationToRun) {
+    return new SimulationSpecImpl(path, simulationToRun);
+  }
 }
