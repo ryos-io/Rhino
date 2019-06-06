@@ -29,14 +29,14 @@ import io.ryos.rhino.sdk.annotations.Scenario;
 public class Report {
 
     /**
-     * Status of HTTP requestFor will be written into the benchmark logs. Those are well-known HTTP
+     * Status of HTTP request will be written into the benchmark logs. Those are well-known HTTP
      * status codes e.g 200 for HTTP OK, etc.
      */
     private int status;
 
     /**
      * Status description will be output in the benchmark logs. The description is mostly useful
-     * of the requestFor fails.
+     * of the request fails.
      */
     private String description;
 
@@ -53,7 +53,7 @@ public class Report {
     public static class Builder {
 
         /**
-         * Status of HTTP requestFor will be written into the benchmark logs.
+         * Status of HTTP request will be written into the benchmark logs.
          */
         private int status;
 
