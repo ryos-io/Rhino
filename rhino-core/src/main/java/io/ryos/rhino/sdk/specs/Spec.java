@@ -1,5 +1,6 @@
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClientResponse;
 
@@ -8,7 +9,7 @@ import reactor.netty.http.client.HttpClientResponse;
  * <p>
  *
  * @author Erhan Bagdemir
- * @see io.ryos.rhino.sdk.runners.ReactiveSimulationRunner
+ * @see ReactiveHttpSimulationRunner
  * @since 1.2.0
  */
 public interface Spec {

@@ -35,7 +35,7 @@ import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
-import io.ryos.rhino.sdk.runners.ReactiveSimulationRunner;
+import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -232,7 +232,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   }
 
   private boolean isReactiveSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation.clazz().equals(ReactiveSimulationRunner.class);
+    return runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {

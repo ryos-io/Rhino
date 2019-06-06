@@ -42,7 +42,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class ReactiveSimulationRunner implements SimulationRunner {
+public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
@@ -56,7 +56,7 @@ public class ReactiveSimulationRunner implements SimulationRunner {
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
 
-  public ReactiveSimulationRunner(final Context context) {
+  public ReactiveHttpSimulationRunner(final Context context) {
     this.context = context;
     this.simulation = context.<Simulation>get(JOB).orElseThrow();
     this.scenarioCyclicIterator = new CyclicIterator<>(
