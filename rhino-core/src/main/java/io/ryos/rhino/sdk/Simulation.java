@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 
 /**
- * SimulationSpec runner controller. Within a performance testing project, it is likely that there are
+ * Simulation runner controller. Within a performance testing project, it is likely that there are
  * multiple test classes. The controller runs each test case in an isolated execution context.
  * <p>
  *
@@ -27,7 +27,7 @@ import io.ryos.rhino.sdk.runners.SimulationRunner;
  * @version 1.0
  * @see SimulationRunner
  */
-public interface SimulationSpec {
+public interface Simulation {
 
   /**
    * Execute all tests, detected by scanning the paths defined in the configuration.
@@ -41,14 +41,14 @@ public interface SimulationSpec {
 
 
   /**
-   * Static factory method to create a new {@link SimulationSpec} instance for convenience.
+   * Static factory method to create a new {@link Simulation} instance for convenience.
    * <p>
    *
    * @param path Path to the rhino.properties file.
    * @param simulationToRun SimulationMetadata name to be run.
-   * @return SimulationSpec instance.
+   * @return Simulation instance.
    */
-  static SimulationSpec create(String path, String simulationToRun) {
-    return new SimulationSpecImpl(path, simulationToRun);
+  static Simulation create(String path, String simulationToRun) {
+    return new SimulationImpl(path, simulationToRun);
   }
 }

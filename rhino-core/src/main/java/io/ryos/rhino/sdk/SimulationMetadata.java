@@ -116,13 +116,13 @@ public class SimulationMetadata {
   private int rampUp;
 
   /**
-   * SimulationSpec class.
+   * Simulation class.
    * <p>
    */
   private Class simulationClass;
 
   /**
-   * SimulationSpec object factory. All reflection calls should be run on this single instance.
+   * Simulation object factory. All reflection calls should be run on this single instance.
    * <p>
    */
   private Supplier<Object> simulationInstanceFactory =
@@ -493,7 +493,7 @@ public class SimulationMetadata {
     private int rampUp;
 
     /**
-     * SimulationSpec class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
+     * Simulation class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
      * annotation.
      */
     private Class<?> simulationClass;

@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * @see Context
  * @since 1.0
  */
-public class SimulationSpecImpl implements SimulationSpec {
+public class SimulationImpl implements Simulation {
 
   private static final String KEY_PROFILE = "profile";
   private static final String JOB = "job";
@@ -55,13 +55,13 @@ public class SimulationSpecImpl implements SimulationSpec {
   private List<SimulationRunner> simulationRunners;
 
   /**
-   * Constructs a new instance of {@link SimulationSpecImpl}.
+   * Constructs a new instance of {@link SimulationImpl}.
    * <p>
    *
    * @param path Path to properties file.
    * @param simulationName Simulation name.
    */
-  public SimulationSpecImpl(final String path, final String simulationName) {
+  public SimulationImpl(final String path, final String simulationName) {
 
     try {
       Application.showBranding();

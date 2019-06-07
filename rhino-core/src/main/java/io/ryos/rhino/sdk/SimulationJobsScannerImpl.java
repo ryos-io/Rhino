@@ -147,13 +147,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return path.replace(File.separator, DOT) + DOT + className.substring(0, className.indexOf(DOT));
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private boolean isBenchmarkClass(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .anyMatch(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation);
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private String getSimulationName(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .filter(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation)
