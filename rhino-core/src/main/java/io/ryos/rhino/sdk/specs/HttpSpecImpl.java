@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClientResponse;
 
 public class HttpSpecImpl implements HttpSpec {
 
