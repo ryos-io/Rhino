@@ -24,8 +24,10 @@ import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
+import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.Out;
+import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
@@ -71,6 +73,15 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   public void start() {
 
     Out.info("Starting load test for " + simulation.getDuration() + " minutes ...");
+
+    if (SimulationConfig.isGrafanaEnabled()) {
+      Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+      new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
+          simulation.getScenarios()
+              .stream()
+              .map(Scenario::getDescription)
+              .toArray(String[]::new));
+    }
 
     var userRepository = simulation.getUserRepository();
 
