@@ -23,12 +23,13 @@ import java.util.Optional;
 
 /**
  * User provider is the source for the users which are used in performance tests.
+ * <p>
  *
  * @author Erhan Bagdemir
  */
 public interface UserProvider {
 
-  public enum SourceType {FILE, VAULT}
+  enum SourceType {FILE, VAULT}
 
   /**
    * Returns a list of {@link User}s.
@@ -46,10 +47,11 @@ public interface UserProvider {
       userProvider = new VaultUserProviderImpl();
     }
     if (userSource.equals(SourceType.FILE)) {
-      var path = Optional.ofNullable(SimulationConfig.getUserFileSource())
-          .map(s -> s.replace("classpath://", ""))
+      var filePath = Optional
+          .ofNullable(SimulationConfig.getUserFileSource())
           .orElseThrow(() -> new RuntimeException("<env>.users.file property is missing."));
-      userProvider = new ClasspathUserProviderImpl(path);
+
+      userProvider = new FileBasedUserProviderImpl(filePath);
     }
 
     return userProvider;

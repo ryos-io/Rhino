@@ -16,9 +16,9 @@
 
 package io.ryos.rhino.sdk;
 
-import io.ryos.rhino.sdk.exceptions.ConfigurationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.RhinoIOException;
+import io.ryos.rhino.sdk.io.FileResource;
 import io.ryos.rhino.sdk.users.provider.UserProvider;
 import io.ryos.rhino.sdk.users.provider.UserProvider.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
@@ -42,10 +42,9 @@ import java.util.UUID;
 public class SimulationConfig {
 
   private static final String PACKAGE_TO_SCAN = "packageToScan";
-  private static final String SOURCE_CLASSPATH = "classpath://";
   private static final int PAR_RATIO = 5;
   private static final int MAX_PAR = 1000;
-  public static final int MAX_CONN = 1000;
+  private static final int MAX_CONN = 1000;
   private static final String SIM_ID = "SIM_ID";
   private static SimulationConfig instance;
 
@@ -56,8 +55,7 @@ public class SimulationConfig {
   private SimulationConfig(final String path, final Environment environment) {
     this.properties = new Properties();
     this.environment = environment.toString();
-    this.simulationId =
-        Optional
+    this.simulationId = Optional
             .ofNullable(System.getenv().get(SIM_ID))
             .orElse(UUID.randomUUID().toString());
 
@@ -75,16 +73,11 @@ public class SimulationConfig {
   }
 
   private void loadConfig(final String path) {
-    // currently we do only support classpath configuration.
-    var normPath = path.replace(SOURCE_CLASSPATH, "");
-    var resourceAsStream = getClass().getResourceAsStream(normPath);
 
-    try {
-      properties.load(Optional.ofNullable(resourceAsStream)
-          .orElseThrow(() -> new ConfigurationNotFoundException(
-              "Properties file not found in path: " + path)));
+    try(var is = new FileResource(path).getInputStream()) {
+      properties.load(is);
 
-      PropsValidatorImpl propsValidator = new PropsValidatorImpl();
+      var propsValidator = new PropsValidatorImpl();
       propsValidator.validate(properties);
 
     } catch (IOException e) {
