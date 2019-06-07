@@ -17,4 +17,12 @@ public interface Spec {
   }
 
   Spec withSpecName(String name);
+
+  /**
+   * The name of the spec. It is the step name in scenario countpart.
+   * <p>
+   *
+   * @return The name of the spec.
+   */
+  String getName();
 }

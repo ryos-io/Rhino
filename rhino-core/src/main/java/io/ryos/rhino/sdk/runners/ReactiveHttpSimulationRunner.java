@@ -24,12 +24,12 @@ import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
-import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
+import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
@@ -77,9 +77,9 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
-          simulation.getScenarios()
+          simulation.getSpecs()
               .stream()
-              .map(Scenario::getDescription)
+              .map(Spec::getName)
               .toArray(String[]::new));
     }
 

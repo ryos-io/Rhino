@@ -103,6 +103,11 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
+  public String getName() {
+    return this.stepName;
+  }
+
+  @Override
   public String getTarget() {
     return target;
   }
