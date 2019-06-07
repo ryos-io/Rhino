@@ -13,7 +13,7 @@
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
-testing web services which consists of the Rhino Java framework as well as a collection of libraries
+testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
 
