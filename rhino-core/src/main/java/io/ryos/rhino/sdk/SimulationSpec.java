@@ -21,6 +21,7 @@ import io.ryos.rhino.sdk.runners.SimulationRunner;
 /**
  * SimulationSpec runner controller. Within a performance testing project, it is likely that there are
  * multiple test classes. The controller runs each test case in an isolated execution context.
+ * <p>
  *
  * @author Erhan Bagdemir
  * @version 1.0
@@ -37,4 +38,17 @@ public interface SimulationSpec {
    * Stop all running tests.
    */
   void stop();
+
+
+  /**
+   * Static factory method to create a new {@link SimulationSpec} instance for convenience.
+   * <p>
+   *
+   * @param path Path to the rhino.properties file.
+   * @param simulationToRun Simulation name to be run.
+   * @return SimulationSpec instance.
+   */
+  static SimulationSpec create(String path, String simulationToRun) {
+    return new SimulationSpecImpl(path, simulationToRun);
+  }
 }

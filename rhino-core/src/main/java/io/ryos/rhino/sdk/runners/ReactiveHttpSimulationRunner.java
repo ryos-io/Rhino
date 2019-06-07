@@ -16,75 +16,64 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static reactor.core.publisher.Flux.fromStream;
+import static org.asynchttpclient.Dsl.get;
+import static org.asynchttpclient.Dsl.head;
 
+import com.google.common.collect.Streams;
+import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
-import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+import io.ryos.rhino.sdk.specs.HttpSpec;
+import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
+import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.NotImplementedException;
+import org.asynchttpclient.Dsl;
+import org.asynchttpclient.RequestBuilder;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-/**
- * Simulation runner is the load generator engine based on Akka streams. The implementation creates
- * two cyclic iterator, one of them is for {@link UserSession} instances, the other one is for
- * {@link Scenario} instances, both of them will be zipped into Pair during stream processing.
- * Cyclic iterators delivers {@link UserSession} and {@link Scenario} instances infinitely, unless
- * the stop method is explicitly called. The simulation will be run with UserSession and Scenario
- * pair, e.g <UserA, scenario1> in parallel. If the generators are not stopped explicitly, the
- * stream becomes a perpetual stream, that runs infinitely.
- * <p>
- *
- * The {@link SimulationRunner} terminates either by calling the stop method explicitly, or the
- * completes, it is the elapsed time exceeds the test duration defined in {@link
- * io.ryos.rhino.sdk.annotations.Simulation} annotation.
- * <p>
- *
- * @author Erhan Bagdemir
- * @see CyclicIterator
- * @since 1.0.0
- */
-public class DefaultSimulationRunner implements SimulationRunner {
+public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
+  private static final int CONNECT_TIMEOUT = 500;
+  private static final int PAR_RATIO = 5;
 
+  private final Context context;
   private Simulation simulation;
-  private CyclicIterator<Scenario> scenarioCyclicIterator;
-  private ScheduledExecutorService scheduler;
-  private volatile boolean shutdownInitiated;
+  private CyclicIterator<HttpSpec> scenarioCyclicIterator;
   private Disposable subscribe;
+  private volatile boolean shutdownInitiated;
 
-  /**
-   * Creates a new {@link DefaultSimulationRunner} instance.
-   * <p>
-   *
-   * @param context {@link ContextImpl} instance.
-   */
-  public DefaultSimulationRunner(Context context) {
+  public ReactiveHttpSimulationRunner(final Context context) {
+    this.context = context;
     this.simulation = context.<Simulation>get(JOB).orElseThrow();
-    this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getScenarios());
-    this.scheduler = Executors.newSingleThreadScheduledExecutor();
+    this.scenarioCyclicIterator = new CyclicIterator<>(
+        simulation
+            .getSpecs()
+            .stream()
+            .filter(spec -> spec instanceof HttpSpec)
+            .map(spec -> (HttpSpec) spec)
+            .collect(Collectors.toList()));
   }
 
   public void start() {
 
-    Out.info("Starting load test for " + simulation.getDuration().toMinutes() + " minutes ...");
+    Out.info("Starting load test for " + simulation.getDuration() + " minutes ...");
 
-    var userRepository = simulation.getUserRepository();
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
@@ -94,30 +83,67 @@ public class DefaultSimulationRunner implements SimulationRunner {
               .toArray(String[]::new));
     }
 
+    var userRepository = simulation.getUserRepository();
+
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
+
+    var httpClientConfig = Dsl.config()
+        .setConnectTimeout(CONNECT_TIMEOUT)
+        .setMaxConnections(SimulationConfig.getMaxConnections())
+        .setKeepAlive(true)
+        .build();
+
+    var client = Dsl.asyncHttpClient(httpClientConfig);
+
     prepareUserSessions(userRepository.getUserSessions());
 
-    var users = Stream.generate(userRepository::take);
-    var scenarios = Stream.generate(scenarioCyclicIterator::next);
-
-    this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
-        .take((simulation.getDuration()))
-        .parallel(SimulationConfig.getParallelisation())
+    this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
+        .take(simulation.getDuration())
+        .zipWith(Flux.fromStream(Streams.stream(scenarioCyclicIterator)))
+        .parallel(Runtime.getRuntime().availableProcessors() * PAR_RATIO)
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> simulation.run(t.getT1(), t.getT2()))
-        .subscribe();
-
+        .subscribe(spec -> Mono.fromFuture(client.executeRequest(
+            getRequestBuilder(
+                spec.getT2(),
+                spec.getT1()),
+            new HttpSpecAsyncHandler(
+                spec.getT1().getUser().getId(),
+                spec.getT2().getEnclosingSpec(),
+                spec.getT2().getStepName(), simulation))
+            .toCompletableFuture()));
     await();
     stop();
+  }
+
+  private RequestBuilder getRequestBuilder(final HttpSpec httpSpec, final UserSession userSession) {
+
+    RequestBuilder builder = null;
+    switch (httpSpec.getMethod()) {
+      case GET  : builder = get(httpSpec.getTarget());  break;
+      case HEAD : builder = head(httpSpec.getTarget()); break;
+      // case X : rest of methods, we support...
+      default: throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
+    }
+
+    var user = userSession.getUser();
+    if (user instanceof OAuthUser) {
+      var token = ((OAuthUser) user).getAccessToken();
+      builder = builder.addHeader("Authorization", "Bearer " + token);
+    }
+
+    return builder;
   }
 
   private void await() {
     synchronized (this) {
       try {
-        wait(simulation.getDuration().toMillis() + 1000);
+        while (!subscribe.isDisposed()) {
+          wait(ONE_SEC);
+        }
       } catch (InterruptedException e) {
+        System.out.println(e.getMessage());
         // Intentionally left empty.
       }
     }
@@ -125,14 +151,14 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   private void notifyAwaiting() {
     synchronized (this) {
-      notify();
+      notifyAll();
     }
   }
 
   @Override
   public void stop() {
 
-    System.out.println("Someone pushed the stop() button on runner.");
+    Out.info("Someone pushed the stop() button on runner.");
     shutdown();
   }
 
@@ -143,36 +169,27 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
     shutdownInitiated = true;
 
-    System.out.println("Stopping the simulation...");
+    Out.info("Stopping the simulation...");
 
     subscribe.dispose();
     // run cleanup.
-    System.out.println("Cleaning up.");
+    Out.info("Cleaning up.");
     final UserRepository<UserSession> userRepository = simulation.getUserRepository();
     cleanupUserSessions(userRepository.getUserSessions());
 
     // proceed with shutdown.
-    System.out.println("Shutting down the system ...");
+    Out.info("Shutting down the system ...");
     scenarioCyclicIterator.stop();
     simulation.stop();
 
-    System.out.println("Shutting down the scheduler ...");
-    scheduler.shutdown();
-    int retry = 0;
-    while (!scheduler.isShutdown() && ++retry < 5) {
-      waitForASec();
-    }
-
-    scheduler.shutdownNow();
-
-    System.out.println("Shutting down completed ...");
-    System.out.println("Bye!");
+    Out.info("Shutting down completed ...");
+    Out.info("Bye!");
   }
 
   private void waitForASec() {
-    System.out.println("Wait ...");
+    Out.info("Wait ...");
     try {
-      Thread.sleep(DefaultSimulationRunner.ONE_SEC);
+      Thread.sleep(ONE_SEC);
     } catch (InterruptedException e) {
       // intentionally left empty.
     }
@@ -191,14 +208,14 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
     int retry = 0;
     while (!userRepository.has(simulation.getInjectUser()) && ++retry < MAX_WAIT_FOR_USER) {
-      System.out.println(
+      Out.info(
           "? Not sufficient user has been logged in. Required " + simulation.getInjectUser() + ". "
               + "Waiting...");
       waitForASec();
     }
 
     if (!userRepository.has(simulation.getInjectUser())) {
-      System.out.println(
+      Out.info(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "
               + "@Simulation annotation. Required "
@@ -208,6 +225,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
       System.exit(-1);
     }
 
-    System.out.println("User login completed. Total user: " + simulation.getInjectUser());
+    Out.info("User login completed. Total user: " + simulation.getInjectUser());
   }
 }

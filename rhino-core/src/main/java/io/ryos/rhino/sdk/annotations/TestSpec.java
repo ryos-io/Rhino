@@ -16,15 +16,21 @@
 
 package io.ryos.rhino.sdk.annotations;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Marker annotation to activate Influx DB writer.
+ * Load generation specification to mark methods which specifies the load generation procedure.
  *
  * @author Erhan Bagdemir
- * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Influx {
+@Target(ElementType.METHOD)
+@Documented
+public @interface TestSpec {
+
+  String name() default "";
 }

@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk;
 
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.annotations.After;
@@ -25,14 +26,21 @@ import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
+import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.TestSpec;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
+import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
+import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
+import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -84,8 +92,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
       // Search for classes in development environment. The IDE runs the project in an exploded
       // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
-          .orElseThrow();
+      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path)).orElseThrow();
       var files = new File(resourceURL.toURI()).listFiles();
       if (files != null) {
         return Arrays.stream(files).
@@ -176,9 +183,21 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .map(s -> new Scenario(
             s.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name(), s))
         .collect(toList());
+    var specMethods = Arrays.stream(clazz.getDeclaredMethods())
+        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
+            .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.TestSpec))
+        .map(s -> new Pair<String, Spec>(s.getDeclaredAnnotation(TestSpec.class).name(),
+            ReflectionUtils.<Spec>executeMethod(s,
+            instanceOf(clazz).orElseThrow())))
+        .map(p -> p.getSecond().withSpecName(p.getFirst()))
+        .collect(toList());
 
-    if (stepMethods.isEmpty()) {
+    if (stepMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
       throw new SimulationNotFoundException(clazz.getName());
+    }
+
+    if (specMethods.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
+      throw new SpecificationNotFoundException(clazz.getName());
     }
 
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
@@ -188,23 +207,32 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
-    return new Simulation.Builder().
-        withSimulationClass(clazz).
-        withUserRepository(userRepo).
-        withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
-            DefaultSimulationRunner.class).
-        withSimulation(simAnnotation.name()).
-        withDuration(Duration.ofMinutes(simAnnotation.durationInMins())).
-        withInjectUser(maxUserInject).
-        withLogWriter(validateLogFile(logger)).
-        withInflux(enableInflux).
-        withPrepare(findMethodWith(clazz, Prepare.class).orElse(null)).
-        withCleanUp(findMethodWith(clazz, CleanUp.class).orElse(null)).
-        withBefore(findMethodWith(clazz, Before.class).orElse(null)).
-        withAfter(findMethodWith(clazz, After.class).orElse(null)).
-        withScenarios(stepMethods).
-        withRampUp(-1). // Throttling is not scope of 1.0 anymore.
+    return new Simulation.Builder()
+        .withSimulationClass(clazz)
+        .withUserRepository(userRepo)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
+            DefaultSimulationRunner.class)
+        .withSimulation(simAnnotation.name())
+        .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
+        .withInjectUser(maxUserInject)
+        .withLogWriter(validateLogFile(logger))
+        .withInflux(enableInflux)
+        .withPrepare(findMethodWith(clazz, Prepare.class).orElse(null))
+        .withCleanUp(findMethodWith(clazz, CleanUp.class).orElse(null))
+        .withBefore(findMethodWith(clazz, Before.class).orElse(null))
+        .withAfter(findMethodWith(clazz, After.class).orElse(null))
+        .withScenarios(stepMethods)
+        .withSpecs(specMethods)
+        .withRampUp(-1). // Throttling is not scope of 1.0 anymore.
         build();
+  }
+
+  private boolean isBlockingSimulation(final Runner runnerAnnotation) {
+    return runnerAnnotation.clazz().equals(DefaultSimulationRunner.class);
+  }
+
+  private boolean isReactiveSimulation(final Runner runnerAnnotation) {
+    return runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {
