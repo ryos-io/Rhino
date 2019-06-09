@@ -21,8 +21,8 @@ import static org.asynchttpclient.Dsl.head;
 
 import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
-import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.Out;
@@ -42,7 +42,6 @@ import org.asynchttpclient.RequestBuilder;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -72,7 +71,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info("Starting load test for " + simulationMetadata.getDuration() + " minutes ...");
+    Out.info(
+        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
@@ -120,10 +120,15 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
-      case GET  : builder = get(httpSpec.getTarget());  break;
-      case HEAD : builder = head(httpSpec.getTarget()); break;
+      case GET:
+        builder = get(httpSpec.getTarget());
+        break;
+      case HEAD:
+        builder = head(httpSpec.getTarget());
+        break;
       // case X : rest of methods, we support...
-      default: throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
+      default:
+        throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
     }
 
     var user = userSession.getUser();
@@ -202,13 +207,15 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     userSessions.forEach(us -> simulationMetadata.cleanUp(us));
   }
 
-  private void waitUsers(UserRepository userRepository) {
+  private void waitUsers(final UserRepository userRepository) {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
+    while (!userRepository.has(simulationMetadata.getNumberOfUsers())
+        && ++retry < MAX_WAIT_FOR_USER) {
       Out.info(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata.getNumberOfUsers() + ". "
+          "? Not sufficient user has been logged in. Required " + simulationMetadata
+              .getNumberOfUsers() + ". "
               + "Waiting...");
       waitForASec();
     }
