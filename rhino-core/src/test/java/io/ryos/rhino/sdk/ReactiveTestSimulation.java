@@ -1,49 +1,35 @@
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.specs.Spec.http;
-
-import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.annotations.TestSpec;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.UserRepository;
-import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
+import io.ryos.rhino.sdk.specs.Spec;
+import java.util.UUID;
 
 @Simulation(name = "Reactive Test")
 @Influx
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 public class ReactiveTestSimulation {
 
-  @UserFeeder(factory = UserRepositoryFactory.class)
-  private UserRepository<UserSession> userRepository;
-
   private static final String HEALTH_ENDPOINT = "https://cc-api-storage-stage.adobe.io/server-status/health";
 
-  @Dsl(name = "Google.com")
-  public LoadDsl singleTestDsl() {
-    return Start
-        .spec()
-        .run(http("HEAD")
-            .endpoint((r) -> "http://google.com")
-            .header("X-Request-ID", "123" + userRepository.take().getUser().getUsername())
-            .head());
-  }
+  @TestSpec(name="Spec")
+  public Spec healthcheckCallSpec() {
+    return Spec
+        .http("Health Check")
+        .target(HEALTH_ENDPOINT)
+        .headers("X-Request-Id", "Rhino" + UUID.randomUUID().toString())
+        .get()
+        .andThen((session) -> {
 
-  @Dsl(name = "Mixture")
-  public LoadDsl multipleTestDsl() {
-    return Start
-        .spec()
-        .run(http("Google.com GET")
-                .endpoint((r) -> "http://google.com")
-                .header("X-Request-ID", "123")
-                .get())
-        .run(http("Microsoft.com HEAD")
-            .endpoint((r) -> "http://microsoft.com")
-            .head());
+          System.out.println(session.get("response"));
+
+          return Spec
+              .http("Step 2")
+              .target(HEALTH_ENDPOINT)
+              .get();
+        });
   }
 }
