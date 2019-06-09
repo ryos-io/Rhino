@@ -16,25 +16,33 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static org.asynchttpclient.Dsl.get;
+import static org.asynchttpclient.Dsl.head;
+
 import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
-import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.SpecMaterializer;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+import io.ryos.rhino.sdk.specs.HttpSpec;
+import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.specs.Spec;
+import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.NotImplementedException;
 import org.asynchttpclient.Dsl;
+import org.asynchttpclient.RequestBuilder;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -42,31 +50,29 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
   private static final int CONNECT_TIMEOUT = 500;
+  private static final int PAR_RATIO = 5;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
-  private CyclicIterator<LoadDsl> dslIterator;
+  private CyclicIterator<HttpSpec> scenarioCyclicIterator;
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
-  private final EventDispatcher eventDispatcher;
 
   public ReactiveHttpSimulationRunner(final Context context) {
     this.context = context;
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
-    this.dslIterator = new CyclicIterator<>(
+    this.scenarioCyclicIterator = new CyclicIterator<>(
         simulationMetadata
             .getSpecs()
             .stream()
-            .filter(Objects::nonNull)
-            .map(spec -> (LoadDsl) spec)
+            .filter(spec -> spec instanceof HttpSpec)
+            .map(spec -> (HttpSpec) spec)
             .collect(Collectors.toList()));
-    this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
 
   public void start() {
 
-    Out.info(
-        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    Out.info("Starting load test for " + simulationMetadata.getDuration() + " minutes ...");
 
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
@@ -78,6 +84,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     }
 
     var userRepository = simulationMetadata.getUserRepository();
+
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
 
@@ -93,24 +100,45 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
-        .zipWith(Flux.fromStream(Streams.stream(dslIterator)))
-        .doOnError((t) -> System.out.println(t.getMessage()))
+        .zipWith(Flux.fromStream(Streams.stream(scenarioCyclicIterator)))
         .doOnTerminate(this::notifyAwaiting)
-        .doOnComplete(() -> shutdownInitiated = true)
-        .flatMap(tuple -> {
-          var session = tuple.getT1();
-          var dsl = tuple.getT2();
-          return new SpecMaterializer(client, eventDispatcher).materialize(dsl.specs(), session);
-        })
+        .flatMap(tuple2 -> Mono.fromFuture(client.executeRequest(
+            getRequestBuilder(
+                tuple2.getT2(),
+                tuple2.getT1()),
+            new HttpSpecAsyncHandler(
+                tuple2.getT1().getUser().getId(),
+                tuple2.getT2().getEnclosingSpec(),
+                tuple2.getT2().getStepName(), simulationMetadata))
+            .toCompletableFuture()))
         .subscribe();
     await();
     stop();
   }
 
+  private RequestBuilder getRequestBuilder(final HttpSpec httpSpec, final UserSession userSession) {
+
+    RequestBuilder builder = null;
+    switch (httpSpec.getMethod()) {
+      case GET  : builder = get(httpSpec.getTarget());  break;
+      case HEAD : builder = head(httpSpec.getTarget()); break;
+      // case X : rest of methods, we support...
+      default: throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
+    }
+
+    var user = userSession.getUser();
+    if (user instanceof OAuthUser) {
+      var token = ((OAuthUser) user).getAccessToken();
+      builder = builder.addHeader("Authorization", "Bearer " + token);
+    }
+
+    return builder;
+  }
+
   private void await() {
     synchronized (this) {
       try {
-        while (!shutdownInitiated) {
+        while (!subscribe.isDisposed()) {
           wait(ONE_SEC);
         }
       } catch (InterruptedException e) {
@@ -150,8 +178,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     // proceed with shutdown.
     Out.info("Shutting down the system ...");
-    eventDispatcher.stop();
-    dslIterator.stop();
+    scenarioCyclicIterator.stop();
+    EventDispatcher.instance(simulationMetadata).stop();
 
     Out.info("Shutting down completed ...");
     Out.info("Bye!");
@@ -174,15 +202,13 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     userSessions.forEach(us -> simulationMetadata.cleanUp(us));
   }
 
-  private void waitUsers(final UserRepository userRepository) {
+  private void waitUsers(UserRepository userRepository) {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getNumberOfUsers())
-        && ++retry < MAX_WAIT_FOR_USER) {
+    while (!userRepository.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
       Out.info(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata
-              .getNumberOfUsers() + ". "
+          "? Not sufficient user has been logged in. Required " + simulationMetadata.getNumberOfUsers() + ". "
               + "Waiting...");
       waitForASec();
     }
