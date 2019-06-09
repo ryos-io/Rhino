@@ -185,9 +185,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.TestSpec))
         .map(s -> new Pair<String, Spec>(s.getDeclaredAnnotation(TestSpec.class).name(),
-            ReflectionUtils.<Spec>executeMethod(s,
-            instanceOf(clazz).orElseThrow())))
-        .map(p -> p.getSecond().withSpecName(p.getFirst()))
+            ReflectionUtils.<Spec>executeMethod(s, instanceOf(clazz).orElseThrow())))
+        .map(p -> p.getSecond().withName(p.getFirst()))
         .collect(toList());
 
     if (stepMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
