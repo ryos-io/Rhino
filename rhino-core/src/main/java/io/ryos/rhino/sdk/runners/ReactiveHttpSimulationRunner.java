@@ -16,8 +16,11 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
+import static org.asynchttpclient.Dsl.options;
+import static org.asynchttpclient.Dsl.put;
 
 import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
@@ -37,12 +40,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.NotImplementedException;
+import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
+import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -72,7 +77,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info("Starting load test for " + simulation.getDuration() + " minutes ...");
+    Out.info("Starting load test for " + simulation.getDuration().toMinutes() + " minutes ...");
 
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
@@ -102,28 +107,62 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         .take(simulation.getDuration())
         .zipWith(Flux.fromStream(Streams.stream(scenarioCyclicIterator)))
         .doOnTerminate(this::notifyAwaiting)
-        .flatMap(tuple2 -> Mono.fromFuture(client.executeRequest(
-            getRequestBuilder(
-                tuple2.getT2(),
-                tuple2.getT1()),
-            new HttpSpecAsyncHandler(
-                tuple2.getT1().getUser().getId(),
-                tuple2.getT2().getEnclosingSpec(),
-                tuple2.getT2().getStepName(), simulation))
-            .toCompletableFuture()))
+        .flatMap(tuple -> {
+          var session = tuple.getT1();
+          var currentSpec = tuple.getT2();
+
+          var m = Mono.fromFuture(request(client, session, currentSpec).toCompletableFuture());
+          var nextS = currentSpec;
+          while (nextS.getAndThen().isPresent()) {
+            m = m.flatMap(response -> {
+              session.add("response", response);
+              var nextSpec = (HttpSpec) currentSpec.getAndThen().get().apply(session);
+              return Mono.fromFuture(request(client, session, nextSpec).toCompletableFuture());
+            });
+
+            break;
+          }
+
+          return m;
+        })
         .subscribe();
     await();
     stop();
   }
 
-  private RequestBuilder getRequestBuilder(final HttpSpec httpSpec, final UserSession userSession) {
+  private ListenableFuture<Response> request(final AsyncHttpClient client,
+      final UserSession session,
+      final HttpSpec spec) {
+    return client.executeRequest(builder(spec, session),
+        new HttpSpecAsyncHandler(session.getUser().getId(), spec.getEnclosingSpec(),
+            spec.getStepName(), simulation));
+  }
+
+  private RequestBuilder builder(HttpSpec httpSpec, UserSession userSession) {
 
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
-      case GET  : builder = get(httpSpec.getTarget());  break;
-      case HEAD : builder = head(httpSpec.getTarget()); break;
+      case GET:
+        builder = get(httpSpec.getTarget());
+        break;
+      case HEAD:
+        builder = head(httpSpec.getTarget());
+        break;
+      case OPTIONS:
+        builder = options(httpSpec.getTarget());
+        break;
+      case DELETE:
+        builder = delete(httpSpec.getTarget());
+        break;
+      case PUT:
+        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
+        break;
+      case POST:
+        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
+        break;
       // case X : rest of methods, we support...
-      default: throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
+      default:
+        throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
     }
 
     var user = userSession.getUser();
@@ -202,7 +241,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     userSessions.forEach(us -> simulation.cleanUp(us));
   }
 
-  private void waitUsers(UserRepository userRepository) {
+  private void waitUsers(final UserRepository userRepository) {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
