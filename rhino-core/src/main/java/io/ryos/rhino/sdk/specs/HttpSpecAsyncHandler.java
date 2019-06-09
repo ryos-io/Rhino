@@ -20,6 +20,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final Simulation simulation;
   private volatile long start = -1;
   private volatile int status;
+  private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
 
   public HttpSpecAsyncHandler(int userId, String specName, String stepName, Simulation simulation) {
     this.measurement = new MeasurementImpl(specName, userId);
@@ -32,6 +33,8 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   @Override
   public State onStatusReceived(final HttpResponseStatus responseStatus) {
 
+    builder.reset();
+    builder.accumulate(responseStatus);
     this.status = responseStatus.getStatusCode();
 
     return State.CONTINUE;
@@ -39,11 +42,13 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public State onHeadersReceived(final HttpHeaders headers) {
+    builder.accumulate(headers);
     return State.CONTINUE;
   }
 
   @Override
   public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) {
+    builder.accumulate(bodyPart);
     return State.CONTINUE;
   }
 
@@ -69,7 +74,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     simulation.dispatchEvents(measurement);
 
-    return null;
+    return builder.build();
   }
 
   @Override
