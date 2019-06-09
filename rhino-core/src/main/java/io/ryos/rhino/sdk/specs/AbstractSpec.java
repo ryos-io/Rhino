@@ -21,8 +21,11 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
+ * Common specification type implementation.
+ * <p>
+ *
  * @author Erhan Bagdemir
- * @since 1.2.0
+ * @since 1.1.0
  */
 public abstract class AbstractSpec implements Spec {
 
@@ -34,6 +37,13 @@ public abstract class AbstractSpec implements Spec {
     return this;
   }
 
+  /**
+   * Returns an {@link Optional} of function which returns a {@link Spec} for a {@link
+   * UserSession}.
+   * <p>
+   *
+   * @return An an {@link Optional} of binding function.
+   */
   public Optional<Function<UserSession, Spec>> getAndThen() {
     return Optional.ofNullable(andThenFunction);
   }
