@@ -1,6 +1,9 @@
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Load testing specification for reactive runner.
@@ -8,15 +11,29 @@ import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
  *
  * @author Erhan Bagdemir
  * @see ReactiveHttpSimulationRunner
- * @since 1.2.0
+ * @since 1.1.0
  */
 public interface Spec {
 
+  /**
+   * Static factory method to create a new {@link HttpSpec} instance.
+   * <p>
+   *
+   * @param measurementPoint Measurement point name.
+   * @return A new instance of {@link Spec}.
+   */
   static HttpSpec http(String measurementPoint) {
     return new HttpSpecImpl(measurementPoint);
   }
 
-  Spec withSpecName(String name);
+  /**
+   * The name of the test specification. The name is set in @TestSpec annotation.
+   * <p>
+   *
+   * @param name Test specification name.
+   * @return A {@link Spec} instance with name.
+   */
+  Spec withName(String name);
 
   /**
    * The name of the spec. It is the step name in scenario countpart.
@@ -25,4 +42,8 @@ public interface Spec {
    * @return The name of the spec.
    */
   String getName();
+
+  Spec andThen(Function<UserSession, Spec> spec);
+
+  Optional<Function<UserSession, Spec>> getAndThen();
 }
