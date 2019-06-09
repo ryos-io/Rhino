@@ -1,13 +1,26 @@
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.NotImplementedException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import org.asynchttpclient.Response;
 
-public class HttpSpecImpl implements HttpSpec {
+/**
+ * Html implementation of {@link Spec}.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
+ */
+public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
+  private InputStream toUpload;
   private String enclosingSpec;
   private String stepName;
   private String target;
@@ -15,9 +28,18 @@ public class HttpSpecImpl implements HttpSpec {
   private Map<String, List<Object>> headers = new HashMap<>();
   private Map<String, String> matrixParams = new HashMap<>();
   private Method httpMethod;
+  private Spec parent;
+
+  private Consumer<Response> afterThenConsumer;
+  private Spec afterThenSpec;
 
   public HttpSpecImpl(String stepName) {
     this.stepName = stepName;
+  }
+
+  public HttpSpecImpl(String stepName, Spec parent) {
+    this.stepName = stepName;
+    this.parent = parent;
   }
 
   @Override
@@ -34,27 +56,32 @@ public class HttpSpecImpl implements HttpSpec {
 
   @Override
   public HttpSpec put() {
-    throw new NotImplementedException("Http PUT()");
-  }
-
-  @Override
-  public HttpSpec post() {
-    throw new NotImplementedException("Http POST()");
-  }
-
-  @Override
-  public HttpSpec delete() {
-    throw new NotImplementedException("Http DELETE()");
+    this.httpMethod = Method.PUT;
+    return this;
   }
 
   @Override
   public HttpSpec patch() {
-    throw new NotImplementedException("Http PATCH()");
+    this.httpMethod = Method.PATCH;
+    return this;
+  }
+
+  @Override
+  public HttpSpec post() {
+    this.httpMethod = Method.POST;
+    return this;
+  }
+
+  @Override
+  public HttpSpec delete() {
+    this.httpMethod = Method.DELETE;
+    return this;
   }
 
   @Override
   public HttpSpec options() {
-    throw new NotImplementedException("Http OPTIONS()");
+    this.httpMethod = Method.OPTIONS;
+    return this;
   }
 
   @Override
@@ -82,6 +109,17 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
+  public HttpSpec upload(final InputStream inputStream) {
+    this.toUpload = inputStream;
+    return this;
+  }
+
+  @Override
+  public InputStream getUploadContent() {
+    return toUpload;
+  }
+
+  @Override
   public Method getMethod() {
     return httpMethod;
   }
@@ -97,7 +135,7 @@ public class HttpSpecImpl implements HttpSpec {
   }
 
   @Override
-  public Spec withSpecName(final String name) {
+  public Spec withName(final String name) {
     this.enclosingSpec = name;
     return this;
   }
@@ -120,5 +158,17 @@ public class HttpSpecImpl implements HttpSpec {
   @Override
   public String getStepName() {
     return stepName;
+  }
+
+  public Consumer<Response> getAfterThenConsumer() {
+    return afterThenConsumer;
+  }
+
+  public Spec getAfterThenSpec() {
+    return afterThenSpec;
+  }
+
+  public Spec getParent() {
+    return parent;
   }
 }
