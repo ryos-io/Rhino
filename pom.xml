@@ -66,6 +66,7 @@
     <module>rhino-core</module>
     <module>rhino-archetype</module>
     <module>rhino-archetype-parent</module>
+    <module>rhino-vault</module>
   </modules>
 
   <repositories>
