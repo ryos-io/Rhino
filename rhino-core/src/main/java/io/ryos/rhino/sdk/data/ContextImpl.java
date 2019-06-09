@@ -26,8 +26,9 @@ public class ContextImpl implements Context {
     // instance of HashMap.
     private final Map<String, Object> storage = new ConcurrentHashMap<>();
 
-    public void add(String key, Object value) {
+    public Context add(String key, Object value) {
         storage.put(key, value);
+        return this;
     }
 
     public <T> Optional<T> get(String key) {

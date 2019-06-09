@@ -33,7 +33,7 @@ public interface Context {
      * @param key   Key value.
      * @param value Value to store.
      */
-    void add(String key, Object value);
+    Context add(String key, Object value);
 
     /**
      * Reclaims the object from the context.
