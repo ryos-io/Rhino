@@ -101,18 +101,17 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(Streams.stream(scenarioCyclicIterator)))
-        .parallel(Runtime.getRuntime().availableProcessors() * PAR_RATIO)
-        .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .subscribe(spec -> Mono.fromFuture(client.executeRequest(
+        .flatMap(tuple2 -> Mono.fromFuture(client.executeRequest(
             getRequestBuilder(
-                spec.getT2(),
-                spec.getT1()),
+                tuple2.getT2(),
+                tuple2.getT1()),
             new HttpSpecAsyncHandler(
-                spec.getT1().getUser().getId(),
-                spec.getT2().getEnclosingSpec(),
-                spec.getT2().getStepName(), simulationMetadata))
-            .toCompletableFuture()));
+                tuple2.getT1().getUser().getId(),
+                tuple2.getT2().getEnclosingSpec(),
+                tuple2.getT2().getStepName(), simulationMetadata))
+            .toCompletableFuture()))
+        .subscribe();
     await();
     stop();
   }
