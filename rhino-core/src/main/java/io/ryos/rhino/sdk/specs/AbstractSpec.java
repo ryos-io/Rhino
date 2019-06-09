@@ -21,12 +21,24 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Common specification type implementation.
- * <p>
- *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.2.0
  */
 public abstract class AbstractSpec implements Spec {
 
+  private Function<UserSession, Spec> andThenFunction;
+
+  @Override
+  public Spec andThen(Function<UserSession, Spec> andThenFunction) {
+    this.andThenFunction = (session) -> andThenFunction.apply(session).withName(this.getName());
+    return this;
+  }
+
+  public Selectable then() {
+    return new Selectable(this);
+  }
+
+  public Optional<Function<UserSession, Spec>> getAndThen() {
+    return Optional.ofNullable(andThenFunction);
+  }
 }
