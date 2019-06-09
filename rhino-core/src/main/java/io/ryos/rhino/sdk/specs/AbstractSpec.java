@@ -34,10 +34,6 @@ public abstract class AbstractSpec implements Spec {
     return this;
   }
 
-  public Selectable then() {
-    return new Selectable(this);
-  }
-
   public Optional<Function<UserSession, Spec>> getAndThen() {
     return Optional.ofNullable(andThenFunction);
   }
