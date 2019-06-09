@@ -1,12 +1,12 @@
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.asynchttpclient.Response;
@@ -23,21 +23,23 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   private InputStream toUpload;
   private String enclosingSpec;
   private String stepName;
-
-  private List<Function<Response, Entry<String, List<String>>>> headers = new ArrayList<>();
-  private List<Function<Response, Entry<String, List<String>>>> queryParams = new ArrayList<>();
-
+  private String target;
+  private Map<String, String> queryParams = new HashMap<>();
+  private Map<String, List<Object>> headers = new HashMap<>();
+  private Map<String, String> matrixParams = new HashMap<>();
   private Method httpMethod;
-  private Function<Response, String> endpoint;
+  private Spec parent;
 
-  /**
-   * Creates a new {@link HttpSpecImpl}.
-   * <p>
-   *
-   * @param measurement The name of the measurement.
-   */
-  public HttpSpecImpl(String measurement) {
-    this.stepName = measurement;
+  private Consumer<Response> afterThenConsumer;
+  private Spec afterThenSpec;
+
+  public HttpSpecImpl(String stepName) {
+    this.stepName = stepName;
+  }
+
+  public HttpSpecImpl(String stepName, Spec parent) {
+    this.stepName = stepName;
+    this.parent = parent;
   }
 
   @Override
@@ -83,50 +85,26 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec endpoint(final String endpoint) {
-    this.endpoint = (r) -> endpoint;
+  public HttpSpec target(final String endpoint) {
+    this.target = endpoint;
     return this;
   }
 
   @Override
-  public HttpSpec endpoint(Function<Response, String> endpoint) {
-    this.endpoint = endpoint;
+  public HttpSpec headers(final String name, final String... values) {
+    this.headers.put(name, Arrays.asList(values));
     return this;
   }
 
   @Override
-  public HttpSpec header(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
+  public HttpSpec queryParam(final String name, final String value) {
+    this.queryParams.put(name, value);
     return this;
   }
 
   @Override
-  public HttpSpec header(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
-    return this;
-  }
-
-  @Override
-  public HttpSpec header(Function<Response, Entry<String, List<String>>> headerFunction) {
-    this.headers.add(headerFunction);
-    return this;
-  }
-
-  @Override
-  public HttpSpec queryParam(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
-    return this;
-  }
-
-  @Override
-  public HttpSpec queryParam(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
-    return this;
-  }
-
-  @Override
-  public HttpSpec queryParam(Function<Response, Entry<String, List<String>>> headerFunction) {
-    this.headers.add(headerFunction);
+  public HttpSpec matrixParams(final String name, final String value) {
+    this.matrixParams.put(name, value);
     return this;
   }
 
@@ -147,12 +125,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public List<Function<Response, Entry<String, List<String>>>> getHeaders() {
+  public Map<String, List<Object>> getHeaders() {
     return headers;
   }
 
   @Override
-  public List<Function<Response, Entry<String, List<String>>>> getQueryParameters() {
+  public Map<String, String> getQueryParameters() {
     return queryParams;
   }
 
@@ -168,22 +146,29 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public Function<Response, String> getEndpoint() {
-    return endpoint;
+  public String getTarget() {
+    return target;
   }
 
   @Override
-  public String getTestName() {
+  public String getEnclosingSpec() {
     return enclosingSpec;
   }
 
   @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public String getStepName() {
+    return stepName;
   }
 
-  @Override
-  public String getMeasurementName() {
-    return stepName;
+  public Consumer<Response> getAfterThenConsumer() {
+    return afterThenConsumer;
+  }
+
+  public Spec getAfterThenSpec() {
+    return afterThenSpec;
+  }
+
+  public Spec getParent() {
+    return parent;
   }
 }
