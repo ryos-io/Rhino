@@ -17,6 +17,12 @@ The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019.
   <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
 </p>
 
+1.1.0 Release is to contain the following major features: 
+* [Reactive Rhino and Spec DSL](https://github.com/bagdemir/Rhino/issues/16)
+* [Native Grafana Integration](https://github.com/bagdemir/Rhino/issues/29)
+* [andThen() combinator](https://github.com/bagdemir/Rhino/pull/36)
+* [Load ramp-up control](https://github.com/bagdemir/Rhino/issues/9)
+
 ## Rhino: Cloud Services Load and Performance Testing
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
