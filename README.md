@@ -11,7 +11,7 @@
 
 ## Project Status
 
-The first Rhino release version `1.1.0.RELEASE` is currently scheduled in July 2019. 
+The first Rhino release version `1.1.0.RELEASE` is currently scheduled in July 2019. We are currently working on F/OSS transfer. 
 
 <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
