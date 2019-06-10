@@ -1,12 +1,9 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.specs.HttpSpec;
-import java.time.Duration;
 import java.util.List;
 
 public interface LoadDsl {
-
-  CollectorDsl pause(Duration duration);
 
   String getName();
 

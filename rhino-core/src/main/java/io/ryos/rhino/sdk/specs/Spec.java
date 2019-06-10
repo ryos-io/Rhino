@@ -27,7 +27,7 @@ public interface Spec {
   }
 
   /**
-   * The name of the test specification. The name is set in @TestSpec annotation.
+   * The name of the test specification. The name is set in @Dsl annotation.
    * <p>
    *
    * @param name Test specification name.
@@ -42,8 +42,4 @@ public interface Spec {
    * @return The name of the spec.
    */
   String getName();
-
-  Spec andThen(Function<UserSession, Spec> spec);
-
-  Optional<Function<UserSession, Spec>> getAndThen();
 }

@@ -1,8 +1,6 @@
 package io.ryos.rhino.sdk.specs;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +27,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   private Map<String, String> matrixParams = new HashMap<>();
   private Method httpMethod;
   private Spec parent;
-
+  private Function<Response, String> endpointSupplier;
   private Consumer<Response> afterThenConsumer;
   private Spec afterThenSpec;
 
@@ -87,6 +85,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   @Override
   public HttpSpec target(final String endpoint) {
     this.target = endpoint;
+    return this;
+  }
+
+  @Override
+  public HttpSpec endpoint(Function<Response, String> endpoint) {
+    this.endpointSupplier = endpoint;
     return this;
   }
 
@@ -151,8 +155,18 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public String getEnclosingSpec() {
+  public Function<Response, String> getEndpoint() {
+    return endpointSupplier;
+  }
+
+  @Override
+  public String getTestName() {
     return enclosingSpec;
+  }
+
+  @Override
+  public void setTestName(String testName) {
+    this.enclosingSpec = testName;
   }
 
   @Override

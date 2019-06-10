@@ -22,17 +22,15 @@ import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
+import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
@@ -48,21 +46,10 @@ import reactor.core.publisher.Mono;
  */
 public class SpecMaterializer {
 
-  private static final Logger LOG = LogManager.getLogger(SpecMaterializer.class);
-
   private final AsyncHttpClient client;
-  private final EventDispatcher eventDispatcher;
 
-  /**
-   * Specification materializer translates the specifications into reactor implementations.
-   * <p>
-   *
-   * @param client Async HTTP client instance.
-   * @param eventDispatcher Event dispatcher instance.
-   */
-  public SpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
+  public SpecMaterializer(final AsyncHttpClient client) {
     this.client = client;
-    this.eventDispatcher = eventDispatcher;
   }
 
   /**
@@ -73,34 +60,34 @@ public class SpecMaterializer {
    * @param executables Executables returned from the DSL.
    * @return The {@link Mono<Response>} instance.
    */
-  public Mono<Response> materialize(final List<HttpSpec> executables,
-      final UserSession userSession) {
+  public Mono<Response> materialize(List<HttpSpec> executables, UserSession userSession,
+      SimulationMetadata simulationMetadata) {
 
     Iterator<HttpSpec> iterator = executables.iterator();
     if (!iterator.hasNext()) {
       return null;
     }
-    var acc = toMono(iterator.next(), null, userSession);
+    var acc = toMono(iterator.next(), null, userSession, simulationMetadata);
     while (iterator.hasNext()) {
       // Never move the following statement into lambda body. next() call is required to be eager.
       HttpSpec next = iterator.next();
-      acc = acc.flatMap(response -> toMono(next, response, userSession));
+      acc = acc.flatMap(response -> toMono(next, response, userSession, simulationMetadata));
 
     }
-    return acc.doOnError((t) -> System.out.println(t.getMessage()));
+    return acc;
   }
 
   private Mono<Response> toMono(final HttpSpec spec, final Response response,
-      final UserSession session) {
+      final UserSession session,
+      final SimulationMetadata simulationMetadata) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(session.getUser().getId(),
         spec.getTestName(),
-        spec.getMeasurementName(), eventDispatcher);
+        spec.getStepName(), simulationMetadata);
 
     return Mono.fromFuture(client.executeRequest(buildRequest(spec, session, response),
         httpSpecAsyncHandler)
-        .toCompletableFuture())
-        .doOnError((t) -> LOG.error("Http Client Error", t));
+        .toCompletableFuture());
   }
 
   private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession,
@@ -109,36 +96,26 @@ public class SpecMaterializer {
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
       case GET:
-        builder = get(httpSpec.getEndpoint().apply(response));
+        builder = get(httpSpec.getTarget());
         break;
       case HEAD:
-        builder = head(httpSpec.getEndpoint().apply(response));
+        builder = head(httpSpec.getTarget());
         break;
       case OPTIONS:
-        builder = options(httpSpec.getEndpoint().apply(response));
+        builder = options(httpSpec.getTarget());
         break;
       case DELETE:
-        builder = delete(httpSpec.getEndpoint().apply(response));
+        builder = delete(httpSpec.getTarget());
         break;
       case PUT:
-        builder = put(httpSpec.getEndpoint().apply(response)).setBody(httpSpec.getUploadContent());
+        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
         break;
       case POST:
-        builder = put(httpSpec.getEndpoint().apply(response)).setBody(httpSpec.getUploadContent());
+        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
         break;
       // case X : rest of methods, we support...
       default:
         throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
-    }
-
-    for (var f : httpSpec.getHeaders()) {
-      var headerEntry = f.apply(response);
-      builder = builder.addHeader(headerEntry.getKey(), headerEntry.getValue());
-    }
-
-    for (var f : httpSpec.getQueryParameters()) {
-      var paramEntry = f.apply(response);
-      builder = builder.addHeader(paramEntry.getKey(), paramEntry.getValue());
     }
 
     var user = userSession.getUser();
