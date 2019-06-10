@@ -1,11 +1,13 @@
 package io.ryos.rhino.sdk.io;
 
+import io.ryos.rhino.sdk.exceptions.ConfigurationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -14,7 +16,7 @@ import java.util.function.Function;
  *
  * @author Erhan Bagdemir
  */
-public class FileResource {
+public class ConfigResource {
 
   public enum Type {
 
@@ -26,12 +28,15 @@ public class FileResource {
     /**
      * File resource type, e.g file:///user/home/rhino.properties
      */
-    FILE}
+    FILE
+  }
 
   private static final String SEPARATOR = "://";
   private final String sourceURI;
   private final Function<String, InputStream> classpathResourcePointer =
-      path -> getClass().getResourceAsStream(path);
+      path -> Optional
+          .ofNullable(getClass().getResourceAsStream(path))
+          .orElseThrow(() -> new ConfigurationNotFoundException(path));
 
   private final Function<String, InputStream> fileResourcePointer = path -> {
     var filePath = Path.of(path);
@@ -43,14 +48,14 @@ public class FileResource {
       try {
         return new FileInputStream(file);
       } catch (FileNotFoundException e) {
-        ExceptionUtils.rethrow(e, RuntimeException.class,
+        ExceptionUtils.rethrow(e, ConfigurationNotFoundException .class,
             "Unexpected file not found in path:" + filePath.toString());
       }
     }
-    return null;
+    throw new ConfigurationNotFoundException(path);
   };
 
-  public FileResource(String sourceURI) {
+  public ConfigResource(String sourceURI) {
     this.sourceURI = Objects.requireNonNull(sourceURI);
   }
 

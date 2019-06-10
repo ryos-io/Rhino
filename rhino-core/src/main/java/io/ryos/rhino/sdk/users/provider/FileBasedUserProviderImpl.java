@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.users.provider;
 
-import io.ryos.rhino.sdk.io.FileResource;
+import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.CSVUserParserImpl;
 import io.ryos.rhino.sdk.users.UserParser;
 import io.ryos.rhino.sdk.users.data.User;
@@ -38,7 +38,7 @@ public class FileBasedUserProviderImpl implements UserProvider {
 
   @Override
   public List<User> getUsers() {
-    var userList = parser.unmarshall(new FileResource(pathToFile).getInputStream());
+    var userList = parser.unmarshall(new ConfigResource(pathToFile).getInputStream());
     if (userList.isEmpty()) {
       throw new RuntimeException("No valid user found in " + pathToFile + ". The CSV file should contain "
           + "lines in the following format: username;password;scope");

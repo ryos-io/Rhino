@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.RhinoIOException;
-import io.ryos.rhino.sdk.io.FileResource;
+import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.provider.UserProvider;
 import io.ryos.rhino.sdk.users.provider.UserProvider.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
@@ -74,7 +74,7 @@ public class SimulationConfig {
 
   private void loadConfig(final String path) {
 
-    try(var is = new FileResource(path).getInputStream()) {
+    try(var is = new ConfigResource(path).getInputStream()) {
       properties.load(is);
 
       var propsValidator = new PropsValidatorImpl();
