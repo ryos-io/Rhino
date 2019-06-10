@@ -45,7 +45,7 @@ public interface SimulationSpec {
    * <p>
    *
    * @param path Path to the rhino.properties file.
-   * @param simulationToRun Simulation name to be run.
+   * @param simulationToRun SimulationMetadata name to be run.
    * @return SimulationSpec instance.
    */
   static SimulationSpec create(String path, String simulationToRun) {

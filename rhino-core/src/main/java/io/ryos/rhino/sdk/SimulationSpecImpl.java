@@ -72,7 +72,7 @@ public class SimulationSpecImpl implements SimulationSpec {
           simulationConfig.getPackageToScan());
       this.simulationRunners = jobs
           .stream()
-          .map(simulation -> new Pair<Simulation, Context>(simulation, getContext(simulation)))
+          .map(simulation -> new Pair<SimulationMetadata, Context>(simulation, getContext(simulation)))
           .map(pair -> getRunner(
               pair.getFirst().getRunner(), pair.getSecond()))
           .collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class SimulationSpecImpl implements SimulationSpec {
     return null;
   }
 
-  private ContextImpl getContext(final Simulation job) {
+  private ContextImpl getContext(final SimulationMetadata job) {
     var context = new ContextImpl();
     context.add(JOB, job);
     return context;

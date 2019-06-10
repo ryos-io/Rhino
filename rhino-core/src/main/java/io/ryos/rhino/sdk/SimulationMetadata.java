@@ -65,10 +65,11 @@ import scala.concurrent.Await;
 import scala.concurrent.duration.FiniteDuration;
 
 /**
- * {@link Simulation} is representation of a single performance testing job. The instances of {@link
- * Simulation} is created by using the metadata provided on annotated benchmark entities. Simulation
- * entities do comprise scenarios, that are run per user on a single thread. For each scenario there
- * will be a new Simulation instance created so as to run the scenario isolated on a single thread.
+ * {@link SimulationMetadata} is representation of a single performance testing job. The instances of {@link
+ * SimulationMetadata} is created by using the metadata provided on annotated benchmark entities.
+ * Simulation metadata entities do comprise scenarios, that are run per user on a single thread.
+ * For each scenario there will be a new SimulationMetadata instance created so as to run the
+ * scenario isolated on a single thread.
  * <p>
  *
  * The job instances are created by {@link SimulationJobsScanner} classes.
@@ -78,10 +79,10 @@ import scala.concurrent.duration.FiniteDuration;
  * @see io.ryos.rhino.sdk.annotations.Simulation
  * @since 1.0.0
  */
-public class Simulation {
+public class SimulationMetadata {
 
   private static final String ACTOR_SYS_NAME = "benchmark";
-  private static final Logger LOG = LogManager.getLogger(Simulation.class);
+  private static final Logger LOG = LogManager.getLogger(SimulationMetadata.class);
 
   /**
    * Runner.
@@ -235,7 +236,7 @@ public class Simulation {
    * Uses a builder to construct the instance.
    * <p>
    */
-  private Simulation(final Builder builder) {
+  private SimulationMetadata(final Builder builder) {
     this.duration = builder.duration;
     this.simulationName = builder.simulation;
     this.injectUser = builder.injectUser;
@@ -472,12 +473,12 @@ public class Simulation {
   }
 
   /**
-   * Builder for {@link Simulation}.
+   * Builder for {@link SimulationMetadata}.
    */
   static class Builder {
 
     /**
-     * Simulation simulationName.
+     * Simulation name.
      */
     private String simulation;
 
@@ -640,8 +641,8 @@ public class Simulation {
       return this;
     }
 
-    public Simulation build() {
-      return new Simulation(this);
+    public SimulationMetadata build() {
+      return new SimulationMetadata(this);
     }
   }
 }
