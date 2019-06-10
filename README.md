@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-The first release version 1.1.0.RELEASE is scheduled on 06.07.2019. 
+_The first release version 1.1.0.RELEASE is scheduled on 06.07.2019_. 
 
 
 ## Rhino: Cloud Services Load and Performance Testing
