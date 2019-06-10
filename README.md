@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-_The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019_. 
+The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019. 
 </p>
 
 <p align="center">
