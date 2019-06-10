@@ -11,7 +11,7 @@
 
 ## Project Status
 
-The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019. 
+The first Rhino release version `1.1.0.RELEASE` is currently scheduled in July 2019. 
 
 <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
@@ -19,11 +19,13 @@ The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019.
 
 ### Scope
 
-Upcoming 1.1.0 Release is to contain the following major features: 
+Upcoming 1.1.0 release is to contain the following major features as well as some minor bug fixes: 
 * [Reactive Rhino and Spec DSL](https://github.com/bagdemir/Rhino/issues/16)
 * [Native Grafana Integration](https://github.com/bagdemir/Rhino/issues/29)
 * [andThen() combinator](https://github.com/bagdemir/Rhino/pull/36)
 * [Load ramp-up control](https://github.com/bagdemir/Rhino/issues/9)
+
+
 
 ## Rhino: Cloud Services Load and Performance Testing
 
