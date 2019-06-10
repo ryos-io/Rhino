@@ -9,12 +9,12 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-<p align="center">
+## Project Status
+
 The first Rhino release version 1.1.0.RELEASE is scheduled in July.2019. 
-</p>
 
 <p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="640"/>
+  <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
 </p>
 
 ## Rhino: Cloud Services Load and Performance Testing
