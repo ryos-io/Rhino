@@ -1,4 +1,4 @@
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.dsl;
 
 public interface Executable {
 

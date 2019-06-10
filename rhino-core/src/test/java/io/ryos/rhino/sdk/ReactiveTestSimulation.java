@@ -1,12 +1,14 @@
 package io.ryos.rhino.sdk;
 
+import static io.ryos.rhino.sdk.specs.Spec.http;
+
+import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.TestSpec;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.specs.Spec;
-import java.util.UUID;
 
 @Simulation(name = "Reactive Test")
 @Influx
@@ -15,21 +17,11 @@ public class ReactiveTestSimulation {
 
   private static final String HEALTH_ENDPOINT = "https://cc-api-storage-stage.adobe.io/server-status/health";
 
-  @TestSpec(name="Spec")
-  public Spec healthcheckCallSpec() {
-    return Spec
-        .http("Health Check")
-        .target(HEALTH_ENDPOINT)
-        .headers("X-Request-Id", "Rhino" + UUID.randomUUID().toString())
-        .get()
-        .andThen((session) -> {
-
-          System.out.println(session.get("response"));
-
-          return Spec
-              .http("Step 2")
-              .target(HEALTH_ENDPOINT)
-              .get();
-        });
+  @Dsl(name = "Spec")
+  public LoadDsl testDsl() {
+    return Start
+        .spec()
+        .run(http("first call").endpoint((r) -> "http://bagdemir.com").get())
+        .run(http("second call").endpoint((r) -> "http://google.com").get());
   }
 }

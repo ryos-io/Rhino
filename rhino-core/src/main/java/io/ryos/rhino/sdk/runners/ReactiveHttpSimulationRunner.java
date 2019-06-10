@@ -16,32 +16,25 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static org.asynchttpclient.Dsl.get;
-import static org.asynchttpclient.Dsl.head;
-
 import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.SpecMaterializer;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
-import io.ryos.rhino.sdk.specs.HttpSpec;
-import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.specs.Spec;
-import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.NotImplementedException;
 import org.asynchttpclient.Dsl;
-import org.asynchttpclient.RequestBuilder;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -49,23 +42,22 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
   private static final int CONNECT_TIMEOUT = 500;
-  private static final int PAR_RATIO = 5;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
-  private CyclicIterator<HttpSpec> scenarioCyclicIterator;
+  private CyclicIterator<LoadDsl> dslIterator;
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
 
   public ReactiveHttpSimulationRunner(final Context context) {
     this.context = context;
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
-    this.scenarioCyclicIterator = new CyclicIterator<>(
+    this.dslIterator = new CyclicIterator<>(
         simulationMetadata
             .getSpecs()
             .stream()
-            .filter(spec -> spec instanceof HttpSpec)
-            .map(spec -> (HttpSpec) spec)
+            .filter(spec -> spec instanceof LoadDsl)
+            .map(spec -> (LoadDsl) spec)
             .collect(Collectors.toList()));
   }
 
@@ -100,50 +92,23 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
-        .zipWith(Flux.fromStream(Streams.stream(scenarioCyclicIterator)))
+        .zipWith(Flux.fromStream(Streams.stream(dslIterator)))
         .doOnTerminate(this::notifyAwaiting)
-        .flatMap(tuple2 -> Mono.fromFuture(client.executeRequest(
-            getRequestBuilder(
-                tuple2.getT2(),
-                tuple2.getT1()),
-            new HttpSpecAsyncHandler(
-                tuple2.getT1().getUser().getId(),
-                tuple2.getT2().getEnclosingSpec(),
-                tuple2.getT2().getStepName(), simulationMetadata))
-            .toCompletableFuture()))
+        .doOnComplete(() -> shutdownInitiated = true)
+        .flatMap(tuple -> {
+          var session = tuple.getT1();
+          var dsl = tuple.getT2();
+          return new SpecMaterializer(client).materialize(dsl.specs(), session, simulationMetadata);
+        })
         .subscribe();
     await();
     stop();
   }
 
-  private RequestBuilder getRequestBuilder(final HttpSpec httpSpec, final UserSession userSession) {
-
-    RequestBuilder builder = null;
-    switch (httpSpec.getMethod()) {
-      case GET:
-        builder = get(httpSpec.getTarget());
-        break;
-      case HEAD:
-        builder = head(httpSpec.getTarget());
-        break;
-      // case X : rest of methods, we support...
-      default:
-        throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
-    }
-
-    var user = userSession.getUser();
-    if (user instanceof OAuthUser) {
-      var token = ((OAuthUser) user).getAccessToken();
-      builder = builder.addHeader("Authorization", "Bearer " + token);
-    }
-
-    return builder;
-  }
-
   private void await() {
     synchronized (this) {
       try {
-        while (!subscribe.isDisposed()) {
+        while (!shutdownInitiated) {
           wait(ONE_SEC);
         }
       } catch (InterruptedException e) {
@@ -183,8 +148,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     // proceed with shutdown.
     Out.info("Shutting down the system ...");
-    scenarioCyclicIterator.stop();
     EventDispatcher.instance(simulationMetadata).stop();
+    dslIterator.stop();
 
     Out.info("Shutting down completed ...");
     Out.info("Bye!");

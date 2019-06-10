@@ -23,20 +23,20 @@ import static java.util.stream.Collectors.toList;
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.CleanUp;
+import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.TestSpec;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
@@ -92,7 +92,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
       // Search for classes in development environment. The IDE runs the project in an exploded
       // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path)).orElseThrow();
+      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
+          .orElseThrow();
       var files = new File(resourceURL.toURI()).listFiles();
       if (files != null) {
         return Arrays.stream(files).
@@ -183,9 +184,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .collect(toList());
     var specMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.TestSpec))
-        .map(s -> new Pair<String, Spec>(s.getDeclaredAnnotation(TestSpec.class).name(),
-            ReflectionUtils.<Spec>executeMethod(s, instanceOf(clazz).orElseThrow())))
+            .anyMatch(a -> a instanceof Dsl))
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
+            ReflectionUtils.<LoadDsl>executeMethod(s, instanceOf(clazz).orElseThrow())))
         .map(p -> p.getSecond().withName(p.getFirst()))
         .collect(toList());
 
