@@ -56,7 +56,7 @@ public class PerformanceTestingExample {
 ```
 
 The simulation above does nothing unless we add some scenarios to it. A scenario is a method 
-annotated with `@Scenario` annotation and contains the implementation of the load generation. A simulation 
+annotated with `@Scenario` annotation and contains the implementation of the load generation. A simulation
 might have multiple scenarios defined which are run during testing, independently and parallel:
 
 ```java
@@ -86,9 +86,9 @@ A simple Rhino application would look like:
 ```java
 public class Rhino {
     public static void main(String ... args) {
-        SimulationSpec simulation = new SimulationSpecImpl("classpath:///rhino.properties",
+        SimulationSpec simulationMetadata = new SimulationSpecImpl("classpath:///rhino.properties",
             "helloWorld");
-        simulation.start();
+        simulationMetadata.start();
     }
 }
 ```

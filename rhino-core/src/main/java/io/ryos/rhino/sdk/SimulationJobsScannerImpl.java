@@ -66,7 +66,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   private static final String DOT = ".";
 
   @Override
-  public List<Simulation> scan(String forSimulation, String... inPackages) {
+  public List<SimulationMetadata> scan(String forSimulation, String... inPackages) {
     Objects.requireNonNull(inPackages, "inPackages must not be null.");
     Objects.requireNonNull(forSimulation, "forSimulation must not be null.");
 
@@ -147,13 +147,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return path.replace(File.separator, DOT) + DOT + className.substring(0, className.indexOf(DOT));
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private boolean isBenchmarkClass(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .anyMatch(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation);
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private String getSimulationName(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .filter(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation)
@@ -170,7 +168,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     }
   }
 
-  private Simulation createBenchmarkJob(final Class clazz) {
+  private SimulationMetadata createBenchmarkJob(final Class clazz) {
 
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
@@ -207,7 +205,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
-    return new Simulation.Builder()
+    return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
         .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :

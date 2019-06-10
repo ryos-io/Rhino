@@ -10,7 +10,7 @@ import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import javax.ws.rs.core.Response.Status;
 
-@Simulation(name = "Server-Status Simulation Without User")
+@Simulation(name = "Server-Status SimulationMetadata Without User")
 @Influx
 public class PerformanceTestingExampleWithoutUser {
 

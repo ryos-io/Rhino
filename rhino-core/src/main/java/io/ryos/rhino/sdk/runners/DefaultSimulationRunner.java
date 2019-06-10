@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.runners;
 
 import static reactor.core.publisher.Flux.fromStream;
 
-import io.ryos.rhino.sdk.Simulation;
+import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
@@ -62,7 +62,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
 
-  private Simulation simulation;
+  private SimulationMetadata simulationMetadata;
   private CyclicIterator<Scenario> scenarioCyclicIterator;
   private ScheduledExecutorService scheduler;
   private volatile boolean shutdownInitiated;
@@ -75,20 +75,20 @@ public class DefaultSimulationRunner implements SimulationRunner {
    * @param context {@link ContextImpl} instance.
    */
   public DefaultSimulationRunner(Context context) {
-    this.simulation = context.<Simulation>get(JOB).orElseThrow();
-    this.scenarioCyclicIterator = new CyclicIterator<>(simulation.getScenarios());
+    this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
+    this.scenarioCyclicIterator = new CyclicIterator<>(simulationMetadata.getScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
   }
 
   public void start() {
 
-    Out.info("Starting load test for " + simulation.getDuration().toMinutes() + " minutes ...");
+    Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
-    var userRepository = simulation.getUserRepository();
+    var userRepository = simulationMetadata.getUserRepository();
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
-          simulation.getScenarios()
+          simulationMetadata.getScenarios()
               .stream()
               .map(Scenario::getDescription)
               .toArray(String[]::new));
@@ -102,11 +102,11 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
     this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
-        .take((simulation.getDuration()))
+        .take((simulationMetadata.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> simulation.run(t.getT1(), t.getT2()))
+        .doOnNext(t -> simulationMetadata.run(t.getT1(), t.getT2()))
         .subscribe();
 
     await();
@@ -116,7 +116,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private void await() {
     synchronized (this) {
       try {
-        wait(simulation.getDuration().toMillis() + 1000);
+        wait(simulationMetadata.getDuration().toMillis() + 1000);
       } catch (InterruptedException e) {
         // Intentionally left empty.
       }
@@ -148,13 +148,13 @@ public class DefaultSimulationRunner implements SimulationRunner {
     subscribe.dispose();
     // run cleanup.
     System.out.println("Cleaning up.");
-    final UserRepository<UserSession> userRepository = simulation.getUserRepository();
+    final UserRepository<UserSession> userRepository = simulationMetadata.getUserRepository();
     cleanupUserSessions(userRepository.getUserSessions());
 
     // proceed with shutdown.
     System.out.println("Shutting down the system ...");
     scenarioCyclicIterator.stop();
-    simulation.stop();
+    simulationMetadata.stop();
 
     System.out.println("Shutting down the scheduler ...");
     scheduler.shutdown();
@@ -179,35 +179,35 @@ public class DefaultSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulation.prepare(us));
+    userSessions.forEach(us -> simulationMetadata.prepare(us));
   }
 
   private void cleanupUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulation.cleanUp(us));
+    userSessions.forEach(us -> simulationMetadata.cleanUp(us));
   }
 
   private void waitUsers(UserRepository userRepository) {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulation.getInjectUser()) && ++retry < MAX_WAIT_FOR_USER) {
+    while (!userRepository.has(simulationMetadata.getInjectUser()) && ++retry < MAX_WAIT_FOR_USER) {
       System.out.println(
-          "? Not sufficient user has been logged in. Required " + simulation.getInjectUser() + ". "
+          "? Not sufficient user has been logged in. Required " + simulationMetadata.getInjectUser() + ". "
               + "Waiting...");
       waitForASec();
     }
 
-    if (!userRepository.has(simulation.getInjectUser())) {
+    if (!userRepository.has(simulationMetadata.getInjectUser())) {
       System.out.println(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "
               + "@Simulation annotation. Required "
-              + simulation.getInjectUser() + " user.");
+              + simulationMetadata.getInjectUser() + " user.");
 
       shutdown();
       System.exit(-1);
     }
 
-    System.out.println("User login completed. Total user: " + simulation.getInjectUser());
+    System.out.println("User login completed. Total user: " + simulationMetadata.getInjectUser());
   }
 }

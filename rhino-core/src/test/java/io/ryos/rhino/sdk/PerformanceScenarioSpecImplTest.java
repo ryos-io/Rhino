@@ -9,7 +9,7 @@ public class PerformanceScenarioSpecImplTest {
   @Test
   public void testRun() {
 
-    SimulationSpec
+    Simulation
         .create("classpath:///rhino.properties", "Reactive Test")
         .start();
   }

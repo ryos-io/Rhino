@@ -50,7 +50,7 @@ implementing your performance tests.
 
 ### Writing your first test
 
-Rhino projects does comprise a main-method to run simulations and simulation 
+Rhino projects does comprise a main-method to run simulations and simulation
 entities, that are annotated with Rhino annotations. An example application might look as follows: 
 
 ```java
@@ -59,12 +59,12 @@ class Application {
   private static final String SIMULATION = "Example Simulation";
 
   public static void main() {
-        var simulation = new SimulationSpecImpl(CLASSPATH_RHINO_PROPERTIES, SIMULATION);
-        simulation.start();
+        var simulationMetadata = new SimulationSpecImpl(CLASSPATH_RHINO_PROPERTIES, SIMULATION);
+        simulationMetadata.start();
   }
 }
 ```
-The `SimulationSpecImpl` does expect a configuration file in classpath - classpath:// prefix is important nonetheless only classpath configuration files are supported currently, and the name of the simulation to run. The name of the simulation 
+The `SimulationSpecImpl` does expect a configuration file in classpath - classpath:// prefix is important nonetheless only classpath configuration files are supported currently, and the name of the simulationMetadata to run. The name of the simulationMetadata 
 must match the name, set in Simulation annotation:
 
 ```java

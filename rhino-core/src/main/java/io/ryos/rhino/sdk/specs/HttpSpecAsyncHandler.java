@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.specs;
 
 import io.netty.handler.codec.http.HttpHeaders;
-import io.ryos.rhino.sdk.Simulation;
+import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
@@ -17,15 +17,15 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final String specName;
   private final int userId;
   private final MeasurementImpl measurement;
-  private final Simulation simulation;
+  private final SimulationMetadata simulationMetadata;
   private volatile long start = -1;
   private volatile int status;
 
-  public HttpSpecAsyncHandler(int userId, String specName, String stepName, Simulation simulation) {
+  public HttpSpecAsyncHandler(int userId, String specName, String stepName, SimulationMetadata simulationMetadata) {
     this.measurement = new MeasurementImpl(specName, userId);
     this.specName = specName;
     this.userId = userId;
-    this.simulation = simulation;
+    this.simulationMetadata = simulationMetadata;
     this.stepName = stepName;
   }
 
@@ -67,7 +67,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     userEventEnd.id = userId;
     measurement.record(userEventEnd);
 
-    simulation.dispatchEvents(measurement);
+    simulationMetadata.dispatchEvents(measurement);
 
     return null;
   }

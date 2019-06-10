@@ -31,12 +31,12 @@ import java.util.UUID;
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
  * SimulationConfig} instances are passed the configuration parameters to construct the {@link
- * SimulationSpecImpl} objects. Once the {@link SimulationSpecImpl} is fully configured, the
+ * SimulationImpl} objects. Once the {@link SimulationImpl} is fully configured, the
  * instances thereof are ready to run which starts off the benchmark test.
  * <p>
  *
  * @author Erhan Bagdemir
- * @see SimulationSpecImpl
+ * @see SimulationImpl
  * @since 1.0
  */
 public class SimulationConfig {

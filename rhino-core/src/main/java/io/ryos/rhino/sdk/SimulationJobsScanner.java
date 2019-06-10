@@ -26,20 +26,20 @@ import java.util.List;
  *
  * @author Erhan Bagdemir
  * @see io.ryos.rhino.sdk.annotations.Simulation
- * @see Simulation
+ * @see SimulationMetadata
  * @since 1.0
  */
 public interface SimulationJobsScanner {
 
     /**
      * Scanner method which takes a list of paths to be scanned for benchmark entities and
-     * returns a list of {@link Simulation} instances.
+     * returns a list of {@link SimulationMetadata} instances.
      *
      * @param inPackages The path to scan for entities.
      * @param forSimulation Simulation name.
      * @return A list of benchmark job instances.
      */
-    List<Simulation> scan(String forSimulation, String... inPackages);
+    List<SimulationMetadata> scan(String forSimulation, String... inPackages);
 
     /**
      * Factory method to create new {@link SimulationJobsScanner} instances.

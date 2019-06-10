@@ -16,14 +16,14 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import io.ryos.rhino.sdk.Simulation;
+import io.ryos.rhino.sdk.SimulationMetadata;
 
 /**
  * Simulation runner. The implementations of this type run the simulation instances.
  *
  * @author Erhan Bagdemir
  * @version 1.0
- * @see Simulation
+ * @see SimulationMetadata
  */
 public interface SimulationRunner {
 
