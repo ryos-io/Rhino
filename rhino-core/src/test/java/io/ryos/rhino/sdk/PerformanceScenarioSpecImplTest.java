@@ -10,7 +10,7 @@ public class PerformanceScenarioSpecImplTest {
   public void testRun() {
 
     Simulation
-        .create("classpath:///rhino.properties", "Reactive Test")
+        .create("classpath:///rhino.properties", "Server-Status SimulationMetadata Without User")
         .start();
   }
 }

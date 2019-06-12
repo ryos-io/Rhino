@@ -5,6 +5,7 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
+import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -67,8 +68,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     userEventEnd.id = userId;
     measurement.record(userEventEnd);
 
-    simulationMetadata.dispatchEvents(measurement);
-
+    EventDispatcher.instance(simulationMetadata).dispatchEvents(measurement);
     return null;
   }
 
