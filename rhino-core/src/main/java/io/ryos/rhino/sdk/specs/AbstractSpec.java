@@ -29,22 +29,4 @@ import java.util.function.Function;
  */
 public abstract class AbstractSpec implements Spec {
 
-  private Function<UserSession, Spec> andThenFunction;
-
-  @Override
-  public Spec andThen(Function<UserSession, Spec> andThenFunction) {
-    this.andThenFunction = (session) -> andThenFunction.apply(session).withName(this.getName());
-    return this;
-  }
-
-  /**
-   * Returns an {@link Optional} of function which returns a {@link Spec} for a {@link
-   * UserSession}.
-   * <p>
-   *
-   * @return An an {@link Optional} of binding function.
-   */
-  public Optional<Function<UserSession, Spec>> getAndThen() {
-    return Optional.ofNullable(andThenFunction);
-  }
 }

@@ -24,6 +24,7 @@ import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationMetadata;
+import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
@@ -31,6 +32,8 @@ import io.ryos.rhino.sdk.users.data.OAuthUser;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
@@ -45,6 +48,8 @@ import reactor.core.publisher.Mono;
  * @since 1.1.0
  */
 public class SpecMaterializer {
+
+  private static final Logger LOG = LogManager.getLogger(SpecMaterializer.class);
 
   private final AsyncHttpClient client;
 
@@ -74,7 +79,7 @@ public class SpecMaterializer {
       acc = acc.flatMap(response -> toMono(next, response, userSession, simulationMetadata));
 
     }
-    return acc;
+    return acc.doOnError((t) -> System.out.println(t.getMessage()));
   }
 
   private Mono<Response> toMono(final HttpSpec spec, final Response response,
@@ -83,11 +88,12 @@ public class SpecMaterializer {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(session.getUser().getId(),
         spec.getTestName(),
-        spec.getStepName(), simulationMetadata);
+        spec.getMeasurementName(), simulationMetadata);
 
     return Mono.fromFuture(client.executeRequest(buildRequest(spec, session, response),
         httpSpecAsyncHandler)
-        .toCompletableFuture());
+        .toCompletableFuture())
+        .doOnError((t) -> LOG.error("Http Client Error", t));
   }
 
   private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession,
@@ -96,26 +102,36 @@ public class SpecMaterializer {
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
       case GET:
-        builder = get(httpSpec.getTarget());
+        builder = get(httpSpec.getEndpoint().apply(response));
         break;
       case HEAD:
-        builder = head(httpSpec.getTarget());
+        builder = head(httpSpec.getEndpoint().apply(response));
         break;
       case OPTIONS:
-        builder = options(httpSpec.getTarget());
+        builder = options(httpSpec.getEndpoint().apply(response));
         break;
       case DELETE:
-        builder = delete(httpSpec.getTarget());
+        builder = delete(httpSpec.getEndpoint().apply(response));
         break;
       case PUT:
-        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
+        builder = put(httpSpec.getEndpoint().apply(response)).setBody(httpSpec.getUploadContent());
         break;
       case POST:
-        builder = put(httpSpec.getTarget()).setBody(httpSpec.getUploadContent());
+        builder = put(httpSpec.getEndpoint().apply(response)).setBody(httpSpec.getUploadContent());
         break;
       // case X : rest of methods, we support...
       default:
         throw new NotImplementedException("Not implemented: " + httpSpec.getMethod());
+    }
+
+    for (var f : httpSpec.getHeaders()) {
+      var headerEntry = f.apply(response);
+      builder = builder.addHeader(headerEntry.getKey(), headerEntry.getValue());
+    }
+
+    for (var f : httpSpec.getQueryParameters()) {
+      var paramEntry = f.apply(response);
+      builder = builder.addHeader(paramEntry.getKey(), paramEntry.getValue());
     }
 
     var user = userSession.getUser();
