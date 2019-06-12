@@ -1,15 +1,22 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.specs.HttpSpec;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollectorDsl implements LoadDsl {
 
+  private Duration pause;
   private String testName;
 
   private final List<HttpSpec> executableFunctions =
       new ArrayList<>();
+
+  @Override
+  public CollectorDsl pause(Duration duration) {
+    return null;
+  }
 
   @Override
   public String getName() {

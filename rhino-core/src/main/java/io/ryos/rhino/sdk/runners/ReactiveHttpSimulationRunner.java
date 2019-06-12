@@ -56,7 +56,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         simulationMetadata
             .getSpecs()
             .stream()
-            .filter(spec -> spec instanceof LoadDsl)
+            .filter(Objects::nonNull)
             .map(spec -> (LoadDsl) spec)
             .collect(Collectors.toList()));
   }
@@ -93,6 +93,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(Streams.stream(dslIterator)))
+        .doOnError((t) -> System.out.println(t.getMessage()))
         .doOnTerminate(this::notifyAwaiting)
         .doOnComplete(() -> shutdownInitiated = true)
         .flatMap(tuple -> {

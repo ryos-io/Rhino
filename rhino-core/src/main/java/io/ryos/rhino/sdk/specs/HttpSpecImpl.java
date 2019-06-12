@@ -1,10 +1,12 @@
 package io.ryos.rhino.sdk.specs;
 
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.asynchttpclient.Response;
@@ -21,23 +23,21 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   private InputStream toUpload;
   private String enclosingSpec;
   private String stepName;
-  private String target;
-  private Map<String, String> queryParams = new HashMap<>();
-  private Map<String, List<Object>> headers = new HashMap<>();
-  private Map<String, String> matrixParams = new HashMap<>();
+
+  private List<Function<Response, Entry<String, List<String>>>> headers = new ArrayList<>();
+  private List<Function<Response, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+
   private Method httpMethod;
-  private Spec parent;
-  private Function<Response, String> endpointSupplier;
-  private Consumer<Response> afterThenConsumer;
-  private Spec afterThenSpec;
+  private Function<Response, String> endpoint;
 
-  public HttpSpecImpl(String stepName) {
-    this.stepName = stepName;
-  }
-
-  public HttpSpecImpl(String stepName, Spec parent) {
-    this.stepName = stepName;
-    this.parent = parent;
+  /**
+   * Creates a new {@link HttpSpecImpl}.
+   * <p>
+   *
+   * @param measurement The name of the measurement.
+   */
+  public HttpSpecImpl(String measurement) {
+    this.stepName = measurement;
   }
 
   @Override
@@ -83,32 +83,50 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec target(final String endpoint) {
-    this.target = endpoint;
+  public HttpSpec endpoint(final String endpoint) {
+    this.endpoint = (r) -> endpoint;
     return this;
   }
 
   @Override
   public HttpSpec endpoint(Function<Response, String> endpoint) {
-    this.endpointSupplier = endpoint;
+    this.endpoint = endpoint;
     return this;
   }
 
   @Override
-  public HttpSpec headers(final String name, final String... values) {
-    this.headers.put(name, Arrays.asList(values));
+  public HttpSpec header(String key, List<String> values) {
+    this.headers.add((e) -> Map.entry(key, values));
     return this;
   }
 
   @Override
-  public HttpSpec queryParam(final String name, final String value) {
-    this.queryParams.put(name, value);
+  public HttpSpec header(String key, String value) {
+    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
-  public HttpSpec matrixParams(final String name, final String value) {
-    this.matrixParams.put(name, value);
+  public HttpSpec header(Function<Response, Entry<String, List<String>>> headerFunction) {
+    this.headers.add(headerFunction);
+    return this;
+  }
+
+  @Override
+  public HttpSpec queryParam(String key, List<String> values) {
+    this.headers.add((e) -> Map.entry(key, values));
+    return this;
+  }
+
+  @Override
+  public HttpSpec queryParam(String key, String value) {
+    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
+    return this;
+  }
+
+  @Override
+  public HttpSpec queryParam(Function<Response, Entry<String, List<String>>> headerFunction) {
+    this.headers.add(headerFunction);
     return this;
   }
 
@@ -129,12 +147,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public Map<String, List<Object>> getHeaders() {
+  public List<Function<Response, Entry<String, List<String>>>> getHeaders() {
     return headers;
   }
 
   @Override
-  public Map<String, String> getQueryParameters() {
+  public List<Function<Response, Entry<String, List<String>>>> getQueryParameters() {
     return queryParams;
   }
 
@@ -150,13 +168,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public String getTarget() {
-    return target;
-  }
-
-  @Override
   public Function<Response, String> getEndpoint() {
-    return endpointSupplier;
+    return endpoint;
   }
 
   @Override
@@ -170,19 +183,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public String getStepName() {
+  public String getMeasurementName() {
     return stepName;
-  }
-
-  public Consumer<Response> getAfterThenConsumer() {
-    return afterThenConsumer;
-  }
-
-  public Spec getAfterThenSpec() {
-    return afterThenSpec;
-  }
-
-  public Spec getParent() {
-    return parent;
   }
 }
