@@ -226,11 +226,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   }
 
   private boolean isBlockingSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation.clazz().equals(DefaultSimulationRunner.class);
+    return runnerAnnotation == null || runnerAnnotation.clazz().equals(DefaultSimulationRunner.class);
   }
 
   private boolean isReactiveSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
+    return runnerAnnotation != null && runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {

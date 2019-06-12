@@ -16,16 +16,10 @@
 
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.reporting.GatlingLogFormatter.GATLING_HEADLINE_TEMPLATE;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Terminated;
-import akka.dispatch.OnComplete;
-import akka.pattern.Patterns;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
@@ -34,16 +28,7 @@ import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.Feedable;
-import io.ryos.rhino.sdk.io.InfluxDBWriter;
-import io.ryos.rhino.sdk.io.SimulationLogWriter;
-import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
-import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.reporting.StdoutReporter;
-import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.data.User;
@@ -52,7 +37,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +45,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scala.concurrent.Await;
-import scala.concurrent.duration.FiniteDuration;
 
 /**
  * {@link SimulationMetadata} is representation of a single performance testing job. The instances of {@link
@@ -107,7 +89,7 @@ public class SimulationMetadata {
    * of users making benchmark requests against the back-end.
    * <p>
    */
-  private int injectUser;
+  private int numberOfUsers;
 
   /**
    * The number of users to be injected per second.
@@ -173,39 +155,20 @@ public class SimulationMetadata {
   private UserRepository<UserSession> userRepository;
 
   /**
-   * Reporter actor reference is the reference to the actor which receives reporting events.
-   * <p>
-   */
-  private ActorRef loggerActor;
-
-  /**
-   * Reporter actor reference to write log events to the Influx DB.
-   * <p>
-   */
-  private ActorRef influxActor;
-
-  /**
-   * StdOut reporter is to write out about the test execution to the stdout. It can be considered as
-   * heartbeat about the running test.
-   * <p>
-   */
-  private ActorRef stdOutReptorter;
-
-  /**
    * Enable Influx DB integration.
    * <p>
    */
   private boolean enableInflux;
 
-  private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
+  private String reportingURI;
 
   // Predicate to search fields for Feedable annotation.
-  private final Predicate<Field> hasFeeder = (f) -> Arrays
+  private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
   private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
-      (f) -> new InjectionPoint<>(f,
+      f -> new InjectionPoint<>(f,
           f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
@@ -239,7 +202,7 @@ public class SimulationMetadata {
   private SimulationMetadata(final Builder builder) {
     this.duration = builder.duration;
     this.simulationName = builder.simulation;
-    this.injectUser = builder.injectUser;
+    this.numberOfUsers = builder.injectUser;
     this.rampUp = builder.rampUp;
     this.simulationClass = builder.simulationClass;
     this.scenarios = builder.scenarios;
@@ -251,38 +214,11 @@ public class SimulationMetadata {
     this.userRepository = builder.userRepository;
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
+    this.reportingURI = builder.reportingURI;
 
-
-    /*
-     * Log writer is the {@link java.io.Closeable} instance to write the execution
-     * logs. The log contains the metrics about the test run as well as the
-     * information to identify the tests.
-     */
-    final String reportingURI = builder.reportingURI;
-    final LogFormatter formatter = getLogFormatter();
-
-    this.stdOutReptorter = system.actorOf(StdoutReporter.props(injectUser, Instant.now(), duration),
-        StdoutReporter.class.getName());
-    this.loggerActor = system.actorOf(SimulationLogWriter.props(reportingURI, formatter),
-        SimulationLogWriter.class.getName());
-
-    if (enableInflux) {
-      influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
-    }
-
-    if (formatter instanceof GatlingLogFormatter) {
-      loggerActor.tell(
-          String.format(
-              GATLING_HEADLINE_TEMPLATE,
-              simulationClass.getName(),
-              simulationName,
-              System.currentTimeMillis(),
-              GatlingLogFormatter.GATLING_VERSION),
-          ActorRef.noSender());
-    }
   }
 
-  private LogFormatter getLogFormatter() {
+  public LogFormatter getLogFormatter() {
     var loggingAnnotation = getClassLevelAnnotation(simulationClass, Logging.class);
     var logging = loggingAnnotation.orElseGet(() -> null);
 
@@ -324,16 +260,6 @@ public class SimulationMetadata {
     }
   }
 
-  private void executeScenario(final Scenario scenario, final MeasurementImpl recorder,
-      final Object simulationInstance) {
-    try {
-      scenario.getMethod().invoke(simulationInstance, recorder);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(e.getCause());
-    }
-  }
-
   private void injectSession(final UserSession userSession, final Object simulationInstance) {
     final Optional<Pair<Field, SessionFeeder>> fieldAnnotation = getFieldByAnnotation(
         simulationClass,
@@ -360,100 +286,24 @@ public class SimulationMetadata {
     }
   }
 
-  /**
-   * The method runs the scenarios for a user provided.
-   *
-   * @param userSession User session, to be injected.
-   * @param scenario Scenario, to be run.
-   * @return Measurement instance which contains simulation logs.
-   */
-  public Measurement run(final UserSession userSession, final Scenario scenario) {
-    var user = userSession.getUser();
-    var simulationInstance = simulationInstanceFactory.get();
-
-    injectUser(user, simulationInstance);// Each thread will run as the same user.
-    injectSession(userSession, simulationInstance);
-
-    executeMethod(beforeMethod, simulationInstance);
-
-    feedInjections(simulationInstance);
-
-    var recorder = new MeasurementImpl(scenario.getDescription(), user.getId());
-    var start = System.currentTimeMillis();
-    var userEventStart = new UserEvent();
-    userEventStart.elapsed = 0;
-    userEventStart.start = start;
-    userEventStart.end = start;
-    userEventStart.scenario = scenario.getDescription();
-    userEventStart.eventType = EventType.START;
-    userEventStart.id = user.getId();
-
-    recorder.record(userEventStart);
-
-    executeScenario(scenario, recorder, simulationInstance);
-
-    var elapsed = System.currentTimeMillis() - start;
-
-    var userEventEnd = new UserEvent();
-    userEventEnd.elapsed = elapsed;
-    userEventEnd.start = start;
-    userEventEnd.end = start + elapsed;
-    userEventEnd.scenario = scenario.getDescription();
-    userEventEnd.eventType = EventType.END;
-    userEventEnd.id = user.getId();
-    recorder.record(userEventEnd);
-
-    dispatchEvents(recorder);
-
-    executeMethod(afterMethod, simulationInstance);
-
-    return recorder;
+  public Method getPrepareMethod() {
+    return prepareMethod;
   }
 
-  public void dispatchEvents(final MeasurementImpl recorder) {
-    recorder.getEvents().forEach(e -> {
-
-      loggerActor.tell(e, ActorRef.noSender());
-
-      stdOutReptorter.tell(e, ActorRef.noSender());
-
-      if (enableInflux) {
-        influxActor.tell(e, ActorRef.noSender());
-      }
-    });
+  public Method getCleanupMethod() {
+    return cleanupMethod;
   }
 
-  public void stop() {
-
-    reportTermination();
-
-    var terminate = system.terminate();
-
-    terminate.onComplete(new OnComplete<>() {
-
-      @Override
-      public void onComplete(final Throwable throwable, final Terminated terminated) {
-        system = null;
-      }
-
-    }, system.dispatcher());
-  }
-
-  private void reportTermination() {
-    var ask = Patterns.ask(stdOutReptorter, new EndTestEvent(Instant.now()), 5000L);
-    try {
-      Await.result(ask, FiniteDuration.Inf());
-    } catch (Exception e) {
-      LOG.debug(e); // expected exception is a Timeout. It is ok.
-    }
+  public String getReportingURI() {
+    return reportingURI;
   }
 
   public Class<? extends SimulationRunner> getRunner() {
     return runner;
   }
 
-  public int getInjectUser() {
-    return injectUser;
+  public int getNumberOfUsers() {
+    return numberOfUsers;
   }
 
   public UserRepository<UserSession> getUserRepository() {
@@ -470,6 +320,26 @@ public class SimulationMetadata {
 
   public List<Spec> getSpecs() {
     return specs;
+  }
+
+  public Class getSimulationClass() {
+    return simulationClass;
+  }
+
+  public boolean isEnableInflux() {
+    return enableInflux;
+  }
+
+  public Method getBeforeMethod() {
+    return beforeMethod;
+  }
+
+  public Method getAfterMethod() {
+    return afterMethod;
+  }
+
+  public String getSimulationName() {
+    return simulationName;
   }
 
   /**

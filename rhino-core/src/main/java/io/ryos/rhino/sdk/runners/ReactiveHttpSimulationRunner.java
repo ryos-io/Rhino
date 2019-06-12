@@ -180,7 +180,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     // proceed with shutdown.
     Out.info("Shutting down the system ...");
     scenarioCyclicIterator.stop();
-    simulationMetadata.stop();
+    EventDispatcher.instance(simulationMetadata).stop();
 
     Out.info("Shutting down completed ...");
     Out.info("Bye!");
@@ -207,24 +207,24 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getInjectUser()) && ++retry < MAX_WAIT_FOR_USER) {
+    while (!userRepository.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
       Out.info(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata.getInjectUser() + ". "
+          "? Not sufficient user has been logged in. Required " + simulationMetadata.getNumberOfUsers() + ". "
               + "Waiting...");
       waitForASec();
     }
 
-    if (!userRepository.has(simulationMetadata.getInjectUser())) {
+    if (!userRepository.has(simulationMetadata.getNumberOfUsers())) {
       Out.info(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "
               + "@Simulation annotation. Required "
-              + simulationMetadata.getInjectUser() + " user.");
+              + simulationMetadata.getNumberOfUsers() + " user.");
 
       shutdown();
       System.exit(-1);
     }
 
-    Out.info("User login completed. Total user: " + simulationMetadata.getInjectUser());
+    Out.info("User login completed. Total user: " + simulationMetadata.getNumberOfUsers());
   }
 }

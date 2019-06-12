@@ -18,13 +18,13 @@ package io.ryos.rhino.sdk.runners;
 
 import static reactor.core.publisher.Flux.fromStream;
 
-import io.ryos.rhino.sdk.SimulationMetadata;
+import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -82,7 +82,8 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    Out.info(
+        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     var userRepository = simulationMetadata.getUserRepository();
     if (SimulationConfig.isGrafanaEnabled()) {
@@ -106,7 +107,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> simulationMetadata.run(t.getT1(), t.getT2()))
+        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2()).call())
         .subscribe();
 
     await();
@@ -154,7 +155,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     // proceed with shutdown.
     System.out.println("Shutting down the system ...");
     scenarioCyclicIterator.stop();
-    simulationMetadata.stop();
+    EventDispatcher.instance(simulationMetadata).stop();
 
     System.out.println("Shutting down the scheduler ...");
     scheduler.shutdown();
@@ -190,24 +191,27 @@ public class DefaultSimulationRunner implements SimulationRunner {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getInjectUser()) && ++retry < MAX_WAIT_FOR_USER) {
+    while (!userRepository.has(simulationMetadata.getNumberOfUsers())
+        && ++retry < MAX_WAIT_FOR_USER) {
       System.out.println(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata.getInjectUser() + ". "
+          "? Not sufficient user has been logged in. Required " + simulationMetadata
+              .getNumberOfUsers() + ". "
               + "Waiting...");
       waitForASec();
     }
 
-    if (!userRepository.has(simulationMetadata.getInjectUser())) {
+    if (!userRepository.has(simulationMetadata.getNumberOfUsers())) {
       System.out.println(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "
               + "@Simulation annotation. Required "
-              + simulationMetadata.getInjectUser() + " user.");
+              + simulationMetadata.getNumberOfUsers() + " user.");
 
       shutdown();
       System.exit(-1);
     }
 
-    System.out.println("User login completed. Total user: " + simulationMetadata.getInjectUser());
+    System.out
+        .println("User login completed. Total user: " + simulationMetadata.getNumberOfUsers());
   }
 }

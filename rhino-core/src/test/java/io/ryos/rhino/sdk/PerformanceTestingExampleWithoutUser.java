@@ -11,7 +11,6 @@ import io.ryos.rhino.sdk.reporting.Measurement;
 import javax.ws.rs.core.Response.Status;
 
 @Simulation(name = "Server-Status SimulationMetadata Without User")
-@Influx
 public class PerformanceTestingExampleWithoutUser {
 
   @Feeder(factory = UUIDProvider.class)
