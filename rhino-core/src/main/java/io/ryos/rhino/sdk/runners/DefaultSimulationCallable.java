@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -31,11 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * This callable will be called by the pipeline every time a new item is emitted.
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.0.0
+ * Default callable for push approach.
  */
 public class DefaultSimulationCallable implements Callable<Measurement> {
 
@@ -57,15 +52,13 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
           f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
-
-    Objects.requireNonNull(instance, "Object instance is null.");
-    var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
-    var value = factoryInstance.take();
+  private void feed(final Object instance,
+      final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
+    Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
+    Object value = o.take();
     try {
-      var field = injectionPoint.getField();
+      Field field = ip.getField();
       field.setAccessible(true);
-      //TODO pre-check before assignment.
       field.set(instance, value);
     } catch (IllegalAccessException e) {
       LOG.error("Access to field failed.", e);
@@ -74,24 +67,13 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     }
   }
 
-  /**
-   * Instantiates a new {@link DefaultSimulationCallable} instance.
-   * <p>
-   *
-   * @param simulationMetadata Simulation metadata.
-   * @param userSession Current user session which is active.
-   * @param scenario Scenario is to be run.
-   * @param eventDispatcher Event dispatcher is responsible from delivering metric events to
-   * corresponding receivers.
-   */
   public DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
-      final UserSession userSession,
-      final Scenario scenario,
-      final EventDispatcher eventDispatcher) {
-    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.userSession = Objects.requireNonNull(userSession);
-    this.scenario = Objects.requireNonNull(scenario);
-    this.eventDispatcher = Objects.requireNonNull(eventDispatcher);
+      final UserSession userSession, final Scenario scenario,
+      EventDispatcher eventDispatcher) {
+    this.simulationMetadata = simulationMetadata;
+    this.userSession = userSession;
+    this.scenario = scenario;
+    this.eventDispatcher = eventDispatcher;
   }
 
   /**

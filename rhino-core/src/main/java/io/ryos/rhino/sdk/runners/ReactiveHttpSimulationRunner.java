@@ -48,6 +48,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   private CyclicIterator<LoadDsl> dslIterator;
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
+  private final EventDispatcher eventDispatcher;
 
   public ReactiveHttpSimulationRunner(final Context context) {
     this.context = context;
@@ -59,6 +60,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
             .filter(Objects::nonNull)
             .map(spec -> (LoadDsl) spec)
             .collect(Collectors.toList()));
+    this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
 
   public void start() {
@@ -76,7 +78,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     }
 
     var userRepository = simulationMetadata.getUserRepository();
-
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
 
@@ -99,7 +100,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         .flatMap(tuple -> {
           var session = tuple.getT1();
           var dsl = tuple.getT2();
-          return new SpecMaterializer(client).materialize(dsl.specs(), session, simulationMetadata);
+          return new SpecMaterializer(client, eventDispatcher).materialize(dsl.specs(), session);
         })
         .subscribe();
     await();
@@ -149,7 +150,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     // proceed with shutdown.
     Out.info("Shutting down the system ...");
-    EventDispatcher.instance(simulationMetadata).stop();
+    eventDispatcher.stop();
     dslIterator.stop();
 
     Out.info("Shutting down completed ...");
