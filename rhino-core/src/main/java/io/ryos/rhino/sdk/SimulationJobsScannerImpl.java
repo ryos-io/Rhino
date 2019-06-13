@@ -37,6 +37,7 @@ import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
@@ -186,7 +187,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof Dsl))
         .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
-            ReflectionUtils.<LoadDsl>executeMethod(s, instanceOf(clazz).orElseThrow())))
+            ReflectionUtils.<Spec>executeMethod(s, instanceOf(clazz).orElseThrow())))
         .map(p -> p.getSecond().withName(p.getFirst()))
         .collect(toList());
 

@@ -62,11 +62,13 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
 
-  private SimulationMetadata simulationMetadata;
-  private CyclicIterator<Scenario> scenarioCyclicIterator;
-  private ScheduledExecutorService scheduler;
+  private final SimulationMetadata simulationMetadata;
+  private final CyclicIterator<Scenario> scenarioCyclicIterator;
+  private final ScheduledExecutorService scheduler;
+  private final EventDispatcher eventDispatcher;
+
   private volatile boolean shutdownInitiated;
-  private Disposable subscribe;
+  private volatile Disposable subscribe;
 
   /**
    * Creates a new {@link DefaultSimulationRunner} instance.
@@ -78,6 +80,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
     this.scenarioCyclicIterator = new CyclicIterator<>(simulationMetadata.getScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
+    this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
 
   public void start() {
@@ -107,7 +110,8 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2()).call())
+        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2(),
+            eventDispatcher).call())
         .subscribe();
 
     await();
@@ -155,7 +159,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     // proceed with shutdown.
     System.out.println("Shutting down the system ...");
     scenarioCyclicIterator.stop();
-    EventDispatcher.instance(simulationMetadata).stop();
+    eventDispatcher.stop();
 
     System.out.println("Shutting down the scheduler ...");
     scheduler.shutdown();

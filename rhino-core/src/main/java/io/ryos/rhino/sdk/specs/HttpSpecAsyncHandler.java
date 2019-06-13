@@ -18,17 +18,20 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final String specName;
   private final int userId;
   private final MeasurementImpl measurement;
-  private final SimulationMetadata simulationMetadata;
   private volatile long start = -1;
   private volatile int status;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
+  private final EventDispatcher eventDispatcher;
 
-  public HttpSpecAsyncHandler(int userId, String specName, String stepName, SimulationMetadata simulationMetadata) {
+  public HttpSpecAsyncHandler(final int userId,
+      final String specName,
+      final String stepName,
+      final EventDispatcher eventDispatcher) {
     this.measurement = new MeasurementImpl(specName, userId);
     this.specName = specName;
     this.userId = userId;
-    this.simulationMetadata = simulationMetadata;
     this.stepName = stepName;
+    this.eventDispatcher = eventDispatcher;
   }
 
   @Override
@@ -73,7 +76,8 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     userEventEnd.id = userId;
     measurement.record(userEventEnd);
 
-    EventDispatcher.instance(simulationMetadata).dispatchEvents(measurement);
+    eventDispatcher.dispatchEvents(measurement);
+
     return builder.build();
   }
 

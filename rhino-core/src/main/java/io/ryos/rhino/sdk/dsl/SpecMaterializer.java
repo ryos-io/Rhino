@@ -22,10 +22,9 @@ import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
-import io.ryos.rhino.sdk.Simulation;
-import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
@@ -52,9 +51,18 @@ public class SpecMaterializer {
   private static final Logger LOG = LogManager.getLogger(SpecMaterializer.class);
 
   private final AsyncHttpClient client;
+  private final EventDispatcher eventDispatcher;
 
-  public SpecMaterializer(final AsyncHttpClient client) {
+  /**
+   * Specification materializer translates the specifications into reactor implementations.
+   * <p>
+   *
+   * @param client Async HTTP client instance.
+   * @param eventDispatcher Event dispatcher instance.
+   */
+  public SpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
     this.client = client;
+    this.eventDispatcher = eventDispatcher;
   }
 
   /**
@@ -65,30 +73,29 @@ public class SpecMaterializer {
    * @param executables Executables returned from the DSL.
    * @return The {@link Mono<Response>} instance.
    */
-  public Mono<Response> materialize(List<HttpSpec> executables, UserSession userSession,
-      SimulationMetadata simulationMetadata) {
+  public Mono<Response> materialize(final List<HttpSpec> executables,
+      final UserSession userSession) {
 
     Iterator<HttpSpec> iterator = executables.iterator();
     if (!iterator.hasNext()) {
       return null;
     }
-    var acc = toMono(iterator.next(), null, userSession, simulationMetadata);
+    var acc = toMono(iterator.next(), null, userSession);
     while (iterator.hasNext()) {
       // Never move the following statement into lambda body. next() call is required to be eager.
       HttpSpec next = iterator.next();
-      acc = acc.flatMap(response -> toMono(next, response, userSession, simulationMetadata));
+      acc = acc.flatMap(response -> toMono(next, response, userSession));
 
     }
     return acc.doOnError((t) -> System.out.println(t.getMessage()));
   }
 
   private Mono<Response> toMono(final HttpSpec spec, final Response response,
-      final UserSession session,
-      final SimulationMetadata simulationMetadata) {
+      final UserSession session) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(session.getUser().getId(),
         spec.getTestName(),
-        spec.getMeasurementName(), simulationMetadata);
+        spec.getMeasurementName(), eventDispatcher);
 
     return Mono.fromFuture(client.executeRequest(buildRequest(spec, session, response),
         httpSpecAsyncHandler)

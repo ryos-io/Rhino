@@ -37,8 +37,10 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   private static final Logger LOG = LogManager.getLogger(DefaultSimulationCallable.class);
 
   private SimulationMetadata simulationMetadata;
-  private UserSession userSession;
-  private Scenario scenario;
+
+  private final UserSession userSession;
+  private final Scenario scenario;
+  private final EventDispatcher eventDispatcher;
 
   // Predicate to search fields for Feedable annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
@@ -66,10 +68,12 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   public DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
-      final UserSession userSession, final Scenario scenario) {
+      final UserSession userSession, final Scenario scenario,
+      EventDispatcher eventDispatcher) {
     this.simulationMetadata = simulationMetadata;
     this.userSession = userSession;
     this.scenario = scenario;
+    this.eventDispatcher = eventDispatcher;
   }
 
   /**
@@ -92,7 +96,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     feedInjections(simulationInstance);
 
-    var recorder = new MeasurementImpl(scenario.getDescription(), user.getId());
+    var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
     var userEventStart = new UserEvent();
     userEventStart.elapsed = 0;
@@ -102,9 +106,9 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     userEventStart.eventType = EventType.START;
     userEventStart.id = user.getId();
 
-    recorder.record(userEventStart);
+    measurement.record(userEventStart);
 
-    executeScenario(scenario, recorder, simulationInstance);
+    executeScenario(scenario, measurement, simulationInstance);
 
     var elapsed = System.currentTimeMillis() - start;
 
@@ -115,12 +119,12 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     userEventEnd.scenario = scenario.getDescription();
     userEventEnd.eventType = EventType.END;
     userEventEnd.id = user.getId();
-    recorder.record(userEventEnd);
+    measurement.record(userEventEnd);
 
-    EventDispatcher.instance(simulationMetadata).dispatchEvents(recorder);
+    eventDispatcher.dispatchEvents(measurement);
     executeMethod(simulationMetadata.getAfterMethod(), simulationInstance);
 
-    return recorder;
+    return measurement;
   }
 
   private void executeScenario(final Scenario scenario,
@@ -147,7 +151,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void feedInjections(Object simulationInstance) {
+  private void feedInjections(final Object simulationInstance) {
     Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
         .filter(hasFeeder)
         .map(injectionPointFunction)
@@ -181,8 +185,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     }
   }
 
-
-  public void prepare(UserSession userSession) {
+  public void prepare(final UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(simulationMetadata.getPrepareMethod(), cleanUpInstance);
   }
@@ -195,7 +198,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     return cleanUpInstance;
   }
 
-  public void cleanUp(UserSession userSession) {
+  public void cleanUp(final UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(simulationMetadata.getCleanupMethod(), userSession);
   }
