@@ -58,7 +58,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
   // Feedable the feeder value into the field.
   private void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
-    
+
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
     var value = factoryInstance.take();
