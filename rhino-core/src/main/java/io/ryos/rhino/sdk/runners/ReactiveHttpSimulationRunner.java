@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.runners;
 
 import static com.google.common.collect.Streams.stream;
+import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -105,6 +106,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     prepareUserSessions(userRepository.getUserSessions());
 
+    final Throttler.Limit rpsLimit = Throttler.Limit.of(300, simulationMetadata.getDuration());
+
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
@@ -134,6 +137,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           }
           return acc.doOnError(System.out::println);
         })
+        .transform(throttle(rpsLimit))
         .subscribe();
     await();
     stop();
@@ -143,7 +147,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       final UserSession session) {
 
     if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, eventDispatcher).materialize((HttpSpec) spec, session);
+      return new HttpSpecMaterializer(client, eventDispatcher)
+          .materialize((HttpSpec) spec, session);
     } else if (spec instanceof SomeSpec) {
       return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
     } else if (spec instanceof WaitSpec) {
@@ -215,7 +220,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
-//    userSessions.forEach(us -> simulationMetadata.prepare(us));
+    //    userSessions.forEach(us -> simulationMetadata.prepare(us));
   }
 
   private void cleanupUserSessions(final List<UserSession> userSessions) {
