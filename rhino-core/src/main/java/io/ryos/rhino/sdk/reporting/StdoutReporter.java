@@ -146,7 +146,7 @@ public class StdoutReporter extends AbstractActor {
 
   private void flushReport(EndTestEvent event) {
     if (metrics.isEmpty()) {
-      System.out.println("There was no record in measurement. Test is still running...");
+      System.out.println("There is no record in measurement yet. Test is running...");
       return;
     }
 

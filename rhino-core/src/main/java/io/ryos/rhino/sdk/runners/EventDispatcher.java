@@ -33,7 +33,6 @@ public class EventDispatcher {
 
   private static final Logger LOG = LogManager.getLogger(EventDispatcher.class);
   private static final long TERMINATION_REQUEST_TIMEOUT = 5000L;
-  private static EventDispatcher INSTANCE;
   private static final String ACTOR_SYS_NAME = "rhino-dispatcher";
 
   /**
@@ -63,15 +62,7 @@ public class EventDispatcher {
 
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
-  public static EventDispatcher instance(final SimulationMetadata simulationMetadata) {
-    if (INSTANCE == null) {
-      INSTANCE = new EventDispatcher(simulationMetadata);
-    }
-
-    return INSTANCE;
-  }
-
-  private EventDispatcher(final SimulationMetadata simulationMetadata) {
+  public EventDispatcher(final SimulationMetadata simulationMetadata) {
 
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
     this.stdOutReptorter = system
@@ -100,8 +91,8 @@ public class EventDispatcher {
     }
   }
 
-  public void dispatchEvents(final MeasurementImpl recorder) {
-    recorder.getEvents().forEach(e -> {
+  public void dispatchEvents(final MeasurementImpl measurement) {
+    measurement.getEvents().forEach(e -> {
       loggerActor.tell(e, ActorRef.noSender());
       stdOutReptorter.tell(e, ActorRef.noSender());
 

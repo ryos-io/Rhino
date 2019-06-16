@@ -9,19 +9,20 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-## Rhino: Service Load and Performance Testing
+## Rhino: Cloud Services Load and Performance Testing
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
-testing web services which consists of the Rhino Java framework as well as a collection of libraries
+testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
 
 **Rhino's philosophy is:**
 
 * to speed up load and performance test development,
-* a debuggable test framework written in Java, so that you can go through the breakpoints while 
+* to afford a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
+* to provide a Cloud-native platform which is elastic, scalable, covering region and environment aware load scenarios,
 * to enable the integration with the existing code, e.g your integration test frameworks to 
 make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or

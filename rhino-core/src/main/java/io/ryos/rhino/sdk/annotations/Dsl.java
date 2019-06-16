@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface TestSpec {
+public @interface Dsl {
 
   String name() default "";
 }

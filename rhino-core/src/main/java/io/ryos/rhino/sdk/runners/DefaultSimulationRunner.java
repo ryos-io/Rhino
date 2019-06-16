@@ -38,22 +38,21 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 /**
- * Simulation runner is the load generator engine based on Akka streams. The implementation creates
- * two cyclic iterator, one of them is for {@link UserSession} instances, the other one is for
- * {@link Scenario} instances, both of them will be zipped into Pair during stream processing.
- * Cyclic iterators delivers {@link UserSession} and {@link Scenario} instances infinitely, unless
- * the stop method is explicitly called. The simulation will be run with UserSession and Scenario
- * pair, e.g <UserA, scenario1> in parallel. If the generators are not stopped explicitly, the
- * stream becomes a perpetual stream, that runs infinitely.
+ * Push-based simulation runner spawns number of threads as it is configured in the properties file.
+ * The source of the runner is the {@link CyclicIterator} which streams users zipped with scenarios,
+ * that are the entities containing the load generation algorithm. Every time a new user is streamed
+ * through the pipeline, the scenario will be executed with the user.
  * <p>
  *
- * The {@link SimulationRunner} terminates either by calling the stop method explicitly, or the
- * completes, it is the elapsed time exceeds the test duration defined in {@link
- * io.ryos.rhino.sdk.annotations.Simulation} annotation.
+ * The caveat is using push-based approach is that the threads is to be blocked, once the the load
+ * testing implementation is blocking. Alternative approach is the reactive one in which the
+ * framework provides a DSL. The load DSL enables developers to write load tests in declarative
+ * fashion.
  * <p>
  *
  * @author Erhan Bagdemir
  * @see CyclicIterator
+ * @see ReactiveHttpSimulationRunner
  * @since 1.0.0
  */
 public class DefaultSimulationRunner implements SimulationRunner {
@@ -62,11 +61,13 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
 
-  private SimulationMetadata simulationMetadata;
-  private CyclicIterator<Scenario> scenarioCyclicIterator;
-  private ScheduledExecutorService scheduler;
+  private final SimulationMetadata simulationMetadata;
+  private final CyclicIterator<Scenario> scenarioCyclicIterator;
+  private final ScheduledExecutorService scheduler;
+  private final EventDispatcher eventDispatcher;
+
   private volatile boolean shutdownInitiated;
-  private Disposable subscribe;
+  private volatile Disposable subscribe;
 
   /**
    * Creates a new {@link DefaultSimulationRunner} instance.
@@ -78,6 +79,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
     this.scenarioCyclicIterator = new CyclicIterator<>(simulationMetadata.getScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
+    this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
 
   public void start() {
@@ -107,7 +109,8 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2()).call())
+        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2(),
+            eventDispatcher).call())
         .subscribe();
 
     await();
@@ -155,7 +158,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     // proceed with shutdown.
     System.out.println("Shutting down the system ...");
     scenarioCyclicIterator.stop();
-    EventDispatcher.instance(simulationMetadata).stop();
+    eventDispatcher.stop();
 
     System.out.println("Shutting down the scheduler ...");
     scheduler.shutdown();

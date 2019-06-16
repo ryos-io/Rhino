@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -30,15 +31,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Default callable for push approach.
+ * This callable will be called by the pipeline every time a new item is emitted.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.0.0
  */
 public class DefaultSimulationCallable implements Callable<Measurement> {
 
   private static final Logger LOG = LogManager.getLogger(DefaultSimulationCallable.class);
 
   private SimulationMetadata simulationMetadata;
-  private UserSession userSession;
-  private Scenario scenario;
+
+  private final UserSession userSession;
+  private final Scenario scenario;
+  private final EventDispatcher eventDispatcher;
 
   // Predicate to search fields for Feedable annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
@@ -50,13 +57,15 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
           f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
   // Feedable the feeder value into the field.
-  private void feed(final Object instance,
-      final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
-    Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
-    Object value = o.take();
+  private void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
+
+    Objects.requireNonNull(instance, "Object instance is null.");
+    var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
+    var value = factoryInstance.take();
     try {
-      Field field = ip.getField();
+      var field = injectionPoint.getField();
       field.setAccessible(true);
+      //TODO pre-check before assignment.
       field.set(instance, value);
     } catch (IllegalAccessException e) {
       LOG.error("Access to field failed.", e);
@@ -65,11 +74,24 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     }
   }
 
+  /**
+   * Instantiates a new {@link DefaultSimulationCallable} instance.
+   * <p>
+   *
+   * @param simulationMetadata Simulation metadata.
+   * @param userSession Current user session which is active.
+   * @param scenario Scenario is to be run.
+   * @param eventDispatcher Event dispatcher is responsible from delivering metric events to
+   * corresponding receivers.
+   */
   public DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
-      final UserSession userSession, final Scenario scenario) {
-    this.simulationMetadata = simulationMetadata;
-    this.userSession = userSession;
-    this.scenario = scenario;
+      final UserSession userSession,
+      final Scenario scenario,
+      final EventDispatcher eventDispatcher) {
+    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
+    this.userSession = Objects.requireNonNull(userSession);
+    this.scenario = Objects.requireNonNull(scenario);
+    this.eventDispatcher = Objects.requireNonNull(eventDispatcher);
   }
 
   /**
@@ -92,7 +114,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     feedInjections(simulationInstance);
 
-    var recorder = new MeasurementImpl(scenario.getDescription(), user.getId());
+    var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
     var userEventStart = new UserEvent();
     userEventStart.elapsed = 0;
@@ -102,9 +124,9 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     userEventStart.eventType = EventType.START;
     userEventStart.id = user.getId();
 
-    recorder.record(userEventStart);
+    measurement.record(userEventStart);
 
-    executeScenario(scenario, recorder, simulationInstance);
+    executeScenario(scenario, measurement, simulationInstance);
 
     var elapsed = System.currentTimeMillis() - start;
 
@@ -115,12 +137,12 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     userEventEnd.scenario = scenario.getDescription();
     userEventEnd.eventType = EventType.END;
     userEventEnd.id = user.getId();
-    recorder.record(userEventEnd);
+    measurement.record(userEventEnd);
 
-    EventDispatcher.instance(simulationMetadata).dispatchEvents(recorder);
+    eventDispatcher.dispatchEvents(measurement);
     executeMethod(simulationMetadata.getAfterMethod(), simulationInstance);
 
-    return recorder;
+    return measurement;
   }
 
   private void executeScenario(final Scenario scenario,
@@ -147,7 +169,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void feedInjections(Object simulationInstance) {
+  private void feedInjections(final Object simulationInstance) {
     Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
         .filter(hasFeeder)
         .map(injectionPointFunction)
@@ -181,8 +203,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     }
   }
 
-
-  public void prepare(UserSession userSession) {
+  public void prepare(final UserSession userSession) {
     final Object cleanUpInstance = prepareMethodCall(userSession);
     executeMethod(simulationMetadata.getPrepareMethod(), cleanUpInstance);
   }
@@ -195,7 +216,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     return cleanUpInstance;
   }
 
-  public void cleanUp(UserSession userSession) {
+  public void cleanUp(final UserSession userSession) {
     prepareMethodCall(userSession);
     executeMethod(simulationMetadata.getCleanupMethod(), userSession);
   }
