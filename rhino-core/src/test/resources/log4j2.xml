@@ -2,11 +2,11 @@
 <Configuration status="info">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%msg%n"/>
+            <PatternLayout pattern="%d [%-6p] %c{1} %tn(%tid) – %m%n"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="Console"/>
         </Root>
 
