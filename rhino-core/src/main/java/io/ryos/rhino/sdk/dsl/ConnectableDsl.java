@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CollectorDsl implements LoadDsl {
+public class ConnectableDsl implements LoadDsl {
 
   private Duration pause;
   private String testName;
@@ -14,12 +14,12 @@ public class CollectorDsl implements LoadDsl {
       new ArrayList<>();
 
   @Override
-  public CollectorDsl pause(Duration duration) {
+  public ConnectableDsl pause(Duration duration) {
     return null;
   }
 
   @Override
-  public CollectorDsl run(Spec executable) {
+  public ConnectableDsl run(Spec executable) {
     executableFunctions.add(executable);
     return this;
   }

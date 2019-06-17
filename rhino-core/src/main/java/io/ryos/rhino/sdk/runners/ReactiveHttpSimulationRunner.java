@@ -22,9 +22,8 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.CollectorDsl;
+import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SpecMaterializer;
 import io.ryos.rhino.sdk.io.Out;
@@ -51,7 +50,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
-  private CyclicIterator<CollectorDsl> dslIterator;
+  private CyclicIterator<ConnectableDsl> dslIterator;
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
   private final EventDispatcher eventDispatcher;
@@ -64,7 +63,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
             .getSpecs()
             .stream()
             .filter(Objects::nonNull)
-            .map(spec -> (CollectorDsl) spec)
+            .map(spec -> (ConnectableDsl) spec)
             .collect(Collectors.toList()));
     this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
@@ -79,8 +78,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
           simulationMetadata.getSpecs()
               .stream()
-              .map(dsl -> (CollectorDsl) dsl)
-              .map(CollectorDsl::getName)
+              .map(dsl -> (ConnectableDsl) dsl)
+              .map(ConnectableDsl::getName)
               .toArray(String[]::new));
     }
 
