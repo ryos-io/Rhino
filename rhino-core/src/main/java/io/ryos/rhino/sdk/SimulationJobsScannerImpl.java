@@ -34,10 +34,9 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
-import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
+import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
@@ -172,33 +171,44 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private SimulationMetadata createBenchmarkJob(final Class clazz) {
 
+    // Simulation class.
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+
+    // Read runner annotation.
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
+
+    // Read influx DB annotation, to enable influx db.
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
-    var stepMethods = Arrays.stream(clazz.getDeclaredMethods())
+
+    // Read scenario methods.
+    var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.Scenario))
         .map(s -> new Scenario(
             s.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name(), s))
         .collect(toList());
-    var specMethods = Arrays.stream(clazz.getDeclaredMethods())
-        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(a -> a instanceof Dsl))
-        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
-            ReflectionUtils.<Spec>executeMethod(s, instanceOf(clazz).orElseThrow())))
+
+    // Create test instance.
+    var testInstance = instanceOf(clazz).orElseThrow();
+
+    var dsls = Arrays.stream(clazz.getDeclaredMethods())
+        .filter(method -> Arrays.stream(method.getDeclaredAnnotations())
+        .anyMatch(a -> a instanceof Dsl))
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
         .map(p -> p.getSecond().withName(p.getFirst()))
         .collect(toList());
 
-    if (stepMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
+    if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
       throw new SimulationNotFoundException(clazz.getName());
     }
 
-    if (specMethods.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
+    if (dsls.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
       throw new SpecificationNotFoundException(clazz.getName());
     }
 
+    // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
     var injectAnnotationField = getFieldByAnnotation(clazz, UserFeeder.class);
@@ -209,8 +219,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
-            DefaultSimulationRunner.class)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withInjectUser(maxUserInject)
@@ -220,18 +229,21 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withCleanUp(findMethodWith(clazz, CleanUp.class).orElse(null))
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
-        .withScenarios(stepMethods)
-        .withSpecs(specMethods)
-        .withRampUp(-1). // Throttling is not scope of 1.0 anymore.
-        build();
+        .withScenarios(scenarioMethods)
+        .withSpecs(dsls)
+        .withTestInstance(testInstance)
+        .withRampUp(-1) //TODO Throttling is not scope of 1.0 anymore.
+        .build();
   }
 
   private boolean isBlockingSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation == null || runnerAnnotation.clazz().equals(DefaultSimulationRunner.class);
+    return runnerAnnotation == null || runnerAnnotation.clazz()
+        .equals(DefaultSimulationRunner.class);
   }
 
   private boolean isReactiveSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation != null && runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
+    return runnerAnnotation != null && runnerAnnotation.clazz()
+        .equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {
@@ -260,8 +272,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var loginDelay = feeder.delay();
 
     try {
-      final Constructor<? extends UserRepositoryFactory> factoryConstructor =
-          factory.getConstructor(long.class);
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory
+          .getConstructor(long.class);
       final UserRepositoryFactory userRepositoryFactory = factoryConstructor
           .newInstance(loginDelay);
       return userRepositoryFactory.create();

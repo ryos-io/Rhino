@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.specs.HttpSpec;
+import io.ryos.rhino.sdk.specs.Spec;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ public class CollectorDsl implements LoadDsl {
   private Duration pause;
   private String testName;
 
-  private final List<HttpSpec> executableFunctions =
+  private final List<Spec> executableFunctions =
       new ArrayList<>();
 
   @Override
@@ -31,12 +31,12 @@ public class CollectorDsl implements LoadDsl {
   }
 
   @Override
-  public CollectorDsl run(HttpSpec executable) {
+  public CollectorDsl run(Spec executable) {
     executableFunctions.add(executable);
     return this;
   }
 
-  public List<HttpSpec> specs() {
+  public List<Spec> specs() {
     return executableFunctions;
   }
 }

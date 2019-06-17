@@ -14,42 +14,30 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.feeders;
+
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.repositories.UserRepository;
 
 /**
- * Common specification type implementation.
+ * TODO
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public abstract class AbstractSpec implements Spec {
+public class UserProvider implements Feedable<User> {
 
-  private String enclosingSpec;
-  private String measurementPoint;
+  private final UserRepository<UserSession> userRepository;
 
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
+  public UserProvider(
+      UserRepository<UserSession> userRepository) {
+    this.userRepository = userRepository;
   }
 
   @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public AbstractSpec withName(String enclosingSpec) {
-    this.enclosingSpec = enclosingSpec;
-    return this;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public User take() {
+    return null;
   }
 }

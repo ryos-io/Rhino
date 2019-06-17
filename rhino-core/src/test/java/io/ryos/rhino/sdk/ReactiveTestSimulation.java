@@ -22,8 +22,6 @@ public class ReactiveTestSimulation {
   @UserFeeder(factory = UserRepositoryFactory.class)
   private UserRepository<UserSession> userRepository;
 
-  private static final String HEALTH_ENDPOINT = "https://cc-api-storage-stage.adobe.io/server-status/health";
-
   @Dsl(name = "Google.com")
   public LoadDsl singleTestDsl() {
     return Start

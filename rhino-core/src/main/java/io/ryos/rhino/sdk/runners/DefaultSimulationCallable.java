@@ -8,10 +8,8 @@ import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.InjectionPoint;
-import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.feeders.Feedable;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
@@ -22,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -107,12 +104,14 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     var user = userSession.getUser();
     var simulationInstance = simulationInstanceFactory.get();
 
+    new DefaultRunnerSimulationInjector(simulationMetadata, userSession).injectOn(simulationInstance);
+
     injectUser(user, simulationInstance);// Each thread will run as the same user.
     injectSession(userSession, simulationInstance);
+    injectFeeders(simulationInstance);
 
+    // Before method call.
     executeMethod(simulationMetadata.getBeforeMethod(), simulationInstance);
-
-    feedInjections(simulationInstance);
 
     var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
@@ -129,7 +128,6 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     executeScenario(scenario, measurement, simulationInstance);
 
     var elapsed = System.currentTimeMillis() - start;
-
     var userEventEnd = new UserEvent();
     userEventEnd.elapsed = elapsed;
     userEventEnd.start = start;
@@ -169,7 +167,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void feedInjections(final Object simulationInstance) {
+  private void injectFeeders(final Object simulationInstance) {
     Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
         .filter(hasFeeder)
         .map(injectionPointFunction)
@@ -177,7 +175,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   private void injectSession(final UserSession userSession, final Object simulationInstance) {
-    final Optional<Pair<Field, SessionFeeder>> fieldAnnotation = getFieldByAnnotation(
+    var fieldAnnotation = getFieldByAnnotation(
         simulationMetadata.getSimulationClass(),
         SessionFeeder.class);
     fieldAnnotation
@@ -185,8 +183,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
-    final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(
-        simulationMetadata.getSimulationClass(),
+    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
         UserFeeder.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
@@ -211,7 +208,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   private Object prepareMethodCall(final UserSession userSession) {
     final Object cleanUpInstance = simulationInstanceFactory.get();
     injectSession(userSession, cleanUpInstance);
-    feedInjections(cleanUpInstance);
+    injectFeeders(cleanUpInstance);
     injectUser(userSession.getUser(), cleanUpInstance);
     return cleanUpInstance;
   }

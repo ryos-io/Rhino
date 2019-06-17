@@ -23,6 +23,10 @@ public interface Spec {
     return new HttpSpecImpl(measurementPoint);
   }
 
+  static SomeSpecImpl some(String measurementPoint) {
+    return new SomeSpecImpl(measurementPoint);
+  }
+
   /**
    * The name of the test specification. The name is set in @Dsl annotation.
    * <p>
@@ -38,5 +42,9 @@ public interface Spec {
    *
    * @return The name of the spec.
    */
-  String getName();
+  String getMeasurementPoint();
+
+  String getTestName();
+
+  void setTestName(String testName);
 }

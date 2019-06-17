@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.specs.HttpSpec;
+import io.ryos.rhino.sdk.specs.Spec;
 import java.time.Duration;
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface LoadDsl {
 
   LoadDsl withName(String name);
 
-  CollectorDsl run(HttpSpec spec);
+  CollectorDsl run(Spec spec);
 
-  public List<HttpSpec> specs();
+  public List<Spec> specs();
 }
