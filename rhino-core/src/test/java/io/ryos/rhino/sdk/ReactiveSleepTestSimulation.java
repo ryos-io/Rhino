@@ -55,7 +55,7 @@ public class ReactiveSleepTestSimulation {
         .run(some("2. measurement").is((userSession, measurement) -> {
           waitASec();
           measurement.measure("2. measurement", "OK");
-          userSession.get("uuid").map(a -> (Integer) a).map(a -> a++)
+          userSession.get("random").map(a -> (Integer) a).map(a -> a++)
               .ifPresent(System.out::println);
           return userSession;
         }));
