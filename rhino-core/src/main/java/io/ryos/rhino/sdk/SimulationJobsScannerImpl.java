@@ -31,6 +31,7 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.dsl.CollectorDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
@@ -197,7 +198,13 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .filter(method -> Arrays.stream(method.getDeclaredAnnotations())
         .anyMatch(a -> a instanceof Dsl))
         .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
-        .map(p -> p.getSecond().withName(p.getFirst()))
+        .map(p -> {
+          var loadDsl = p.getSecond();
+          if (loadDsl instanceof CollectorDsl) {
+            return ((CollectorDsl) loadDsl).withName(p.getFirst());
+          }
+          return loadDsl;
+        })
         .collect(toList());
 
     if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {

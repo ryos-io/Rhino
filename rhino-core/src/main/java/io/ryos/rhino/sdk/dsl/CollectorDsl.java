@@ -19,24 +19,22 @@ public class CollectorDsl implements LoadDsl {
   }
 
   @Override
-  public String getName() {
-    return testName;
+  public CollectorDsl run(Spec executable) {
+    executableFunctions.add(executable);
+    return this;
   }
 
-  @Override
   public LoadDsl withName(final String testName) {
     executableFunctions.forEach(s -> s.setTestName(testName));
     this.testName = testName;
     return this;
   }
 
-  @Override
-  public CollectorDsl run(Spec executable) {
-    executableFunctions.add(executable);
-    return this;
+  public String getName() {
+    return testName;
   }
 
-  public List<Spec> specs() {
+  public List<Spec> getSpecs() {
     return executableFunctions;
   }
 }

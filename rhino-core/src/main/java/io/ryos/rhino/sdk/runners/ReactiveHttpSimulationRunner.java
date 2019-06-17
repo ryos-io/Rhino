@@ -22,6 +22,7 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.CollectorDsl;
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
@@ -50,7 +51,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
-  private CyclicIterator<LoadDsl> dslIterator;
+  private CyclicIterator<CollectorDsl> dslIterator;
   private Disposable subscribe;
   private volatile boolean shutdownInitiated;
   private final EventDispatcher eventDispatcher;
@@ -63,7 +64,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
             .getSpecs()
             .stream()
             .filter(Objects::nonNull)
-            .map(spec -> (LoadDsl) spec)
+            .map(spec -> (CollectorDsl) spec)
             .collect(Collectors.toList()));
     this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
@@ -78,7 +79,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
           simulationMetadata.getSpecs()
               .stream()
-              .map(LoadDsl::getName)
+              .map(dsl -> (CollectorDsl) dsl)
+              .map(CollectorDsl::getName)
               .toArray(String[]::new));
     }
 
@@ -108,7 +110,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         .flatMap(tuple -> {
           var session = tuple.getT1();
           var dsl = tuple.getT2();
-          var specIt = dsl.specs().iterator();
+          var specIt = dsl.getSpecs().iterator();
           if (!specIt.hasNext()) {
             throw new RuntimeException("No spec found in DSL.");
           }

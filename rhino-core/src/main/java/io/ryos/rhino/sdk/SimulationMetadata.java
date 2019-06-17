@@ -20,6 +20,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
+import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
@@ -125,7 +126,7 @@ public class SimulationMetadata {
   private List<Scenario> scenarios;
 
   /**
-   * A list of {@link Spec} instances defined in specs methods.
+   * A list of {@link Spec} instances defined in getSpecs methods.
    * <p>
    */
   private List<LoadDsl> specs;
@@ -175,19 +176,23 @@ public class SimulationMetadata {
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
-  private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
+  private final Function<Field, InjectionPoint<Feeder>> ipCreator =
       f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+          f.getDeclaredAnnotation(Feeder.class));
 
   // Feedable the feeder value into the field.
-  private void feed(final Object instance,
-      final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
+  private void feed(final Object instance, final InjectionPoint<Feeder> ip) {
     Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
-    Object value = o.take();
+
     try {
       Field field = ip.getField();
       field.setAccessible(true);
-      field.set(instance, value);
+      if (Feedable.class.isAssignableFrom(field.getType())) {
+        field.set(instance, o);
+      } else {
+        field.set(instance, o.take());
+      }
+
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } catch (IllegalArgumentException e) {
