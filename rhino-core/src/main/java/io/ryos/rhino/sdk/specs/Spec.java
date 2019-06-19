@@ -28,14 +28,26 @@ public interface Spec {
   }
 
   /**
-   * The name of the spec. It is the step name in scenario countpart.
+   * The name of the spec. It is the step name in scenario counterpart.
    * <p>
    *
    * @return The name of the spec.
    */
   String getMeasurementPoint();
 
+  /**
+   * Returns the test/DSL name.
+   * <p>
+   *
+   * @return Test or DSL name.
+   */
   String getTestName();
 
+  /**
+   * Setter for test or DSL name.
+   * <p>
+   *
+   * @param testName The test name from annotation.
+   */
   void setTestName(String testName);
 }
