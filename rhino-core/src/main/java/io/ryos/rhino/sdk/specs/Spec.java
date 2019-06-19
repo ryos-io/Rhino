@@ -23,7 +23,7 @@ public interface Spec {
     return new HttpSpecImpl(measurementPoint);
   }
 
-  static SomeSpecImpl some(String measurementPoint) {
+  static SomeSpec some(String measurementPoint) {
     return new SomeSpecImpl(measurementPoint);
   }
 
