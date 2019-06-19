@@ -40,8 +40,8 @@ public class ConnectableDsl implements LoadDsl {
   }
 
   @Override
-  public ConnectableDsl run(Spec executable) {
-    executableFunctions.add(executable);
+  public ConnectableDsl run(Spec spec) {
+    executableFunctions.add(spec);
     return this;
   }
 
@@ -57,9 +57,5 @@ public class ConnectableDsl implements LoadDsl {
 
   public List<Spec> getSpecs() {
     return executableFunctions;
-  }
-
-  public Duration getPause() {
-    return pause;
   }
 }
