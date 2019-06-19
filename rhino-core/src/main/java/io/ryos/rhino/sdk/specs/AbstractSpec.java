@@ -38,12 +38,6 @@ public abstract class AbstractSpec implements Spec {
   }
 
   @Override
-  public AbstractSpec withName(String enclosingSpec) {
-    this.enclosingSpec = enclosingSpec;
-    return this;
-  }
-
-  @Override
   public String getTestName() {
     return enclosingSpec;
   }
