@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static com.google.common.collect.Streams.stream;
+
 import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -26,11 +28,15 @@ import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
+import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.SomeSpecImpl;
 import io.ryos.rhino.sdk.specs.Spec;
+import io.ryos.rhino.sdk.specs.WaitSpec;
+import io.ryos.rhino.sdk.specs.WaitSpecImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
@@ -102,7 +108,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
-        .zipWith(Flux.fromStream(Streams.stream(dslIterator)))
+        .zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError((t) -> System.out.println(t.getMessage()))
         .doOnTerminate(this::notifyAwaiting)
         .doOnComplete(() -> shutdownInitiated = true)
@@ -119,7 +125,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           while (specIt.hasNext()) {
             // Never move the following statement into lambda body. next() call is required to be eager.
             var next = specIt.next();
-            acc = acc.flatMap(response -> getMaterializerFor(next, client, eventDispatcher).materialize(next, session));
+            acc = acc.flatMap(response -> getMaterializerFor(next, client, eventDispatcher)
+                .materialize(next, session));
           }
           return acc.doOnError(System.out::println);
         })
@@ -135,9 +142,11 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       return new HttpSpecMaterializer(client, dispatcher);
     } else if (spec instanceof SomeSpecImpl) {
       return new SomeSpecMaterializer(dispatcher);
+    } else if (spec instanceof WaitSpecImpl) {
+      return new WaitSpecMaterializer();
     }
 
-    throw new RuntimeException();
+    throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
   }
 
   private void await() {
