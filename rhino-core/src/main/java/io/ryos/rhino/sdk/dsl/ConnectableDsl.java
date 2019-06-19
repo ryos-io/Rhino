@@ -8,14 +8,15 @@ import java.util.List;
 public class ConnectableDsl implements LoadDsl {
 
   private Duration pause;
+
   private String testName;
 
-  private final List<Spec> executableFunctions =
-      new ArrayList<>();
+  private final List<Spec> executableFunctions = new ArrayList<>();
 
   @Override
   public ConnectableDsl pause(Duration duration) {
-    return null;
+    this.pause = duration;
+    return this;
   }
 
   @Override
@@ -36,5 +37,9 @@ public class ConnectableDsl implements LoadDsl {
 
   public List<Spec> getSpecs() {
     return executableFunctions;
+  }
+
+  public Duration getPause() {
+    return pause;
   }
 }
