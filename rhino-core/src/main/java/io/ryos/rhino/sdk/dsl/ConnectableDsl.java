@@ -1,21 +1,41 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.specs.Spec;
+import io.ryos.rhino.sdk.specs.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Connectable DSL, is the DSL instance to bind chaining specs.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
+ */
 public class ConnectableDsl implements LoadDsl {
 
+  /**
+   * Wait duration.
+   * <p>
+   */
   private Duration pause;
 
+  /**
+   * Test name, that is the name of the load DSL or scenario.
+   * <p>
+   */
   private String testName;
 
+  /**
+   * Executable functions.
+   * <p>
+   */
   private final List<Spec> executableFunctions = new ArrayList<>();
 
   @Override
-  public ConnectableDsl pause(Duration duration) {
-    this.pause = duration;
+  public ConnectableDsl wait(Duration duration) {
+    executableFunctions.add(new WaitSpecImpl(duration));
     return this;
   }
 
