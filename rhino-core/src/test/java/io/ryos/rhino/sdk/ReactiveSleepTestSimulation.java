@@ -26,6 +26,7 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import java.time.Duration;
 import java.util.Random;
 
 /**
@@ -46,13 +47,14 @@ public class ReactiveSleepTestSimulation {
   public LoadDsl testSleep() {
     return Start
         .spec()
-        .run(some("Sleeping 1 sec.").is((userSession, measurement) -> {
+        .run(some("Sleeping 1 sec.").as((userSession, measurement) -> {
           waitASec();
           measurement.measure("1. measurement", "OK");
           userSession.add("random", new Random().nextInt());
           return userSession;
         }))
-        .run(some("2. measurement").is((userSession, measurement) -> {
+        .pause(Duration.ofMinutes(1L))
+        .run(some("2. measurement").as((userSession, measurement) -> {
           waitASec();
           measurement.measure("2. measurement", "OK");
           userSession.get("random").map(a -> (Integer) a).map(a -> a++)
@@ -65,6 +67,7 @@ public class ReactiveSleepTestSimulation {
     try {
       Thread.sleep(1000L);
     } catch (InterruptedException e) {
+      // Intentionally left empty.
     }
   }
 }
