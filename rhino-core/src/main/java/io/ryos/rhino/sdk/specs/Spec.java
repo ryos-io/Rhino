@@ -28,15 +28,6 @@ public interface Spec {
   }
 
   /**
-   * The name of the test specification. The name is set in @Dsl annotation.
-   * <p>
-   *
-   * @param name Test specification name.
-   * @return A {@link Spec} instance with name.
-   */
-  Spec withName(String name);
-
-  /**
    * The name of the spec. It is the step name in scenario countpart.
    * <p>
    *
