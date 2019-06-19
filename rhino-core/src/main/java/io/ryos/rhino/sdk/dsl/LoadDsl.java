@@ -5,7 +5,7 @@ import java.time.Duration;
 
 public interface LoadDsl {
 
-  ConnectableDsl pause(Duration duration);
+  ConnectableDsl wait(Duration duration);
 
   ConnectableDsl run(Spec spec);
 }
