@@ -47,19 +47,23 @@ public class ReactiveSleepTestSimulation {
   public LoadDsl testSleep() {
     return Start
         .spec()
-        .run(some("Sleeping 1 sec.").as((userSession, measurement) -> {
+        .run(some("Sleeping 1 sec.").as((u, m) -> {
           waitASec();
-          measurement.measure("1. measurement", "OK");
-          userSession.add("random", new Random().nextInt());
-          return userSession;
+          m.measure("1. measurement", "OK");
+          u.add("random", new Random().nextInt());
+          return u;
         }))
-        .pause(Duration.ofMinutes(1L))
-        .run(some("2. measurement").as((userSession, measurement) -> {
+        .wait(Duration.ofSeconds(1))
+        .runIf((u) -> false, some("Conditional").as((u, m) -> {
+          System.out.println("Should not appear.");
+          return u;
+        }))
+        .run(some("2. measurement").as((u, m) -> {
           waitASec();
-          measurement.measure("2. measurement", "OK");
-          userSession.get("random").map(a -> (Integer) a).map(a -> a++)
+          m.measure("2. measurement", "OK");
+          u.get("random").map(a -> (Integer) a).map(a -> a++)
               .ifPresent(System.out::println);
-          return userSession;
+          return u;
         }));
   }
 

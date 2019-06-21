@@ -18,7 +18,6 @@ package io.ryos.rhino.sdk.runners;
 
 import static com.google.common.collect.Streams.stream;
 
-import com.google.common.collect.Streams;
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
@@ -27,16 +26,15 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.HttpSpec;
-import io.ryos.rhino.sdk.specs.SomeSpecImpl;
+import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
-import io.ryos.rhino.sdk.specs.WaitSpecImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +44,7 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -119,14 +118,19 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           if (!specIt.hasNext()) {
             throw new RuntimeException("No spec found in DSL.");
           }
-          var first = specIt.next();
-          var materializer = getMaterializerFor(first, client, eventDispatcher);
-          var acc = materializer.materialize(first, session);
+          var acc = materialize(specIt.next(), client, session);
           while (specIt.hasNext()) {
             // Never move the following statement into lambda body. next() call is required to be eager.
             var next = specIt.next();
-            acc = acc.flatMap(response -> getMaterializerFor(next, client, eventDispatcher)
-                .materialize(next, session));
+            acc = acc.flatMap(s -> {
+              if (next instanceof ConditionalSpecWrapper) {
+                var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+                if (!predicate.test(s)) {
+                  return Mono.just(s);
+                }
+              }
+              return materialize(next, client, session);
+            });
           }
           return acc.doOnError(System.out::println);
         })
@@ -135,15 +139,17 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     stop();
   }
 
-  private SpecMaterializer getMaterializerFor(final Spec spec,
-      final AsyncHttpClient client,
-      final EventDispatcher dispatcher) {
+  private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
+      final UserSession session) {
+
     if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, dispatcher);
-    } else if (spec instanceof SomeSpecImpl) {
-      return new SomeSpecMaterializer(dispatcher);
-    } else if (spec instanceof WaitSpecImpl) {
-      return new WaitSpecMaterializer();
+      return new HttpSpecMaterializer(client, eventDispatcher).materialize((HttpSpec) spec, session);
+    } else if (spec instanceof SomeSpec) {
+      return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
+    } else if (spec instanceof WaitSpec) {
+      return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
+    } else if (spec instanceof ConditionalSpecWrapper) {
+      return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
     }
 
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());

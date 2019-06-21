@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface SomeSpec {
+public interface SomeSpec extends Spec {
 
   /**
    * Function contains the code snippet to be applied.

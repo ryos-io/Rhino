@@ -32,9 +32,7 @@ public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec, UserSess
   @Override
   public Mono<UserSession> materialize(WaitSpec spec, UserSession userSession) {
     return Mono.fromCallable(() -> {
-
       Thread.sleep(spec.getWaitTime().toMillis());
-
       return userSession;
     });
   }

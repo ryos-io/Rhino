@@ -21,7 +21,7 @@ import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
-import io.ryos.rhino.sdk.specs.SomeSpecImpl;
+import io.ryos.rhino.sdk.specs.SomeSpec;
 import reactor.core.publisher.Mono;
 
 /**
@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecMaterializer implements SpecMaterializer<SomeSpecImpl, UserSession> {
+public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSession> {
 
   private final EventDispatcher dispatcher;
 
@@ -40,7 +40,7 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpecImpl, User
   }
 
   @Override
-  public Mono<UserSession> materialize(SomeSpecImpl spec, UserSession userSession) {
+  public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
 
     int userId = userSession.getUser().getId();
     return Mono.fromCallable(() -> {

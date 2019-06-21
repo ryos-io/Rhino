@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Supervisor type which manages set up and run benchmark tests. The class follows the steps
- * required to initiate a test execution i.e configure and search for benchmark jobs by using {@link
+ * Supervisor which manages set up and run benchmark tests. The class follows the steps required to
+ * initiate a test execution i.e configure and search for benchmark jobs by using {@link
  * SimulationJobsScanner}. Once jobs are ready to execute, the implementation starts each one while
  * providing a context to them.
  *
@@ -61,7 +61,7 @@ public class SimulationImpl implements Simulation {
    * @param path Path to properties file.
    * @param simulationName Simulation name.
    */
-  public SimulationImpl(final String path, final String simulationName) {
+  SimulationImpl(final String path, final String simulationName) {
 
     try {
       Application.showBranding();
@@ -72,7 +72,8 @@ public class SimulationImpl implements Simulation {
           simulationConfig.getPackageToScan());
       this.simulationRunners = jobs
           .stream()
-          .map(simulation -> new Pair<SimulationMetadata, Context>(simulation, getContext(simulation)))
+          .map(simulation -> new Pair<SimulationMetadata, Context>(simulation,
+              getContext(simulation)))
           .map(pair -> getRunner(
               pair.getFirst().getRunner(), pair.getSecond()))
           .collect(Collectors.toList());

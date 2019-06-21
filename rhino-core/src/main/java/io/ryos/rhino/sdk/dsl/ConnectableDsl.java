@@ -1,10 +1,13 @@
 package io.ryos.rhino.sdk.dsl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Connectable DSL, is the DSL instance to bind chaining specs.
@@ -42,6 +45,12 @@ public class ConnectableDsl implements LoadDsl {
   @Override
   public ConnectableDsl run(Spec spec) {
     executableFunctions.add(spec);
+    return this;
+  }
+
+  @Override
+  public ConnectableDsl runIf(Predicate<UserSession> predicate, Spec spec) {
+    executableFunctions.add(new ConditionalSpecWrapper(spec, predicate));
     return this;
   }
 

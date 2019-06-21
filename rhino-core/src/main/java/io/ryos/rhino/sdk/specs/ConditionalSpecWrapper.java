@@ -16,34 +16,34 @@
 
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import java.util.function.Predicate;
+
 /**
- * Common specification type implementation.
+ * Spec wrapper including a predicate to define the conditional statement whether a spec is to be
+ * run, or not.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public class ConditionalSpecWrapper extends AbstractSpec {
 
-  private String enclosingSpec;
-  private String measurementPoint;
+  private final Predicate<UserSession> predicate;
+  private final Spec spec;
 
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
+  public ConditionalSpecWrapper(Spec spec, Predicate<UserSession> predicate) {
+    super(spec.getMeasurementPoint());
+
+    this.spec = spec;
+    this.predicate = predicate;
   }
 
-  @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
+  public Predicate<UserSession> getPredicate() {
+    return predicate;
   }
 
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public Spec getSpec() {
+    return spec;
   }
 }

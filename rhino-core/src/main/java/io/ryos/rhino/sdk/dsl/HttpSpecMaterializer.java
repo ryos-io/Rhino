@@ -27,6 +27,7 @@ import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
+import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +50,16 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
   private final AsyncHttpClient client;
   private final EventDispatcher eventDispatcher;
+  private final Predicate<UserSession> conditionalSpec;
 
+  public HttpSpecMaterializer(final AsyncHttpClient client,
+      final EventDispatcher eventDispatcher,
+      final Predicate<UserSession> predicate) {
+    this.client = client;
+    this.eventDispatcher = eventDispatcher;
+    this.conditionalSpec = predicate;
+  }
+  
   /**
    * Specification materializer translates the specifications into reactor implementations.
    * <p>
@@ -58,11 +68,14 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
    * @param eventDispatcher Event dispatcher instance.
    */
   public HttpSpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
-    this.client = client;
-    this.eventDispatcher = eventDispatcher;
+    this(client, eventDispatcher, null);
   }
 
   public Mono<UserSession> materialize(final HttpSpec spec, final UserSession userSession) {
+
+    if (conditionalSpec != null && !conditionalSpec.test(userSession)) {
+      return Mono.just(userSession);
+    }
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession.getUser().getId(),
         spec.getTestName(),
