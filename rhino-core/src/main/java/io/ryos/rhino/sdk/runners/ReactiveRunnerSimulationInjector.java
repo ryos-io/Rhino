@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.exceptions.BadInjectionException;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.Arrays;
 import java.util.Objects;
@@ -32,11 +33,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Injector for reactive runner.
+ * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is
+ * the reactive variant does inject the factory classes which return values to the DSL
+ * instances, whereas the default injector implementation does inject the value itself into the
+ * injection points, that are marked with {@link Feeder} annotation.
  * <p>
  *
  * @author Erhan Bagdemir
  * @see ReactiveHttpSimulationRunner
+ * @see DefaultRunnerSimulationInjector
  * @since 1.1.0
  */
 public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector {
@@ -70,25 +75,29 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
   @Override
   public void injectOn(Object injectable) {
     if (userSession != null) {
-      injectUser(userSession.getUser(), injectable);// Each thread will run as the same user.
-      injectSession(userSession, injectable);
+      injectUser();// Each thread will run as the same user.
+      injectSession();
     }
 
     injectCustomFeeders(injectable);
   }
 
-  private void injectSession(final UserSession userSession, final Object simulationInstance) {
+  private void injectSession() {
     var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
         SessionFeeder.class);
     fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(null /*TODO*/, f.getFirst(), simulationInstance));
+        .ifPresent(f -> { throw new BadInjectionException("The session injection is only "
+            + "supported in default mode. Every spec definition in load DSLs has already access "
+            + "to the user session in closures."); });
   }
 
-  private void injectUser(final User user, final Object simulationInstance) {
+  private void injectUser() {
     var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
         UserFeeder.class);
     fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(null /*TODO*/, f.getFirst(), simulationInstance));
+        .ifPresent(f -> { throw new BadInjectionException("The user injection is only "
+            + "supported in default mode. Every spec definition in load DSLs has already access "
+            + "to the user session in closures."); });
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
