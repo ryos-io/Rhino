@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.Throttler.throttle;
+import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofNanos;
 import static java.time.Duration.ofSeconds;
@@ -8,12 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static reactor.core.publisher.Flux.range;
 import static reactor.core.publisher.Mono.fromFuture;
 
-import java.util.Arrays;
+import io.ryos.rhino.sdk.runners.Throttler.Rps;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
-import reactor.util.function.Tuple2;
 
 class FluxTests {
   private static final Logger LOG = LoggerFactory.getLogger(FluxTests.class);
@@ -217,8 +215,8 @@ class FluxTests {
     // hold for 10 seconds
     // end
     final var latch = new CountDownLatch(1);
-    final Throttler.Rps rps = Throttler.Rps.of(1, 5);
-    final Throttler.Rps rps2 = Throttler.Rps.of(4, 5);
+    final Rps rps = Rps.of(1, 5);
+    final Rps rps2 = Rps.of(4, 5);
     Flux.range(0, 1000)
         .transform(throttle(rps, rps2))
         .take(ofSeconds(15))
@@ -262,28 +260,3 @@ class FluxTests {
   }
 }
 
-class Throttler {
-  public static <T> Function<Flux<T>, Flux<T>> throttle(final Rps... rps) {
-    final Flux<Long> reduce = Arrays.stream(rps)
-        .map(r -> Flux.interval(ofNanos(r.tickNano)).take(ofSeconds(r.durationSec)))
-        .reduce(Flux::concatWith).orElse(Flux.generate(sink -> sink.next(0L)));
-    final Function<Flux<T>, Flux<T>> res = f ->
-        f.zipWith(reduce.concatWith(Flux.generate(sink -> sink.next(0L))))
-            .map(Tuple2::getT1);
-    return res;
-  }
-
-  static class Rps {
-    final long durationSec;
-    final long tickNano;
-
-    private Rps(final long requests, final long durationSec) {
-      this.durationSec = durationSec;
-      this.tickNano = (long) Math.floor((1d / requests) * 1e9);
-    }
-
-    public static Rps of(final long requests, final long durationSec) {
-      return new Rps(requests, durationSec);
-    }
-  }
-}
