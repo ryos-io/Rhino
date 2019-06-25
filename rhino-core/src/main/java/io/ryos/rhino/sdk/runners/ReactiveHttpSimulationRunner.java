@@ -108,7 +108,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
         .take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
-        .doOnError((t) -> System.out.println(t.getMessage()))
+        .doOnError(t -> Out.error(t.getMessage()))
         .doOnTerminate(this::notifyAwaiting)
         .doOnComplete(() -> shutdownInitiated = true)
         .flatMap(tuple -> {
@@ -215,7 +215,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulationMetadata.prepare(us));
+//    userSessions.forEach(us -> simulationMetadata.prepare(us));
   }
 
   private void cleanupUserSessions(final List<UserSession> userSessions) {

@@ -40,16 +40,16 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
   private static final Logger LOG = LogManager.getLogger(AbstractSimulationInjector.class);
 
   // Predicate to search fields for Feedable annotation.
-  protected final Predicate<Field> hasFeeder = f -> Arrays
+  final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
 
-  protected final Function<Field, InjectionPoint<Feeder>> injectionPointFunction =
+  final Function<Field, InjectionPoint<Feeder>> injectionPointFunction =
       f -> new InjectionPoint<>(f,
           f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
 
-  protected <T> void setValueToInjectionPoint(final T object, final Field f,
+  <T> void setValueToInjectionPoint(final T object, final Field f,
       final Object simulationInstance) {
     try {
       f.setAccessible(true);
