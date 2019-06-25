@@ -85,7 +85,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         .fromFuture(client.executeRequest(buildRequest(spec, userSession), httpSpecAsyncHandler)
             .toCompletableFuture())
         .map(response -> (UserSession) userSession.add("previous", response))
-        .doOnError((t) -> LOG.error("Http Client Error", t));
+        .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
   private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession) {
@@ -127,10 +127,12 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
       builder = builder.addHeader(paramEntry.getKey(), paramEntry.getValue());
     }
 
-    var user = userSession.getUser();
-    if (user instanceof OAuthUser) {
-      var token = ((OAuthUser) user).getAccessToken();
-      builder = builder.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
+    if (httpSpec.isAuth()) {
+      var user = userSession.getUser();
+      if (user instanceof OAuthUser) {
+        var token = ((OAuthUser) user).getAccessToken();
+        builder = builder.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
+      }
     }
 
     return builder;

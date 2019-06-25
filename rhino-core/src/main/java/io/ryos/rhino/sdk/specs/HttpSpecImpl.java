@@ -22,6 +22,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   private List<Function<Context, Entry<String, List<String>>>> headers = new ArrayList<>();
   private List<Function<Context, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+  private boolean auth;
 
   private Method httpMethod;
   private Function<Context, String> endpoint;
@@ -80,7 +81,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   @Override
   public HttpSpec endpoint(final String endpoint) {
-    this.endpoint = (r) -> endpoint;
+    this.endpoint = r -> endpoint;
     return this;
   }
 
@@ -92,13 +93,13 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   @Override
   public HttpSpec header(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
+    this.headers.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
   public HttpSpec header(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
+    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
@@ -109,14 +110,20 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
+  public HttpSpec auth() {
+    this.auth = true;
+    return this;
+  }
+
+  @Override
   public HttpSpec queryParam(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
+    this.headers.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
   public HttpSpec queryParam(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
+    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
@@ -155,5 +162,10 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   @Override
   public Function<Context, String> getEndpoint() {
     return endpoint;
+  }
+
+  @Override
+  public boolean isAuth() {
+    return auth;
   }
 }
