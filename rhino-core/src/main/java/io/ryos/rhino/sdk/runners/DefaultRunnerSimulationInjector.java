@@ -20,7 +20,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.Arrays;
@@ -83,7 +83,7 @@ public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector 
 
   private void injectUser(final User user, final Object simulationInstance) {
     var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
-        UserFeeder.class);
+        UserProvider.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }

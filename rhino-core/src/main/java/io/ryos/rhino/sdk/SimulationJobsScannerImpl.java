@@ -28,7 +28,7 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -218,7 +218,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
-    var injectAnnotationField = getFieldByAnnotation(clazz, UserFeeder.class);
+    var injectAnnotationField = getFieldByAnnotation(clazz, UserProvider.class);
     var maxUserInject = injectAnnotationField.map(p -> p.getSecond().max()).orElse(10);
     var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
@@ -273,9 +273,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final UserFeeder feeder) {
+  private UserRepository createUserRepository(final UserProvider feeder) {
 
-    var factory = feeder.factory();
+    var factory = feeder.repository();
     var loginDelay = feeder.delay();
 
     try {

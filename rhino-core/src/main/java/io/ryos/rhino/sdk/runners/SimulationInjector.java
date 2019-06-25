@@ -1,8 +1,10 @@
 package io.ryos.rhino.sdk.runners;
 
+import io.ryos.rhino.sdk.feeders.Provider;
+
 /**
  * Injector is a utility class is used to inject objects expected in injection points, that is
- * marked with {@link io.ryos.rhino.sdk.feeders.Feedable} annotation.
+ * marked with {@link Provider} annotation.
  * <p>
  *
  * @author Erhan Bagdemir

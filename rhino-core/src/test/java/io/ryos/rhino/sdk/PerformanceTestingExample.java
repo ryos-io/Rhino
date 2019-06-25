@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response;
 @Logging(file = "/Users/bagdemir/sims/simulation.log", formatter = GatlingLogFormatter.class)
 public class PerformanceTestingExample {
 
-  @UserFeeder(max = 1, delay = 1000, factory = OAuthUserRepositoryFactoryImpl.class)
+  @UserProvider(max = 1, delay = 1000, repository = OAuthUserRepositoryFactoryImpl.class)
   private OAuthUser user;
 
   @SessionFeeder

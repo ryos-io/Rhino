@@ -22,7 +22,7 @@ import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.User;
@@ -35,7 +35,7 @@ public class SleepSimulation {
   @Feeder(factory = UUIDProvider.class)
   private String uuid;
 
-  @UserFeeder
+  @UserProvider
   private User user;
 
   @Before

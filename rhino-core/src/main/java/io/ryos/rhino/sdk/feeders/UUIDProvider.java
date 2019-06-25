@@ -25,7 +25,7 @@ import java.util.UUID;
  * @author Erhan Bagdemir
  * @version 1.0.0
  */
-public class UUIDProvider implements Feedable<String> {
+public class UUIDProvider implements Provider<String> {
 
   @Override
   public String take() {

@@ -23,13 +23,13 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.feeders.Feedable;
+import io.ryos.rhino.sdk.feeders.Provider;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
@@ -171,7 +171,7 @@ public class SimulationMetadata {
 
   private String reportingURI;
 
-  // Predicate to search fields for Feedable annotation.
+  // Predicate to search fields for Provider annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
@@ -180,14 +180,14 @@ public class SimulationMetadata {
       f -> new InjectionPoint<>(f,
           f.getDeclaredAnnotation(Feeder.class));
 
-  // Feedable the feeder value into the field.
+  // Provider the feeder value into the field.
   private void feed(final Object instance, final InjectionPoint<Feeder> ip) {
-    Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
+    Provider o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
 
     try {
       Field field = ip.getField();
       field.setAccessible(true);
-      if (Feedable.class.isAssignableFrom(field.getType())) {
+      if (Provider.class.isAssignableFrom(field.getType())) {
         field.set(instance, o);
       } else {
         field.set(instance, o.take());
@@ -196,7 +196,7 @@ public class SimulationMetadata {
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } catch (IllegalArgumentException e) {
-      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 
@@ -282,8 +282,8 @@ public class SimulationMetadata {
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
-    final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
-        UserFeeder.class);
+    final Optional<Pair<Field, UserProvider>> fieldAnnotation = getFieldByAnnotation(simulationClass,
+        UserProvider.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }

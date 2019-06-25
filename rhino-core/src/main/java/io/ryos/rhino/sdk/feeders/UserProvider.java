@@ -4,7 +4,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 
-public class UserProvider implements Feedable<User> {
+public class UserProvider implements Provider<User> {
 
   private final UserRepository<UserSession> userRepository;
 

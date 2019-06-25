@@ -21,10 +21,9 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Feeder;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.feeders.UserProvider;
 import java.util.Arrays;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is
- * the reactive variant does inject the factory classes which return values to the DSL
+ * the reactive variant does inject the repository classes which return values to the DSL
  * instances, whereas the default injector implementation does inject the value itself into the
  * injection points, that are marked with {@link Feeder} annotation.
  * <p>
@@ -78,8 +77,8 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
 
   private void injectUserProvider(final Object simulationInstance) {
 
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(), UserFeeder.class);
-    var provider = new UserProvider(simulationMetadata.getUserRepository());
+    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(), UserProvider.class);
+    var provider = new io.ryos.rhino.sdk.feeders.UserProvider(simulationMetadata.getUserRepository());
 
     fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(provider, f.getFirst(), simulationInstance));
   }
@@ -93,7 +92,7 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
         .forEach(ip -> feed(simulationInstance, ip));
   }
 
-  // Feedable the feeder value into the field.
+  // Provider the feeder value into the field.
   protected void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
@@ -105,7 +104,7 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
     } catch (IllegalAccessException e) {
       LOG.error("Access to field failed.", e);
     } catch (IllegalArgumentException e) {
-      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 }

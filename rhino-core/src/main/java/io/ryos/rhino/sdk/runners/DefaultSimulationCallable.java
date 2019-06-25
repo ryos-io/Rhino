@@ -6,7 +6,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Feeder;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -44,7 +44,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   private final Scenario scenario;
   private final EventDispatcher eventDispatcher;
 
-  // Predicate to search fields for Feedable annotation.
+  // Predicate to search fields for Provider annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
@@ -53,7 +53,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
       f -> new InjectionPoint<>(f,
           f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
 
-  // Feedable the feeder value into the field.
+  // Provider the feeder value into the field.
   private void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
 
     Objects.requireNonNull(instance, "Object instance is null.");
@@ -67,7 +67,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     } catch (IllegalAccessException e) {
       LOG.error("Access to field failed.", e);
     } catch (IllegalArgumentException e) {
-      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 
@@ -184,7 +184,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
   private void injectUser(final User user, final Object simulationInstance) {
     var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
-        UserFeeder.class);
+        UserProvider.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }

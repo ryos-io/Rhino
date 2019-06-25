@@ -39,7 +39,7 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
 
   private static final Logger LOG = LogManager.getLogger(AbstractSimulationInjector.class);
 
-  // Predicate to search fields for Feedable annotation.
+  // Predicate to search fields for Provider annotation.
   final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
       .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
@@ -60,7 +60,7 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
     }
   }
 
-  // Feedable the feeder value into the field.
+  // Provider the feeder value into the field.
   protected void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
 
     Objects.requireNonNull(instance, "Object instance is null.");
@@ -74,7 +74,7 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
     } catch (IllegalAccessException e) {
       LOG.error("Access to field failed.", e);
     } catch (IllegalArgumentException e) {
-      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 }
