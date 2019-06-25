@@ -277,13 +277,13 @@ class Throttler {
     final long durationSec;
     final long tickNano;
 
-    private Rps(final long requests, final long durationSec) {
+    private Rps(final long requestsPerSecond, final long durationSec) {
       this.durationSec = durationSec;
-      this.tickNano = (long) Math.floor((1d / requests) * 1e9);
+      this.tickNano = (long) Math.floor((1d / requestsPerSecond) * 1e9);
     }
 
-    public static Rps of(final long requests, final long durationSec) {
-      return new Rps(requests, durationSec);
+    public static Rps of(final long requestsPerSecond, final long durationSec) {
+      return new Rps(requestsPerSecond, durationSec);
     }
   }
 }
