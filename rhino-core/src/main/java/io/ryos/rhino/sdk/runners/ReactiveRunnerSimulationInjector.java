@@ -21,12 +21,10 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Feeder;
-import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserFeeder;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.exceptions.BadInjectionException;
-import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.feeders.UserProvider;
 import java.util.Arrays;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
@@ -74,30 +72,16 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
 
   @Override
   public void injectOn(Object injectable) {
-    if (userSession != null) {
-      injectUser();// Each thread will run as the same user.
-      injectSession();
-    }
-
+    injectUserProvider(injectable); // Each thread will run as the same user.
     injectCustomFeeders(injectable);
   }
 
-  private void injectSession() {
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
-        SessionFeeder.class);
-    fieldAnnotation
-        .ifPresent(f -> { throw new BadInjectionException("The session injection is only "
-            + "supported in default mode. Every spec definition in load DSLs has already access "
-            + "to the user session in closures."); });
-  }
+  private void injectUserProvider(final Object simulationInstance) {
 
-  private void injectUser() {
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
-        UserFeeder.class);
-    fieldAnnotation
-        .ifPresent(f -> { throw new BadInjectionException("The user injection is only "
-            + "supported in default mode. Every spec definition in load DSLs has already access "
-            + "to the user session in closures."); });
+    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(), UserFeeder.class);
+    var provider = new UserProvider(simulationMetadata.getUserRepository());
+
+    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(provider, f.getFirst(), simulationInstance));
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
