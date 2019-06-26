@@ -14,36 +14,26 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.dsl;
+
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.specs.WaitSpec;
+import reactor.core.publisher.Mono;
 
 /**
- * Common specification type implementation.
+ * Wait spec to pause the load testing execution for duration provided.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
-
-  private String enclosingSpec;
-  private String measurementPoint;
-
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
-  }
+public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec, UserSession> {
 
   @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public Mono<UserSession> materialize(WaitSpec spec, UserSession userSession) {
+    return Mono.fromCallable(() -> {
+      Thread.sleep(spec.getWaitTime().toMillis());
+      return userSession;
+    });
   }
 }

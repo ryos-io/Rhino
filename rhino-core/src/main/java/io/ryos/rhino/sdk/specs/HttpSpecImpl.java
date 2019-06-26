@@ -1,15 +1,13 @@
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.Context;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import org.asynchttpclient.Response;
 
 /**
  * Html implementation of {@link Spec}.
@@ -21,14 +19,13 @@ import org.asynchttpclient.Response;
 public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   private InputStream toUpload;
-  private String enclosingSpec;
-  private String stepName;
 
-  private List<Function<Response, Entry<String, List<String>>>> headers = new ArrayList<>();
-  private List<Function<Response, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+  private List<Function<Context, Entry<String, List<String>>>> headers = new ArrayList<>();
+  private List<Function<Context, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+  private boolean auth;
 
   private Method httpMethod;
-  private Function<Response, String> endpoint;
+  private Function<Context, String> endpoint;
 
   /**
    * Creates a new {@link HttpSpecImpl}.
@@ -37,7 +34,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
    * @param measurement The name of the measurement.
    */
   public HttpSpecImpl(String measurement) {
-    this.stepName = measurement;
+    super(measurement);
   }
 
   @Override
@@ -84,48 +81,54 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   @Override
   public HttpSpec endpoint(final String endpoint) {
-    this.endpoint = (r) -> endpoint;
+    this.endpoint = r -> endpoint;
     return this;
   }
 
   @Override
-  public HttpSpec endpoint(Function<Response, String> endpoint) {
+  public HttpSpec endpoint(Function<Context, String> endpoint) {
     this.endpoint = endpoint;
     return this;
   }
 
   @Override
   public HttpSpec header(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
+    this.headers.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
   public HttpSpec header(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
+    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
-  public HttpSpec header(Function<Response, Entry<String, List<String>>> headerFunction) {
+  public HttpSpec header(Function<Context, Entry<String, List<String>>> headerFunction) {
     this.headers.add(headerFunction);
     return this;
   }
 
   @Override
+  public HttpSpec auth() {
+    this.auth = true;
+    return this;
+  }
+
+  @Override
   public HttpSpec queryParam(String key, List<String> values) {
-    this.headers.add((e) -> Map.entry(key, values));
+    this.headers.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
   public HttpSpec queryParam(String key, String value) {
-    this.headers.add((e) -> Map.entry(key, Collections.singletonList(value)));
+    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
-  public HttpSpec queryParam(Function<Response, Entry<String, List<String>>> headerFunction) {
+  public HttpSpec queryParam(Function<Context, Entry<String, List<String>>> headerFunction) {
     this.headers.add(headerFunction);
     return this;
   }
@@ -147,43 +150,22 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public List<Function<Response, Entry<String, List<String>>>> getHeaders() {
+  public List<Function<Context, Entry<String, List<String>>>> getHeaders() {
     return headers;
   }
 
   @Override
-  public List<Function<Response, Entry<String, List<String>>>> getQueryParameters() {
+  public List<Function<Context, Entry<String, List<String>>>> getQueryParameters() {
     return queryParams;
   }
 
   @Override
-  public Spec withName(final String name) {
-    this.enclosingSpec = name;
-    return this;
-  }
-
-  @Override
-  public String getName() {
-    return this.stepName;
-  }
-
-  @Override
-  public Function<Response, String> getEndpoint() {
+  public Function<Context, String> getEndpoint() {
     return endpoint;
   }
 
   @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
-  }
-
-  @Override
-  public String getMeasurementName() {
-    return stepName;
+  public boolean isAuth() {
+    return auth;
   }
 }

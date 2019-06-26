@@ -23,20 +23,31 @@ public interface Spec {
     return new HttpSpecImpl(measurementPoint);
   }
 
-  /**
-   * The name of the test specification. The name is set in @Dsl annotation.
-   * <p>
-   *
-   * @param name Test specification name.
-   * @return A {@link Spec} instance with name.
-   */
-  Spec withName(String name);
+  static SomeSpec some(String measurementPoint) {
+    return new SomeSpecImpl(measurementPoint);
+  }
 
   /**
-   * The name of the spec. It is the step name in scenario countpart.
+   * The name of the spec. It is the step name in scenario counterpart.
    * <p>
    *
    * @return The name of the spec.
    */
-  String getName();
+  String getMeasurementPoint();
+
+  /**
+   * Returns the test/DSL name.
+   * <p>
+   *
+   * @return Test or DSL name.
+   */
+  String getTestName();
+
+  /**
+   * Setter for test or DSL name.
+   * <p>
+   *
+   * @param testName The test name from annotation.
+   */
+  void setTestName(String testName);
 }

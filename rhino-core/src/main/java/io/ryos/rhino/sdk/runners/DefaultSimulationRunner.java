@@ -44,7 +44,7 @@ import reactor.core.scheduler.Schedulers;
  * through the pipeline, the scenario will be executed with the user.
  * <p>
  *
- * The caveat is using push-based approach is that the threads is to be blocked, once the the load
+ * The caveat is using push-based approach is that the threads can be blocked, once the the load
  * testing implementation is blocking. Alternative approach is the reactive one in which the
  * framework provides a DSL. The load DSL enables developers to write load tests in declarative
  * fashion.
@@ -183,11 +183,11 @@ public class DefaultSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulationMetadata.prepare(us));
+    userSessions.forEach(simulationMetadata::prepare);
   }
 
   private void cleanupUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulationMetadata.cleanUp(us));
+    userSessions.forEach(simulationMetadata::cleanUp);
   }
 
   private void waitUsers(UserRepository userRepository) {

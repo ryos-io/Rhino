@@ -16,34 +16,34 @@
 
 package io.ryos.rhino.sdk.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.reporting.Measurement;
+import java.util.Objects;
+import java.util.function.BiFunction;
+
 /**
- * Common specification type implementation.
+ * Spec implementation for arbitrary code execution.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
 
-  private String enclosingSpec;
-  private String measurementPoint;
+  private BiFunction<UserSession, Measurement, UserSession> function;
 
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
+  public SomeSpecImpl(final String measurement) {
+    super(Objects.requireNonNull(measurement));
   }
 
   @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
+  public Spec as(final BiFunction<UserSession, Measurement, UserSession> function) {
+    this.function = Objects.requireNonNull(function);
+    return this;
   }
 
   @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public BiFunction<UserSession, Measurement, UserSession> getFunction() {
+    return function;
   }
 }

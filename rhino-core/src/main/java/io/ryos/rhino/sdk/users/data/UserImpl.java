@@ -20,15 +20,22 @@ public class UserImpl implements User {
 
   private final String username;
   private final String password;
-  private final int id;
+  private final String id;
   private final String scope;
+  private final String region;
 
-  public UserImpl(final String username, final String password, final int id,
-      final String scope) {
+  public UserImpl(final String username, final String password, final String id,
+      final String scope, final String region) {
     this.username = username;
     this.password = password;
     this.id = id;
     this.scope = scope;
+    this.region = region;
+  }
+
+  public UserImpl(final String username, final String password, final String id,
+      final String scope) {
+    this(username, password, id, scope, "default");
   }
 
   @Override
@@ -47,7 +54,12 @@ public class UserImpl implements User {
   }
 
   @Override
-  public int getId() {
+  public String getId() {
     return id;
+  }
+
+  @Override
+  public String getRegion() {
+    return region;
   }
 }

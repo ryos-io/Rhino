@@ -20,14 +20,15 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.feeders.Feedable;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
@@ -47,11 +48,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * {@link SimulationMetadata} is representation of a single performance testing job. The instances of {@link
- * SimulationMetadata} is created by using the metadata provided on annotated benchmark entities.
- * Simulation metadata entities do comprise scenarios, that are run per user on a single thread.
- * For each scenario there will be a new SimulationMetadata instance created so as to run the
- * scenario isolated on a single thread.
+ * {@link SimulationMetadata} is representation of a single performance testing job. The instances
+ * of {@link SimulationMetadata} is created by using the metadata provided on annotated benchmark
+ * entities. Simulation metadata entities do comprise scenarios, that are run per user on a single
+ * thread. For each scenario there will be a new SimulationMetadata instance created so as to run
+ * the scenario isolated on a single thread.
  * <p>
  *
  * The job instances are created by {@link SimulationJobsScanner} classes.
@@ -67,7 +68,8 @@ public class SimulationMetadata {
   private static final Logger LOG = LogManager.getLogger(SimulationMetadata.class);
 
   /**
-   * Runner.
+   * Runner class type.
+   * <p>
    */
   private Class<? extends SimulationRunner> runner;
 
@@ -104,6 +106,12 @@ public class SimulationMetadata {
   private Class simulationClass;
 
   /**
+   * Test instance.
+   * <p>
+   */
+  private Object testInstance;
+
+  /**
    * Simulation object factory. All reflection calls should be run on this single instance.
    * <p>
    */
@@ -117,10 +125,10 @@ public class SimulationMetadata {
   private List<Scenario> scenarios;
 
   /**
-   * A list of {@link Spec} instances defined in specs methods.
+   * A list of {@link Spec} instances defined in getSpecs methods.
    * <p>
    */
-  private List<Spec> specs;
+  private List<LoadDsl> specs;
 
   /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
@@ -162,28 +170,32 @@ public class SimulationMetadata {
 
   private String reportingURI;
 
-  // Predicate to search fields for Feedable annotation.
+  // Predicate to search fields for Provider annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
-      .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
+      .anyMatch(Provider.class::isInstance);
 
-  private final Function<Field, InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder>> ipCreator =
+  private final Function<Field, InjectionPoint<Provider>> ipCreator =
       f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+          f.getDeclaredAnnotation(Provider.class));
 
-  // Feedable the feeder value into the field.
-  private void feed(final Object instance,
-      final InjectionPoint<io.ryos.rhino.sdk.annotations.Feeder> ip) {
-    Feedable o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
-    Object value = o.take();
+  // Provider the feeder value into the field.
+  private void feed(final Object instance, final InjectionPoint<Provider> ip) {
+    io.ryos.rhino.sdk.feeders.Provider o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
+
     try {
       Field field = ip.getField();
       field.setAccessible(true);
-      field.set(instance, value);
+      if (io.ryos.rhino.sdk.feeders.Provider.class.isAssignableFrom(field.getType())) {
+        field.set(instance, o);
+      } else {
+        field.set(instance, o.take());
+      }
+
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } catch (IllegalArgumentException e) {
-      LOG.error("Feedable's return type and field's type is not compatible: " + e.getMessage());
+      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
     }
   }
 
@@ -202,6 +214,7 @@ public class SimulationMetadata {
   private SimulationMetadata(final Builder builder) {
     this.duration = builder.duration;
     this.simulationName = builder.simulation;
+    this.testInstance = builder.testInstance;
     this.numberOfUsers = builder.injectUser;
     this.rampUp = builder.rampUp;
     this.simulationClass = builder.simulationClass;
@@ -215,7 +228,6 @@ public class SimulationMetadata {
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
-
   }
 
   public LogFormatter getLogFormatter() {
@@ -269,8 +281,8 @@ public class SimulationMetadata {
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
-    final Optional<Pair<Field, UserFeeder>> fieldAnnotation = getFieldByAnnotation(simulationClass,
-        UserFeeder.class);
+    final Optional<Pair<Field, UserProvider>> fieldAnnotation = getFieldByAnnotation(simulationClass,
+        UserProvider.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
   }
@@ -318,7 +330,7 @@ public class SimulationMetadata {
     return scenarios;
   }
 
-  public List<Spec> getSpecs() {
+  public List<LoadDsl> getSpecs() {
     return specs;
   }
 
@@ -342,92 +354,118 @@ public class SimulationMetadata {
     return simulationName;
   }
 
+  public Object getTestInstance() {
+    return testInstance;
+  }
+
   /**
    * Builder for {@link SimulationMetadata}.
+   * <p>
    */
   static class Builder {
 
     /**
      * Simulation name.
+     * <p>
      */
     private String simulation;
 
     /**
      * The total number of users to be injected.
+     * <p>
      */
     private int injectUser;
 
     /**
      * Ramp up count defines the number of users being injected per second.
+     * <p>
      */
     private int rampUp;
 
     /**
      * Simulation class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
      * annotation.
+     * <p>
      */
     private Class<?> simulationClass;
 
     /**
+     * Test instance.
+     * <p>
+     */
+    private Object testInstance;
+
+    /**
      * Runner implementation.
+     * <p>
      */
     private Class<? extends SimulationRunner> runner;
 
     /**
      * The {@link java.lang.reflect.Method} instance of the run method.
+     * <p>
      */
     private List<Scenario> scenarios;
 
     /**
      * List of {@link Spec} instances.
+     * <p>
      */
-    private List<Spec> specs;
-
+    private List<LoadDsl> specs;
 
     /**
      * The {@link java.lang.reflect.Method} instance for preparing the test.
+     * <p>
      */
     private Method prepareMethod;
 
     /**
      * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
      * will be run after performance test execution.
+     * <p>
      */
     private Method cleanUpMethod;
 
     /**
      * The {@link java.lang.reflect.Method} instance for preparing the test.
+     * <p>
      */
     private Method beforeMethod;
 
     /**
      * The {@link java.lang.reflect.Method} instance for cleaning up the test. The clean up method
      * will be run after performance test execution.
+     * <p>
      */
     private Method afterMethod;
 
     /**
      * User repository.
+     * <p>
      */
     private UserRepository<UserSession> userRepository;
 
     /**
      * The reporting URI in String.
+     * <p>
      */
     private String reportingURI;
 
     /**
      * Log formatter.
+     * <p>
      */
     private String logFormatter;
 
     /**
      * Duration of the performance test.
+     * <p>
      */
     private Duration duration;
 
     /**
      * Enables the influx db integration.
+     * <p>
      */
     private boolean enableInflux;
 
@@ -451,6 +489,11 @@ public class SimulationMetadata {
       return this;
     }
 
+    public Builder withTestInstance(final Object testInstance) {
+      this.testInstance = testInstance;
+      return this;
+    }
+
     public Builder withSimulationClass(final Class<?> simulationClass) {
       this.simulationClass = simulationClass;
       return this;
@@ -466,7 +509,7 @@ public class SimulationMetadata {
       return this;
     }
 
-    public Builder withSpecs(final List<Spec> specs) {
+    public Builder withSpecs(final List<LoadDsl> specs) {
       this.specs = specs;
       return this;
     }

@@ -16,34 +16,32 @@
 
 package io.ryos.rhino.sdk.specs;
 
+import java.time.Duration;
+import java.util.Objects;
+
 /**
- * Common specification type implementation.
+ * Wait spec implementation that halts the execution for {@link Duration} given.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public class WaitSpecImpl extends AbstractSpec implements WaitSpec {
 
-  private String enclosingSpec;
-  private String measurementPoint;
+  private final Duration waitTime;
 
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
+  public WaitSpecImpl(final Duration duration) {
+    this("",duration);
+  }
+
+  public WaitSpecImpl(final String measurement, final Duration duration) {
+    super(Objects.requireNonNull(measurement));
+
+    this.waitTime = Objects.requireNonNull(duration);
   }
 
   @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public Duration getWaitTime() {
+    return waitTime;
   }
 }

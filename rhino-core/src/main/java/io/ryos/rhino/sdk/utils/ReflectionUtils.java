@@ -93,8 +93,7 @@ public class ReflectionUtils {
     return Optional.empty();
   }
 
-  public static <T> T executeMethod(final Method method,
-      final Object declaring, final Object... args) {
+  public static <T> T executeMethod(final Method method, final Object declaring, final Object... args) {
     Objects.requireNonNull(method);
 
     try {

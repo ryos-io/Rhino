@@ -29,9 +29,9 @@ public class MeasurementImpl implements Measurement {
 
   private final List<LogEvent> events = new ArrayList<>();
   private final String scenarioName;
-  private final int userId;
+  private final String userId;
 
-  public MeasurementImpl(final String scenarioName, final int userId) {
+  public MeasurementImpl(final String scenarioName, final String userId) {
     this.scenarioName = scenarioName;
     this.userId = userId;
   }

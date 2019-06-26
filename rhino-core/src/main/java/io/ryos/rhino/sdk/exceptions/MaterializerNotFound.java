@@ -14,36 +14,18 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.exceptions;
 
 /**
- * Common specification type implementation.
+ * Whenever the materializer not found, {@link MaterializerNotFound} will be thrown.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public class MaterializerNotFound extends RuntimeException {
 
-  private String enclosingSpec;
-  private String measurementPoint;
-
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
-  }
-
-  @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public MaterializerNotFound(String message) {
+    super(message);
   }
 }

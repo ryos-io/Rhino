@@ -52,5 +52,12 @@ public interface User {
    *
    * @return The id of the user.
    */
-  int getId();
+  String getId();
+
+  /**
+   * Region of the user, if it belongs to one.
+   *
+   * @return Region of the user
+   */
+  String getRegion();
 }

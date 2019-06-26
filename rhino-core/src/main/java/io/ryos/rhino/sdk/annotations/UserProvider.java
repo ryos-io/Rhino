@@ -38,15 +38,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
-public @interface UserFeeder {
+public @interface UserProvider {
 
-  /**
-   * Maximum number of users to be injected.
-   * <p>
-   *
-   * @return Max. number of users.
-   */
-  int max() default -1;
+  String region() default "";
 
   /**
    * Delay between login requests while requesting token from IMS.
@@ -60,7 +54,7 @@ public @interface UserFeeder {
    * Factory implementation of {@link UserRepositoryFactory}.
    * <p>
    *
-   * @return The class type of the factory.
+   * @return The class type of the repository.
    */
-  Class<? extends UserRepositoryFactory> factory() default DefaultUserRepositoryFactoryImpl.class;
+  Class<? extends UserRepositoryFactory> repository() default DefaultUserRepositoryFactoryImpl.class;
 }

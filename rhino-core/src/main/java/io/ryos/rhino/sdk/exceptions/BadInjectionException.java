@@ -14,36 +14,18 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.exceptions;
 
 /**
- * Common specification type implementation.
+ * The exception is to be thrown if the injection is not a valid one.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public class BadInjectionException extends RuntimeException {
 
-  private String enclosingSpec;
-  private String measurementPoint;
-
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
-  }
-
-  @Override
-  public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+  public BadInjectionException(String message) {
+    super(message);
   }
 }

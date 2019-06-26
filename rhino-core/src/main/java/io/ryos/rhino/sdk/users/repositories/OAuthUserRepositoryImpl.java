@@ -37,8 +37,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response.Status;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
@@ -66,8 +64,9 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
 
   public OAuthUserRepositoryImpl authenticateAll() {
-    System.out.println(String.format("! Found %d users. Authenticating with delay: %d ms ...",
-        users.size(), loginDelay));
+    System.out.println(String
+        .format("! Found %d users. Authenticating with delay: %d ms ...", users.size(),
+            loginDelay));
     users.forEach(u -> executorService.submit(() -> {
       delay();
       authenticate(u).ifPresent(a -> authUsers.add(new UserSessionImpl(a)));
@@ -125,12 +124,13 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
       }
 
       final String s = response.readEntity(String.class);
-      final OAuthEntity o = objectMapper.readValue(s, OAuthEntity.class);
+
+      final OAuthEntity entity = mapToEntity(s);
 
       return Optional.of(new OAuthUserImpl(user.getUsername(),
           user.getPassword(),
-          o.getAccessToken(),
-          o.getRefreshToken(),
+          entity.getAccessToken(),
+          entity.getRefreshToken(),
           user.getScope(),
           SimulationConfig.getClientId(),
           user.getId()));
@@ -141,8 +141,18 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     return Optional.empty();
   }
 
+  private OAuthEntity mapToEntity(final String s) {
+    final OAuthEntity o;
+    try {
+      o = objectMapper.readValue(s, OAuthEntity.class);
+    } catch (Throwable t) {
+      throw new RuntimeException("Cannot map authorization server response to entity type: " + OAuthEntity.class.getName(), t);
+    }
+    return o;
+  }
+
   public UserSession take() {
-    cursor.getAndUpdate((p) -> (p + 1) % authUsers.size());
+    cursor.getAndUpdate(p -> (p + 1) % authUsers.size());
     return authUsers.get(cursor.get());
   }
 
