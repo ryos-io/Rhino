@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import static java.util.stream.Collectors.toList;
 
@@ -28,7 +27,6 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -176,6 +174,10 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
 
+    // User repository annotation.
+    var repoAnnotation = Optional.ofNullable((io.ryos.rhino.sdk.annotations.UserRepository) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
+
     // Read runner annotation.
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
@@ -218,9 +220,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
-    var injectAnnotationField = getFieldByAnnotation(clazz, UserProvider.class);
-    var maxUserInject = injectAnnotationField.map(p -> p.getSecond().max()).orElse(10);
-    var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
+
+    // If the UserRepository annotation does exist, use the metadata out of it. Otherwise, default.
+    var maxUserInject = repoAnnotation.map(
+        io.ryos.rhino.sdk.annotations.UserRepository::max).orElse(1);
+    var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
     return new SimulationMetadata.Builder()
@@ -273,9 +277,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final UserProvider feeder) {
+  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository feeder) {
 
-    var factory = feeder.repository();
+    var factory = feeder.factory();
     var loginDelay = feeder.delay();
 
     try {

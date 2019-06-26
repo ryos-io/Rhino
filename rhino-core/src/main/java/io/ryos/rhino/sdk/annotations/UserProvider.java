@@ -40,13 +40,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface UserProvider {
 
-  /**
-   * Maximum number of users to be injected.
-   * <p>
-   *
-   * @return Max. number of users.
-   */
-  int max() default -1;
+  String region() default "";
 
   /**
    * Delay between login requests while requesting token from IMS.

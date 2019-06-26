@@ -14,26 +14,20 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.annotations;
+package io.ryos.rhino.sdk;
 
-import io.ryos.rhino.sdk.feeders.Provider;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Test;
 
 /**
- * Annotation to mark the {@link Feeder} injection point. Feeders are data providers.
- *
  * @author Erhan Bagdemir
- * @see Feeder
- * @since 1.1.0
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-@Documented
-public @interface Feeder {
+public class ReactiveSleepTestSimulationTest {
 
-  Class<? extends Provider> factory();
+  private static final String SIM_NAME = "Reactive Sleep Test";
+  private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+
+  @Test
+  public void testReactiveBasicHttp() {
+    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+  }
 }

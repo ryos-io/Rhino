@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.runners;
 
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -42,11 +42,11 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
   // Predicate to search fields for Provider annotation.
   final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
-      .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
+      .anyMatch(Provider.class::isInstance);
 
-  final Function<Field, InjectionPoint<Feeder>> injectionPointFunction =
+  final Function<Field, InjectionPoint<Provider>> injectionPointFunction =
       f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+          f.getDeclaredAnnotation(Provider.class));
 
 
   <T> void setValueToInjectionPoint(final T object, final Field f,
@@ -61,7 +61,7 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
   }
 
   // Provider the feeder value into the field.
-  protected void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
+  protected void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
 
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();

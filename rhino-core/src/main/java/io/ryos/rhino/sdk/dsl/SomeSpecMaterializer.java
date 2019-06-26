@@ -42,7 +42,7 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
   @Override
   public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
 
-    int userId = userSession.getUser().getId();
+    String userId = userSession.getUser().getId();
     return Mono.fromCallable(() -> {
       var measurement = new MeasurementImpl(spec.getTestName(), userId);
       var start = System.currentTimeMillis();

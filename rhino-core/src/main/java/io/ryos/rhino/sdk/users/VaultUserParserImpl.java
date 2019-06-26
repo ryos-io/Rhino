@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +36,7 @@ import org.apache.logging.log4j.Logger;
  * @author Erhan Bagdemir
  */
 public class VaultUserParserImpl implements UserParser {
+
   private static final Logger LOG = LogManager.getLogger(VaultUserParserImpl.class);
   private static final String DATA_NODE = "data";
   private static final String KEY_USER = "user";
@@ -61,7 +63,7 @@ public class VaultUserParserImpl implements UserParser {
               new UserImpl(
                   next.get(KEY_USER).textValue(),
                   next.get(KEY_PASS).textValue(),
-                  ++id,
+                  "user-" + UUID.randomUUID(),
                   next.get(KEY_SCOPE).textValue()));
         }
       }

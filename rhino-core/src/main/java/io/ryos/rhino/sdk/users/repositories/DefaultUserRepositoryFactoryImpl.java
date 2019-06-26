@@ -24,7 +24,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
- * User repository, if nothing else provided.
+ * User repository, if no repository is provided. It samples users which are used in simulations.
+ * <p>
  *
  * @author Erhan Bagdemir
  */
@@ -36,9 +37,9 @@ public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<U
   @Override
   public UserRepository<UserSession> create() {
 
-    return new DefaultUserRepositoryImpl(() -> IntStream
-        .rangeClosed(START, END)
-        .mapToObj(id -> new UserImpl("User-" + UUID.randomUUID(), null,
-            id, null)).collect(toList()));
+    var userName = "User-" + UUID.randomUUID();
+
+    return new DefaultUserRepositoryImpl(
+        () -> IntStream.rangeClosed(START, END).mapToObj(id -> new UserImpl(userName, null, userName, null)).collect(toList()));
   }
 }

@@ -20,7 +20,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
@@ -29,7 +29,6 @@ import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.feeders.Provider;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
@@ -174,20 +173,20 @@ public class SimulationMetadata {
   // Predicate to search fields for Provider annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
-      .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
+      .anyMatch(Provider.class::isInstance);
 
-  private final Function<Field, InjectionPoint<Feeder>> ipCreator =
+  private final Function<Field, InjectionPoint<Provider>> ipCreator =
       f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(Feeder.class));
+          f.getDeclaredAnnotation(Provider.class));
 
   // Provider the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Feeder> ip) {
-    Provider o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
+  private void feed(final Object instance, final InjectionPoint<Provider> ip) {
+    io.ryos.rhino.sdk.feeders.Provider o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
 
     try {
       Field field = ip.getField();
       field.setAccessible(true);
-      if (Provider.class.isAssignableFrom(field.getType())) {
+      if (io.ryos.rhino.sdk.feeders.Provider.class.isAssignableFrom(field.getType())) {
         field.set(instance, o);
       } else {
         field.set(instance, o.take());

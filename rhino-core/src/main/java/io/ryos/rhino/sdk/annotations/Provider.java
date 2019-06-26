@@ -14,27 +14,25 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.reporting;
+package io.ryos.rhino.sdk.annotations;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Annotation to mark the {@link Provider} injection point. Feeders are data providers.
+ *
  * @author Erhan Bagdemir
+ * @see Provider
+ * @since 1.1.0
  */
-public class UserEvent extends LogEvent {
-  public enum EventType { START, END }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Documented
+public @interface Provider {
 
-  public EventType eventType; // always USER for user events.
-  public String eventStatus; // START or END
-  public String id;
-
-  public EventType getEventType() {
-    return eventType;
-  }
-
-  public String getEventStatus() {
-    return eventStatus;
-  }
-
-  public String getId() {
-    return id;
-  }
+  Class<? extends io.ryos.rhino.sdk.feeders.Provider> factory();
 }

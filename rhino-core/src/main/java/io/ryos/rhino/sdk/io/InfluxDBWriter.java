@@ -108,7 +108,7 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
       var builder =
           Point.measurement("user_" + SimulationConfig.getSimulationId())
               .tag("scenario", report.scenario)
-              .addField("id", Integer.toString(report.id))
+              .addField("id", report.id)
               .addField("node", SimulationConfig.getNode())
               .addField("pt", report.elapsed);
       batchPoints.point(builder.build());

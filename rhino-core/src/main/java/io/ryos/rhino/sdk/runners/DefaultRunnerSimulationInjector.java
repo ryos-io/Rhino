@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.runners;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -28,7 +29,7 @@ import java.util.Objects;
 
 /**
  * Injector implementation for default runner. The injector goes through all injection points, that
- * are class fields marked with {@link io.ryos.rhino.sdk.annotations.Feeder} annotation, and applies
+ * are class fields marked with {@link Provider} annotation, and applies
  * injection strategy.
  * <p>
  *

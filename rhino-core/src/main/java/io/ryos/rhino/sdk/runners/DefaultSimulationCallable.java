@@ -4,7 +4,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
@@ -47,14 +47,14 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   // Predicate to search fields for Provider annotation.
   private final Predicate<Field> hasFeeder = f -> Arrays
       .stream(f.getDeclaredAnnotations())
-      .anyMatch(io.ryos.rhino.sdk.annotations.Feeder.class::isInstance);
+      .anyMatch(Provider.class::isInstance);
 
-  private final Function<Field, InjectionPoint<Feeder>> injectionPointFunction =
+  private final Function<Field, InjectionPoint<Provider>> injectionPointFunction =
       f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Feeder.class));
+          f.getDeclaredAnnotation(Provider.class));
 
   // Provider the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
+  private void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
 
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();

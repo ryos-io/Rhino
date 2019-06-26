@@ -20,7 +20,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
  * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is
  * the reactive variant does inject the repository classes which return values to the DSL
  * instances, whereas the default injector implementation does inject the value itself into the
- * injection points, that are marked with {@link Feeder} annotation.
+ * injection points, that are marked with {@link Provider} annotation.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -93,7 +93,7 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
   }
 
   // Provider the feeder value into the field.
-  protected void feed(final Object instance, final InjectionPoint<Feeder> injectionPoint) {
+  protected void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
     try {

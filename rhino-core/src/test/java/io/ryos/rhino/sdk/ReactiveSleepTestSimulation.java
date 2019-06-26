@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk;
 import static io.ryos.rhino.sdk.specs.Spec.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
@@ -40,7 +40,7 @@ import java.util.Random;
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 public class ReactiveSleepTestSimulation {
 
-  @Feeder(factory = UUIDProvider.class)
+  @Provider(factory = UUIDProvider.class)
   private UUIDProvider provider;
 
   @Dsl(name = "Sleep Test")

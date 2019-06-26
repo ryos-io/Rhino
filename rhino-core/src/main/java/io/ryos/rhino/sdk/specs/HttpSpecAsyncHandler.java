@@ -1,7 +1,6 @@
 package io.ryos.rhino.sdk.specs;
 
 import io.netty.handler.codec.http.HttpHeaders;
-import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
@@ -16,14 +15,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   private final String stepName;
   private final String specName;
-  private final int userId;
+  private final String userId;
   private final MeasurementImpl measurement;
   private volatile long start = -1;
   private volatile int status;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
   private final EventDispatcher eventDispatcher;
 
-  public HttpSpecAsyncHandler(final int userId,
+  public HttpSpecAsyncHandler(final String userId,
       final String specName,
       final String stepName,
       final EventDispatcher eventDispatcher) {
