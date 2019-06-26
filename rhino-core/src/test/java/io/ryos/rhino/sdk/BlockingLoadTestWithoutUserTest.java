@@ -1,7 +1,9 @@
 package io.ryos.rhino.sdk;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class BlockingLoadTestWithoutUserTest {
 
   private static final String SIM_NAME = "Server-Status Simulation Without User";

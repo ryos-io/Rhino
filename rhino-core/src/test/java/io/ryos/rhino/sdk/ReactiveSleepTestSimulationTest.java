@@ -16,11 +16,13 @@
 
 package io.ryos.rhino.sdk;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author Erhan Bagdemir
  */
+@Ignore
 public class ReactiveSleepTestSimulationTest {
 
   private static final String SIM_NAME = "Reactive Sleep Test";
