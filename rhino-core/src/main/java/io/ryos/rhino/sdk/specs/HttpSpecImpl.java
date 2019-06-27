@@ -117,19 +117,19 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   @Override
   public HttpSpec queryParam(String key, List<String> values) {
-    this.headers.add(e -> Map.entry(key, values));
+    this.queryParams.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
   public HttpSpec queryParam(String key, String value) {
-    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
+    this.queryParams.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
   public HttpSpec queryParam(Function<Context, Entry<String, List<String>>> headerFunction) {
-    this.headers.add(headerFunction);
+    this.queryParams.add(headerFunction);
     return this;
   }
 
