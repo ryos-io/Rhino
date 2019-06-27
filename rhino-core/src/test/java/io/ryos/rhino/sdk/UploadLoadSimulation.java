@@ -21,7 +21,7 @@ import java.io.InputStream;
 @UserRepository(max = 1, factory = OAuthUserRepositoryFactoryImpl.class)
 public class UploadLoadSimulation {
 
-  private static final String DISCOVERY_ENDPOINT = "https://cc-api-storage-stage.adobe.io/files/";
+  private static final String DISCOVERY_ENDPOINT = "https://localhost/files";
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
