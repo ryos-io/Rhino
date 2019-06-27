@@ -6,7 +6,6 @@ import org.junit.Test;
 @Ignore
 public class UploadLoadTest {
 
-
   private static final String SIM_NAME = "Reactive Upload Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
