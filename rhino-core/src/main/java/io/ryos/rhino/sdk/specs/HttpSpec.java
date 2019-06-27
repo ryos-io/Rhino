@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface HttpSpec extends Spec {
 
@@ -23,7 +24,7 @@ public interface HttpSpec extends Spec {
   HttpSpec delete();
   HttpSpec patch();
   HttpSpec options();
-  HttpSpec upload(InputStream stream);
+  HttpSpec upload(Supplier<InputStream> stream);
 
   HttpSpec endpoint(String endpoint);
   HttpSpec endpoint(Function<Context, String> endpoint);
@@ -47,7 +48,7 @@ public interface HttpSpec extends Spec {
   // Getters
   Method getMethod();
   Function<Context, String> getEndpoint();
-  InputStream getUploadContent();
+  Supplier<InputStream> getUploadContent();
   List<Function<Context, Entry<String, List<String>>>> getHeaders();
   List<Function<Context, Entry<String, List<String>>>> getQueryParameters();
   boolean isAuth();

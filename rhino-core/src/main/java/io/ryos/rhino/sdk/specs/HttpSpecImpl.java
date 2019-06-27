@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Html implementation of {@link Spec}.
@@ -18,7 +19,7 @@ import java.util.function.Function;
  */
 public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
-  private InputStream toUpload;
+  private Supplier<InputStream> toUpload;
 
   private List<Function<Context, Entry<String, List<String>>>> headers = new ArrayList<>();
   private List<Function<Context, Entry<String, List<String>>>> queryParams = new ArrayList<>();
@@ -134,13 +135,13 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec upload(final InputStream inputStream) {
+  public HttpSpec upload(final Supplier<InputStream> inputStream) {
     this.toUpload = inputStream;
     return this;
   }
 
   @Override
-  public InputStream getUploadContent() {
+  public Supplier<InputStream> getUploadContent() {
     return toUpload;
   }
 
