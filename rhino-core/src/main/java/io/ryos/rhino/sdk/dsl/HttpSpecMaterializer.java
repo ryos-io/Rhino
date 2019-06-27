@@ -23,16 +23,21 @@ import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -59,7 +64,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     this.eventDispatcher = eventDispatcher;
     this.conditionalSpec = predicate;
   }
-  
+
   /**
    * Specification materializer translates the specifications into reactor implementations.
    * <p>
@@ -81,10 +86,29 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         spec.getTestName(),
         spec.getMeasurementPoint(), eventDispatcher);
 
-    return Mono
+    var responseMono = Mono
         .fromFuture(client.executeRequest(buildRequest(spec, userSession), httpSpecAsyncHandler)
-            .toCompletableFuture())
-        .map(response -> (UserSession) userSession.add("previous", response))
+            .toCompletableFuture());
+
+    Function<Response, Boolean> f = (r) -> r.getStatusCode() == 404;
+
+    responseMono = responseMono.map(r -> {
+      if (f.apply(r)) {
+        throw new RetryableOperationException(String.valueOf(r.getStatusCode()));
+      }
+
+      return r;
+    })
+        .retryWhen(companion -> companion.zipWith(Flux.range(1, 4),
+            (error, index) -> {
+              if (index < 4 && error instanceof RetryableOperationException) {
+                return index;
+              } else {
+                throw Exceptions.propagate(error);
+              }
+            }));
+
+    return responseMono.map(response -> (UserSession) userSession.add("previous", response))
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
