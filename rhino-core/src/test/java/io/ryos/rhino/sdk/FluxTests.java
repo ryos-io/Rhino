@@ -192,7 +192,7 @@ class FluxTests {
 
     Flux.range(0, 1000)
         .transform(Rampup.rampup(start, end, Duration.ofSeconds(5)))
-        .take(Duration.ofSeconds(5))
+        .take(Duration.ofSeconds(10))
         .doOnComplete(latch::countDown)
         .subscribe(n -> LOG.info("" + n));
     latch.await();
