@@ -22,6 +22,7 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
+import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
@@ -38,6 +39,7 @@ import java.util.Random;
  */
 @Simulation(name = "Reactive Sleep Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
+@Throttle(durationInMins = 10, numberOfRequests = 2)
 public class ReactiveSleepTestSimulation {
 
   @Provider(factory = UUIDProvider.class)
@@ -48,21 +50,7 @@ public class ReactiveSleepTestSimulation {
     return Start
         .spec()
         .run(some("Sleeping 1 sec.").as((u, m) -> {
-          waitASec();
           m.measure("1. measurement", "OK");
-          u.add("random", new Random().nextInt());
-          return u;
-        }))
-        .wait(Duration.ofSeconds(1))
-        .runIf((u) -> false, some("Conditional").as((u, m) -> {
-          System.out.println("Should not appear.");
-          return u;
-        }))
-        .run(some("2. measurement").as((u, m) -> {
-          waitASec();
-          m.measure("2. measurement", "OK");
-          u.get("random").map(a -> (Integer) a).map(a -> a++)
-              .ifPresent(System.out::println);
           return u;
         }));
   }

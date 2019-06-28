@@ -22,7 +22,7 @@ public class BlockingLoadTestWithoutUserSimulation {
 
   private void waitASec() {
     try {
-      Thread.sleep(1000L);
+      Thread.sleep(10L);
     } catch (InterruptedException e) {
     }
   }
@@ -30,10 +30,7 @@ public class BlockingLoadTestWithoutUserSimulation {
   @Scenario(name = "scenario2")
   public void scenario2(Measurement measurement) throws InterruptedException {
     //System.out.println("scenario2 - on " + Thread.currentThread().getMeasurementPoint());
-    waitASec();
     measurement.measure("measurement1", Status.OK.toString());
-    waitASec();
-    measurement.measure("discovery call", Status.OK.toString());
   }
 
   @After

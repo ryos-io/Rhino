@@ -100,6 +100,12 @@ public class SimulationMetadata {
   private int rampUp;
 
   /**
+   * Throttling info.
+   * <p>
+   */
+  private ThrottlingInfo throttlingInfo;
+
+  /**
    * Simulation class.
    * <p>
    */
@@ -228,6 +234,7 @@ public class SimulationMetadata {
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
+    this.throttlingInfo = builder.throttlingInfo;
   }
 
   public LogFormatter getLogFormatter() {
@@ -358,6 +365,10 @@ public class SimulationMetadata {
     return testInstance;
   }
 
+  public ThrottlingInfo getThrottlingInfo() {
+    return throttlingInfo;
+  }
+
   /**
    * Builder for {@link SimulationMetadata}.
    * <p>
@@ -381,6 +392,8 @@ public class SimulationMetadata {
      * <p>
      */
     private int rampUp;
+
+    private ThrottlingInfo throttlingInfo;
 
     /**
      * Simulation class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
@@ -486,6 +499,12 @@ public class SimulationMetadata {
 
     public Builder withRampUp(final int rampUp) {
       this.rampUp = rampUp;
+      return this;
+    }
+
+
+    public Builder withThrottling(final ThrottlingInfo throttlingInfo) {
+      this.throttlingInfo = throttlingInfo;
       return this;
     }
 

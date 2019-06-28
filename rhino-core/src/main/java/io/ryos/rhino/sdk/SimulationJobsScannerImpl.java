@@ -27,6 +27,7 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -182,6 +183,16 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
 
+    // Throttling annotation.
+    var throttlingAnnotation = (io.ryos.rhino.sdk.annotations.Throttle) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Throttle.class);
+
+    ThrottlingInfo throttlingInfo = null;
+    if (throttlingAnnotation !=  null) {
+      throttlingInfo = new ThrottlingInfo(throttlingAnnotation.numberOfRequests(),
+          Duration.ofMinutes(throttlingAnnotation.durationInMins()));
+    }
+
     // Read influx DB annotation, to enable influx db.
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
 
@@ -243,6 +254,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withScenarios(scenarioMethods)
         .withSpecs(dsls)
         .withTestInstance(testInstance)
+        .withThrottling(throttlingInfo)
         .withRampUp(-1) //TODO Throttling is not scope of 1.0 anymore.
         .build();
   }

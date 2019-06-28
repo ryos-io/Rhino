@@ -106,10 +106,16 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     prepareUserSessions(userRepository.getUserSessions());
 
-    final Throttler.Limit rpsLimit = Throttler.Limit.of(300, simulationMetadata.getDuration());
+    var flux = Flux.fromStream(Stream.generate(userRepository::take));
+    var throttlingInfo = simulationMetadata.getThrottlingInfo();
 
-    this.subscribe = Flux.fromStream(Stream.generate(userRepository::take))
-        .take(simulationMetadata.getDuration())
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+
+    this.subscribe = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> Out.error(t.getMessage()))
         .doOnTerminate(this::notifyAwaiting)
@@ -137,7 +143,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           }
           return acc.doOnError(System.out::println);
         })
-        .transform(throttle(rpsLimit))
         .subscribe();
     await();
     stop();
