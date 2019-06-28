@@ -20,8 +20,8 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
-import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Logging;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
@@ -98,6 +98,14 @@ public class SimulationMetadata {
    * <p>
    */
   private int rampUp;
+
+  /**
+   * Throttling info.
+   * <p>
+   */
+  private ThrottlingInfo throttlingInfo;
+
+  private RampupInfo rampUpInfo;
 
   /**
    * Simulation class.
@@ -216,7 +224,7 @@ public class SimulationMetadata {
     this.simulationName = builder.simulation;
     this.testInstance = builder.testInstance;
     this.numberOfUsers = builder.injectUser;
-    this.rampUp = builder.rampUp;
+    this.rampUpInfo = builder.rampUpInfo;
     this.simulationClass = builder.simulationClass;
     this.scenarios = builder.scenarios;
     this.specs = builder.specs;
@@ -228,6 +236,7 @@ public class SimulationMetadata {
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
+    this.throttlingInfo = builder.throttlingInfo;
   }
 
   public LogFormatter getLogFormatter() {
@@ -281,7 +290,8 @@ public class SimulationMetadata {
   }
 
   private void injectUser(final User user, final Object simulationInstance) {
-    final Optional<Pair<Field, UserProvider>> fieldAnnotation = getFieldByAnnotation(simulationClass,
+    final Optional<Pair<Field, UserProvider>> fieldAnnotation = getFieldByAnnotation(
+        simulationClass,
         UserProvider.class);
     fieldAnnotation
         .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
@@ -358,6 +368,14 @@ public class SimulationMetadata {
     return testInstance;
   }
 
+  public ThrottlingInfo getThrottlingInfo() {
+    return throttlingInfo;
+  }
+
+  public RampupInfo getRampUpInfo() {
+    return rampUpInfo;
+  }
+
   /**
    * Builder for {@link SimulationMetadata}.
    * <p>
@@ -380,7 +398,9 @@ public class SimulationMetadata {
      * Ramp up count defines the number of users being injected per second.
      * <p>
      */
-    private int rampUp;
+    private RampupInfo rampUpInfo;
+
+    private ThrottlingInfo throttlingInfo;
 
     /**
      * Simulation class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
@@ -484,8 +504,13 @@ public class SimulationMetadata {
       return this;
     }
 
-    public Builder withRampUp(final int rampUp) {
-      this.rampUp = rampUp;
+    public Builder withRampUp(final RampupInfo rampUp) {
+      this.rampUpInfo = rampUp;
+      return this;
+    }
+
+    public Builder withThrottling(final ThrottlingInfo throttlingInfo) {
+      this.throttlingInfo = throttlingInfo;
       return this;
     }
 
