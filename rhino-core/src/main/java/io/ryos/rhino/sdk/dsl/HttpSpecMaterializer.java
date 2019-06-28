@@ -106,11 +106,11 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         break;
       case PUT:
         builder = put(httpSpec.getEndpoint().apply(userSession))
-            .setBody(httpSpec.getUploadContent());
+            .setBody(httpSpec.getUploadContent().get());
         break;
       case POST:
         builder = put(httpSpec.getEndpoint().apply(userSession))
-            .setBody(httpSpec.getUploadContent());
+            .setBody(httpSpec.getUploadContent().get());
         break;
       // case X : rest of methods, we support...
       default:
