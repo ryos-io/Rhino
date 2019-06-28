@@ -237,7 +237,6 @@ public class SimulationMetadata {
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
     this.throttlingInfo = builder.throttlingInfo;
-    this.rampUpInfo = builder.rampUpInfo;
   }
 
   public LogFormatter getLogFormatter() {
