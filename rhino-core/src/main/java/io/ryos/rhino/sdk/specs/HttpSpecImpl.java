@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -27,6 +28,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   private Method httpMethod;
   private Function<Context, String> endpoint;
+  private RetryInfo retryInfo;
 
   /**
    * Creates a new {@link HttpSpecImpl}.
@@ -141,6 +143,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
+  public HttpSpec retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
+    this.retryInfo = new RetryInfo(predicate, numOfRetries);
+    return this;
+  }
+
+  @Override
   public Supplier<InputStream> getUploadContent() {
     return toUpload;
   }
@@ -168,5 +176,28 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   @Override
   public boolean isAuth() {
     return auth;
+  }
+
+  public RetryInfo getRetryInfo() {
+    return retryInfo;
+  }
+
+  public static class RetryInfo {
+
+    private Predicate<HttpResponse> predicate;
+    private int numOfRetries;
+
+    RetryInfo(final Predicate<HttpResponse> predicate, final int numOfRetries) {
+      this.predicate = predicate;
+      this.numOfRetries = numOfRetries;
+    }
+
+    public Predicate<HttpResponse> getPredicate() {
+      return predicate;
+    }
+
+    public int getNumOfRetries() {
+      return numOfRetries;
+    }
   }
 }
