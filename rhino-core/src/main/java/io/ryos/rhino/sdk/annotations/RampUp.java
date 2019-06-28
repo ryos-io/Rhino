@@ -4,8 +4,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Throttle {
+public @interface RampUp {
 
-  int durationInMins() default 1;
-  int numberOfRequests() default 5;
+  long startRps() default 0;
+
+  long targetRps() default 0;
+
+  int duration() default 1;
 }

@@ -115,6 +115,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       flux = flux.transform(throttle(rpsLimit));
     }
 
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+
     this.subscribe = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> Out.error(t.getMessage()))

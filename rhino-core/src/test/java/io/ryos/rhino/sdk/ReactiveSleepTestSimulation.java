@@ -20,6 +20,7 @@ import static io.ryos.rhino.sdk.specs.Spec.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
+import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.Throttle;
@@ -39,7 +40,7 @@ import java.util.Random;
  */
 @Simulation(name = "Reactive Sleep Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@Throttle(durationInMins = 10, numberOfRequests = 2)
+@RampUp(startRps = 1, targetRps = 10)
 public class ReactiveSleepTestSimulation {
 
   @Provider(factory = UUIDProvider.class)

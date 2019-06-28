@@ -183,6 +183,13 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
 
+    // Ramp-up annotation.
+    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+    RampupInfo rampupInfo = null;
+    if (rampUpAnnotation !=  null) {
+      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(), Duration.ofMinutes(rampUpAnnotation.duration()));
+    }
+
     // Throttling annotation.
     var throttlingAnnotation = (io.ryos.rhino.sdk.annotations.Throttle) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Throttle.class);
@@ -255,7 +262,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withSpecs(dsls)
         .withTestInstance(testInstance)
         .withThrottling(throttlingInfo)
-        .withRampUp(-1) //TODO Throttling is not scope of 1.0 anymore.
+        .withRampUp(rampupInfo)
         .build();
   }
 
