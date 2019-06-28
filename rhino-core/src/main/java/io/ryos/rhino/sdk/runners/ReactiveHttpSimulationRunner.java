@@ -37,7 +37,7 @@ import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
-import java.util.List;
+import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,20 +76,14 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info(
-        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     if (SimulationConfig.isGrafanaEnabled()) {
-      Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-      new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
-          simulationMetadata.getSpecs()
-              .stream()
-              .map(dsl -> (ConnectableDsl) dsl)
-              .map(ConnectableDsl::getName)
-              .toArray(String[]::new));
+      setUpGrafanaDashboard();
     }
 
     var userRepository = simulationMetadata.getUserRepository();
+
     // We need to wait till all users are logged in.
     waitUsers(userRepository);
 
@@ -104,7 +98,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     injector.injectOn(simulationMetadata.getTestInstance());
 
-    prepareUserSessions(userRepository.getUserSessions());
+    prepareUserSessions();
 
     var flux = Flux.fromStream(Stream.generate(userRepository::take));
     var throttlingInfo = simulationMetadata.getThrottlingInfo();
@@ -124,7 +118,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     this.subscribe = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> Out.error(t.getMessage()))
-        .doOnTerminate(this::notifyAwaiting)
+        .doOnTerminate(this::terminate)
         .doOnComplete(() -> shutdownInitiated = true)
         .flatMap(tuple -> {
           var session = tuple.getT1();
@@ -152,6 +146,23 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         .subscribe();
     await();
     stop();
+  }
+
+  private void terminate() {
+    cleanupUserSessions();
+
+    notifyAwaiting();
+  }
+
+  private void setUpGrafanaDashboard() {
+    Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+    var grafanaGateway = new GrafanaGateway();
+    grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
+        simulationMetadata.getSpecs()
+            .stream()
+            .map(dsl -> (ConnectableDsl) dsl)
+            .map(ConnectableDsl::getName)
+            .toArray(String[]::new));
   }
 
   private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
@@ -192,9 +203,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   @Override
   public void stop() {
-
     Out.info("Someone pushed the stop() button on runner.");
-    shutdown();
+    terminate();
   }
 
   private void shutdown() {
@@ -207,10 +217,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     Out.info("Stopping the simulation...");
 
     subscribe.dispose();
-    // run cleanup.
-    Out.info("Cleaning up.");
-    final UserRepository<UserSession> userRepository = simulationMetadata.getUserRepository();
-    cleanupUserSessions(userRepository.getUserSessions());
 
     // proceed with shutdown.
     Out.info("Shutting down the system ...");
@@ -226,28 +232,34 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     try {
       Thread.sleep(ONE_SEC);
     } catch (InterruptedException e) {
+      Out.info("Wait-Interrupted.");
       // intentionally left empty.
     }
   }
 
-  private void prepareUserSessions(final List<UserSession> userSessions) {
-    //    userSessions.forEach(us -> simulationMetadata.prepare(us));
+  private void prepareUserSessions() {
+    if (simulationMetadata.getPrepareMethod() != null) {
+      ReflectionUtils.executeMethod(simulationMetadata.getPrepareMethod(),
+          simulationMetadata.getTestInstance());
+    }
   }
 
-  private void cleanupUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(us -> simulationMetadata.cleanUp(us));
+  private void cleanupUserSessions() {
+    if (simulationMetadata.getCleanupMethod() != null) {
+      ReflectionUtils.executeMethod(simulationMetadata.getCleanupMethod(),
+          simulationMetadata.getTestInstance());
+    }
   }
 
   private void waitUsers(final UserRepository userRepository) {
     Objects.requireNonNull(userRepository);
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getNumberOfUsers())
-        && ++retry < MAX_WAIT_FOR_USER) {
-      Out.info(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata
-              .getNumberOfUsers() + ". "
-              + "Waiting...");
+
+    while (!userRepository.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
+      Out.info("? Not sufficient user has been logged in. Required " + simulationMetadata
+              .getNumberOfUsers() + ". Waiting...");
+
       waitForASec();
     }
 
@@ -259,6 +271,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
               + simulationMetadata.getNumberOfUsers() + " user.");
 
       shutdown();
+
       System.exit(-1);
     }
 
