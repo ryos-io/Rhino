@@ -25,10 +25,12 @@ import static org.asynchttpclient.Dsl.put;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.specs.HttpResponse;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
+import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -90,26 +92,27 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         .fromFuture(client.executeRequest(buildRequest(spec, userSession), httpSpecAsyncHandler)
             .toCompletableFuture());
 
-    Function<Response, Boolean> f = (r) -> r.getStatusCode() == 404;
+    var retriableMono = Optional.ofNullable(spec.getRetryInfo())
+        .map(retryInfo ->
+            responseMono
+                .map(HttpResponse::new)
+                .map(hr -> isRetriable(retryInfo, hr))
+                .retryWhen(companion -> companion.zipWith(Flux.range(1, retryInfo.getNumOfRetries()), (error, index) -> {
+                    if (index < retryInfo.getNumOfRetries() && error instanceof RetryableOperationException) {
+                      return index;
+                    } else {
+                      throw Exceptions.propagate(error);
+                    }
+            })))
+        .orElse(responseMono);
 
-    responseMono = responseMono.map(r -> {
-      if (f.apply(r)) {
-        throw new RetryableOperationException(String.valueOf(r.getStatusCode()));
-      }
+    return retriableMono.map(response -> (UserSession) userSession.add("previous", response))
+        .doOnError(t -> LOG.error("Http Client Error", t.getMessage()));
+  }
 
-      return r;
-    })
-        .retryWhen(companion -> companion.zipWith(Flux.range(1, 4),
-            (error, index) -> {
-              if (index < 4 && error instanceof RetryableOperationException) {
-                return index;
-              } else {
-                throw Exceptions.propagate(error);
-              }
-            }));
-
-    return responseMono.map(response -> (UserSession) userSession.add("previous", response))
-        .doOnError(t -> LOG.error("Http Client Error", t));
+  private Response isRetriable(final RetryInfo retryInfo, final HttpResponse hr) {
+    if (retryInfo.getPredicate().test(hr)) { throw new RetryableOperationException(String.valueOf(hr.getStatusCode())); }
+    return hr.getResponse();
   }
 
   private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession) {

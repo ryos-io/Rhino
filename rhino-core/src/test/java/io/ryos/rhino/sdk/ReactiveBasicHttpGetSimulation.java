@@ -29,13 +29,13 @@ public class ReactiveBasicHttpGetSimulation {
 
   @Dsl(name = "Discovery")
   public LoadDsl singleTestDsl() {
-    return Start
-        .spec()
+    return Start.spec()
         .run(http("Discovery")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(DISCOVERY_ENDPOINT)
-            .get());
+            .get()
+        .retryIf((r) -> r.getStatusCode() == 200, 2));
   }
 }
