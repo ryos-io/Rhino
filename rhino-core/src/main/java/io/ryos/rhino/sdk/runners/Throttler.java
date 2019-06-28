@@ -23,13 +23,20 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 public class Throttler {
+  private static final Logger LOG = LoggerFactory.getLogger(Throttler.class);
+
   public static <T> Function<Flux<T>, Flux<T>> throttle(final Limit... rps) {
     final Flux<Long> reduce = Arrays.stream(rps)
-        .map(r -> Flux.interval(ofNanos(r.tickNano)).take(ofSeconds(r.durationSec)))
+        .map(r -> {
+          LOG.debug("throttle: tickNano={}, duration={}", r.tickNano, r.durationSec);
+          return Flux.interval(ofNanos(r.tickNano)).take(ofSeconds(r.durationSec));
+        })
         .reduce(Flux::concatWith).orElse(Flux.generate(sink -> sink.next(0L)));
     final UnaryOperator<Flux<T>> res = f ->
         f.zipWith(reduce.concatWith(Flux.generate(sink -> sink.next(0L))))

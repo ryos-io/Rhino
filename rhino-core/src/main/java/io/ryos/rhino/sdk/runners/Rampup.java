@@ -43,7 +43,10 @@ public class Rampup {
     Flux<Long> rampup = Flux.<Long>generate(sink -> sink.next(0L)).delayUntil(d -> {
       // TODO get the start time from the context?
       long t = (System.currentTimeMillis() - startTime) / 1000;
-      long rps = (long) Math.floor(startRps + slope * t);
+      long rps = 0;
+      if (t <= duration.toSeconds()) {
+        rps = (long) Math.floor(startRps + slope * t);
+      }
       long tickNano = (long) Math.floor((1d / rps) * 1e9);
       LOG.debug("tickNano={}, rps={}, t={}", tickNano, rps, t);
       return Mono.delay(ofNanos(tickNano));
