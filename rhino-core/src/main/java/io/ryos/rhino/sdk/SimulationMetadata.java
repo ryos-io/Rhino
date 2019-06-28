@@ -510,7 +510,6 @@ public class SimulationMetadata {
       return this;
     }
 
-
     public Builder withThrottling(final ThrottlingInfo throttlingInfo) {
       this.throttlingInfo = throttlingInfo;
       return this;
