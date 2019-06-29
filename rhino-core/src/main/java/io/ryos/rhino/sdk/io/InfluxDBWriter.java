@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.reporting.ScenarioEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.ConsistencyLevel;
 import org.influxdb.InfluxDB.LogLevel;
@@ -41,7 +42,8 @@ import org.influxdb.dto.Point;
  */
 public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEvent> {
 
-  private static final String RHINO_TEST_DB = "rhino_test_db_";
+  private static final String DEFAULT_DB = "rhino_test_db_";
+
   private final InfluxDB influxDB;
   private final String dbName;
 
@@ -49,13 +51,14 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
     return Props.create(InfluxDBWriter.class, InfluxDBWriter::new);
   }
 
-  public InfluxDBWriter() {
+  private InfluxDBWriter() {
     this.dbName = Optional.ofNullable(SimulationConfig.getInfluxDBName())
-        .orElse(RHINO_TEST_DB + System.currentTimeMillis());
+        .orElse(DEFAULT_DB + System.currentTimeMillis());
 
     this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL())
         .setLogLevel(LogLevel.NONE)
-        .setConsistency(ConsistencyLevel.ONE);
+        .setConsistency(ConsistencyLevel.ONE)
+        .enableBatch(100, 200, TimeUnit.MICROSECONDS);
 
     influxDB.createDatabase(dbName);
   }
