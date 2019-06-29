@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
-import java.time.LocalTime;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.RequestBuilder;
 import org.junit.Test;
@@ -25,12 +24,6 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
 public class RetrySpecTest {
 
   @Test
