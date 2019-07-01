@@ -84,7 +84,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     }
 
     var userRepository = simulationMetadata.getUserRepository();
-    var userProvider =  new RegionalUserProviderImpl(userRepository, "ALL");
+    var userProvider =  new RegionalUserProviderImpl(userRepository, "all");
 
     // We need to wait till all users are logged in.
     waitUsers(userProvider);

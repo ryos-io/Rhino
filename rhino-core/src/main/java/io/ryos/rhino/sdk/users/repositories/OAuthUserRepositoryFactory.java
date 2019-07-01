@@ -52,7 +52,6 @@ public class OAuthUserRepositoryFactory implements UserRepositoryFactory<UserSes
    * @return New repository instance.
    */
   public UserRepository<UserSession> create() {
-    return new OAuthUserRepositoryImpl(UserSource.newSource(), loginDelay)
-        .authenticateAll();
+    return new OAuthUserRepositoryImpl(UserSource.newSource(), loginDelay);
   }
 }

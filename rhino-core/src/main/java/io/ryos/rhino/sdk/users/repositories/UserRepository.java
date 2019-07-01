@@ -27,22 +27,8 @@ import java.util.List;
  * @author Erhan Bagdemir
  */
 public interface UserRepository<T extends UserSession> {
-  // To be honest, I am not really happy about having two concepts here, the Users and
-  // UserSessions. We need to revise this.
 
-  /**
-   * Get the all users as {@link List} from the repository.
-   * <p>
-   *
-   * @return User list.
-   */
-  List<T> getUserSessions();
+  List<T> leaseUsers(int numberOfUsers, String region);
+  List<T> leaseUsers(int numberOfUsers);
 
-  /**
-   * Takes a single user from the repository.
-   * <p>
-   *
-   * @return A {@link UserSession} instance, at the top of the list.
-   */
-  T take();
 }

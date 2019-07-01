@@ -51,8 +51,13 @@ public class FileBasedUserSourceImpl implements UserSource {
 
   @Override
   public List<User> getUsers(int numberOfUsers, String region) {
-    return getUsers().stream()
-        .filter(u -> u.getRegion().equalsIgnoreCase(region))
-        .limit(numberOfUsers).collect(Collectors.toList());
+    if (!region.equalsIgnoreCase("all")) {
+      return getUsers().stream()
+          .filter(u -> u.getRegion().equalsIgnoreCase(region))
+          .limit(numberOfUsers).collect(Collectors.toList());
+    } else {
+      return getUsers().stream()
+          .limit(numberOfUsers).collect(Collectors.toList());
+    }
   }
 }

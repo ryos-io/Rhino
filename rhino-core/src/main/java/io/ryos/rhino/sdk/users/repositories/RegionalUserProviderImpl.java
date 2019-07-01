@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
  */
 public class RegionalUserProviderImpl implements RegionalUserProvider<UserSession> {
 
-  private static final String ALL = "all";
-
   public RegionalUserProviderImpl(
       final UserRepository<UserSession> userRepository,
       final String region) {
@@ -39,15 +37,7 @@ public class RegionalUserProviderImpl implements RegionalUserProvider<UserSessio
     Objects.requireNonNull(userRepository);
     Objects.requireNonNull(region);
 
-    if (region.equalsIgnoreCase(ALL)) {
-      this.filteredUsers = userRepository.getUserSessions();
-    } else {
-      this.filteredUsers = userRepository.getUserSessions()
-          .stream()
-          .filter(u -> u.getUser().getRegion().equalsIgnoreCase(region))
-          .collect(Collectors.toList());
-    }
-
+    this.filteredUsers = userRepository.leaseUsers(10000, region);
     this.filteredIterator = new CyclicIterator<>(filteredUsers);
   }
 

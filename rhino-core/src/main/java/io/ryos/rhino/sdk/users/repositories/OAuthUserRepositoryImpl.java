@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
+import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.ArrayList;
@@ -29,34 +30,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
-  private final List<UserSession> authUsers;
-  private final List<User> users;
-  private final ExecutorService executorService;
-  private final AtomicInteger cursor = new AtomicInteger(-1);
   private final long loginDelay;
   private final OAuthAuthenticatorImpl authenticator;
 
+  private final UserSource userSource;
+
   OAuthUserRepositoryImpl(final UserSource userSource, long loginDelay) {
-    Objects.requireNonNull(userSource);
-
+    this.userSource = Objects.requireNonNull(userSource);
     this.authenticator = new OAuthAuthenticatorImpl();
-    this.users = userSource.getUsers();
-    this.authUsers = new ArrayList<>(users.size());
     this.loginDelay = loginDelay;
-    this.executorService = Executors.newFixedThreadPool(1);
-  }
-
-  OAuthUserRepositoryImpl authenticateAll() {
-    System.out.println(String
-        .format("! Found %d users. Authenticating with delay: %d ms ...", users.size(),
-            loginDelay));
-    users.forEach(u -> executorService.submit(() -> {
-      delay();
-      var userSession = new UserSessionImpl(authenticator.authenticate(u));
-      authUsers.add(userSession);
-    }));
-
-    return this;
   }
 
   private void delay() {
@@ -67,12 +49,21 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     }
   }
 
-  public UserSession take() {
-    cursor.getAndUpdate(p -> (p + 1) % authUsers.size());
-    return authUsers.get(cursor.get());
+  public List<UserSession> leaseUsers(int numberOfUsers, String region) {
+    var users = userSource.getUsers(numberOfUsers, region);
+    var result = new ArrayList<UserSession>();
+
+    users.forEach(u -> {
+      delay();
+      var userSession = new UserSessionImpl(authenticator.authenticate(u));
+      result.add(userSession);
+    });
+
+    return result;
   }
 
-  public List<UserSession> getUserSessions() {
-    return authUsers;
+  @Override
+  public List<UserSession> leaseUsers(int numberOfUsers) {
+    return leaseUsers(numberOfUsers, "all");
   }
 }

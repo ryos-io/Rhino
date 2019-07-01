@@ -39,6 +39,7 @@ import javax.ws.rs.core.UriBuilder;
  * @author Erhan Bagdemir
  */
 public class VaultUserSourceImpl implements UserSource {
+
   private static final String PATH_ROOT_CONTEXT = "v1/secret/data";
   private static final String X_VAULT_TOKEN = "X-Vault-Token";
   private static final String VAULT_TOKEN = "VAULT_TOKEN";
@@ -72,9 +73,14 @@ public class VaultUserSourceImpl implements UserSource {
 
   @Override
   public List<User> getUsers(int numberOfUsers, String region) {
-    return getUsers().stream()
-        .filter(u -> u.getRegion().equalsIgnoreCase(region))
-        .limit(numberOfUsers).collect(Collectors.toList());
+    if (region != null) {
+      return getUsers().stream()
+          .filter(u -> u.getRegion().equalsIgnoreCase(region))
+          .limit(numberOfUsers).collect(Collectors.toList());
+    } else {
+      return getUsers().stream()
+          .limit(numberOfUsers).collect(Collectors.toList());
+    }
   }
 
   private URI getVaultURI() {

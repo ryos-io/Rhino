@@ -28,22 +28,20 @@ import java.util.stream.Collectors;
 
 public class DefaultUserRepositoryImpl implements UserRepository<UserSession> {
 
-  private Queue<User> users;
+  private final Queue<User> users;
 
-  public DefaultUserRepositoryImpl(UserSource userSource) {
+  DefaultUserRepositoryImpl(UserSource userSource) {
     Objects.requireNonNull(userSource);
     this.users = new LinkedBlockingQueue<>(userSource.getUsers());
   }
 
   @Override
-  public UserSession take() {
-    User user = users.peek();
-    users.add(user);
-    return new UserSessionImpl(user);
+  public List<UserSession> leaseUsers(int numberOfUsers, String region) {
+    return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
   }
 
   @Override
-  public List<UserSession> getUserSessions() {
-    return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
+  public List<UserSession> leaseUsers(int numberOfUsers) {
+    return leaseUsers(numberOfUsers, "all");
   }
 }

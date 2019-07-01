@@ -377,7 +377,7 @@ public class SimulationMetadata {
      */
     private UserRepository<UserSession> userRepository;
 
-    private String userRegion = "ALL";
+    private String userRegion;
 
     /**
      * The reporting URI in String.
