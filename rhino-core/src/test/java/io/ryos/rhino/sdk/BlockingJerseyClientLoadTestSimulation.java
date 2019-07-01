@@ -18,16 +18,16 @@ package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
+import io.ryos.rhino.sdk.annotations.CleanUp;
+import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Scenario;
-import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -36,27 +36,41 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
 @Simulation(name = "Server-Status Simulation")
-@Logging(file = "/Users/bagdemir/sims/simulation.log", formatter = GatlingLogFormatter.class)
-@UserRepository(max=2, factory = OAuthUserRepositoryFactoryImpl.class)
+@UserRepository(max = 9, factory = OAuthUserRepositoryFactoryImpl.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
-  @UserProvider
-  private OAuthUser user;
+  @UserProvider(region = "US")
+  private OAuthUserProvider userProviderUS;
+
+  @UserProvider(region = "EU")
+  private OAuthUserProvider userProviderEU;
 
   @Provider(factory = UUIDProvider.class)
   private String uuid;
 
+  @Prepare
+  public void prepare() {
+    System.out.println("Preparation in progress.");
+  }
+
+  @CleanUp
+  public void cleanUp() {
+    System.out.println("Clean-up in progress.");
+  }
+
   @Before
-  public void setUp() {
-    // System.out.println("Before the test with user:" + user.getUsername());
+  public void setUp(UserSession us) {
+    System.out.println("Before the test with user:" + us.getUser().getUsername());
   }
 
   @Scenario(name = "Discovery")
-  public void performDiscovery(Measurement measurement) {
+  public void performDiscovery(Measurement measurement, UserSession userSession) {
+
+    OAuthUser user = userProviderUS.take();
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://cc-api-storage-stage.adobe.io/")
+        .target("http://localhost:8089/api/files")
         .request()
         .header("Authorization", "Bearer " + user.getAccessToken())
         .header("X-Request-Id", "Rhino-" + uuid)
@@ -67,11 +81,11 @@ public class BlockingJerseyClientLoadTestSimulation {
   }
 
   @Scenario(name = "Health")
-  public void performHealth(Measurement measurement) {
+  public void performHealth(Measurement measurement, UserSession userSession) {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://cc-api-storage-stage.adobe.io/")
+        .target("http://localhost:8089/api/files")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
         .get();
@@ -80,11 +94,11 @@ public class BlockingJerseyClientLoadTestSimulation {
   }
 
   @Scenario(name = "KO OK")
-  public void performKO(Measurement measurement) {
+  public void performKO(Measurement measurement, UserSession userSession) {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://cc-api-storage-stage.adobe.io/")
+        .target("http://localhost:8089/api/invalid")
         .request()
         .get();
 
@@ -92,7 +106,7 @@ public class BlockingJerseyClientLoadTestSimulation {
   }
 
   @After
-  public void cleanUp() {
-    // System.out.println("Clean up the test with user:" + user.getUsername());
+  public void after(UserSession us) {
+    System.out.println("Clean up the test with user:" + us.getUser().getUsername());
   }
 }

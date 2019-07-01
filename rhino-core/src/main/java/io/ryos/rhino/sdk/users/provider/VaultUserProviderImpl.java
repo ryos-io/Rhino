@@ -63,7 +63,7 @@ public class VaultUserProviderImpl implements UserProvider {
         .get();
 
     if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-      return userParser.unmarshall(response.readEntity(InputStream.class));
+      return userParser.unmarshal(response.readEntity(InputStream.class));
     }
 
     return Collections.emptyList();

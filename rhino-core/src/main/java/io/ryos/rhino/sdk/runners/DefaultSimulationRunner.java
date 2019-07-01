@@ -27,7 +27,11 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProvider;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
+import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -88,6 +92,8 @@ public class DefaultSimulationRunner implements SimulationRunner {
         "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     var userRepository = simulationMetadata.getUserRepository();
+    var userProvider = new RegionalUserProviderImpl(userRepository,
+        simulationMetadata.getUserRegion());
     if (SimulationConfig.isGrafanaEnabled()) {
       Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
       new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
@@ -98,10 +104,13 @@ public class DefaultSimulationRunner implements SimulationRunner {
     }
 
     // We need to wait till all users are logged in.
-    waitUsers(userRepository);
-    prepareUserSessions(userRepository.getUserSessions());
+    waitUsers(userProvider);
+    prepareUserSessions();
 
-    var users = Stream.generate(userRepository::take);
+    new DefaultRunnerSimulationInjector(simulationMetadata, null)
+        .injectOn(simulationMetadata.getTestInstance());
+
+    var users = Stream.generate(userProvider::take);
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
     this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
@@ -153,7 +162,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     // run cleanup.
     System.out.println("Cleaning up.");
     final UserRepository<UserSession> userRepository = simulationMetadata.getUserRepository();
-    cleanupUserSessions(userRepository.getUserSessions());
+    cleanupUserSessions();
 
     // proceed with shutdown.
     System.out.println("Shutting down the system ...");
@@ -182,28 +191,32 @@ public class DefaultSimulationRunner implements SimulationRunner {
     }
   }
 
-  private void prepareUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(simulationMetadata::prepare);
+  private void prepareUserSessions() {
+    if (simulationMetadata.getPrepareMethod() != null) {
+      ReflectionUtils.executeMethod(simulationMetadata.getPrepareMethod(),
+          simulationMetadata.getTestInstance());
+    }
   }
 
-  private void cleanupUserSessions(final List<UserSession> userSessions) {
-    userSessions.forEach(simulationMetadata::cleanUp);
+  private void cleanupUserSessions() {
+    if (simulationMetadata.getCleanupMethod() != null) {
+      ReflectionUtils.executeMethod(simulationMetadata.getCleanupMethod(),
+          simulationMetadata.getTestInstance());
+    }
   }
 
-  private void waitUsers(UserRepository userRepository) {
-    Objects.requireNonNull(userRepository);
+  private void waitUsers(final RegionalUserProvider<UserSession> userProvider) {
 
     int retry = 0;
-    while (!userRepository.has(simulationMetadata.getNumberOfUsers())
+    while (!userProvider.has(simulationMetadata.getNumberOfUsers())
         && ++retry < MAX_WAIT_FOR_USER) {
-      System.out.println(
-          "? Not sufficient user has been logged in. Required " + simulationMetadata
-              .getNumberOfUsers() + ". "
-              + "Waiting...");
+
+      System.out.println("? Not sufficient user has been logged in. Required " + simulationMetadata
+          .getNumberOfUsers() + "Waiting...");
       waitForASec();
     }
 
-    if (!userRepository.has(simulationMetadata.getNumberOfUsers())) {
+    if (!userProvider.has(simulationMetadata.getNumberOfUsers())) {
       System.out.println(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "

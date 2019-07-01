@@ -60,6 +60,10 @@ public class CyclicIterator<T> implements Iterator<T> {
    * @param list The list backing the iterator.
    */
   public CyclicIterator(final List<T> list) {
+
+    if (list.isEmpty()) { throw new IllegalArgumentException("Backing list in CyclicIterator is "
+        + "empty."); }
+
     this.list = list;
   }
 

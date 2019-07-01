@@ -11,6 +11,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -26,7 +27,7 @@ public class UploadLoadSimulation {
   private static final String X_API_KEY = "X-Api-Key";
 
   @UserProvider
-  private io.ryos.rhino.sdk.feeders.UserProvider userProvider;
+  private OAuthUserProvider userProvider;
 
   @Provider(factory = UUIDProvider.class)
   private UUIDProvider uuidProvider;

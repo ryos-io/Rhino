@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
+import org.apache.commons.math3.stat.StatUtils;
 
 /**
  * The actor outputs the current status of the test run. It gives out information to stdout like
@@ -150,17 +151,16 @@ public class StdoutReporter extends AbstractActor {
       return;
     }
 
-    List<String> countMetrics = metrics.entrySet()
+    var countMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith(COUNT))
         .map(e -> formatKey(e.getKey()) + " " + e.getValue())
         .collect(Collectors.toList());
 
-    List<String> responseTypeMetrics = metrics.entrySet()
+    var responseTypeMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
-        .map(
-            e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
+        .map(e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
         .collect(Collectors.toList());
 
     long overAllResponseTime = metrics.entrySet()

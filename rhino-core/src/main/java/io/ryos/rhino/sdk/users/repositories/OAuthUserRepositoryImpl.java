@@ -54,7 +54,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
   private final long loginDelay;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public OAuthUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
+  OAuthUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
     Objects.requireNonNull(userProvider);
     this.users = userProvider.getUsers();
     this.authUsers = new ArrayList<>(users.size());
@@ -62,11 +62,8 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     this.executorService = Executors.newFixedThreadPool(1);
   }
 
-
-  public OAuthUserRepositoryImpl authenticateAll() {
-    System.out.println(String
-        .format("! Found %d users. Authenticating with delay: %d ms ...", users.size(),
-            loginDelay));
+  OAuthUserRepositoryImpl authenticateAll() {
+    System.out.println(String.format("! Found %d users. Authenticating with delay: %d ms ...", users.size(), loginDelay));
     users.forEach(u -> executorService.submit(() -> {
       delay();
       authenticate(u).ifPresent(a -> authUsers.add(new UserSessionImpl(a)));
@@ -117,15 +114,13 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        System.out.println(
-            "Cannot login user, status=" + response.getStatus() + ", message=" + response
-                .readEntity(String.class));
+        System.out.println("Cannot login user, status=" + response.getStatus() + ", message=" + response.readEntity(String.class));
         return Optional.empty();
       }
 
-      final String s = response.readEntity(String.class);
+      var s = response.readEntity(String.class);
 
-      final OAuthEntity entity = mapToEntity(s);
+      var entity = mapToEntity(s);
 
       return Optional.of(new OAuthUserImpl(user.getUsername(),
           user.getPassword(),
@@ -133,7 +128,8 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
           entity.getRefreshToken(),
           user.getScope(),
           SimulationConfig.getClientId(),
-          user.getId()));
+          user.getId(),
+          user.getRegion()));
     } catch (Exception e) {
       ExceptionUtils.rethrow(e, UserLoginException.class, "Login failed.");
     }
@@ -158,13 +154,5 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   public List<UserSession> getUserSessions() {
     return authUsers;
-  }
-
-  public boolean has(int numberOfUsers) {
-    if (users.size() < numberOfUsers) {
-      throw new RuntimeException(
-          "Insufficient number of users read from the source.");
-    }
-    return authUsers.size() >= numberOfUsers;
   }
 }

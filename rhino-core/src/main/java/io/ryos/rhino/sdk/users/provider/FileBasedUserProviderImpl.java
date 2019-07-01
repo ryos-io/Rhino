@@ -38,7 +38,7 @@ public class FileBasedUserProviderImpl implements UserProvider {
 
   @Override
   public List<User> getUsers() {
-    var userList = parser.unmarshall(new ConfigResource(pathToFile).getInputStream());
+    var userList = parser.unmarshal(new ConfigResource(pathToFile).getInputStream());
     if (userList.isEmpty()) {
       throw new RuntimeException("No valid user found in " + pathToFile + ". The CSV file should contain "
           + "lines in the following format: username;password;scope");

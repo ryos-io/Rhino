@@ -16,14 +16,16 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
+import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -68,25 +70,26 @@ public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector 
   public void injectOn(final Object injectable) {
     Objects.requireNonNull(injectable);
 
-    var user = userSession.getUser();
-
-    injectUser(user, injectable);// Each thread will run as the same user.
-    injectSession(userSession, injectable);
+    injectUser(injectable);// Each thread will run as the same user.
     injectCustomFeeders(injectable);
   }
 
-  private void injectSession(final UserSession userSession, final Object simulationInstance) {
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
+  void injectSession(final UserSession userSession) {
+    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
         SessionFeeder.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(userSession, f.getFirst(), simulationInstance));
+
+    fieldAnnotation.forEach(f -> setValueToInjectionPoint(null, f.getFirst(),
+        simulationMetadata.getTestInstance()));
   }
 
-  private void injectUser(final User user, final Object simulationInstance) {
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
+  private void injectUser(final Object simulationInstance) {
+    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
         UserProvider.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
+
+    fieldAnnotation.stream().map(pair ->
+        new Pair<>(new OAuthUserProvider(new RegionalUserProviderImpl(simulationMetadata.getUserRepository(),
+            pair.getSecond().region())), pair.getFirst()))
+        .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */

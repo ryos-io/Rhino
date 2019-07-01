@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface UserParser {
 
-  List<User> unmarshall(final InputStream inputStream);
+  List<User> unmarshal(final InputStream inputStream);
 }

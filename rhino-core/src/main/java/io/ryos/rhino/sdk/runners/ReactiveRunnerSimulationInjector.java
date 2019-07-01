@@ -16,24 +16,27 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
+import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
 import java.util.Arrays;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is
- * the reactive variant does inject the repository classes which return values to the DSL
- * instances, whereas the default injector implementation does inject the value itself into the
- * injection points, that are marked with {@link Provider} annotation.
+ * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is the
+ * reactive variant does inject the repository classes which return values to the DSL instances,
+ * whereas the default injector implementation does inject the value itself into the injection
+ * points, that are marked with {@link Provider} annotation.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -77,10 +80,13 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
 
   private void injectUserProvider(final Object simulationInstance) {
 
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(), UserProvider.class);
-    var provider = new io.ryos.rhino.sdk.feeders.UserProvider(simulationMetadata.getUserRepository());
+    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
+        UserProvider.class);
 
-    fieldAnnotation.ifPresent(f -> setValueToInjectionPoint(provider, f.getFirst(), simulationInstance));
+    fieldAnnotation.stream().map(pair ->
+        new Pair<>(new OAuthUserProvider(new RegionalUserProviderImpl(simulationMetadata.getUserRepository(),
+            pair.getSecond().region())), pair.getFirst()))
+        .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */

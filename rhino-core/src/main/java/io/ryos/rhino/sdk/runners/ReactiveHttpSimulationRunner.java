@@ -36,6 +36,8 @@ import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProvider;
+import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.Objects;
@@ -83,9 +85,10 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     }
 
     var userRepository = simulationMetadata.getUserRepository();
+    var userProvider =  new RegionalUserProviderImpl(userRepository, "ALL");
 
     // We need to wait till all users are logged in.
-    waitUsers(userRepository);
+    waitUsers(userProvider);
 
     var httpClientConfig = Dsl.config()
         .setConnectTimeout(CONNECT_TIMEOUT)
@@ -100,7 +103,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     prepareUserSessions();
 
-    var flux = Flux.fromStream(Stream.generate(userRepository::take));
+    var flux = Flux.fromStream(Stream.generate(userProvider::take));
     var throttlingInfo = simulationMetadata.getThrottlingInfo();
 
     if (throttlingInfo != null) {
@@ -251,30 +254,26 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     }
   }
 
-  private void waitUsers(final UserRepository userRepository) {
-    Objects.requireNonNull(userRepository);
+  private void waitUsers(final RegionalUserProvider<UserSession> userProvider) {
 
     int retry = 0;
-
-    while (!userRepository.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
-      Out.info("? Not sufficient user has been logged in. Required " + simulationMetadata
-              .getNumberOfUsers() + ". Waiting...");
-
+    while (!userProvider.has(simulationMetadata.getNumberOfUsers()) && ++retry < MAX_WAIT_FOR_USER) {
+      System.out.println("? Not sufficient user has been logged in. Required " + simulationMetadata
+          .getNumberOfUsers() + ". Waiting...");
       waitForASec();
     }
 
-    if (!userRepository.has(simulationMetadata.getNumberOfUsers())) {
-      Out.info(
+    if (!userProvider.has(simulationMetadata.getNumberOfUsers())) {
+      System.out.println(
           "? Not sufficient user in user repository found to be able to run the " + "in "
               + "similation. Check your user source, or reduce the number of max. user the simulation requires "
               + "@Simulation annotation. Required "
               + simulationMetadata.getNumberOfUsers() + " user.");
 
       shutdown();
-
       System.exit(-1);
     }
 
-    Out.info("User login completed. Total user: " + simulationMetadata.getNumberOfUsers());
+    System.out.println("User login completed. Total user: " + simulationMetadata.getNumberOfUsers());
   }
 }

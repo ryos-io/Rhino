@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
@@ -38,38 +38,10 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
   private static final Logger LOG = LogManager.getLogger(DefaultSimulationCallable.class);
 
-  private SimulationMetadata simulationMetadata;
-
+  private final SimulationMetadata simulationMetadata;
   private final UserSession userSession;
   private final Scenario scenario;
   private final EventDispatcher eventDispatcher;
-
-  // Predicate to search fields for Provider annotation.
-  private final Predicate<Field> hasFeeder = f -> Arrays
-      .stream(f.getDeclaredAnnotations())
-      .anyMatch(Provider.class::isInstance);
-
-  private final Function<Field, InjectionPoint<Provider>> injectionPointFunction =
-      f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(Provider.class));
-
-  // Provider the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
-
-    Objects.requireNonNull(instance, "Object instance is null.");
-    var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
-    var value = factoryInstance.take();
-    try {
-      var field = injectionPoint.getField();
-      field.setAccessible(true);
-      //TODO pre-check before assignment.
-      field.set(instance, value);
-    } catch (IllegalAccessException e) {
-      LOG.error("Access to field failed.", e);
-    } catch (IllegalArgumentException e) {
-      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
-    }
-  }
 
   /**
    * Instantiates a new {@link DefaultSimulationCallable} instance.
@@ -81,7 +53,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
    * @param eventDispatcher Event dispatcher is responsible from delivering metric events to
    * corresponding receivers.
    */
-  public DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
+  DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
       final UserSession userSession,
       final Scenario scenario,
       final EventDispatcher eventDispatcher) {
@@ -91,27 +63,14 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     this.eventDispatcher = Objects.requireNonNull(eventDispatcher);
   }
 
-  /**
-   * Simulation object factory. All reflection calls should be run on this single instance.
-   * <p>
-   */
-  private Supplier<Object> simulationInstanceFactory =
-      () -> instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
-
   @Override
   public Measurement call() {
 
     var user = userSession.getUser();
-    var simulationInstance = simulationInstanceFactory.get();
-
-    new DefaultRunnerSimulationInjector(simulationMetadata, userSession).injectOn(simulationInstance);
-
-    injectUser(user, simulationInstance);// Each thread will run as the same user.
-    injectSession(userSession, simulationInstance);
-    injectFeeders(simulationInstance);
 
     // Before method call.
-    executeMethod(simulationMetadata.getBeforeMethod(), simulationInstance);
+    executeMethod(simulationMetadata.getBeforeMethod(), simulationMetadata.getTestInstance(),
+        userSession);
 
     var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
@@ -125,7 +84,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     measurement.record(userEventStart);
 
-    executeScenario(scenario, measurement, simulationInstance);
+    executeScenario(scenario, measurement, simulationMetadata.getTestInstance(), userSession);
 
     var elapsed = System.currentTimeMillis() - start;
     var userEventEnd = new UserEvent();
@@ -138,83 +97,35 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
-    executeMethod(simulationMetadata.getAfterMethod(), simulationInstance);
+    executeMethod(simulationMetadata.getAfterMethod(), simulationMetadata.getTestInstance(),
+        userSession);
 
     return measurement;
   }
 
   private void executeScenario(final Scenario scenario,
       final MeasurementImpl recorder,
-      final Object simulationInstance) {
+      final Object simulationInstance,
+      final UserSession userSession) {
     try {
-      scenario.getMethod().invoke(simulationInstance, recorder);
+      scenario.getMethod().invoke(simulationInstance, recorder, userSession);
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(e.getCause());
     }
   }
 
-  private void executeMethod(final Method method, final Object simulationInstance) {
+  private void executeMethod(final Method method,
+      final Object simulationInstance,
+      final UserSession userSession) {
     try {
       if (method != null) {
-        method.invoke(simulationInstance);
+        method.invoke(simulationInstance, userSession);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(
           "Cannot invoke the method with step: " + method.getName() + "()", e);
     }
-  }
-
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void injectFeeders(final Object simulationInstance) {
-    Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
-        .filter(hasFeeder)
-        .map(injectionPointFunction)
-        .forEach(ip -> feed(simulationInstance, ip));
-  }
-
-  private void injectSession(final UserSession userSession, final Object simulationInstance) {
-    var fieldAnnotation = getFieldByAnnotation(
-        simulationMetadata.getSimulationClass(),
-        SessionFeeder.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(userSession, f.getFirst(), simulationInstance));
-  }
-
-  private void injectUser(final User user, final Object simulationInstance) {
-    var fieldAnnotation = getFieldByAnnotation(simulationMetadata.getSimulationClass(),
-        UserProvider.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
-  }
-
-  private <T> void setValueToInjectionPoint(final T object, final Field f,
-      final Object simulationInstance) {
-    try {
-      f.setAccessible(true);
-      f.set(simulationInstance, object);
-    } catch (IllegalAccessException e) {
-      LOG.error(e);
-      //TODO
-    }
-  }
-
-  public void prepare(final UserSession userSession) {
-    final Object cleanUpInstance = prepareMethodCall(userSession);
-    executeMethod(simulationMetadata.getPrepareMethod(), cleanUpInstance);
-  }
-
-  private Object prepareMethodCall(final UserSession userSession) {
-    final Object cleanUpInstance = simulationInstanceFactory.get();
-    injectSession(userSession, cleanUpInstance);
-    injectFeeders(cleanUpInstance);
-    injectUser(userSession.getUser(), cleanUpInstance);
-    return cleanUpInstance;
-  }
-
-  public void cleanUp(final UserSession userSession) {
-    prepareMethodCall(userSession);
-    executeMethod(simulationMetadata.getCleanupMethod(), userSession);
   }
 }

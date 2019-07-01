@@ -1,0 +1,65 @@
+/*
+ * Copyright 2018 Ryos.io.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.ryos.rhino.sdk.users.repositories;
+
+import io.ryos.rhino.sdk.CyclicIterator;
+import io.ryos.rhino.sdk.data.UserSession;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+/**
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
+ */
+public class RegionalUserProviderImpl implements RegionalUserProvider<UserSession> {
+
+  private static final String ALL = "all";
+
+  public RegionalUserProviderImpl(
+      final UserRepository<UserSession> userRepository,
+      final String region) {
+    Objects.requireNonNull(userRepository);
+    Objects.requireNonNull(region);
+
+    if (region.equalsIgnoreCase("ALL")) {
+      this.filteredUsers = userRepository.getUserSessions();
+    } else {
+      this.filteredUsers = userRepository.getUserSessions()
+          .stream()
+          .filter(u -> u.getUser().getRegion().equalsIgnoreCase(region))
+          .collect(Collectors.toList());
+    }
+
+    this.filteredIterator = new CyclicIterator<>(filteredUsers);
+  }
+
+  private final List<UserSession> filteredUsers;
+  private final CyclicIterator<UserSession> filteredIterator;
+
+  @Override
+  public boolean has(int numberOfUsers) {
+    return filteredUsers.size() >= numberOfUsers;
+  }
+
+  @Override
+  public UserSession take() {
+    return filteredIterator.next();
+  }
+}

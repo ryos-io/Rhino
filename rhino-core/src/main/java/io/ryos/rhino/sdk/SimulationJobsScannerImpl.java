@@ -296,16 +296,14 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository feeder) {
+  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository userRepository) {
 
-    var factory = feeder.factory();
-    var loginDelay = feeder.delay();
+    var factory = userRepository.factory();
+    var loginDelay = userRepository.delay();
 
     try {
-      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory
-          .getConstructor(long.class);
-      final UserRepositoryFactory userRepositoryFactory = factoryConstructor
-          .newInstance(loginDelay);
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory.getConstructor(long.class);
+      final UserRepositoryFactory userRepositoryFactory = factoryConstructor.newInstance(loginDelay);
       return userRepositoryFactory.create();
     } catch (NoSuchMethodException nsme) {
       return createWithDefaultConstructor(factory);

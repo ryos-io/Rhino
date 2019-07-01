@@ -31,15 +31,6 @@ public interface UserRepository<T extends UserSession> {
   // UserSessions. We need to revise this.
 
   /**
-   * Method to determine if the repository contains the number of users, provided by parameter.
-   * <p>
-   *
-   * @param numberOfUsers Number of users, to be queried.
-   * @return true, if the repository contains sufficient number of users, otherwise false.
-   */
-  boolean has(int numberOfUsers);
-
-  /**
    * Get the all users as {@link List} from the repository.
    * <p>
    *

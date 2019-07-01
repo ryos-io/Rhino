@@ -247,6 +247,11 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.6</version>
+            </dependency>
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>25.1-jre</version>
@@ -335,6 +340,12 @@
                 <groupId>org.junit.platform</groupId>
                 <artifactId>junit-platform-runner</artifactId>
                 <version>1.1.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>2.23.2</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

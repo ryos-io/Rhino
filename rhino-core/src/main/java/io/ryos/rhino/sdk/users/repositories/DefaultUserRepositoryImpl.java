@@ -43,11 +43,6 @@ public class DefaultUserRepositoryImpl implements UserRepository<UserSession> {
   }
 
   @Override
-  public boolean has(int numberOfUsers) {
-    return users.size() >= numberOfUsers;
-  }
-
-  @Override
   public List<UserSession> getUserSessions() {
     return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
   }
