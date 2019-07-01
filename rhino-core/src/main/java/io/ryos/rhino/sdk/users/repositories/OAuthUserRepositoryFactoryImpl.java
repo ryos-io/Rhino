@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.provider.UserProvider;
+import io.ryos.rhino.sdk.users.source.UserSource;
 
 /**
  * Factory class for user repository with OAuth support which creates a new {@link UserRepository}
@@ -52,7 +52,7 @@ public class OAuthUserRepositoryFactoryImpl implements UserRepositoryFactory<Use
    * @return New repository instance.
    */
   public UserRepository<UserSession> create() {
-    return new OAuthUserRepositoryImpl(UserProvider.createProvider(), loginDelay)
+    return new OAuthUserRepositoryImpl(UserSource.createProvider(), loginDelay)
         .authenticateAll();
   }
 }

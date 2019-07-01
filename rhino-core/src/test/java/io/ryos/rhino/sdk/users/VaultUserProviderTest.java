@@ -16,16 +16,15 @@
 
 package io.ryos.rhino.sdk.users;
 
-import io.ryos.rhino.sdk.users.provider.VaultUserProviderImpl;
 import org.junit.Test;
 
 /**
- * Test for user provider backed by Vault.
+ * Test for user source backed by Vault.
  */
 public class VaultUserProviderTest {
 
   @Test
   public void testGetUsersFromVault() {
-    //new VaultUserProviderImpl().getUsers();
+    //new VaultUserSourceImpl().getUsers();
   }
 }

@@ -38,7 +38,6 @@ import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.RegionalUserProvider;
 import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
-import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.Objects;
 import java.util.stream.Collectors;

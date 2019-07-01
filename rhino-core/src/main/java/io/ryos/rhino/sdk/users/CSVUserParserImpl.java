@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.users;
 
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
-import io.ryos.rhino.sdk.users.provider.FileBasedUserProviderImpl;
+import io.ryos.rhino.sdk.users.source.FileBasedUserSourceImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CSVUserParserImpl implements UserParser {
 
-  private static final Logger LOG = LogManager.getLogger(FileBasedUserProviderImpl.class);
+  private static final Logger LOG = LogManager.getLogger(CSVUserParserImpl.class);
 
   @Override
   public List<User> unmarshal(InputStream inputStream) {

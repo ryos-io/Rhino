@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.CSVUserParserImpl;
@@ -23,16 +23,16 @@ import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
 
 /**
- * File based implementation of {@link UserProvider}.
+ * File based implementation of {@link UserSource}.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public class FileBasedUserProviderImpl implements UserProvider {
+public class FileBasedUserSourceImpl implements UserSource {
   private final String pathToFile;
   private final UserParser parser = new CSVUserParserImpl();
 
-  public FileBasedUserProviderImpl(final String pathToCSVFile) {
+  public FileBasedUserSourceImpl(final String pathToCSVFile) {
     this.pathToFile = pathToCSVFile;
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
@@ -32,12 +32,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- * Vault implementation of {@link UserProvider}.
+ * Vault implementation of {@link UserSource}.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public class VaultUserProviderImpl implements UserProvider {
+public class VaultUserSourceImpl implements UserSource {
   private static final String PATH_ROOT_CONTEXT = "v1/secret/data";
   private static final String X_VAULT_TOKEN = "X-Vault-Token";
   private static final String VAULT_TOKEN = "VAULT_TOKEN";

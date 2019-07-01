@@ -40,6 +40,8 @@ public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<U
     var userName = "User-" + UUID.randomUUID();
 
     return new DefaultUserRepositoryImpl(
-        () -> IntStream.rangeClosed(START, END).mapToObj(id -> new UserImpl(userName, null, userName, null)).collect(toList()));
+        () -> IntStream.rangeClosed(START, END)
+            .mapToObj(id -> new UserImpl(userName, null, userName, null))
+            .collect(toList()));
   }
 }

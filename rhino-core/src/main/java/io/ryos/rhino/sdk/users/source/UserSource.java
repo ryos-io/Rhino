@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.users.data.User;
@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * User provider is the source for the users which are used in performance tests.
+ * User source is the source for the users which are used in performance tests.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public interface UserProvider {
+public interface UserSource {
 
   enum SourceType {FILE, VAULT}
 
@@ -39,19 +39,19 @@ public interface UserProvider {
    */
   List<User> getUsers();
 
-  static UserProvider createProvider() {
+  static UserSource createProvider() {
 
-    UserProvider userProvider = null;
+    UserSource userProvider = null;
     var userSource = SimulationConfig.getUserSource();
     if (userSource.equals(SourceType.VAULT)) {
-      userProvider = new VaultUserProviderImpl();
+      userProvider = new VaultUserSourceImpl();
     }
     if (userSource.equals(SourceType.FILE)) {
       var filePath = Optional
           .ofNullable(SimulationConfig.getUserFileSource())
           .orElseThrow(() -> new RuntimeException("<env>.users.file property is missing."));
 
-      userProvider = new FileBasedUserProviderImpl(filePath);
+      userProvider = new FileBasedUserSourceImpl(filePath);
     }
 
     return userProvider;

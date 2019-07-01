@@ -25,7 +25,7 @@ import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.provider.UserProvider;
+import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,9 +54,9 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
   private final long loginDelay;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  OAuthUserRepositoryImpl(final UserProvider userProvider, long loginDelay) {
-    Objects.requireNonNull(userProvider);
-    this.users = userProvider.getUsers();
+  OAuthUserRepositoryImpl(final UserSource userSource, long loginDelay) {
+    Objects.requireNonNull(userSource);
+    this.users = userSource.getUsers();
     this.authUsers = new ArrayList<>(users.size());
     this.loginDelay = loginDelay;
     this.executorService = Executors.newFixedThreadPool(1);

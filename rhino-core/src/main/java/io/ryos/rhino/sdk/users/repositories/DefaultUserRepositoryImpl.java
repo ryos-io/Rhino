@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.users.repositories;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.provider.UserProvider;
+import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -30,9 +30,9 @@ public class DefaultUserRepositoryImpl implements UserRepository<UserSession> {
 
   private Queue<User> users;
 
-  public DefaultUserRepositoryImpl(UserProvider userProvider) {
-    Objects.requireNonNull(userProvider);
-    this.users = new LinkedBlockingQueue<>(userProvider.getUsers());
+  public DefaultUserRepositoryImpl(UserSource userSource) {
+    Objects.requireNonNull(userSource);
+    this.users = new LinkedBlockingQueue<>(userSource.getUsers());
   }
 
   @Override

@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.RhinoIOException;
 import io.ryos.rhino.sdk.io.ConfigResource;
-import io.ryos.rhino.sdk.users.provider.UserProvider;
-import io.ryos.rhino.sdk.users.provider.UserProvider.SourceType;
+import io.ryos.rhino.sdk.users.source.UserSource;
+import io.ryos.rhino.sdk.users.source.UserSource.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
 import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
@@ -131,9 +131,9 @@ public class SimulationConfig {
     return properties.getProperty("node");
   }
 
-  private UserProvider.SourceType getUsersSource() {
+  private UserSource.SourceType getUsersSource() {
     var source = properties.getProperty(environment + ".users.source", "file");
-    return UserProvider.SourceType.valueOf(source.toUpperCase());
+    return UserSource.SourceType.valueOf(source.toUpperCase());
   }
 
   private String getMaxConnection() {

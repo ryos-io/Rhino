@@ -35,10 +35,11 @@ public class RegionalUserProviderImpl implements RegionalUserProvider<UserSessio
   public RegionalUserProviderImpl(
       final UserRepository<UserSession> userRepository,
       final String region) {
+
     Objects.requireNonNull(userRepository);
     Objects.requireNonNull(region);
 
-    if (region.equalsIgnoreCase("ALL")) {
+    if (region.equalsIgnoreCase(ALL)) {
       this.filteredUsers = userRepository.getUserSessions();
     } else {
       this.filteredUsers = userRepository.getUserSessions()
