@@ -27,7 +27,7 @@ import io.ryos.rhino.sdk.users.source.UserSource;
  *
  * @author Erhan Bagdemir
  */
-public class OAuthUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
+public class OAuthUserRepositoryFactory implements UserRepositoryFactory<UserSession> {
 
   /**
    * Planned delay between two login attempts. Some authorization servers throttles requests if the
@@ -36,23 +36,23 @@ public class OAuthUserRepositoryFactoryImpl implements UserRepositoryFactory<Use
   private final long loginDelay;
 
   /**
-   * Creates a new {@link OAuthUserRepositoryFactoryImpl} instance.
+   * Creates a new {@link OAuthUserRepositoryFactory} instance.
    * <p>
    *
    * @param loginDelay Delay between two login attempts.
    */
-  public OAuthUserRepositoryFactoryImpl(final long loginDelay) {
+  public OAuthUserRepositoryFactory(final long loginDelay) {
     this.loginDelay = loginDelay;
   }
 
   /**
-   * Creates a new repository {@link OAuthUserRepositoryFactoryImpl} instance.
+   * Creates a new repository {@link OAuthUserRepositoryFactory} instance.
    * <p>
    *
    * @return New repository instance.
    */
   public UserRepository<UserSession> create() {
-    return new OAuthUserRepositoryImpl(UserSource.createProvider(), loginDelay)
+    return new OAuthUserRepositoryImpl(UserSource.newSource(), loginDelay)
         .authenticateAll();
   }
 }

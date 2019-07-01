@@ -21,6 +21,7 @@ import io.ryos.rhino.sdk.users.CSVUserParserImpl;
 import io.ryos.rhino.sdk.users.UserParser;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * File based implementation of {@link UserSource}.
@@ -29,10 +30,11 @@ import java.util.List;
  * @author Erhan Bagdemir
  */
 public class FileBasedUserSourceImpl implements UserSource {
+
   private final String pathToFile;
   private final UserParser parser = new CSVUserParserImpl();
 
-  public FileBasedUserSourceImpl(final String pathToCSVFile) {
+  FileBasedUserSourceImpl(final String pathToCSVFile) {
     this.pathToFile = pathToCSVFile;
   }
 
@@ -40,9 +42,17 @@ public class FileBasedUserSourceImpl implements UserSource {
   public List<User> getUsers() {
     var userList = parser.unmarshal(new ConfigResource(pathToFile).getInputStream());
     if (userList.isEmpty()) {
-      throw new RuntimeException("No valid user found in " + pathToFile + ". The CSV file should contain "
-          + "lines in the following format: username;password;scope");
+      throw new RuntimeException(
+          "No valid user found in " + pathToFile + ". The CSV file should contain "
+              + "lines in the following format: username;password;scope");
     }
     return userList;
+  }
+
+  @Override
+  public List<User> getUsers(int numberOfUsers, String region) {
+    return getUsers().stream()
+        .filter(u -> u.getRegion().equalsIgnoreCase(region))
+        .limit(numberOfUsers).collect(Collectors.toList());
   }
 }

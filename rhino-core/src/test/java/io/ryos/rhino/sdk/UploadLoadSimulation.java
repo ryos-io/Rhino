@@ -14,12 +14,12 @@ import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import java.io.InputStream;
 
 @Simulation(name = "Reactive Upload Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@UserRepository(max = 1, factory = OAuthUserRepositoryFactoryImpl.class)
+@UserRepository(max = 1, factory = OAuthUserRepositoryFactory.class)
 public class UploadLoadSimulation {
 
   private static final String DISCOVERY_ENDPOINT = "https://localhost/files";

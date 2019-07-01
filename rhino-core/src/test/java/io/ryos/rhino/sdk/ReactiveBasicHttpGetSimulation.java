@@ -12,17 +12,15 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
-import io.ryos.rhino.sdk.users.repositories.RegionalUserProvider;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 
 @Simulation(name = "Reactive Test", durationInMins = 5)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@UserRepository(max = 1, factory = OAuthUserRepositoryFactoryImpl.class)
+@UserRepository(max = 1, factory = OAuthUserRepositoryFactory.class)
 @RampUp(startRps = 10, targetRps = 2000, duration = 1)
 public class ReactiveBasicHttpGetSimulation {
 
@@ -43,7 +41,6 @@ public class ReactiveBasicHttpGetSimulation {
             .endpoint(DISCOVERY_ENDPOINT)
             .get())
         .run(some("Output").as((u,m) -> {
-          System.out.println(u.getUser().getRegion());
           return u;
         }));
   }

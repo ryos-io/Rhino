@@ -27,7 +27,6 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -37,7 +36,7 @@ import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
@@ -243,7 +242,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var maxUserInject = repoAnnotation.map(
         io.ryos.rhino.sdk.annotations.UserRepository::max).orElse(1);
     var userRepo = repoAnnotation.map(this::createUserRepository)
-        .orElse(new DefaultUserRepositoryFactoryImpl().create());
+        .orElse(new DefaultUserRepositoryFactory().create());
 
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)

@@ -30,13 +30,13 @@ import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
 @Simulation(name = "Server-Status Simulation")
-@UserRepository(max = 9, factory = OAuthUserRepositoryFactoryImpl.class)
+@UserRepository(max = 9, factory = OAuthUserRepositoryFactory.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
   @UserProvider(region = "US")

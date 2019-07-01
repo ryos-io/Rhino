@@ -39,7 +39,9 @@ public interface UserSource {
    */
   List<User> getUsers();
 
-  static UserSource createProvider() {
+  List<User> getUsers(int numberOfUsers, String region);
+
+  static UserSource newSource() {
 
     UserSource userProvider = null;
     var userSource = SimulationConfig.getUserSource();

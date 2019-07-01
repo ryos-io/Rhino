@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -67,6 +68,13 @@ public class VaultUserSourceImpl implements UserSource {
     }
 
     return Collections.emptyList();
+  }
+
+  @Override
+  public List<User> getUsers(int numberOfUsers, String region) {
+    return getUsers().stream()
+        .filter(u -> u.getRegion().equalsIgnoreCase(region))
+        .limit(numberOfUsers).collect(Collectors.toList());
   }
 
   private URI getVaultURI() {
