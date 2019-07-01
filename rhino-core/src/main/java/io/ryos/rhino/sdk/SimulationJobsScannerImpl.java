@@ -16,27 +16,27 @@
 
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.CleanUp;
+import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.TestSpec;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.dsl.ConnectableDsl;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
-import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
+import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
@@ -66,7 +66,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   private static final String DOT = ".";
 
   @Override
-  public List<Simulation> scan(String forSimulation, String... inPackages) {
+  public List<SimulationMetadata> scan(String forSimulation, String... inPackages) {
     Objects.requireNonNull(inPackages, "inPackages must not be null.");
     Objects.requireNonNull(forSimulation, "forSimulation must not be null.");
 
@@ -92,7 +92,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
       // Search for classes in development environment. The IDE runs the project in an exploded
       // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path)).orElseThrow();
+      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
+          .orElseThrow();
       var files = new File(resourceURL.toURI()).listFiles();
       if (files != null) {
         return Arrays.stream(files).
@@ -147,13 +148,11 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return path.replace(File.separator, DOT) + DOT + className.substring(0, className.indexOf(DOT));
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private boolean isBenchmarkClass(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .anyMatch(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation);
   }
 
-  // SimulationSpec classes annotated with SimulationSpec annotation.
   private String getSimulationName(Class clazz) {
     return Arrays.stream(clazz.getDeclaredAnnotations())
         .filter(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation)
@@ -170,48 +169,86 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     }
   }
 
-  private Simulation createBenchmarkJob(final Class clazz) {
+  private SimulationMetadata createBenchmarkJob(final Class clazz) {
 
+    // Simulation class.
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+
+    // User repository annotation.
+    var repoAnnotation = Optional.ofNullable((io.ryos.rhino.sdk.annotations.UserRepository) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
+
+    // Read runner annotation.
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
+
+    // Ramp-up annotation.
+    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+    RampupInfo rampupInfo = null;
+    if (rampUpAnnotation !=  null) {
+      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(), Duration.ofMinutes(rampUpAnnotation.duration()));
+    }
+
+    // Throttling annotation.
+    var throttlingAnnotation = (io.ryos.rhino.sdk.annotations.Throttle) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Throttle.class);
+
+    ThrottlingInfo throttlingInfo = null;
+    if (throttlingAnnotation !=  null) {
+      throttlingInfo = new ThrottlingInfo(throttlingAnnotation.numberOfRequests(),
+          Duration.ofMinutes(throttlingAnnotation.durationInMins()));
+    }
+
+    // Read influx DB annotation, to enable influx db.
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
-    var stepMethods = Arrays.stream(clazz.getDeclaredMethods())
+
+    // Read scenario methods.
+    var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
             .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.Scenario))
         .map(s -> new Scenario(
             s.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name(), s))
         .collect(toList());
-    var specMethods = Arrays.stream(clazz.getDeclaredMethods())
-        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.TestSpec))
-        .map(s -> new Pair<String, Spec>(s.getDeclaredAnnotation(TestSpec.class).name(),
-            ReflectionUtils.<Spec>executeMethod(s,
-            instanceOf(clazz).orElseThrow())))
-        .map(p -> p.getSecond().withSpecName(p.getFirst()))
+
+    // Create test instance.
+    var testInstance = instanceOf(clazz).orElseThrow();
+
+    var dsls = Arrays.stream(clazz.getDeclaredMethods())
+        .filter(method -> Arrays.stream(method.getDeclaredAnnotations())
+        .anyMatch(a -> a instanceof Dsl))
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
+        .map(p -> {
+          var loadDsl = p.getSecond();
+          if (loadDsl instanceof ConnectableDsl) {
+            return ((ConnectableDsl) loadDsl).withName(p.getFirst());
+          }
+          return loadDsl;
+        })
         .collect(toList());
 
-    if (stepMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
+    if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
       throw new SimulationNotFoundException(clazz.getName());
     }
 
-    if (specMethods.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
+    if (dsls.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
       throw new SpecificationNotFoundException(clazz.getName());
     }
 
+    // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
-    var injectAnnotationField = getFieldByAnnotation(clazz, UserFeeder.class);
-    var maxUserInject = injectAnnotationField.map(p -> p.getSecond().max()).orElse(10);
-    var userRepo = injectAnnotationField.map(p -> createUserRepository(p.getSecond()))
+
+    // If the UserRepository annotation does exist, use the metadata out of it. Otherwise, default.
+    var maxUserInject = repoAnnotation.map(
+        io.ryos.rhino.sdk.annotations.UserRepository::max).orElse(1);
+    var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
-    return new Simulation.Builder()
+    return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() :
-            DefaultSimulationRunner.class)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withInjectUser(maxUserInject)
@@ -221,18 +258,22 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withCleanUp(findMethodWith(clazz, CleanUp.class).orElse(null))
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
-        .withScenarios(stepMethods)
-        .withSpecs(specMethods)
-        .withRampUp(-1). // Throttling is not scope of 1.0 anymore.
-        build();
+        .withScenarios(scenarioMethods)
+        .withSpecs(dsls)
+        .withTestInstance(testInstance)
+        .withThrottling(throttlingInfo)
+        .withRampUp(rampupInfo)
+        .build();
   }
 
   private boolean isBlockingSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation.clazz().equals(DefaultSimulationRunner.class);
+    return runnerAnnotation == null || runnerAnnotation.clazz()
+        .equals(DefaultSimulationRunner.class);
   }
 
   private boolean isReactiveSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation.clazz().equals(ReactiveHttpSimulationRunner.class);
+    return runnerAnnotation != null && runnerAnnotation.clazz()
+        .equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {
@@ -255,14 +296,14 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final UserFeeder feeder) {
+  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository feeder) {
 
     var factory = feeder.factory();
     var loginDelay = feeder.delay();
 
     try {
-      final Constructor<? extends UserRepositoryFactory> factoryConstructor =
-          factory.getConstructor(long.class);
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory
+          .getConstructor(long.class);
       final UserRepositoryFactory userRepositoryFactory = factoryConstructor
           .newInstance(loginDelay);
       return userRepositoryFactory.create();

@@ -36,7 +36,7 @@ public class Application {
 
   public static void main(String... arg) {
 
-    var simulation = new SimulationSpecImpl(CLASSPATH_RHINO_PROPERTIES, SIMULATION);
+    var simulation = new SimulationImpl(CLASSPATH_RHINO_PROPERTIES, SIMULATION);
 
     simulation.start();
   }

@@ -35,7 +35,7 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
       final String refreshToken,
       final String scope,
       final String clientId,
-      final int id) {
+      final String id) {
 
     super(user, password, id, scope);
 

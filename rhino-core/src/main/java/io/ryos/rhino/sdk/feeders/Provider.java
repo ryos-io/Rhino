@@ -17,15 +17,15 @@
 package io.ryos.rhino.sdk.feeders;
 
 /**
- * Feedable is object provider to create new instances of type, T, to inject them into injection
- * points annotated with {@link Feedable}.
+ * Provider is object provider to create new instances of type, T, to inject them into injection
+ * points annotated with {@link Provider}.
  * <p>
  *
  * @param <T> Type of object being fed.
  * @author Erhan Bagdemir
  * @version 1.0.0
  */
-public interface Feedable<T> {
+public interface Provider<T> {
 
   /**
    * Instance to be fed into injection point.

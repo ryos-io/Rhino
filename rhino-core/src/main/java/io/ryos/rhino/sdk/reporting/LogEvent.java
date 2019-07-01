@@ -16,13 +16,10 @@
 
 package io.ryos.rhino.sdk.reporting;
 
-/**
- * @author Erhan Bagdemir
- */
 public class LogEvent {
 
   public String username;
-  public int userId;
+  public String userId;
   public String scenario;
   public long start;
   public long end;
@@ -32,7 +29,7 @@ public class LogEvent {
     return username;
   }
 
-  public int getUserId() {
+  public String getUserId() {
     return userId;
   }
 

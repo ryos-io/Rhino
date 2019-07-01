@@ -1,10 +1,10 @@
 package io.ryos.rhino.sdk.specs;
 
 import io.netty.handler.codec.http.HttpHeaders;
-import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
+import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -15,23 +15,29 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   private final String stepName;
   private final String specName;
-  private final int userId;
+  private final String userId;
   private final MeasurementImpl measurement;
-  private final Simulation simulation;
   private volatile long start = -1;
   private volatile int status;
+  private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
+  private final EventDispatcher eventDispatcher;
 
-  public HttpSpecAsyncHandler(int userId, String specName, String stepName, Simulation simulation) {
+  public HttpSpecAsyncHandler(final String userId,
+      final String specName,
+      final String stepName,
+      final EventDispatcher eventDispatcher) {
     this.measurement = new MeasurementImpl(specName, userId);
     this.specName = specName;
     this.userId = userId;
-    this.simulation = simulation;
     this.stepName = stepName;
+    this.eventDispatcher = eventDispatcher;
   }
 
   @Override
   public State onStatusReceived(final HttpResponseStatus responseStatus) {
 
+    builder.reset();
+    builder.accumulate(responseStatus);
     this.status = responseStatus.getStatusCode();
 
     return State.CONTINUE;
@@ -39,11 +45,13 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public State onHeadersReceived(final HttpHeaders headers) {
+    builder.accumulate(headers);
     return State.CONTINUE;
   }
 
   @Override
   public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) {
+    builder.accumulate(bodyPart);
     return State.CONTINUE;
   }
 
@@ -67,9 +75,9 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     userEventEnd.id = userId;
     measurement.record(userEventEnd);
 
-    simulation.dispatchEvents(measurement);
+    eventDispatcher.dispatchEvents(measurement);
 
-    return null;
+    return builder.build();
   }
 
   @Override

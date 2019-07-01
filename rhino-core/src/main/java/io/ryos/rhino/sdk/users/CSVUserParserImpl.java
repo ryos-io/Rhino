@@ -18,22 +18,21 @@ package io.ryos.rhino.sdk.users;
 
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
-import io.ryos.rhino.sdk.users.provider.ClasspathUserProviderImpl;
+import io.ryos.rhino.sdk.users.provider.FileBasedUserProviderImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CSVUserParserImpl implements UserParser {
-  private static final Logger LOG = LogManager.getLogger(ClasspathUserProviderImpl.class);
 
-  private final AtomicInteger counter = new AtomicInteger(0);
+  private static final Logger LOG = LogManager.getLogger(FileBasedUserProviderImpl.class);
 
   @Override
   public List<User> unmarshall(InputStream inputStream) {
@@ -45,7 +44,7 @@ public class CSVUserParserImpl implements UserParser {
       return isr.lines()
           .map(line -> line.split(";"))
           .filter(arr -> arr.length == 3)
-          .map(arr -> new UserImpl(arr[0], arr[1], counter.incrementAndGet(), arr[2]))
+          .map(arr -> new UserImpl(arr[0], arr[1], "user-" + UUID.randomUUID(), arr[2]))
           .collect(Collectors.toList());
     } catch (IOException e) {
       LOG.error(e); // TODO

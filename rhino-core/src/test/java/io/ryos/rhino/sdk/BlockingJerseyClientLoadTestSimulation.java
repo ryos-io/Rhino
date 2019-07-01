@@ -18,12 +18,13 @@ package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
-import io.ryos.rhino.sdk.annotations.Feeder;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.UserFeeder;
+import io.ryos.rhino.sdk.annotations.UserProvider;
+import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
@@ -36,15 +37,13 @@ import javax.ws.rs.core.Response;
 
 @Simulation(name = "Server-Status Simulation")
 @Logging(file = "/Users/bagdemir/sims/simulation.log", formatter = GatlingLogFormatter.class)
-public class PerformanceTestingExample {
+@UserRepository(max=2, factory = OAuthUserRepositoryFactoryImpl.class)
+public class BlockingJerseyClientLoadTestSimulation {
 
-  @UserFeeder(max = 1, delay = 1000, factory = OAuthUserRepositoryFactoryImpl.class)
+  @UserProvider
   private OAuthUser user;
 
-  @SessionFeeder
-  private UserSession userSession;
-
-  @Feeder(factory = UUIDProvider.class)
+  @Provider(factory = UUIDProvider.class)
   private String uuid;
 
   @Before
@@ -57,17 +56,14 @@ public class PerformanceTestingExample {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://localhost:8080/")
+        .target("https://cc-api-storage-stage.adobe.io/")
         .request()
         .header("Authorization", "Bearer " + user.getAccessToken())
         .header("X-Request-Id", "Rhino-" + uuid)
+        .header("X-Api-Key", "CCStorage")
         .get();
 
-    System.out.println(Thread.currentThread().getName() + " - Discovery:"
-        + user.getUsername()
-        + " got  " + response.readEntity(String.class));
-
-    measurement.measure("Discovery API Call", response.toString());
+    measurement.measure("Discovery API Call", String.valueOf(response.getStatus()));
   }
 
   @Scenario(name = "Health")
@@ -75,16 +71,12 @@ public class PerformanceTestingExample {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://localhost:8080")
+        .target("https://cc-api-storage-stage.adobe.io/")
         .request()
         .header("X-Request-Id", "Rhino-" + uuid)
         .get();
 
-    System.out.println(Thread.currentThread().getName() + " - Health:"
-        + user.getUsername()
-        + " got  " + response.readEntity(String.class));
-
-    measurement.measure("Health API Call", response.toString());
+    measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }
 
   @Scenario(name = "KO OK")
@@ -92,14 +84,11 @@ public class PerformanceTestingExample {
 
     final Client client = ClientBuilder.newClient();
     final Response response = client
-        .target("https://localhost:8080")
+        .target("https://cc-api-storage-stage.adobe.io/")
         .request()
         .get();
 
-    System.out.println(Thread.currentThread().getName() + " - Fail:" + user.getUsername() + " got"
-        + " " + response.readEntity(String.class));
-
-    measurement.measure("Broken Call", response.toString());
+    measurement.measure("Broken Call", String.valueOf(response.getStatus()));
   }
 
   @After

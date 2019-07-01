@@ -20,7 +20,7 @@ package io.ryos.rhino.sdk.users.data;
  * Representation of a User, that is used in requests against the backend. Every request is
  * associated with an user.
  * <p>
- *   
+ *
  * @author Erhan Bagdemir
  * @since 1.0.0
  */
@@ -52,5 +52,12 @@ public interface User {
    *
    * @return The id of the user.
    */
-  int getId();
+  String getId();
+
+  /**
+   * Region of the user, if it belongs to one.
+   *
+   * @return Region of the user
+   */
+  String getRegion();
 }
