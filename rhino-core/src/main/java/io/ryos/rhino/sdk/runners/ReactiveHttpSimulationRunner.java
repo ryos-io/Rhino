@@ -114,6 +114,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     this.subscribe = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
+        .onErrorResume(t -> Mono.empty())
         .doOnError(t -> Out.error(t.getMessage()))
         .doOnTerminate(this::terminate)
         .doOnComplete(() -> shutdownInitiated = true)
