@@ -60,5 +60,11 @@
       <artifactId>rhino-core</artifactId>
       <version>1.1.0.RC</version>
     </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>2.23.2</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>
