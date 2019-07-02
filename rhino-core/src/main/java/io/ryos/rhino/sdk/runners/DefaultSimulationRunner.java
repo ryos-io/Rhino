@@ -91,13 +91,9 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var userRepository = simulationMetadata.getUserRepository();
     var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, simulationMetadata.getUserRegion(),
             simulationMetadata.getNumberOfUsers());
+
     if (SimulationConfig.isGrafanaEnabled()) {
-      Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-      new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
-          simulationMetadata.getScenarios()
-              .stream()
-              .map(Scenario::getDescription)
-              .toArray(String[]::new));
+      setUpGrafanaDashboard();
     }
 
     prepareUserSessions();
@@ -119,6 +115,15 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
     await();
     stop();
+  }
+
+  private void setUpGrafanaDashboard() {
+    Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+    new GrafanaGateway().setUpDashboard(SimulationConfig.getSimulationId(),
+        simulationMetadata.getScenarios()
+            .stream()
+            .map(Scenario::getDescription)
+            .toArray(String[]::new));
   }
 
   private void await() {
