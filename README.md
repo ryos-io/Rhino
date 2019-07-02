@@ -4,26 +4,9 @@
 
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-1.0.12-85b95d.svg" />
-  <img src="https://img.shields.io/badge/archetype-1.0.12-85b95d.svg" />
+  <img src="https://img.shields.io/badge/rhino--core-1.1.12.RELEASE-72bf26.svg" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
-
-## Project Status
-
-The first Rhino release version `1.1.0.RELEASE` is currently scheduled in July 2019. We are currently working on F/OSS transfer. 
-
-<p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
-</p>
-
-### Scope
-
-Upcoming 1.1.0 release is to contain the following major features as well as some minor bug fixes: 
-* [Reactive Rhino and Spec DSL](https://github.com/bagdemir/Rhino/issues/16)
-* [Native Grafana Integration](https://github.com/bagdemir/Rhino/issues/29)
-* [andThen() combinator](https://github.com/bagdemir/Rhino/pull/36)
-* [Load ramp-up control](https://github.com/bagdemir/Rhino/issues/9)
 
 ## Rhino: Cloud Services Load and Performance Testing
 
@@ -44,8 +27,7 @@ make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or
 the framework every time they need to write new load tests.
 
-Considering all these aspects, we began with Project Rhino in 2018 and it is available as OSS  
-with Apache 2.0 License, now.
+Considering all these aspects, we began with Project Rhino in 2018 and it is available as F/OSS  with Apache 2.0 License, now.
 
 ## How to use?
 
@@ -55,7 +37,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>${most.recent.release}</version>
+  <version>1.1.2.RELEASE</version>
 </dependency>
 ```
 
@@ -77,20 +59,28 @@ annotated with `@Scenario` annotation and contains the implementation of the loa
 might have multiple scenarios defined which are run during testing, independently and parallel:
 
 ```java
-@Simulation(name = "Example Simulation")
-public class PerformanceTestingExample {
+@Simulation(name = "Server-Status Simulation")
+@UserRepository(factory = OAuthUserRepositoryFactory.class)
+public class RhinoEntity {
+
+  private static final String TARGET = "http://localhost:8089/api/status";
+  private static final String X_REQUEST_ID = "X-Request-Id";
   
-  @Feeder
-  private User myAuthUser;
+  // Some http client
+  private Client client = ClientBuilder.newClient();
 
-  @Scenario(name = "Hello World")
-  public void testHelloWorld(Measurement measurement) {
-    // hello world
-  }
+  @Provider(factory = UUIDProvider.class)
+  private String uuid;
 
-  @Scenario(name = "Health Check")
-  public void testHealthCheck(Measurement measurement) {
-    // healthcheck 
+  @Scenario(name = "Health")
+  public void performHealth(final Measurement measurement) {
+    var response = client
+            .target(TARGET)
+            .request()
+            .header(X_REQUEST_ID, "Rhino-" + uuid)
+            .get();
+
+    measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }
 }
 ```
@@ -101,11 +91,15 @@ simulation name provided, so the names must be unique.
 
 A simple Rhino application would look like:
 ```java
+import io.ryos.rhino.sdk.Simulation;
+
 public class Rhino {
+
+    private static final String PROPS = "classpath:///rhino.properties";
+    private static final String SIM_NAME = "Server-Status Simulation";
+
     public static void main(String ... args) {
-        SimulationSpec simulationMetadata = new SimulationSpecImpl("classpath:///rhino.properties",
-            "helloWorld");
-        simulationMetadata.start();
+        Simulation.create(PROPS, SIM_NAME).start();
     }
 }
 ```
@@ -126,8 +120,9 @@ If you think that the Rhino is the right framework for you, you can follow the w
 
 * [Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
 * [Simulations and Scenarios](https://github.com/bagdemir/Rhino/wiki/Simulations-and-Scenarios)
-* [Feeders](https://github.com/bagdemir/rhino/wiki/Feeders)
-* [Configuration of Tests](https://github.com/bagdemir/rhino/wiki/Configuration)
+* [Reactive Simulations](https://github.com/bagdemir/Rhino/wiki/Reactive-Tests-and-Specifications)
+* [Providers](https://github.com/bagdemir/rhino/wiki/Providers)
+* [Configuration](https://github.com/bagdemir/rhino/wiki/Configuration)
 * [Users in your Tests](https://github.com/bagdemir/rhino/wiki/Testing-with-Users)
 
 Questions/Contributions?
