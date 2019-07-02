@@ -4,8 +4,7 @@
 
 <p align="center">
   <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-1.0.12-85b95d.svg" />
-  <img src="https://img.shields.io/badge/archetype-1.0.12-85b95d.svg" />
+  <img src="https://img.shields.io/badge/rhino--core-1.1.12.RELEASE-72bf26.svg" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
