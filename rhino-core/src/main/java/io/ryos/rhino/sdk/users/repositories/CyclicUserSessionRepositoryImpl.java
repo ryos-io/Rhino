@@ -18,36 +18,42 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.data.UserSession;
-import java.util.List;
+
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
+ * User session repository provides the user sessions limited by maxNumberOfUsers. The take() method returns the next
+ * user session in the backing collection. Once all elements in the collection are returned, the cyclic iterator starts
+ * from the beginning.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class RegionalUserProviderImpl implements RegionalUserProvider<UserSession> {
+public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionRepository<UserSession> {
 
-  public RegionalUserProviderImpl(
+  public static final int MAX_NUMBER_OF_USERS = 1000;
+
+  public CyclicUserSessionRepositoryImpl(
+          final UserRepository<UserSession> userRepository,
+          final String region) {
+
+    this(userRepository, region, MAX_NUMBER_OF_USERS);
+  }
+
+  public CyclicUserSessionRepositoryImpl(
       final UserRepository<UserSession> userRepository,
-      final String region) {
+      final String region,
+      final int maxNumberOfUsers) {
 
     Objects.requireNonNull(userRepository);
     Objects.requireNonNull(region);
 
-    this.filteredUsers = userRepository.leaseUsers(10000, region);
+    var filteredUsers = userRepository.leaseUsers(maxNumberOfUsers, region);
     this.filteredIterator = new CyclicIterator<>(filteredUsers);
   }
 
-  private final List<UserSession> filteredUsers;
   private final CyclicIterator<UserSession> filteredIterator;
-
-  @Override
-  public boolean has(int numberOfUsers) {
-    return filteredUsers.size() >= numberOfUsers;
-  }
 
   @Override
   public UserSession take() {

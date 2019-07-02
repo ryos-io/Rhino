@@ -104,11 +104,29 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   }
 
   private void executeScenario(final Scenario scenario,
-      final MeasurementImpl recorder,
+      final MeasurementImpl measurement,
       final Object simulationInstance,
       final UserSession userSession) {
     try {
-      scenario.getMethod().invoke(simulationInstance, recorder, userSession);
+      var method = scenario.getMethod();
+      var parameterTypes = method.getParameterTypes();
+
+      // optimization might be required to avoid go through the conditions every time the scenario executed.
+      if (parameterTypes.length == 0) {
+        method.invoke(simulationInstance);
+      } else if (parameterTypes.length == 2 &&
+              parameterTypes[0].isAssignableFrom(Measurement.class) &&
+              parameterTypes[1].isAssignableFrom(UserSession.class)) {
+        method.invoke(simulationInstance, measurement, userSession);
+      } else if (parameterTypes.length == 1 &&
+              parameterTypes[0].isAssignableFrom(Measurement.class)) {
+        method.invoke(simulationInstance, measurement);
+      } else if (parameterTypes.length == 1 &&
+              parameterTypes[0].isAssignableFrom(UserSession.class)) {
+        method.invoke(simulationInstance, userSession);
+      } else {
+        throw new IllegalAccessException("No proper scenario method found.");
+      }
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(e.getCause());
@@ -120,7 +138,14 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
       final UserSession userSession) {
     try {
       if (method != null) {
-        method.invoke(simulationInstance, userSession);
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length == 1 && parameterTypes[0].isAssignableFrom(UserSession.class)) {
+          method.invoke(simulationInstance, userSession);
+        } else if (parameterTypes.length == 0) {
+          method.invoke(simulationInstance);
+        } else {
+          throw new IllegalAccessException("No proper scenario method found.");
+        }
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());

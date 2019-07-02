@@ -29,6 +29,4 @@ import java.util.List;
 public interface UserRepository<T extends UserSession> {
 
   List<T> leaseUsers(int numberOfUsers, String region);
-  List<T> leaseUsers(int numberOfUsers);
-
 }

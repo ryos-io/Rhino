@@ -2,18 +2,24 @@ package io.ryos.rhino.sdk.feeders;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
-import io.ryos.rhino.sdk.users.repositories.RegionalUserProvider;
+import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepository;
 
 public class OAuthUserProvider implements Provider<OAuthUser> {
 
-  private final RegionalUserProvider<UserSession> userProvider;
+  private final CyclicUserSessionRepository<UserSession> userProvider;
 
-  public OAuthUserProvider(final RegionalUserProvider<UserSession> userProvider) {
+  public OAuthUserProvider(final CyclicUserSessionRepository<UserSession> userProvider) {
     this.userProvider = userProvider;
   }
 
   @Override
   public OAuthUser take() {
-    return (OAuthUser) userProvider.take().getUser();
+
+    var user = userProvider.take().getUser();
+    if (user instanceof OAuthUser) {
+      return (OAuthUser) userProvider.take().getUser();
+    }
+
+    throw new IllegalArgumentException("No OAuth users found in the repository.");
   }
 }

@@ -237,10 +237,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
-
-    // If the UserRepository annotation does exist, use the metadata out of it. Otherwise, default.
-    var maxUserInject = repoAnnotation.map(
-        io.ryos.rhino.sdk.annotations.UserRepository::max).orElse(1);
     var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactory().create());
 
@@ -250,7 +246,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
-        .withInjectUser(maxUserInject)
+        .withUserRegion(simAnnotation.userRegion())
+        .withInjectUser(simAnnotation.maxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
         .withPrepare(findMethodWith(clazz, Prepare.class).orElse(null))

@@ -93,10 +93,10 @@ public class SimulationMetadata {
   private int numberOfUsers;
 
   /**
-   * The number of users to be injected per second.
+   * User region is the region of the users that simulates the load.
    * <p>
    */
-  private int rampUp;
+  private String userRegion;
 
   /**
    * Throttling info.
@@ -104,6 +104,10 @@ public class SimulationMetadata {
    */
   private ThrottlingInfo throttlingInfo;
 
+  /**
+   * Ramp-up info.
+   * <p>
+   */
   private RampupInfo rampUpInfo;
 
   /**
@@ -168,8 +172,6 @@ public class SimulationMetadata {
    * <p>
    */
   private UserRepository<UserSession> userRepository;
-
-  private String userRegion;
 
   /**
    * Enable Influx DB integration.
@@ -377,6 +379,10 @@ public class SimulationMetadata {
      */
     private UserRepository<UserSession> userRepository;
 
+    /**
+     * User region.
+     * <p>
+     */
     private String userRegion;
 
     /**

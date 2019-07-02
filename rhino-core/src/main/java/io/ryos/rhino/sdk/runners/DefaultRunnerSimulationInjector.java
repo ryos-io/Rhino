@@ -25,7 +25,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
-import io.ryos.rhino.sdk.users.repositories.RegionalUserProviderImpl;
+import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -87,7 +87,7 @@ public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector 
         UserProvider.class);
 
     fieldAnnotation.stream().map(pair ->
-        new Pair<>(new OAuthUserProvider(new RegionalUserProviderImpl(simulationMetadata.getUserRepository(),
+        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(simulationMetadata.getUserRepository(),
             pair.getSecond().region())), pair.getFirst()))
         .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
   }

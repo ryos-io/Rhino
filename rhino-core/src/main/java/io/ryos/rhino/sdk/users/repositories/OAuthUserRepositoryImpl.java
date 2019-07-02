@@ -37,6 +37,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     this.loginDelay = loginDelay;
   }
 
+  @Override
   public List<UserSession> leaseUsers(int numberOfUsers, String region) {
     var users = userSource.getUsers(numberOfUsers, region);
     var result = new ArrayList<UserSession>();
@@ -49,12 +50,6 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
     return result;
   }
-
-  @Override
-  public List<UserSession> leaseUsers(int numberOfUsers) {
-    return leaseUsers(numberOfUsers, Regions.ALL);
-  }
-
 
   private void delay() {
     try {

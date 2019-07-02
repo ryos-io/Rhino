@@ -39,9 +39,4 @@ public class DefaultUserRepositoryImpl implements UserRepository<UserSession> {
   public List<UserSession> leaseUsers(int numberOfUsers, String region) {
     return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
   }
-
-  @Override
-  public List<UserSession> leaseUsers(int numberOfUsers) {
-    return leaseUsers(numberOfUsers, "all");
-  }
 }

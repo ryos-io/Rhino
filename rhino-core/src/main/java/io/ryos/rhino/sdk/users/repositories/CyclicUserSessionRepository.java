@@ -24,16 +24,7 @@ import io.ryos.rhino.sdk.data.UserSession;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface RegionalUserProvider<T> {
-
-  /**
-   * Method to determine if the repository contains the number of users, provided by parameter.
-   * <p>
-   *
-   * @param numberOfUsers Number of users, to be queried.
-   * @return true, if the repository contains sufficient number of users, otherwise false.
-   */
-  boolean has(int numberOfUsers);
+public interface CyclicUserSessionRepository<T extends UserSession> {
 
   /**
    * Takes a single user from the repository.
