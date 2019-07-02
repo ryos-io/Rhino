@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk;
 
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
+import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -10,6 +11,7 @@ import io.ryos.rhino.sdk.reporting.Measurement;
 import javax.ws.rs.core.Response.Status;
 
 @Simulation(name = "Server-Status Simulation Without User")
+@Influx
 public class BlockingLoadTestWithoutUserSimulation {
 
   @Provider(factory = UUIDProvider.class)

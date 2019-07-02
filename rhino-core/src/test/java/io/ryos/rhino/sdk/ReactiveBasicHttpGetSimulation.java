@@ -17,6 +17,7 @@ import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.feeders.OAuthUserProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import org.asynchttpclient.Response;
 
 @Simulation(name = "Reactive Test", durationInMins = 5)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -39,8 +40,10 @@ public class ReactiveBasicHttpGetSimulation {
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(DISCOVERY_ENDPOINT)
-            .get())
+            .get()
+            .saveTo("result"))
         .run(some("Output").as((u,m) -> {
+          u.<Response>get("result").ifPresent(r -> System.out.println(r.getStatusCode()));
           return u;
         }));
   }

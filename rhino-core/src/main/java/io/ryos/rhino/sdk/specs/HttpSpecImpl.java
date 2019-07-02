@@ -30,6 +30,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   private Function<Context, String> endpoint;
   private RetryInfo retryInfo;
 
+  private String saveTo;
+
   /**
    * Creates a new {@link HttpSpecImpl}.
    * <p>
@@ -149,6 +151,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
+  public HttpSpec saveTo(String keyName) {
+    this.saveTo = keyName;
+    return this;
+  }
+
+  @Override
   public Supplier<InputStream> getUploadContent() {
     return toUpload;
   }
@@ -176,6 +184,11 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   @Override
   public boolean isAuth() {
     return auth;
+  }
+
+  @Override
+  public String getResponseKey() {
+    return saveTo;
   }
 
   public RetryInfo getRetryInfo() {

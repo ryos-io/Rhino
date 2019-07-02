@@ -49,6 +49,8 @@ public interface HttpSpec extends RetriableSpec<HttpSpec, HttpResponse> {
 
   HttpSpec retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
 
+  HttpSpec saveTo(String keyName);
+
   // Getters
   Method getMethod();
   Function<Context, String> getEndpoint();
@@ -57,4 +59,5 @@ public interface HttpSpec extends RetriableSpec<HttpSpec, HttpResponse> {
   List<Function<Context, Entry<String, List<String>>>> getQueryParameters();
   RetryInfo getRetryInfo();
   boolean isAuth();
+  String getResponseKey();
 }
