@@ -18,15 +18,11 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
-import io.ryos.rhino.sdk.users.data.OAuthUser;
-import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.source.UserSource;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
@@ -39,14 +35,6 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     this.userSource = Objects.requireNonNull(userSource);
     this.authenticator = new OAuthAuthenticatorImpl();
     this.loginDelay = loginDelay;
-  }
-
-  private void delay() {
-    try {
-      Thread.sleep(loginDelay);
-    } catch (InterruptedException e) {
-      // interrupted
-    }
   }
 
   public List<UserSession> leaseUsers(int numberOfUsers, String region) {
@@ -64,6 +52,15 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   @Override
   public List<UserSession> leaseUsers(int numberOfUsers) {
-    return leaseUsers(numberOfUsers, "all");
+    return leaseUsers(numberOfUsers, Regions.ALL);
+  }
+
+
+  private void delay() {
+    try {
+      Thread.sleep(loginDelay);
+    } catch (InterruptedException e) {
+      // interrupted
+    }
   }
 }
