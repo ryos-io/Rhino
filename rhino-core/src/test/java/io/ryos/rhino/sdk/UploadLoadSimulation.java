@@ -17,16 +17,16 @@ import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import java.io.InputStream;
 
-@Simulation(name = "Reactive Upload Test")
+@Simulation(name = "Reactive Upload Test", userRegion = "US")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 @UserRepository(factory = OAuthUserRepositoryFactory.class)
 public class UploadLoadSimulation {
 
-  private static final String DISCOVERY_ENDPOINT = "https://localhost/files";
+  private static final String DISCOVERY_ENDPOINT = "http://localhost:8089/api/files";
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
-  @UserProvider
+  @UserProvider(region = "US")
   private OAuthUserProvider userProvider;
 
   @Provider(factory = UUIDProvider.class)
@@ -40,7 +40,7 @@ public class UploadLoadSimulation {
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint((c) -> DISCOVERY_ENDPOINT + uuidProvider.take())
+            .endpoint((c) -> DISCOVERY_ENDPOINT)
             .upload(this::getStream)
             .put());
   }
