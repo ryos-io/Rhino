@@ -65,14 +65,15 @@ public class RhinoEntity {
 
   private static final String TARGET = "http://localhost:8089/api/status";
   private static final String X_REQUEST_ID = "X-Request-Id";
+  
+  // Some http client
+  private Client client = ClientBuilder.newClient();
 
   @Provider(factory = UUIDProvider.class)
   private String uuid;
 
   @Scenario(name = "Health")
-  public void performHealth(Measurement measurement) {
-
-    var client = ClientBuilder.newClient();
+  public void performHealth(final Measurement measurement) {
     var response = client
             .target(TARGET)
             .request()
