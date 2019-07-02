@@ -9,22 +9,6 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-## Project Status
-
-The first Rhino release version `1.1.0.RELEASE` is currently scheduled in July 2019. We are currently working on F/OSS transfer. 
-
-<p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/release_roadmap.jpg"  width="540"/>
-</p>
-
-### Scope
-
-Upcoming 1.1.0 release is to contain the following major features as well as some minor bug fixes: 
-* [Reactive Rhino and Spec DSL](https://github.com/bagdemir/Rhino/issues/16)
-* [Native Grafana Integration](https://github.com/bagdemir/Rhino/issues/29)
-* [andThen() combinator](https://github.com/bagdemir/Rhino/pull/36)
-* [Load ramp-up control](https://github.com/bagdemir/Rhino/issues/9)
-
 ## Rhino: Cloud Services Load and Performance Testing
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
@@ -55,7 +39,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>${most.recent.release}</version>
+  <version>1.1.2.RELEASE</version>
 </dependency>
 ```
 
@@ -77,20 +61,27 @@ annotated with `@Scenario` annotation and contains the implementation of the loa
 might have multiple scenarios defined which are run during testing, independently and parallel:
 
 ```java
-@Simulation(name = "Example Simulation")
-public class PerformanceTestingExample {
-  
-  @Feeder
-  private User myAuthUser;
+@Simulation(name = "Server-Status Simulation")
+@UserRepository(factory = OAuthUserRepositoryFactory.class)
+public class RhinoEntity {
 
-  @Scenario(name = "Hello World")
-  public void testHelloWorld(Measurement measurement) {
-    // hello world
-  }
+  private static final String TARGET = "http://localhost:8089/api/status";
+  private static final String X_REQUEST_ID = "X-Request-Id";
 
-  @Scenario(name = "Health Check")
-  public void testHealthCheck(Measurement measurement) {
-    // healthcheck 
+  @Provider(factory = UUIDProvider.class)
+  private String uuid;
+
+  @Scenario(name = "Health")
+  public void performHealth(Measurement measurement) {
+
+    var client = ClientBuilder.newClient();
+    var response = client
+            .target(TARGET)
+            .request()
+            .header(X_REQUEST_ID, "Rhino-" + uuid)
+            .get();
+
+    measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }
 }
 ```
@@ -101,11 +92,15 @@ simulation name provided, so the names must be unique.
 
 A simple Rhino application would look like:
 ```java
+import io.ryos.rhino.sdk.Simulation;
+
 public class Rhino {
+
+    private static final String PROPS = "classpath:///rhino.properties";
+    private static final String SIM_NAME = "Server-Status Simulation";
+
     public static void main(String ... args) {
-        SimulationSpec simulationMetadata = new SimulationSpecImpl("classpath:///rhino.properties",
-            "helloWorld");
-        simulationMetadata.start();
+        Simulation.create(PROPS, SIM_NAME).start();
     }
 }
 ```
