@@ -36,6 +36,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
@@ -105,6 +106,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
     this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
+        .onErrorResume(t -> Mono.empty())
         .take((simulationMetadata.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
