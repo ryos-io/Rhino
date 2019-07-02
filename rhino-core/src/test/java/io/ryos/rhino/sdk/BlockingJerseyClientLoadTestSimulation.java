@@ -36,7 +36,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
 @Simulation(name = "Server-Status Simulation")
-@UserRepository(max = 9, factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactory.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
   @UserProvider(region = "US")
@@ -66,7 +66,13 @@ public class BlockingJerseyClientLoadTestSimulation {
   @Scenario(name = "Discovery")
   public void performDiscovery(Measurement measurement, UserSession userSession) {
 
-    OAuthUser user = userProviderUS.take();
+    OAuthUser user = userProviderEU.take();
+
+
+    String region = userSession.getUser().getRegion();
+
+    System.out.println(region + " - " + user.getRegion());
+
 
     final Client client = ClientBuilder.newClient();
     final Response response = client

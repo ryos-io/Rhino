@@ -19,7 +19,7 @@ import java.io.InputStream;
 
 @Simulation(name = "Reactive Upload Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@UserRepository(max = 1, factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactory.class)
 public class UploadLoadSimulation {
 
   private static final String DISCOVERY_ENDPOINT = "https://localhost/files";

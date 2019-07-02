@@ -20,7 +20,7 @@ import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 
 @Simulation(name = "Reactive Test", durationInMins = 5)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@UserRepository(max = 1, factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactory.class)
 @RampUp(startRps = 10, targetRps = 2000, duration = 1)
 public class ReactiveBasicHttpGetSimulation {
 

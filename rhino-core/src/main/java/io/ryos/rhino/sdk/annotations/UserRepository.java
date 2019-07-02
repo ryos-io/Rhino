@@ -13,14 +13,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface UserRepository {
   /**
-   * Maximum number of users to be injected.
-   * <p>
-   *
-   * @return Max. number of users.
-   */
-  int max() default -1;
-
-  /**
    * Delay between login requests while requesting token from IMS.
    * <p>
    *
