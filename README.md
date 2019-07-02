@@ -27,8 +27,7 @@ make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or
 the framework every time they need to write new load tests.
 
-Considering all these aspects, we began with Project Rhino in 2018 and it is available as OSS  
-with Apache 2.0 License, now.
+Considering all these aspects, we began with Project Rhino in 2018 and it is available as F/OSS  with Apache 2.0 License, now.
 
 ## How to use?
 
