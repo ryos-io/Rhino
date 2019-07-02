@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.users;
+package io.ryos.rhino.sdk.users.repositories;
 
-import org.junit.Test;
+import io.ryos.rhino.sdk.data.UserSession;
 
 /**
- * Test for user source backed by Vault.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
  */
-public class VaultUserProviderTest {
+public interface CyclicUserSessionRepository<T extends UserSession> {
 
-  @Test
-  public void testGetUsersFromVault() {
-    //new VaultUserSourceImpl().getUsers();
-  }
+  /**
+   * Takes a single user from the repository.
+   * <p>
+   *
+   * @return A {@link UserSession} instance, at the top of the list.
+   */
+  T take();
 }

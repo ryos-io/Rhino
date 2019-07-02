@@ -46,7 +46,7 @@ public class VaultUserParserImpl implements UserParser {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
-  public List<User> unmarshall(final InputStream inputStream) {
+  public List<User> unmarshal(final InputStream inputStream) {
     var userList = new ArrayList<User>();
     try (final InputStream is = inputStream) {
       JsonNode jsonNode = objectMapper.readTree(is);

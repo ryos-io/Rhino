@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,14 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface UserRepository {
-  /**
-   * Maximum number of users to be injected.
-   * <p>
-   *
-   * @return Max. number of users.
-   */
-  int max() default -1;
-
   /**
    * Delay between login requests while requesting token from IMS.
    * <p>
@@ -34,5 +26,5 @@ public @interface UserRepository {
    *
    * @return The type of the repository factory.
    */
-  Class<? extends UserRepositoryFactory> factory() default DefaultUserRepositoryFactoryImpl.class;
+  Class<? extends UserRepositoryFactory> factory() default DefaultUserRepositoryFactory.class;
 }

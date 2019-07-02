@@ -27,31 +27,6 @@ import java.util.List;
  * @author Erhan Bagdemir
  */
 public interface UserRepository<T extends UserSession> {
-  // To be honest, I am not really happy about having two concepts here, the Users and
-  // UserSessions. We need to revise this.
 
-  /**
-   * Method to determine if the repository contains the number of users, provided by parameter.
-   * <p>
-   *
-   * @param numberOfUsers Number of users, to be queried.
-   * @return true, if the repository contains sufficient number of users, otherwise false.
-   */
-  boolean has(int numberOfUsers);
-
-  /**
-   * Get the all users as {@link List} from the repository.
-   * <p>
-   *
-   * @return User list.
-   */
-  List<T> getUserSessions();
-
-  /**
-   * Takes a single user from the repository.
-   * <p>
-   *
-   * @return A {@link UserSession} instance, at the top of the list.
-   */
-  T take();
+  List<T> leaseUsers(int numberOfUsers, String region);
 }

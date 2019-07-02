@@ -27,7 +27,6 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -37,7 +36,7 @@ import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
@@ -238,12 +237,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     // Gather logging information from annotation.
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
-
-    // If the UserRepository annotation does exist, use the metadata out of it. Otherwise, default.
-    var maxUserInject = repoAnnotation.map(
-        io.ryos.rhino.sdk.annotations.UserRepository::max).orElse(1);
     var userRepo = repoAnnotation.map(this::createUserRepository)
-        .orElse(new DefaultUserRepositoryFactoryImpl().create());
+        .orElse(new DefaultUserRepositoryFactory().create());
 
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
@@ -251,7 +246,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
-        .withInjectUser(maxUserInject)
+        .withUserRegion(simAnnotation.userRegion())
+        .withInjectUser(simAnnotation.maxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
         .withPrepare(findMethodWith(clazz, Prepare.class).orElse(null))
@@ -296,16 +292,14 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository feeder) {
+  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository userRepository) {
 
-    var factory = feeder.factory();
-    var loginDelay = feeder.delay();
+    var factory = userRepository.factory();
+    var loginDelay = userRepository.delay();
 
     try {
-      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory
-          .getConstructor(long.class);
-      final UserRepositoryFactory userRepositoryFactory = factoryConstructor
-          .newInstance(loginDelay);
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory.getConstructor(long.class);
+      final UserRepositoryFactory userRepositoryFactory = factoryConstructor.newInstance(loginDelay);
       return userRepositoryFactory.create();
     } catch (NoSuchMethodException nsme) {
       return createWithDefaultConstructor(factory);

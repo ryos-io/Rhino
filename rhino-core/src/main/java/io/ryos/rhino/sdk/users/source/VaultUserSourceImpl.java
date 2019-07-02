@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
@@ -27,17 +27,19 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- * Vault implementation of {@link UserProvider}.
+ * Vault implementation of {@link UserSource}.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public class VaultUserProviderImpl implements UserProvider {
+public class VaultUserSourceImpl implements UserSource {
+
   private static final String PATH_ROOT_CONTEXT = "v1/secret/data";
   private static final String X_VAULT_TOKEN = "X-Vault-Token";
   private static final String VAULT_TOKEN = "VAULT_TOKEN";
@@ -63,10 +65,22 @@ public class VaultUserProviderImpl implements UserProvider {
         .get();
 
     if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-      return userParser.unmarshall(response.readEntity(InputStream.class));
+      return userParser.unmarshal(response.readEntity(InputStream.class));
     }
 
     return Collections.emptyList();
+  }
+
+  @Override
+  public List<User> getUsers(int numberOfUsers, String region) {
+    if (region != null) {
+      return getUsers().stream()
+          .filter(u -> u.getRegion().equalsIgnoreCase(region))
+          .limit(numberOfUsers).collect(Collectors.toList());
+    } else {
+      return getUsers().stream()
+          .limit(numberOfUsers).collect(Collectors.toList());
+    }
   }
 
   private URI getVaultURI() {

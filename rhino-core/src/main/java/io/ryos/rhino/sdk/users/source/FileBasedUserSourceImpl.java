@@ -14,35 +14,50 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.CSVUserParserImpl;
 import io.ryos.rhino.sdk.users.UserParser;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * File based implementation of {@link UserProvider}.
+ * File based implementation of {@link UserSource}.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public class FileBasedUserProviderImpl implements UserProvider {
+public class FileBasedUserSourceImpl implements UserSource {
+
   private final String pathToFile;
   private final UserParser parser = new CSVUserParserImpl();
 
-  public FileBasedUserProviderImpl(final String pathToCSVFile) {
+  FileBasedUserSourceImpl(final String pathToCSVFile) {
     this.pathToFile = pathToCSVFile;
   }
 
   @Override
   public List<User> getUsers() {
-    var userList = parser.unmarshall(new ConfigResource(pathToFile).getInputStream());
+    var userList = parser.unmarshal(new ConfigResource(pathToFile).getInputStream());
     if (userList.isEmpty()) {
-      throw new RuntimeException("No valid user found in " + pathToFile + ". The CSV file should contain "
-          + "lines in the following format: username;password;scope");
+      throw new RuntimeException(
+          "No valid user found in " + pathToFile + ". The CSV file should contain "
+              + "lines in the following format: username;password;scope");
     }
     return userList;
+  }
+
+  @Override
+  public List<User> getUsers(int numberOfUsers, String region) {
+    if (!region.equalsIgnoreCase("all")) {
+      return getUsers().stream()
+          .filter(u -> u.getRegion().equalsIgnoreCase(region))
+          .limit(numberOfUsers).collect(Collectors.toList());
+    } else {
+      return getUsers().stream()
+          .limit(numberOfUsers).collect(Collectors.toList());
+    }
   }
 }

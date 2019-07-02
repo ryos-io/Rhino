@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.feeders;
 
 /**
- * Provider is object provider to create new instances of type, T, to inject them into injection
+ * Provider is object source to create new instances of type, T, to inject them into injection
  * points annotated with {@link Provider}.
  * <p>
  *

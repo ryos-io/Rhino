@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.users;
 
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
-import io.ryos.rhino.sdk.users.provider.FileBasedUserProviderImpl;
+import io.ryos.rhino.sdk.users.source.FileBasedUserSourceImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,10 +32,10 @@ import org.apache.logging.log4j.Logger;
 
 public class CSVUserParserImpl implements UserParser {
 
-  private static final Logger LOG = LogManager.getLogger(FileBasedUserProviderImpl.class);
+  private static final Logger LOG = LogManager.getLogger(CSVUserParserImpl.class);
 
   @Override
-  public List<User> unmarshall(InputStream inputStream) {
+  public List<User> unmarshal(InputStream inputStream) {
     if (inputStream == null) {
       throw new RuntimeException("User file not found.");
     }
@@ -43,8 +43,8 @@ public class CSVUserParserImpl implements UserParser {
     try (var isr = new BufferedReader(new InputStreamReader(inputStream))) {
       return isr.lines()
           .map(line -> line.split(";"))
-          .filter(arr -> arr.length == 3)
-          .map(arr -> new UserImpl(arr[0], arr[1], "user-" + UUID.randomUUID(), arr[2]))
+          .filter(arr -> arr.length == 4)
+          .map(arr -> new UserImpl(arr[0], arr[1], "user-" + UUID.randomUUID(), arr[2], arr[3]))
           .collect(Collectors.toList());
     } catch (IOException e) {
       LOG.error(e); // TODO

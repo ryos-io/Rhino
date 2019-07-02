@@ -24,8 +24,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -56,16 +59,17 @@ public class ReflectionUtils {
             .orElseThrow());
   }
 
-  // Find the first annotation type, clazzAnnotation, on field declarations of the clazz.
-  public static <T extends Annotation> Optional<Pair<Field, T>> getFieldByAnnotation(
+  /** get the list of annotations along with {@link Field} instances. */
+  public static <T extends Annotation> List<Pair<Field, T>> getFieldsByAnnotation(
       final Class clazz,
       final Class<T> clzAnnotation) {
 
-    var field = Arrays.stream(clazz.getDeclaredFields())
+    var fields = Arrays.stream(clazz.getDeclaredFields())
         .filter(m -> Arrays.stream(m.getDeclaredAnnotations()).anyMatch(clzAnnotation::isInstance))
-        .findFirst();
+        .collect(Collectors.toList());
 
-    return field.map(fld -> new Pair<>(fld, fld.getDeclaredAnnotationsByType(clzAnnotation)[0]));
+    return fields.stream().map(f ->
+        new Pair<>(f, f.getDeclaredAnnotationsByType(clzAnnotation)[0])).collect(Collectors.toList());
   }
 
   public static <T extends Annotation> Optional<T> getClassLevelAnnotation(final Class clazz,

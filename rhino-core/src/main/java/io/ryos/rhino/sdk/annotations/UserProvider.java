@@ -16,8 +16,6 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
-import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import io.ryos.rhino.sdk.users.data.User;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -40,21 +38,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface UserProvider {
 
-  String region() default "";
-
-  /**
-   * Delay between login requests while requesting token from IMS.
-   * <p>
-   *
-   * @return Delay in millis.
-   */
-  long delay() default 0;
-
-  /**
-   * Factory implementation of {@link UserRepositoryFactory}.
-   * <p>
-   *
-   * @return The class type of the repository.
-   */
-  Class<? extends UserRepositoryFactory> repository() default DefaultUserRepositoryFactoryImpl.class;
+  String region() default "all";
 }

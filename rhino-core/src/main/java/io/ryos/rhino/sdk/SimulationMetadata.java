@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk;
 
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldByAnnotation;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.annotations.Logging;
@@ -25,7 +25,6 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
-import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
@@ -94,10 +93,10 @@ public class SimulationMetadata {
   private int numberOfUsers;
 
   /**
-   * The number of users to be injected per second.
+   * User region is the region of the users that simulates the load.
    * <p>
    */
-  private int rampUp;
+  private String userRegion;
 
   /**
    * Throttling info.
@@ -105,6 +104,10 @@ public class SimulationMetadata {
    */
   private ThrottlingInfo throttlingInfo;
 
+  /**
+   * Ramp-up info.
+   * <p>
+   */
   private RampupInfo rampUpInfo;
 
   /**
@@ -178,43 +181,6 @@ public class SimulationMetadata {
 
   private String reportingURI;
 
-  // Predicate to search fields for Provider annotation.
-  private final Predicate<Field> hasFeeder = f -> Arrays
-      .stream(f.getDeclaredAnnotations())
-      .anyMatch(Provider.class::isInstance);
-
-  private final Function<Field, InjectionPoint<Provider>> ipCreator =
-      f -> new InjectionPoint<>(f,
-          f.getDeclaredAnnotation(Provider.class));
-
-  // Provider the feeder value into the field.
-  private void feed(final Object instance, final InjectionPoint<Provider> ip) {
-    io.ryos.rhino.sdk.feeders.Provider o = instanceOf(ip.getAnnotation().factory()).orElseThrow();
-
-    try {
-      Field field = ip.getField();
-      field.setAccessible(true);
-      if (io.ryos.rhino.sdk.feeders.Provider.class.isAssignableFrom(field.getType())) {
-        field.set(instance, o);
-      } else {
-        field.set(instance, o.take());
-      }
-
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (IllegalArgumentException e) {
-      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
-    }
-  }
-
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void feedInjections(Object simulationInstance) {
-    Arrays.stream(simulationClass.getDeclaredFields())
-        .filter(hasFeeder)
-        .map(ipCreator)
-        .forEach(ip -> feed(simulationInstance, ip));
-  }
-
   /**
    * Uses a builder to construct the instance.
    * <p>
@@ -237,6 +203,7 @@ public class SimulationMetadata {
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
     this.throttlingInfo = builder.throttlingInfo;
+    this.userRegion = builder.userRegion;
   }
 
   public LogFormatter getLogFormatter() {
@@ -249,63 +216,6 @@ public class SimulationMetadata {
 
     final Optional<? extends LogFormatter> logFormatterInstance = instanceOf(logging.formatter());
     return logFormatterInstance.orElseThrow(RuntimeException::new);
-  }
-
-  public void prepare(UserSession userSession) {
-    final Object cleanUpInstance = prepareMethodCall(userSession);
-    executeMethod(prepareMethod, cleanUpInstance);
-  }
-
-  private Object prepareMethodCall(final UserSession userSession) {
-    final Object cleanUpInstance = simulationInstanceFactory.get();
-    injectSession(userSession, cleanUpInstance);
-    feedInjections(cleanUpInstance);
-    injectUser(userSession.getUser(), cleanUpInstance);
-    return cleanUpInstance;
-  }
-
-  public void cleanUp(UserSession userSession) {
-    prepareMethodCall(userSession);
-    executeMethod(cleanupMethod, userSession);
-  }
-
-  private void executeMethod(final Method method, final Object simulationInstance) {
-    try {
-      if (method != null) {
-        method.invoke(simulationInstance);
-      }
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(
-          "Cannot invoke the method with step: " + method.getName() + "()", e);
-    }
-  }
-
-  private void injectSession(final UserSession userSession, final Object simulationInstance) {
-    final Optional<Pair<Field, SessionFeeder>> fieldAnnotation = getFieldByAnnotation(
-        simulationClass,
-        SessionFeeder.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(userSession, f.getFirst(), simulationInstance));
-  }
-
-  private void injectUser(final User user, final Object simulationInstance) {
-    final Optional<Pair<Field, UserProvider>> fieldAnnotation = getFieldByAnnotation(
-        simulationClass,
-        UserProvider.class);
-    fieldAnnotation
-        .ifPresent(f -> setValueToInjectionPoint(user, f.getFirst(), simulationInstance));
-  }
-
-  private <T> void setValueToInjectionPoint(final T object, final Field f,
-      final Object simulationInstance) {
-    try {
-      f.setAccessible(true);
-      f.set(simulationInstance, object);
-    } catch (IllegalAccessException e) {
-      LOG.error(e);
-      //TODO
-    }
   }
 
   public Method getPrepareMethod() {
@@ -374,6 +284,10 @@ public class SimulationMetadata {
 
   public RampupInfo getRampUpInfo() {
     return rampUpInfo;
+  }
+
+  public String getUserRegion() {
+    return userRegion;
   }
 
   /**
@@ -464,6 +378,12 @@ public class SimulationMetadata {
      * <p>
      */
     private UserRepository<UserSession> userRepository;
+
+    /**
+     * User region.
+     * <p>
+     */
+    private String userRegion;
 
     /**
      * The reporting URI in String.
@@ -561,6 +481,11 @@ public class SimulationMetadata {
 
     public Builder withUserRepository(final UserRepository<UserSession> userRepository) {
       this.userRepository = userRepository;
+      return this;
+    }
+
+    public Builder withUserRegion(final String userRegion) {
+      this.userRegion = userRegion;
       return this;
     }
 

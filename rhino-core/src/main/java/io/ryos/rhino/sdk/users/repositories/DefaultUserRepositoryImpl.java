@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.users.repositories;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.provider.UserProvider;
+import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -28,27 +28,15 @@ import java.util.stream.Collectors;
 
 public class DefaultUserRepositoryImpl implements UserRepository<UserSession> {
 
-  private Queue<User> users;
+  private final Queue<User> users;
 
-  public DefaultUserRepositoryImpl(UserProvider userProvider) {
-    Objects.requireNonNull(userProvider);
-    this.users = new LinkedBlockingQueue<>(userProvider.getUsers());
+  DefaultUserRepositoryImpl(UserSource userSource) {
+    Objects.requireNonNull(userSource);
+    this.users = new LinkedBlockingQueue<>(userSource.getUsers());
   }
 
   @Override
-  public UserSession take() {
-    User user = users.peek();
-    users.add(user);
-    return new UserSessionImpl(user);
-  }
-
-  @Override
-  public boolean has(int numberOfUsers) {
-    return users.size() >= numberOfUsers;
-  }
-
-  @Override
-  public List<UserSession> getUserSessions() {
+  public List<UserSession> leaseUsers(int numberOfUsers, String region) {
     return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
   }
 }

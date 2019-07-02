@@ -24,5 +24,9 @@ public @interface Simulation {
 
   String name() default "";
 
+  String userRegion() default "all";
+
+  int maxNumberOfUsers() default 2;
+
   int durationInMins() default 1;
 }

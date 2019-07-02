@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.users.provider;
+package io.ryos.rhino.sdk.users.source;
 
 /**
  * @author Erhan Bagdemir

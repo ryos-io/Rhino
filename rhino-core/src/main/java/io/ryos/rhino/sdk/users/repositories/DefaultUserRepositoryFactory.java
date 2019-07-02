@@ -19,7 +19,10 @@ package io.ryos.rhino.sdk.users.repositories;
 import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
+import io.ryos.rhino.sdk.users.source.UserSource;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -29,7 +32,7 @@ import java.util.stream.IntStream;
  *
  * @author Erhan Bagdemir
  */
-public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
+public class DefaultUserRepositoryFactory implements UserRepositoryFactory<UserSession> {
 
   private static final int START = 1;
   private static final int END = 10;
@@ -38,8 +41,20 @@ public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<U
   public UserRepository<UserSession> create() {
 
     var userName = "User-" + UUID.randomUUID();
+    var defaultSource = new UserSource() {
+      @Override
+      public List<User> getUsers() {
+        return IntStream.rangeClosed(START, END)
+            .mapToObj(id -> new UserImpl(userName, null, userName, null))
+            .collect(toList());
+      }
 
-    return new DefaultUserRepositoryImpl(
-        () -> IntStream.rangeClosed(START, END).mapToObj(id -> new UserImpl(userName, null, userName, null)).collect(toList()));
+      @Override
+      public List<User> getUsers(int numberOfUsers, String region) {
+        return getUsers();
+      }
+    };
+
+    return new DefaultUserRepositoryImpl(defaultSource);
   }
 }
