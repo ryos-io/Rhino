@@ -26,11 +26,11 @@ import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.ConsistencyLevel;
 import org.influxdb.InfluxDB.LogLevel;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 
 /**
@@ -55,10 +55,16 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
     this.dbName = Optional.ofNullable(SimulationConfig.getInfluxDBName())
         .orElse(DEFAULT_DB + System.currentTimeMillis());
 
-    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL())
+    var client = new OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.MINUTES)
+        .readTimeout(1, TimeUnit.MINUTES)
+        .writeTimeout(1, TimeUnit.MINUTES)
+        .retryOnConnectionFailure(true);
+
+    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(), client)
         .setLogLevel(LogLevel.NONE)
         .setConsistency(ConsistencyLevel.ONE)
-        .enableBatch(100, 200, TimeUnit.MICROSECONDS);
+        .enableBatch(2000, 100, TimeUnit.MICROSECONDS);
 
     influxDB.createDatabase(dbName);
   }
@@ -85,37 +91,26 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
   }
 
   private void createPoint(ScenarioEvent report) {
-    var batchPoints = BatchPoints
-        .database(dbName)
-        .consistency(InfluxDB.ConsistencyLevel.ALL)
-        .build();
-
     var builder = Point.measurement("simulation_" + SimulationConfig.getSimulationId())
         .tag("step", report.step)
+        .tag("status", report.status)
         .addField("scenario", report.scenario)
-        .addField("status", report.status)
         .addField("pt", report.elapsed)
         .addField("node", SimulationConfig.getNode());
-
-    batchPoints.point(builder.build());
-    influxDB.write(batchPoints);
+    influxDB.setDatabase(dbName);
+    influxDB.write(builder.build());
   }
 
   private void createPoint(UserEvent report) {
     if (report.eventType == EventType.END) {
-      var batchPoints = BatchPoints
-          .database(dbName)
-          .consistency(InfluxDB.ConsistencyLevel.ALL)
-          .build();
-
       var builder =
           Point.measurement("user_" + SimulationConfig.getSimulationId())
               .tag("scenario", report.scenario)
               .addField("id", report.id)
               .addField("node", SimulationConfig.getNode())
               .addField("pt", report.elapsed);
-      batchPoints.point(builder.build());
-      influxDB.write(batchPoints);
+      influxDB.setDatabase(dbName);
+      influxDB.write(builder.build());
     }
   }
 
