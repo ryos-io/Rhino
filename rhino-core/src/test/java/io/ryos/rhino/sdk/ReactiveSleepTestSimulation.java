@@ -23,13 +23,10 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.feeders.UUIDProvider;
+import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import java.time.Duration;
-import java.util.Random;
 
 /**
  * Reactive test spec for arbitrary code execution with {@link io.ryos.rhino.sdk.specs.SomeSpecImpl}.
@@ -54,13 +51,5 @@ public class ReactiveSleepTestSimulation {
           m.measure("1. measurement", "OK");
           return u;
         }));
-  }
-
-  private void waitASec() {
-    try {
-      Thread.sleep(1000L);
-    } catch (InterruptedException e) {
-      // Intentionally left empty.
-    }
   }
 }

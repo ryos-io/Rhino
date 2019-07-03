@@ -6,7 +6,7 @@ import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.feeders.UUIDProvider;
+import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import javax.ws.rs.core.Response.Status;
 

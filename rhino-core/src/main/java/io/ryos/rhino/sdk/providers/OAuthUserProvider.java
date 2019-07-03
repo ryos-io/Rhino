@@ -1,4 +1,4 @@
-package io.ryos.rhino.sdk.feeders;
+package io.ryos.rhino.sdk.providers;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.users.data.OAuthUser;

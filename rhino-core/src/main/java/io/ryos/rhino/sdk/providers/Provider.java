@@ -14,21 +14,24 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.feeders;
-
-import java.util.UUID;
+package io.ryos.rhino.sdk.providers;
 
 /**
- * Provider, which creates UUIDs.
+ * Provider is object source to create new instances of type, T, to inject them into injection
+ * points annotated with {@link Provider}.
  * <p>
  *
+ * @param <T> Type of object being fed.
  * @author Erhan Bagdemir
  * @version 1.0.0
  */
-public class UUIDProvider implements Provider<String> {
+public interface Provider<T> {
 
-  @Override
-  public String take() {
-    return UUID.randomUUID().toString();
-  }
+  /**
+   * Instance to be fed into injection point.
+   * <p>
+   *
+   * @return Instance to be injected.
+   */
+  T take();
 }

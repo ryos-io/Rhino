@@ -1,7 +1,6 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
@@ -29,7 +28,14 @@ public class ReactiveBasicHttpGetTest {
 
     stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
+            .withFixedDelay(100)
+            //.withLogNormalRandomDelay(100, 0.1)
             .withStatus(200)));
+
+    stubFor(WireMock.get(urlEqualTo("/api/assets"))
+        .willReturn(aResponse()
+            .withFixedDelay(10)
+            .withStatus(401)));
 
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
   }
