@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import static reactor.core.publisher.Flux.fromStream;
 
 import io.ryos.rhino.sdk.CyclicIterator;
@@ -61,7 +62,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
-  private static final long MAX_WAIT_FOR_USER = 60;
 
   private final SimulationMetadata simulationMetadata;
   private final CyclicIterator<Scenario> scenarioCyclicIterator;
@@ -90,8 +90,9 @@ public class DefaultSimulationRunner implements SimulationRunner {
         "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     var userRepository = simulationMetadata.getUserRepository();
-    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, simulationMetadata.getUserRegion(),
-            simulationMetadata.getNumberOfUsers());
+    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository,
+        simulationMetadata.getUserRegion(),
+        simulationMetadata.getNumberOfUsers());
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
@@ -105,8 +106,23 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var users = Stream.generate(userSessionProvider::take);
     var scenarios = Stream.generate(scenarioCyclicIterator::next);
 
-    this.subscribe = Flux.zip(fromStream(users), fromStream(scenarios))
-        .onErrorResume(t -> Mono.empty())
+    var flux = Flux.zip(fromStream(users), fromStream(scenarios));
+
+    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+
+    this.subscribe = flux.onErrorResume(t -> Mono.empty())
         .take((simulationMetadata.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
@@ -121,11 +137,12 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   private void setUpGrafanaDashboard() {
     Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-    new GrafanaGateway(simulationMetadata.getGrafanaInfo()).setUpDashboard(SimulationConfig.getSimulationId(),
-        simulationMetadata.getScenarios()
-            .stream()
-            .map(Scenario::getDescription)
-            .toArray(String[]::new));
+    new GrafanaGateway(simulationMetadata.getGrafanaInfo())
+        .setUpDashboard(SimulationConfig.getSimulationId(),
+            simulationMetadata.getScenarios()
+                .stream()
+                .map(Scenario::getDescription)
+                .toArray(String[]::new));
   }
 
   private void await() {
