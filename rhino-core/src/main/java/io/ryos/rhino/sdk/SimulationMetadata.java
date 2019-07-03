@@ -111,6 +111,12 @@ public class SimulationMetadata {
   private RampupInfo rampUpInfo;
 
   /**
+   * Grafana configuration.
+   * <p>
+   */
+  private GrafanaInfo grafanaInfo;
+
+  /**
    * Simulation class.
    * <p>
    */
@@ -204,6 +210,7 @@ public class SimulationMetadata {
     this.reportingURI = builder.reportingURI;
     this.throttlingInfo = builder.throttlingInfo;
     this.userRegion = builder.userRegion;
+    this.grafanaInfo = builder.grafanaInfo;
   }
 
   public LogFormatter getLogFormatter() {
@@ -288,6 +295,10 @@ public class SimulationMetadata {
 
   public String getUserRegion() {
     return userRegion;
+  }
+
+  public GrafanaInfo getGrafanaInfo() {
+    return grafanaInfo;
   }
 
   /**
@@ -386,6 +397,12 @@ public class SimulationMetadata {
     private String userRegion;
 
     /**
+     * Grafana info.
+     * <p>
+     */
+    private GrafanaInfo grafanaInfo;
+
+    /**
      * The reporting URI in String.
      * <p>
      */
@@ -411,6 +428,11 @@ public class SimulationMetadata {
 
     public Builder withInflux(final boolean enableInflux) {
       this.enableInflux = enableInflux;
+      return this;
+    }
+
+    public Builder withGrafana(final GrafanaInfo grafanaInfo) {
+      this.grafanaInfo = grafanaInfo;
       return this;
     }
 

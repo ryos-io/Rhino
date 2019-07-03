@@ -78,7 +78,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
-    if (SimulationConfig.isGrafanaEnabled()) {
+    if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
     }
 
@@ -154,7 +154,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private void setUpGrafanaDashboard() {
     Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-    var grafanaGateway = new GrafanaGateway();
+    var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
     grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
         simulationMetadata.getSpecs()
             .stream()

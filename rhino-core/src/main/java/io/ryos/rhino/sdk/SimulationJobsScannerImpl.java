@@ -23,10 +23,12 @@ import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Dsl;
+import io.ryos.rhino.sdk.annotations.Grafana;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
@@ -190,9 +192,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     }
 
     // Throttling annotation.
-    var throttlingAnnotation = (io.ryos.rhino.sdk.annotations.Throttle) clazz
-        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Throttle.class);
-
+    var throttlingAnnotation = (Throttle) clazz.getDeclaredAnnotation(Throttle.class);
     ThrottlingInfo throttlingInfo = null;
     if (throttlingAnnotation !=  null) {
       throttlingInfo = new ThrottlingInfo(throttlingAnnotation.numberOfRequests(),
@@ -201,6 +201,13 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     // Read influx DB annotation, to enable influx db.
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
+
+    // Read influx DB annotation, to enable Grafana integration.
+    Grafana grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
+    GrafanaInfo grafanaInfo = null;
+    if (grafanaAnnotation != null) {
+      grafanaInfo = new GrafanaInfo(grafanaAnnotation.dashboard(), grafanaAnnotation.name());
+    }
 
     // Read scenario methods.
     var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
@@ -259,6 +266,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withTestInstance(testInstance)
         .withThrottling(throttlingInfo)
         .withRampUp(rampupInfo)
+        .withGrafana(grafanaInfo)
         .build();
   }
 

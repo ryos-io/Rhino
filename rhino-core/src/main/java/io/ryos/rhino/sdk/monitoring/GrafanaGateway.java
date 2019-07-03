@@ -16,8 +16,12 @@
 
 package io.ryos.rhino.sdk.monitoring;
 
+import io.ryos.rhino.sdk.GrafanaInfo;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.RhinoIOException;
+import io.ryos.rhino.sdk.io.ConfigResource;
+import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +29,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -39,36 +45,49 @@ import javax.ws.rs.core.Response.Status;
  * @since 1.1.0
  */
 public class GrafanaGateway {
-
-  private static final String GRAFANA_DASHBOARD_TEMPLATE = "/grafana/dashboard.json";
   private static final String TARGET = SimulationConfig.getGrafanaEndpoint() + "/api/dashboards/db";
   private static final String HEADER_AUTHORIZATION = "Authorization";
+
+  private final GrafanaInfo grafanaInfo;
+
+  public GrafanaGateway(GrafanaInfo grafanaInfo) {
+    this.grafanaInfo = Objects.requireNonNull(grafanaInfo);
+  }
 
   /**
    * Creates a new dashboard for the simulation.
    * <p>
    */
-  public void setUpDashboard(final String simulationName, final String ... scenarios) {
-    var resourceAsStream = getClass().getResourceAsStream(GRAFANA_DASHBOARD_TEMPLATE);
+  public void setUpDashboard(final String simulationName, final String... scenarios) {
 
-    if (resourceAsStream != null) {
+    var dbTemplate = getDashboardJson(simulationName, scenarios);
+    var request = ClientBuilder.newClient()
+        .target(getUri())
+        .request();
 
-      var dbTemplate = getDashboardCode(simulationName, resourceAsStream, scenarios);
-      var request = ClientBuilder.newClient()
-          .target(getUri())
-          .request();
+    if (getStrippedToken() != null) {
+      request = request.header(HEADER_AUTHORIZATION, "Bearer " + getStrippedToken());
+    }
+    var createDashboardResponse = request
+        .post(Entity.entity(dbTemplate, MediaType.APPLICATION_JSON));
 
-      if (getStrippedToken() != null) {
-          request = request.header(HEADER_AUTHORIZATION, "Bearer " + getStrippedToken());
-      }
-      var createDashboardResponse = request
-          .post(Entity.entity(dbTemplate, MediaType.APPLICATION_JSON));
+    if (createDashboardResponse.getStatus() != Status.OK.getStatusCode() &&
+        createDashboardResponse.getStatus() != Status.PRECONDITION_FAILED.getStatusCode()) {
+      throw new GrafanaSetupException(
+          "Server response was : " + createDashboardResponse.getStatus());
+    }
+  }
 
-      if (createDashboardResponse.getStatus() != Status.OK.getStatusCode() &&
-          createDashboardResponse.getStatus() != Status.PRECONDITION_FAILED.getStatusCode()) {
-        throw new GrafanaSetupException(
-            "Server response was : " + createDashboardResponse.getStatus());
-      }
+  private String getDashboardJson(String simulationName, String[] scenarios) {
+    var configResource = new ConfigResource(grafanaInfo.getPathToTemplate());
+    try (var reader = new BufferedReader(new InputStreamReader(configResource.getInputStream()))) {
+      var template = reader.lines().collect(Collectors.joining("\n"));
+      Optional<? extends GrafanaDashboard> grafanaDashboard = ReflectionUtils
+          .instanceOf(grafanaInfo.getDashboard());
+      return grafanaDashboard.map(d -> d.getDashboard(simulationName, template, scenarios))
+          .orElseThrow(IllegalArgumentException::new);
+    } catch (IOException e) {
+      throw new RhinoIOException("Cannot create dashboard.");
     }
   }
 
@@ -82,28 +101,6 @@ public class GrafanaGateway {
     }
     return SimulationConfig.getGrafanaToken()
         .substring(1, SimulationConfig.getGrafanaToken().length() - 1);
-  }
-
-  private String getDashboardCode(final String simulationName,
-      final InputStream resourceAsStream,
-      final String[] scenarios) {
-
-    String dbTemplate = "";
-    try (BufferedReader br = new BufferedReader(
-        new InputStreamReader(resourceAsStream, Charset.defaultCharset()))) {
-
-      dbTemplate = br.lines().collect(Collectors.joining(System.lineSeparator()));
-      dbTemplate = dbTemplate.replace("${SIMULATION_NAME}", simulationName);
-      if (scenarios != null && scenarios.length > 0) {
-        dbTemplate = dbTemplate.replace("${SCENARIO_1}", scenarios[0]);
-        // handle more than one scenario.
-      }
-
-    } catch (IOException ioe) {
-      ExceptionUtils.rethrow(ioe, GrafanaSetupException.class, "Cannot read Grafana dashboard"
-          + " template.");
-    }
-    return dbTemplate;
   }
 
   private URI getUri() {

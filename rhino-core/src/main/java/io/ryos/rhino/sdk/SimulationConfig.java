@@ -89,11 +89,6 @@ public class SimulationConfig {
     return properties.getProperty(prop);
   }
 
-  // Grafana Configs
-  private String enableGrafana() {
-    return properties.getProperty("grafana.enable");
-  }
-
   private String getGrafanaURL() {
     return properties.getProperty("grafana.endpoint");
   }
@@ -296,9 +291,5 @@ public class SimulationConfig {
 
   public static String getGrafanaPassword() {
     return instance.grafanaPassword();
-  }
-
-  public static boolean isGrafanaEnabled() {
-    return Boolean.valueOf(instance.enableGrafana());
   }
 }
