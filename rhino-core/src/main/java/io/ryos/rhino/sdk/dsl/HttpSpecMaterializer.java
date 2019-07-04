@@ -32,6 +32,7 @@ import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -153,7 +154,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     for (var f : httpSpec.getQueryParameters()) {
       var paramEntry = f.apply(userSession);
-      builder = builder.addHeader(paramEntry.getKey(), paramEntry.getValue());
+      builder = builder.addQueryParam(paramEntry.getKey(), paramEntry.getValue().stream().collect(
+          Collectors.joining(",")));
     }
 
     if (httpSpec.isAuth()) {

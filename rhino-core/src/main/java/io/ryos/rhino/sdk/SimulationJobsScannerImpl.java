@@ -188,7 +188,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
     RampupInfo rampupInfo = null;
     if (rampUpAnnotation !=  null) {
-      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(), Duration.ofMinutes(rampUpAnnotation.duration()));
+      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(), Duration.ofMinutes(rampUpAnnotation.durationInMin()));
     }
 
     // Throttling annotation.
