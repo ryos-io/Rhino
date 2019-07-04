@@ -104,7 +104,6 @@ public class SpecSubscriber extends BaseSubscriber<Tuple2<UserSession, Connectab
 
   public void increase() {
     int i = clientCapacity.incrementAndGet();
-    System.out.println(i);
   }
 
   public void requestAndDecrease() {
