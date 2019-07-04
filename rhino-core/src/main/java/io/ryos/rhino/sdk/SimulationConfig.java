@@ -177,6 +177,10 @@ public class SimulationConfig {
     return properties.getProperty(environment + ".oauth.clientSecret");
   }
 
+  private String getAuthClientCode() {
+    return properties.getProperty(environment + ".oauth.clientCode");
+  }
+  
   private String getEndpoint() {
     return properties.getProperty(environment + ".endpoint");
   }
@@ -223,6 +227,10 @@ public class SimulationConfig {
 
   public static String getClientSecret() {
     return instance.getAuthClientSecret();
+  }
+
+  public static String getClientCode() {
+    return instance.getAuthClientCode();
   }
 
   public static String getGrantType() {
