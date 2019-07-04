@@ -25,27 +25,16 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
-import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
-import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
-import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.specs.HttpSpec;
-import io.ryos.rhino.sdk.specs.SomeSpec;
-import io.ryos.rhino.sdk.specs.Spec;
-import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -53,11 +42,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
   private static final long MAX_WAIT_FOR_USER = 60;
   private static final int CONNECT_TIMEOUT = 500;
+  private static final int HANDSHAKE_TIMEOUT = 60000;
+  private static final int READ_TIMEOUT = 60000;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
   private CyclicIterator<ConnectableDsl> dslIterator;
-  private Disposable subscribe;
   private volatile boolean shutdownInitiated;
   private final EventDispatcher eventDispatcher;
 
@@ -76,19 +66,24 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info(
-        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
     }
 
     var userRepository = simulationMetadata.getUserRepository();
-    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, "all");
+    var userSessionProvider =  new CyclicUserSessionRepositoryImpl(userRepository, "all");
     var httpClientConfig = Dsl.config()
-        .setConnectTimeout(CONNECT_TIMEOUT)
         .setMaxConnections(SimulationConfig.getMaxConnections())
+        .setFollowRedirect(true)
+        .setMaxRedirects(2)
         .setKeepAlive(true)
+        .setCookieStore(null)
+        .setConnectTimeout(CONNECT_TIMEOUT)
+        .setHandshakeTimeout(HANDSHAKE_TIMEOUT)
+        .setReadTimeout(READ_TIMEOUT)
+        .setIoThreadsCount(1)
         .build();
 
     var client = Dsl.asyncHttpClient(httpClientConfig);
@@ -99,53 +94,35 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     prepareUserSessions();
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
-
-    flux = flux.take(simulationMetadata.getDuration())
+    flux = appendThrottling(flux);
+    flux = appendRampUp(flux);
+    flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
-        .onErrorResume(t -> Mono.empty())
         .doOnError(t -> Out.error(t.getMessage()))
         .doOnTerminate(this::terminate)
         .doOnComplete(() -> shutdownInitiated = true)
-        .flatMap(tuple -> {
-          var session = tuple.getT1();
-          var dsl = tuple.getT2();
-          var specIt = dsl.getSpecs().iterator();
-          if (!specIt.hasNext()) {
-            throw new RuntimeException("No spec found in DSL.");
-          }
-          var acc = materialize(specIt.next(), client, session);
-          while (specIt.hasNext()) {
-            // Never move the following statement into lambda body. next() call is required to be eager.
-            var next = specIt.next();
-            acc = acc.flatMap(s -> {
-              if (next instanceof ConditionalSpecWrapper) {
-                var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-                if (!predicate.test(s)) {
-                  return Mono.just(s);
-                }
-              }
-              return materialize(next, client, session);
-            });
-          }
-          return acc.doOnError(System.out::println);
-        });
+        .subscribe(new SpecSubscriber(eventDispatcher, client));
+    await();
+    stop();
+  }
 
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-
+  private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
     var throttlingInfo = simulationMetadata.getThrottlingInfo();
     if (throttlingInfo != null) {
       var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
           throttlingInfo.getDuration());
       flux = flux.transform(throttle(rpsLimit));
     }
-    this.subscribe = flux.subscribe();
+    return flux;
+  }
 
-    await();
-    stop();
+  private Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+    return flux;
   }
 
   private void terminate() {
@@ -163,23 +140,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
             .map(dsl -> (ConnectableDsl) dsl)
             .map(ConnectableDsl::getName)
             .toArray(String[]::new));
-  }
-
-  private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
-      final UserSession session) {
-
-    if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, eventDispatcher)
-          .materialize((HttpSpec) spec, session);
-    } else if (spec instanceof SomeSpec) {
-      return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
-    } else if (spec instanceof WaitSpec) {
-      return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
-    } else if (spec instanceof ConditionalSpecWrapper) {
-      return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
-    }
-
-    throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
   }
 
   private void await() {
@@ -215,8 +175,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     shutdownInitiated = true;
 
     Out.info("Stopping the simulation...");
-
-    subscribe.dispose();
 
     // proceed with shutdown.
     Out.info("Shutting down the system ...");

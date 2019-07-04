@@ -25,6 +25,7 @@ import static org.asynchttpclient.Dsl.put;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.runners.SpecSubscriber;
 import io.ryos.rhino.sdk.specs.HttpResponse;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
@@ -59,24 +60,16 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   private final AsyncHttpClient client;
   private final EventDispatcher eventDispatcher;
   private final Predicate<UserSession> conditionalSpec;
+  private final SpecSubscriber subscriber;
 
   public HttpSpecMaterializer(final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
-      final Predicate<UserSession> predicate) {
+      final Predicate<UserSession> predicate,
+      final SpecSubscriber subscriber) {
     this.client = client;
     this.eventDispatcher = eventDispatcher;
     this.conditionalSpec = predicate;
-  }
-
-  /**
-   * Specification materializer translates the specifications into reactor implementations.
-   * <p>
-   *
-   * @param client Async HTTP client instance.
-   * @param eventDispatcher Event dispatcher instance.
-   */
-  public HttpSpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
-    this(client, eventDispatcher, null);
+    this.subscriber = subscriber;
   }
 
   public Mono<UserSession> materialize(final HttpSpec spec, final UserSession userSession) {
@@ -87,7 +80,9 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession.getUser().getId(),
         spec.getTestName(),
-        spec.getMeasurementPoint(), eventDispatcher);
+        spec.getMeasurementPoint(),
+        eventDispatcher,
+        subscriber);
 
     var responseMono = Mono
         .fromFuture(client.executeRequest(buildRequest(spec, userSession), httpSpecAsyncHandler)
@@ -110,7 +105,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     return retriableMono.map(response -> (UserSession) userSession.add(spec.getResponseKey(),
         response))
         .onErrorResume(e -> Mono.empty())
-        .doOnError(t -> LOG.error("Http Client Error", t.getMessage()));
+        .doOnError(t -> LOG.error("Http Client Error: {}", t.getMessage()));
   }
 
   private Response isRetriable(final RetryInfo retryInfo, final HttpResponse hr) {

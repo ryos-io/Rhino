@@ -5,6 +5,7 @@ import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.runners.SpecSubscriber;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -21,21 +22,23 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private volatile int status;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
   private final EventDispatcher eventDispatcher;
+  private final SpecSubscriber subscriber;
 
   public HttpSpecAsyncHandler(final String userId,
       final String specName,
       final String stepName,
-      final EventDispatcher eventDispatcher) {
+      final EventDispatcher eventDispatcher,
+      final SpecSubscriber subscriber) {
     this.measurement = new MeasurementImpl(specName, userId);
     this.specName = specName;
     this.userId = userId;
     this.stepName = stepName;
     this.eventDispatcher = eventDispatcher;
+    this.subscriber = subscriber;
   }
 
   @Override
   public State onStatusReceived(final HttpResponseStatus responseStatus) {
-
     builder.reset();
     builder.accumulate(responseStatus);
     this.status = responseStatus.getStatusCode();
@@ -57,7 +60,23 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public void onThrowable(final Throwable t) {
+    var elapsed = System.currentTimeMillis() - start;
 
+    measurement.measure(t.getMessage(), "-");
+
+    var userEventEnd = new UserEvent();
+    userEventEnd.elapsed = elapsed;
+    userEventEnd.start = start;
+    userEventEnd.end = start + elapsed;
+    userEventEnd.scenario = specName;
+    userEventEnd.eventType = EventType.END;
+    userEventEnd.id = userId;
+
+    measurement.record(userEventEnd);
+    eventDispatcher.dispatchEvents(measurement);
+
+    subscriber.increase();
+    subscriber.requestAndDecrease();
   }
 
   @Override
@@ -77,12 +96,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     eventDispatcher.dispatchEvents(measurement);
 
+    subscriber.increase();
+    subscriber.requestAndDecrease();
+
     return builder.build();
   }
 
   @Override
   public void onRequestSend(NettyRequest request) {
-
     this.start = System.currentTimeMillis();
     var userEventStart = new UserEvent();
     userEventStart.elapsed = 0;

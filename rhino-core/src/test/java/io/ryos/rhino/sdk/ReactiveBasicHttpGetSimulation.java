@@ -22,13 +22,9 @@ import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 @Simulation(name = "Reactive Test", durationInMins = 5)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 @UserRepository(factory = OAuthUserRepositoryFactory.class)
-@RampUp(startRps = 10, targetRps = 2000, durationInMin = 1)
-@Grafana
-@Influx
 public class ReactiveBasicHttpGetSimulation {
 
-  private static final String FILES_ENDPOINT = "https://www.ebay.de";
-  private static final String ASSETS_ENDPOINT = "https://www.amazon.de";
+  private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
@@ -38,25 +34,10 @@ public class ReactiveBasicHttpGetSimulation {
   @Dsl(name = "Shop Benchmarks")
   public LoadDsl singleTestDsl() {
     return Start.spec()
-        .run(http("ebay.de")
+        .run(http("WireMock/API")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
-            .auth()
             .endpoint(FILES_ENDPOINT)
-            .get()
-            .saveTo("result"))
-        .run(http("amazon.de")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
-            .header(X_API_KEY, SimulationConfig.getApiKey())
-            .auth()
-            .endpoint(ASSETS_ENDPOINT)
-            .get()
-            .saveTo("result"))
-        .run(http("idealo.de")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
-            .header(X_API_KEY, SimulationConfig.getApiKey())
-            .auth()
-            .endpoint("https://www.idealo.de")
             .get()
             .saveTo("result"));
   }
