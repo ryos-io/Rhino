@@ -76,14 +76,15 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info("Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    Out.info(
+        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
     }
 
     var userRepository = simulationMetadata.getUserRepository();
-    var userSessionProvider =  new CyclicUserSessionRepositoryImpl(userRepository, "all");
+    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, "all");
     var httpClientConfig = Dsl.config()
         .setConnectTimeout(CONNECT_TIMEOUT)
         .setMaxConnections(SimulationConfig.getMaxConnections())
@@ -98,21 +99,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     prepareUserSessions();
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
-    var throttlingInfo = simulationMetadata.getThrottlingInfo();
 
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
-
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-
-    this.subscribe = flux.take(simulationMetadata.getDuration())
+    flux = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .onErrorResume(t -> Mono.empty())
         .doOnError(t -> Out.error(t.getMessage()))
@@ -140,8 +128,22 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
             });
           }
           return acc.doOnError(System.out::println);
-        })
-        .subscribe();
+        });
+
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+
+    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+    this.subscribe = flux.subscribe();
+
     await();
     stop();
   }
