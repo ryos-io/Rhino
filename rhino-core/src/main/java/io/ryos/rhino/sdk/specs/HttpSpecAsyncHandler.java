@@ -58,6 +58,18 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   @Override
   public void onThrowable(final Throwable t) {
 
+    measurement.measure(t.getMessage(), "N/A");
+
+    var userEventEnd = new UserEvent();
+    userEventEnd.elapsed = 0;
+    userEventEnd.start = start;
+    userEventEnd.end = 0;
+    userEventEnd.scenario = specName;
+    userEventEnd.eventType = EventType.END;
+    userEventEnd.id = userId;
+    measurement.record(userEventEnd);
+
+    eventDispatcher.dispatchEvents(measurement);
   }
 
   @Override
