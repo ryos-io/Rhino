@@ -43,11 +43,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
+  private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
@@ -100,10 +103,26 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+
+    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+
     flux = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
-        .onErrorResume(t -> Mono.empty())
-        .doOnError(t -> Out.error(t.getMessage()))
+        .onErrorResume(t -> {
+          LOG.error("Skipping error", t);
+          return Mono.empty();
+        })
+        .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::terminate)
         .doOnComplete(() -> shutdownInitiated = true)
         .flatMap(tuple -> {
@@ -127,21 +146,9 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
               return materialize(next, client, session);
             });
           }
-          return acc.doOnError(System.out::println);
+          return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
         });
 
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-
-    var throttlingInfo = simulationMetadata.getThrottlingInfo();
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
     this.subscribe = flux.subscribe();
 
     await();

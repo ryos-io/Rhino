@@ -19,7 +19,9 @@ public class Throttler {
     final Flux<Long> reduce = Arrays.stream(rps)
         .map(r -> {
           LOG.debug("throttle: tickNano={}, duration={}", r.tickNano, r.durationSec);
-          return Flux.interval(ofNanos(r.tickNano)).take(ofSeconds(r.durationSec));
+          return Flux.interval(ofNanos(r.tickNano))
+              .take(ofSeconds(r.durationSec))
+              .onBackpressureDrop();
         })
         .reduce(Flux::concatWith).orElse(Flux.generate(sink -> sink.next(0L)));
     final UnaryOperator<Flux<T>> res = f ->
@@ -34,7 +36,7 @@ public class Throttler {
 
     private Limit(final long requestsPerSecond, final long durationSec) {
       this.durationSec = durationSec;
-      this.tickNano = (long) Math.floor((1d / requestsPerSecond) * 1e9);
+      this.tickNano = (long) Math.floor((1d / requestsPerSecond * 1e3 * 1e6));
     }
 
     public static Limit of(final long requestsPerSecond, final Duration duration) {

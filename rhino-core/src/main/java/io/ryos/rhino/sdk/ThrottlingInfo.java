@@ -4,16 +4,16 @@ import java.time.Duration;
 
 public class ThrottlingInfo {
 
-  private int numberOfRequests;
+  private int rps;
   private Duration duration;
 
-  public ThrottlingInfo(final int numberOfRequests, final Duration duration) {
-    this.numberOfRequests = numberOfRequests;
+  public ThrottlingInfo(final int rps, final Duration duration) {
+    this.rps = rps;
     this.duration = duration;
   }
 
-  public int getNumberOfRequests() {
-    return numberOfRequests;
+  public int getRps() {
+    return rps;
   }
 
   public Duration getDuration() {

@@ -185,18 +185,27 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
 
     // Ramp-up annotation.
-    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
     RampupInfo rampupInfo = null;
-    if (rampUpAnnotation !=  null) {
-      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(), Duration.ofMinutes(rampUpAnnotation.durationInMin()));
+    if (rampUpAnnotation != null) {
+      var duration = simAnnotation.durationInMins();
+      if (rampUpAnnotation.durationInMins() >= 0) {
+        duration = rampUpAnnotation.durationInMins();
+      }
+      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(),
+          Duration.ofMinutes(duration));
     }
 
     // Throttling annotation.
     var throttlingAnnotation = (Throttle) clazz.getDeclaredAnnotation(Throttle.class);
     ThrottlingInfo throttlingInfo = null;
-    if (throttlingAnnotation !=  null) {
-      throttlingInfo = new ThrottlingInfo(throttlingAnnotation.numberOfRequests(),
-          Duration.ofMinutes(throttlingAnnotation.durationInMins()));
+    if (throttlingAnnotation != null) {
+      var duration = simAnnotation.durationInMins();
+      if (throttlingAnnotation.durationInMins() >= 0) {
+        duration = throttlingAnnotation.durationInMins();
+      }
+      throttlingInfo = new ThrottlingInfo(throttlingAnnotation.rps(), Duration.ofMinutes(duration));
     }
 
     // Read influx DB annotation, to enable influx db.
@@ -222,8 +231,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
         .filter(method -> Arrays.stream(method.getDeclaredAnnotations())
-        .anyMatch(a -> a instanceof Dsl))
-        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
+            .anyMatch(a -> a instanceof Dsl))
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
+            ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
         .map(p -> {
           var loadDsl = p.getSecond();
           if (loadDsl instanceof ConnectableDsl) {
@@ -250,7 +260,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
+        .withRunner(
+            runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())
@@ -300,14 +311,17 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return logFile;
   }
 
-  private UserRepository createUserRepository(final io.ryos.rhino.sdk.annotations.UserRepository userRepository) {
+  private UserRepository createUserRepository(
+      final io.ryos.rhino.sdk.annotations.UserRepository userRepository) {
 
     var factory = userRepository.factory();
     var loginDelay = userRepository.delay();
 
     try {
-      final Constructor<? extends UserRepositoryFactory> factoryConstructor = factory.getConstructor(long.class);
-      final UserRepositoryFactory userRepositoryFactory = factoryConstructor.newInstance(loginDelay);
+      final Constructor<? extends UserRepositoryFactory> factoryConstructor =
+          factory.getConstructor(long.class);
+      final UserRepositoryFactory userRepositoryFactory =
+          factoryConstructor.newInstance(loginDelay);
       return userRepositoryFactory.create();
     } catch (NoSuchMethodException nsme) {
       return createWithDefaultConstructor(factory);
