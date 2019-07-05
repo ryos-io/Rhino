@@ -17,12 +17,12 @@ public @interface Throttle {
    *
    * @return Throttling duration.
    */
-  int durationInMins() default 1;
+  int durationInMins() default -1;
 
   /**
    * Max. number of requests.
    *
    * @return Maximum number of requests.
    */
-  int numberOfRequests() default 5;
+  int rps() default 100;
 }

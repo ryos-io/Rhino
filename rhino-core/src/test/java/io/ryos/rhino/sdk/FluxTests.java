@@ -22,6 +22,7 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
@@ -174,6 +175,7 @@ class FluxTests {
     final Limit limit = Limit.of(1, Duration.ofSeconds(5));
     final Limit limit2 = Limit.of(4, Duration.ofSeconds(5));
     Flux.range(0, 1000)
+        .flatMap(d -> Mono.just(d * 2))
         .transform(throttle(limit, limit2))
         .take(ofSeconds(15))
         .doOnComplete(latch::countDown)
