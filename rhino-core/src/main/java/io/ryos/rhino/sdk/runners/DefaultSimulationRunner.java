@@ -31,7 +31,6 @@ import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
@@ -111,7 +110,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
     var throttlingInfo = simulationMetadata.getThrottlingInfo();
 
     if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getNumberOfRequests(),
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
           throttlingInfo.getDuration());
       flux = flux.transform(throttle(rpsLimit));
     }

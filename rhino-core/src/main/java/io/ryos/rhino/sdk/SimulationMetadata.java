@@ -17,31 +17,20 @@
 package io.ryos.rhino.sdk;
 
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.getClassLevelAnnotation;
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.annotations.Logging;
-import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserProvider;
-import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.reporting.LogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
-import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

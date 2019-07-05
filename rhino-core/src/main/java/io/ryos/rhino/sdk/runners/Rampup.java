@@ -26,7 +26,7 @@ public class Rampup {
    */
   public static <T> Function<Flux<T>, Flux<T>> rampup(final long startRps, final long targetRps,
       final Duration duration) {
-    Preconditions.checkArgument(startRps > 0, "startRps <= 0");
+    Preconditions.checkArgument(startRps >= 0, "startRps < 0");
     Preconditions.checkArgument(targetRps > 1, "targetRps < 1");
     Objects.requireNonNull(duration, "duration is null");
 

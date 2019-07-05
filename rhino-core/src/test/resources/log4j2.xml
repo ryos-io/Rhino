@@ -9,5 +9,8 @@
         <Root level="error">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="io.ryos.rhino" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
     </Loggers>
 </Configuration>

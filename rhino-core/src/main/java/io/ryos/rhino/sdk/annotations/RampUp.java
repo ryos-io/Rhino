@@ -25,7 +25,7 @@ public @interface RampUp {
    *
    * @return Target request-per-second.
    */
-  long targetRps() default 0;
+  long targetRps() default 100;
 
   /**
    * Ramp-up duration in minutes. After the duration elapses, the request stays at the level of
@@ -34,5 +34,5 @@ public @interface RampUp {
    *
    * @return Ramp-up phase.
    */
-  int durationInMin() default 1;
+  int durationInMins() default -1;
 }
