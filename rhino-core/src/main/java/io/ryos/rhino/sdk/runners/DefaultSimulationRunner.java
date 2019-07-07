@@ -34,6 +34,8 @@ import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -58,7 +60,7 @@ import reactor.core.scheduler.Schedulers;
  * @since 1.0.0
  */
 public class DefaultSimulationRunner implements SimulationRunner {
-
+  private static final Logger LOG = LoggerFactory.getLogger(DefaultSimulationRunner.class);
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
 
@@ -85,8 +87,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info(
-        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
 
     var userRepository = simulationMetadata.getUserRepository();
     var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository,
@@ -135,7 +136,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
   }
 
   private void setUpGrafanaDashboard() {
-    Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+    LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
     new GrafanaGateway(simulationMetadata.getGrafanaInfo())
         .setUpDashboard(SimulationConfig.getSimulationId(),
             simulationMetadata.getScenarios()
@@ -163,7 +164,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
   @Override
   public void stop() {
 
-    System.out.println("Someone pushed the stop() button on runner.");
+    LOG.info("Someone pushed the stop() button on runner.");
     shutdown();
   }
 
@@ -174,20 +175,20 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
     shutdownInitiated = true;
 
-    System.out.println("Stopping the simulation...");
+    LOG.info("Stopping the simulation...");
 
     subscribe.dispose();
     // run cleanup.
-    System.out.println("Cleaning up.");
+    LOG.info("Cleaning up.");
     final UserRepository<UserSession> userRepository = simulationMetadata.getUserRepository();
     cleanupUserSessions();
 
     // proceed with shutdown.
-    System.out.println("Shutting down the system ...");
+    LOG.info("Shutting down the system ...");
     scenarioCyclicIterator.stop();
     eventDispatcher.stop();
 
-    System.out.println("Shutting down the scheduler ...");
+    LOG.info("Shutting down the scheduler ...");
     scheduler.shutdown();
     int retry = 0;
     while (!scheduler.isShutdown() && ++retry < 5) {
@@ -196,12 +197,12 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
     scheduler.shutdownNow();
 
-    System.out.println("Shutting down completed ...");
-    System.out.println("Bye!");
+    LOG.info("Shutting down completed ...");
+    LOG.info("Bye!");
   }
 
   private void waitForASec() {
-    System.out.println("Wait ...");
+    LOG.info("Wait ...");
     try {
       Thread.sleep(DefaultSimulationRunner.ONE_SEC);
     } catch (InterruptedException e) {

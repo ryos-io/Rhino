@@ -24,13 +24,13 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
-import org.apache.commons.math3.stat.StatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The actor outputs the current status of the test run. It gives out information to stdout like
@@ -41,6 +41,8 @@ import org.apache.commons.math3.stat.StatUtils;
  * @since 1.1.0
  */
 public class StdoutReporter extends AbstractActor {
+
+  private static final Logger LOG = LoggerFactory.getLogger(StdoutReporter.class);
 
   private static final long DELAY = 1000L;
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
@@ -147,7 +149,7 @@ public class StdoutReporter extends AbstractActor {
 
   private void flushReport(EndTestEvent event) {
     if (metrics.isEmpty()) {
-      System.out.println("There is no record in measurement yet. Test is running...");
+      LOG.info("There is no record in measurement yet. Test is running...");
       return;
     }
 
@@ -160,7 +162,8 @@ public class StdoutReporter extends AbstractActor {
     var responseTypeMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
-        .map(e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
+        .map(
+            e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
         .collect(Collectors.toList());
 
     long overAllResponseTime = metrics.entrySet()
@@ -210,7 +213,7 @@ public class StdoutReporter extends AbstractActor {
     output.append(String.format("%50s %9s ", "Total Request", totalNumberOfRequests)).append('\n');
     output.append(BORDER_LINE_BOLD).append('\n');
 
-    System.out.println(output.toString());
+    LOG.info(output.toString());
   }
 
   private String formatDate(Instant dateTime) {

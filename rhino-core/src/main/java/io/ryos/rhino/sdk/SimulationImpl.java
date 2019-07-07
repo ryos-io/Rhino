@@ -27,6 +27,8 @@ import io.ryos.rhino.sdk.utils.Environment;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Supervisor which manages set up and run benchmark tests. The class follows the steps required to
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 public class SimulationImpl implements Simulation {
+  private static final Logger LOG = LoggerFactory.getLogger(SimulationImpl.class);
 
   private static final String KEY_PROFILE = "profile";
   private static final String JOB = "job";
@@ -79,13 +82,12 @@ public class SimulationImpl implements Simulation {
           .collect(Collectors.toList());
 
     } catch (Throwable pe) {
-      System.out.println(pe.getMessage());
+      LOG.error("Cannot start application", pe);
       System.exit(-1);
     }
   }
 
-  private SimulationRunner getRunner(
-      final Class<? extends SimulationRunner> runnerClass,
+  private SimulationRunner getRunner(final Class<? extends SimulationRunner> runnerClass,
       final Context context) {
 
     try {
@@ -94,8 +96,9 @@ public class SimulationImpl implements Simulation {
     } catch (NoSuchMethodException nsm) {
       // implement default constructor creation.
     } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-      System.err.println(e.getMessage());
+      LOG.error("Cannot get runner implementation", e);
     }
+
     throw new IllegalArgumentException("Runner class: " + runnerClass.getName() + " is invalid.");
   }
 
@@ -128,14 +131,14 @@ public class SimulationImpl implements Simulation {
       }
       simulationRunners.forEach(SimulationRunner::start);
     } catch (Throwable t) {
-      System.out.println(t.getMessage());
+      LOG.error("Cannot start application", t);
       System.exit(-1);
     }
   }
 
   @Override
   public void stop() {
-    System.out.println("Stopping simulation...");
+    LOG.info("Stopping simulation...");
     simulationRunners.forEach(SimulationRunner::stop);
   }
 }

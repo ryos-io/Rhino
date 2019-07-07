@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
+import org.asynchttpclient.filter.ThrottleRequestFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
@@ -54,8 +55,9 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
-  private static final long MAX_WAIT_FOR_USER = 60;
   private static final int CONNECT_TIMEOUT = 500;
+  private static final int HANDSHAKE_TIMEOUT = 60000;
+  private static final int READ_TIMEOUT = 5000;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
@@ -79,8 +81,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   public void start() {
 
-    Out.info(
-        "Starting load test for " + simulationMetadata.getDuration().toMinutes() + " minutes ...");
+    LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
@@ -89,9 +90,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     var userRepository = simulationMetadata.getUserRepository();
     var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, "all");
     var httpClientConfig = Dsl.config()
-        .setConnectTimeout(CONNECT_TIMEOUT)
         .setMaxConnections(SimulationConfig.getMaxConnections())
         .setKeepAlive(true)
+        .setConnectTimeout(CONNECT_TIMEOUT)
+        .setHandshakeTimeout(HANDSHAKE_TIMEOUT)
+        .setReadTimeout(READ_TIMEOUT)
+        .addRequestFilter(new ThrottleRequestFilter(SimulationConfig.getMaxConnections()))
         .build();
 
     var client = Dsl.asyncHttpClient(httpClientConfig);
@@ -162,7 +166,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void setUpGrafanaDashboard() {
-    Out.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+    LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
     var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
     grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
         simulationMetadata.getSpecs()
@@ -196,7 +200,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           wait(ONE_SEC);
         }
       } catch (InterruptedException e) {
-        System.out.println(e.getMessage());
+        LOG.error(e.getMessage());
         // Intentionally left empty.
       }
     }
@@ -221,25 +225,25 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     shutdownInitiated = true;
 
-    Out.info("Stopping the simulation...");
+    LOG.info("Stopping the simulation...");
 
     subscribe.dispose();
 
     // proceed with shutdown.
-    Out.info("Shutting down the system ...");
+    LOG.info("Shutting down the system ...");
     eventDispatcher.stop();
     dslIterator.stop();
 
-    Out.info("Shutting down completed ...");
-    Out.info("Bye!");
+    LOG.info("Shutting down completed ...");
+    LOG.info("Bye!");
   }
 
   private void waitForASec() {
-    Out.info("Wait ...");
+    LOG.info("Wait ...");
     try {
       Thread.sleep(ONE_SEC);
     } catch (InterruptedException e) {
-      Out.info("Wait-Interrupted.");
+      LOG.error("Wait-Interrupted.", e);
       // intentionally left empty.
     }
   }
