@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -17,7 +18,10 @@ public class ReactiveBasicHttpGetTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(8089);
+  public WireMockRule wireMockRule = new WireMockRule(options().port(8089)
+      .jettyAcceptors(2)
+      .jettyAcceptQueueSize(100)
+      .containerThreads(100));
 
   @Test
   public void testReactiveBasicHttp() {
@@ -28,14 +32,8 @@ public class ReactiveBasicHttpGetTest {
 
     stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
-            .withFixedDelay(100)
-            //.withLogNormalRandomDelay(100, 0.1)
+            .withFixedDelay(800)
             .withStatus(200)));
-
-    stubFor(WireMock.get(urlEqualTo("/api/assets"))
-        .willReturn(aResponse()
-            .withFixedDelay(10)
-            .withStatus(401)));
 
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
   }
