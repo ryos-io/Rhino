@@ -90,8 +90,9 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         spec.getMeasurementPoint(), eventDispatcher);
 
     var responseMono = Mono
-        .fromFuture(client.executeRequest(buildRequest(spec, userSession), httpSpecAsyncHandler)
-            .toCompletableFuture());
+        .just(userSession)
+        .flatMap(s -> Mono.fromFuture(client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
+            .toCompletableFuture()));
 
     var retriableMono = Optional.ofNullable(spec.getRetryInfo())
         .map(retryInfo ->

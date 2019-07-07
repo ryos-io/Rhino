@@ -42,33 +42,34 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
   @Override
   public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
 
-    String userId = userSession.getUser().getId();
-    return Mono.fromCallable(() -> {
-      var measurement = new MeasurementImpl(spec.getTestName(), userId);
-      var start = System.currentTimeMillis();
-      var userEventStart = new UserEvent();
-      userEventStart.elapsed = 0;
-      userEventStart.start = start;
-      userEventStart.end = start;
-      userEventStart.scenario = spec.getTestName();
-      userEventStart.eventType = EventType.START;
-      userEventStart.id = userSession.getUser().getId();
+    return Mono.just(userSession)
+        .flatMap(s -> Mono.fromCallable(() -> {
+          var userId = userSession.getUser().getId();
+          var measurement = new MeasurementImpl(spec.getTestName(), userId);
+          var start = System.currentTimeMillis();
+          var userEventStart = new UserEvent();
+          userEventStart.elapsed = 0;
+          userEventStart.start = start;
+          userEventStart.end = start;
+          userEventStart.scenario = spec.getTestName();
+          userEventStart.eventType = EventType.START;
+          userEventStart.id = s.getUser().getId();
 
-      measurement.record(userEventStart);
+          measurement.record(userEventStart);
 
-      var resultingSession = spec.getFunction().apply(userSession, measurement);
-      var elapsed = System.currentTimeMillis() - start;
-      var userEventEnd = new UserEvent();
-      userEventEnd.elapsed = elapsed;
-      userEventEnd.start = start;
-      userEventEnd.end = start + elapsed;
-      userEventEnd.scenario = spec.getTestName();
-      userEventEnd.eventType = EventType.END;
-      userEventEnd.id = userId;
-      measurement.record(userEventEnd);
-      dispatcher.dispatchEvents(measurement);
+          var resultingSession = spec.getFunction().apply(s, measurement);
+          var elapsed = System.currentTimeMillis() - start;
+          var userEventEnd = new UserEvent();
+          userEventEnd.elapsed = elapsed;
+          userEventEnd.start = start;
+          userEventEnd.end = start + elapsed;
+          userEventEnd.scenario = spec.getTestName();
+          userEventEnd.eventType = EventType.END;
+          userEventEnd.id = userId;
+          measurement.record(userEventEnd);
+          dispatcher.dispatchEvents(measurement);
 
-      return resultingSession;
-    });
+          return resultingSession;
+        }));
   }
 }
