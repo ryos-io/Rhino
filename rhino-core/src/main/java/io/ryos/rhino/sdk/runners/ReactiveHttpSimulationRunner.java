@@ -44,11 +44,13 @@ import java.util.stream.Stream;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.filter.ThrottleRequestFilter;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
@@ -112,41 +114,49 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     flux = appendThrottling(flux);
     flux = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
-        .onErrorResume(t -> {
-          LOG.error("Skipping error", t);
-          return Mono.empty();
-        })
+        .onErrorResume(this::handleError)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::terminate)
         .doOnComplete(() -> shutdownInitiated = true)
-        .flatMap(tuple -> {
-          var session = tuple.getT1();
-          var dsl = tuple.getT2();
-          var specIt = dsl.getSpecs().iterator();
-          if (!specIt.hasNext()) {
-            throw new RuntimeException("No spec found in DSL.");
-          }
-          var acc = materialize(specIt.next(), client, session);
-          while (specIt.hasNext()) {
-            // Never move the following statement into lambda body. next() call is required to be eager.
-            var next = specIt.next();
-            acc = acc.flatMap(s -> {
-              if (next instanceof ConditionalSpecWrapper) {
-                var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-                if (!predicate.test(s)) {
-                  return Mono.just(s);
-                }
-              }
-              return materialize(next, client, session);
-            });
-          }
-          return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
-        });
-
+        .flatMap(tuple -> getPublisher(client, tuple));
     this.subscribe = flux.subscribe();
 
     await();
     stop();
+  }
+
+  private Publisher<? extends Tuple2<UserSession, ConnectableDsl>> handleError(Throwable t) {
+    LOG.error("Skipping error", t);
+    return Mono.empty();
+  }
+
+  private Publisher<? extends UserSession> getPublisher(AsyncHttpClient client,
+      Tuple2<UserSession, ConnectableDsl> tuple) {
+    var session = tuple.getT1();
+    var dsl = tuple.getT2();
+    var specIt = dsl.getSpecs().iterator();
+    if (!specIt.hasNext()) {
+      throw new RuntimeException("No spec found in DSL.");
+    }
+    var acc = materialize(specIt.next(), client, session);
+    while (specIt.hasNext()) {
+      // Never move the following statement into lambda body. next() call is required to be eager.
+      var next = specIt.next();
+      acc = acc.flatMap(s -> {
+        if (isConditionalSpec(next)) {
+          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+          if (!predicate.test(s)) {
+            return Mono.just(s);
+          }
+        }
+        return materialize(next, client, session);
+      });
+    }
+    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
+  }
+
+  private boolean isConditionalSpec(Spec next) {
+    return next instanceof ConditionalSpecWrapper;
   }
 
   private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
@@ -189,13 +199,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       final UserSession session) {
 
     if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, eventDispatcher)
-          .materialize((HttpSpec) spec, session);
+      return new HttpSpecMaterializer(client, eventDispatcher).materialize((HttpSpec) spec, session);
     } else if (spec instanceof SomeSpec) {
       return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
     } else if (spec instanceof WaitSpec) {
       return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
-    } else if (spec instanceof ConditionalSpecWrapper) {
+    } else if (isConditionalSpec(spec)) {
       return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
     }
 
