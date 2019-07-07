@@ -51,6 +51,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
+
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
 
   private static final String JOB = "job";
@@ -107,19 +108,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-
-    var throttlingInfo = simulationMetadata.getThrottlingInfo();
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
-
+    flux = appendRampUp(flux);
+    flux = appendThrottling(flux);
     flux = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .onErrorResume(t -> {
@@ -157,6 +147,25 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     await();
     stop();
+  }
+
+  private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
+    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+    return flux;
+  }
+
+  private Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
+    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+    return flux;
   }
 
   private void terminate() {

@@ -110,7 +110,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     return retriableMono.map(response -> (UserSession) userSession.add(Optional.ofNullable(spec.getResponseKey()).orElse("result"),
         response))
         .onErrorResume(e -> Mono.empty())
-        .doOnError(t -> LOG.error("Http Client Error", t.getMessage()));
+        .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
   private Response isRetriable(final RetryInfo retryInfo, final HttpResponse hr) {
