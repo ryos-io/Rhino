@@ -10,6 +10,8 @@
 
 ## Rhino: Cloud Services Load and Performance Testing
 
+[![Join the chat at https://gitter.im/ryos-io/Rhino](https://badges.gitter.im/ryos-io/Rhino.svg)](https://gitter.im/ryos-io/Rhino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
 testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
