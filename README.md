@@ -3,14 +3,13 @@
 </p>
 
 <p align="center">
-  <img src="https://travis-ci.org/bagdemir/rhino.svg?branch=master" />
+  <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
+  <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
   <img src="https://img.shields.io/badge/rhino--core-1.1.12.RELEASE-72bf26.svg" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
 ## Rhino: Cloud Services Load and Performance Testing
-
-[![Join the chat at https://gitter.im/ryos-io/Rhino](https://badges.gitter.im/ryos-io/Rhino.svg)](https://gitter.im/ryos-io/Rhino?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
