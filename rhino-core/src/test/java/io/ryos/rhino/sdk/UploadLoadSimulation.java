@@ -42,7 +42,8 @@ public class UploadLoadSimulation {
             .auth()
             .endpoint((c) -> DISCOVERY_ENDPOINT)
             .upload(this::getStream)
-            .put());
+            .put()
+            .saveTo("result"));
   }
 
   private InputStream getStream() {

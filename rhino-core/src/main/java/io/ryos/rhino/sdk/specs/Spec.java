@@ -19,7 +19,7 @@ public interface Spec {
    * @param measurementPoint Measurement point name.
    * @return A new instance of {@link Spec}.
    */
-  static HttpSpec http(String measurementPoint) {
+  static HttpConfigSpec http(String measurementPoint) {
     return new HttpSpecImpl(measurementPoint);
   }
 

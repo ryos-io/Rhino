@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
+public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSpec, HttpRetriableSpec {
 
   private Supplier<InputStream> toUpload;
 
@@ -43,103 +43,103 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec get() {
+  public HttpRetriableSpec get() {
     this.httpMethod = Method.GET;
     return this;
   }
 
   @Override
-  public HttpSpec head() {
+  public HttpRetriableSpec head() {
     this.httpMethod = Method.HEAD;
     return this;
   }
 
   @Override
-  public HttpSpec put() {
+  public HttpRetriableSpec put() {
     this.httpMethod = Method.PUT;
     return this;
   }
 
   @Override
-  public HttpSpec patch() {
+  public HttpRetriableSpec patch() {
     this.httpMethod = Method.PATCH;
     return this;
   }
 
   @Override
-  public HttpSpec post() {
+  public HttpRetriableSpec post() {
     this.httpMethod = Method.POST;
     return this;
   }
 
   @Override
-  public HttpSpec delete() {
+  public HttpRetriableSpec delete() {
     this.httpMethod = Method.DELETE;
     return this;
   }
 
   @Override
-  public HttpSpec options() {
+  public HttpRetriableSpec options() {
     this.httpMethod = Method.OPTIONS;
     return this;
   }
 
   @Override
-  public HttpSpec endpoint(final String endpoint) {
+  public HttpConfigSpec endpoint(final String endpoint) {
     this.endpoint = r -> endpoint;
     return this;
   }
 
   @Override
-  public HttpSpec endpoint(Function<UserSession, String> endpoint) {
+  public HttpConfigSpec endpoint(Function<UserSession, String> endpoint) {
     this.endpoint = endpoint;
     return this;
   }
 
   @Override
-  public HttpSpec header(String key, List<String> values) {
+  public HttpConfigSpec header(String key, List<String> values) {
     this.headers.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
-  public HttpSpec header(String key, String value) {
+  public HttpConfigSpec header(String key, String value) {
     this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
-  public HttpSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction) {
+  public HttpConfigSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction) {
     this.headers.add(headerFunction);
     return this;
   }
 
   @Override
-  public HttpSpec auth() {
+  public HttpConfigSpec auth() {
     this.auth = true;
     return this;
   }
 
   @Override
-  public HttpSpec queryParam(String key, List<String> values) {
+  public HttpConfigSpec queryParam(String key, List<String> values) {
     this.queryParams.add(e -> Map.entry(key, values));
     return this;
   }
 
   @Override
-  public HttpSpec queryParam(String key, String value) {
+  public HttpConfigSpec queryParam(String key, String value) {
     this.queryParams.add(e -> Map.entry(key, Collections.singletonList(value)));
     return this;
   }
 
   @Override
-  public HttpSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction) {
+  public HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction) {
     this.queryParams.add(headerFunction);
     return this;
   }
 
   @Override
-  public HttpSpec upload(final Supplier<InputStream> inputStream) {
+  public HttpConfigSpec upload(final Supplier<InputStream> inputStream) {
     this.toUpload = inputStream;
     return this;
   }

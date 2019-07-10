@@ -19,51 +19,6 @@ public interface HttpSpec extends RetriableSpec<HttpSpec, HttpResponse> {
     return Map.entry(key, Collections.singletonList(value));
   }
 
-  HttpSpec get();
-
-  HttpSpec head();
-
-  HttpSpec put();
-
-  HttpSpec post();
-
-  HttpSpec delete();
-
-  HttpSpec patch();
-
-  HttpSpec options();
-
-  HttpSpec upload(final Supplier<InputStream> inputStream);
-
-  HttpSpec endpoint(String endpoint);
-
-  HttpSpec endpoint(Function<UserSession, String> endpoint);
-
-  /**
-   * Adds a new header into headers.
-   * <p>
-   *
-   * @param headerFunction Function to get the header value.
-   * @return {@link HttpSpec} instance with headers initialized.
-   */
-  HttpSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction);
-
-  HttpSpec header(String key, List<String> values);
-
-  HttpSpec header(String key, String value);
-
-  HttpSpec auth();
-
-  HttpSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction);
-
-  HttpSpec queryParam(String key, List<String> values);
-
-  HttpSpec queryParam(String key, String value);
-
-  HttpSpec retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
-
-  HttpSpec saveTo(String keyName);
-
   // Getters
   Method getMethod();
 
