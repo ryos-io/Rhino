@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.data;
 
 import io.ryos.rhino.sdk.users.data.User;
+import java.util.Optional;
 
 /**
  * User session is a stash to store objects and share them among scenarios per user session. A user
@@ -36,4 +37,8 @@ public interface UserSession extends Context {
    * @return The user of the current session.
    */
   User getUser();
+
+  Optional<String> getUserToken();
+
+  Optional<String> getRefreshToken();
 }

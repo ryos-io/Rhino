@@ -16,7 +16,9 @@
 
 package io.ryos.rhino.sdk.data;
 
+import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.data.User;
+import java.util.Optional;
 
 /**
  * User session is a stash to store objects and share them among scenarios per user session. A
@@ -37,5 +39,21 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
   @Override
   public User getUser() {
     return user;
+  }
+
+  @Override
+  public Optional<String> getUserToken() {
+    if (user instanceof OAuthUser) {
+      return Optional.ofNullable(((OAuthUser) user).getAccessToken());
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<String> getRefreshToken() {
+    if (user instanceof OAuthUser) {
+      return Optional.ofNullable(((OAuthUser) user).getRefreshToken());
+    }
+    return Optional.empty();
   }
 }
