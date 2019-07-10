@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.specs;
 
-import io.ryos.rhino.sdk.data.Context;
+import io.ryos.rhino.sdk.data.UserSession;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,12 +22,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
 
   private Supplier<InputStream> toUpload;
 
-  private List<Function<Context, Entry<String, List<String>>>> headers = new ArrayList<>();
-  private List<Function<Context, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+  private List<Function<UserSession, Entry<String, List<String>>>> headers = new ArrayList<>();
+  private List<Function<UserSession, Entry<String, List<String>>>> queryParams = new ArrayList<>();
   private boolean auth;
 
   private Method httpMethod;
-  private Function<Context, String> endpoint;
+  private Function<UserSession, String> endpoint;
   private RetryInfo retryInfo;
 
   private String saveTo;
@@ -91,7 +91,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec endpoint(Function<Context, String> endpoint) {
+  public HttpSpec endpoint(Function<UserSession, String> endpoint) {
     this.endpoint = endpoint;
     return this;
   }
@@ -109,7 +109,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec header(Function<Context, Entry<String, List<String>>> headerFunction) {
+  public HttpSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction) {
     this.headers.add(headerFunction);
     return this;
   }
@@ -133,7 +133,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public HttpSpec queryParam(Function<Context, Entry<String, List<String>>> headerFunction) {
+  public HttpSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction) {
     this.queryParams.add(headerFunction);
     return this;
   }
@@ -167,17 +167,17 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec {
   }
 
   @Override
-  public List<Function<Context, Entry<String, List<String>>>> getHeaders() {
+  public List<Function<UserSession, Entry<String, List<String>>>> getHeaders() {
     return headers;
   }
 
   @Override
-  public List<Function<Context, Entry<String, List<String>>>> getQueryParameters() {
+  public List<Function<UserSession, Entry<String, List<String>>>> getQueryParameters() {
     return queryParams;
   }
 
   @Override
-  public Function<Context, String> getEndpoint() {
+  public Function<UserSession, String> getEndpoint() {
     return endpoint;
   }
 
