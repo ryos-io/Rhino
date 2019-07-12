@@ -65,7 +65,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private static final long ONE_SEC = 1000L;
 
   private final SimulationMetadata simulationMetadata;
-  private final CyclicIterator<Scenario> scenarioCyclicIterator;
   private final ScheduledExecutorService scheduler;
   private final EventDispatcher eventDispatcher;
 
@@ -80,7 +79,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
    */
   public DefaultSimulationRunner(Context context) {
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
-    this.scenarioCyclicIterator = new CyclicIterator<>(simulationMetadata.getScenarios());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
     this.eventDispatcher = new EventDispatcher(simulationMetadata);
   }
@@ -104,10 +102,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .injectOn(simulationMetadata.getTestInstance());
 
     var users = Stream.generate(userSessionProvider::take);
-    var scenarios = Stream.generate(scenarioCyclicIterator::next);
-
-    var flux = Flux.zip(fromStream(users), fromStream(scenarios));
-
+    var flux = Flux.fromStream(users);
     var throttlingInfo = simulationMetadata.getThrottlingInfo();
 
     if (throttlingInfo != null) {
@@ -127,10 +122,12 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(t -> new DefaultSimulationCallable(simulationMetadata, t.getT1(), t.getT2(),
-            eventDispatcher).call())
+        .doOnNext(userSession ->
+            // Run the scenario subsequently.
+            simulationMetadata.getScenarios().forEach(scenario ->
+                new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
+                    eventDispatcher).call()))
         .subscribe();
-
     await();
     stop();
   }
@@ -180,12 +177,10 @@ public class DefaultSimulationRunner implements SimulationRunner {
     subscribe.dispose();
     // run cleanup.
     LOG.info("Cleaning up.");
-    final UserRepository<UserSession> userRepository = simulationMetadata.getUserRepository();
     cleanupUserSessions();
 
     // proceed with shutdown.
     LOG.info("Shutting down the system ...");
-    scenarioCyclicIterator.stop();
     eventDispatcher.stop();
 
     LOG.info("Shutting down the scheduler ...");
