@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-1.1.12.RELEASE-72bf26.svg" />
+  <img src="https://img.shields.io/badge/rhino--sdk-1.5.0-71c247.svg" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
@@ -22,7 +22,7 @@ testing cloud services which consists of the Rhino Java framework as well as a c
 * to speed up load and performance test development,
 * to afford a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
-* to provide a Cloud-native platform which is elastic, scalable, covering region and environment aware load scenarios,
+* to provide a Cloud-native pla72bf26.svgtform which is elastic, scalable, covering region and environment aware load scenarios,
 * to enable the integration with the existing code, e.g your integration test frameworks to 
 make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or
