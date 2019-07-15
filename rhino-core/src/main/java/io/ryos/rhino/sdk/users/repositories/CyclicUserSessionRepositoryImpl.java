@@ -57,6 +57,8 @@ public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionReposit
 
   @Override
   public UserSession take() {
-    return filteredIterator.next();
+    final UserSession next = filteredIterator.next();
+    next.empty();
+    return next;
   }
 }
