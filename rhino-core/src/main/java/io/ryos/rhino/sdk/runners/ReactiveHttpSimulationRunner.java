@@ -74,7 +74,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
     this.dslIterator = new CyclicIterator<>(
         simulationMetadata
-            .getSpecs()
+            .getDsls()
             .stream()
             .filter(Objects::nonNull)
             .map(spec -> (ConnectableDsl) spec)
@@ -180,7 +180,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private void terminate() {
     cleanupUserSessions();
-
+    shutdown();
     notifyAwaiting();
   }
 
@@ -188,7 +188,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
     var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
     grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
-        simulationMetadata.getSpecs()
+        simulationMetadata.getDsls()
             .stream()
             .map(dsl -> (ConnectableDsl) dsl)
             .map(ConnectableDsl::getName)
@@ -244,7 +244,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     shutdownInitiated = true;
 
     LOG.info("Stopping the simulation...");
-
     subscribe.dispose();
 
     // proceed with shutdown.
@@ -254,16 +253,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     LOG.info("Shutting down completed ...");
     LOG.info("Bye!");
-  }
-
-  private void waitForASec() {
-    LOG.info("Wait ...");
-    try {
-      Thread.sleep(ONE_SEC);
-    } catch (InterruptedException e) {
-      LOG.error("Wait-Interrupted.", e);
-      // intentionally left empty.
-    }
   }
 
   private void prepareUserSessions() {
