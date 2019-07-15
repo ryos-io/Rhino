@@ -31,9 +31,6 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * {@link SimulationMetadata} is representation of a single performance testing job. The instances
@@ -51,9 +48,6 @@ import org.apache.logging.log4j.Logger;
  * @since 1.0.0
  */
 public class SimulationMetadata {
-
-  private static final String ACTOR_SYS_NAME = "benchmark";
-  private static final Logger LOG = LogManager.getLogger(SimulationMetadata.class);
 
   /**
    * Runner class type.
@@ -118,23 +112,16 @@ public class SimulationMetadata {
   private Object testInstance;
 
   /**
-   * Simulation object factory. All reflection calls should be run on this single instance.
-   * <p>
-   */
-  private Supplier<Object> simulationInstanceFactory =
-      () -> instanceOf(simulationClass).orElseThrow();
-
-  /**
    * The {@link java.lang.reflect.Method} instance for running the test.
    * <p>
    */
   private List<Scenario> scenarios;
 
   /**
-   * A list of {@link Spec} instances defined in getSpecs methods.
+   * A list of {@link LoadDsl} instances defined in getLoadDsls methods.
    * <p>
    */
-  private List<LoadDsl> specs;
+  private List<LoadDsl> loadDsls;
 
   /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
@@ -188,7 +175,7 @@ public class SimulationMetadata {
     this.rampUpInfo = builder.rampUpInfo;
     this.simulationClass = builder.simulationClass;
     this.scenarios = builder.scenarios;
-    this.specs = builder.specs;
+    this.loadDsls = builder.loadDsls;
     this.prepareMethod = builder.prepareMethod;
     this.cleanupMethod = builder.cleanUpMethod;
     this.beforeMethod = builder.beforeMethod;
@@ -246,8 +233,8 @@ public class SimulationMetadata {
     return scenarios;
   }
 
-  public List<LoadDsl> getSpecs() {
-    return specs;
+  public List<LoadDsl> getDsls() {
+    return loadDsls;
   }
 
   public Class getSimulationClass() {
@@ -345,7 +332,7 @@ public class SimulationMetadata {
      * List of {@link Spec} instances.
      * <p>
      */
-    private List<LoadDsl> specs;
+    private List<LoadDsl> loadDsls;
 
     /**
      * The {@link java.lang.reflect.Method} instance for preparing the test.
@@ -465,8 +452,8 @@ public class SimulationMetadata {
       return this;
     }
 
-    public Builder withSpecs(final List<LoadDsl> specs) {
-      this.specs = specs;
+    public Builder withDsls(final List<LoadDsl> loadDsls) {
+      this.loadDsls = loadDsls;
       return this;
     }
 

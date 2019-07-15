@@ -273,7 +273,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
         .withScenarios(scenarioMethods)
-        .withSpecs(dsls)
+        .withDsls(dsls)
         .withTestInstance(testInstance)
         .withThrottling(throttlingInfo)
         .withRampUp(rampupInfo)
