@@ -34,7 +34,7 @@ public interface Context {
    * @param key Key value.
    * @param value Value to store.
    */
-  Context add(String key, Object value);
+  <T extends Context> T add(String key, Object value);
 
   /**
    * Reclaims the object from the context.

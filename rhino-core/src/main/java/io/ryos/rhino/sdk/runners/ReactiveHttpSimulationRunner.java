@@ -27,12 +27,14 @@ import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.MapperSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.HttpSpec;
+import io.ryos.rhino.sdk.specs.MapperSpec;
 import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
@@ -200,11 +202,14 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       final UserSession session) {
 
     if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, eventDispatcher).materialize((HttpSpec) spec, session);
+      return new HttpSpecMaterializer(client, eventDispatcher)
+          .materialize((HttpSpec) spec, session);
     } else if (spec instanceof SomeSpec) {
       return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
     } else if (spec instanceof WaitSpec) {
       return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
+    } else if (spec instanceof MapperSpec) {
+      return new MapperSpecMaterializer().materialize((MapperSpec) spec, session);
     } else if (isConditionalSpec(spec)) {
       return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
     }

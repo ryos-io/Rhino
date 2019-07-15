@@ -65,7 +65,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   private final EventDispatcher eventDispatcher;
   private final Predicate<UserSession> conditionalSpec;
 
-  HttpSpecMaterializer(final AsyncHttpClient client,
+  public HttpSpecMaterializer(final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
       final Predicate<UserSession> predicate) {
     this.client = client;
@@ -80,8 +80,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
    * @param client Async HTTP client instance.
    * @param eventDispatcher Event dispatcher instance.
    */
-  public HttpSpecMaterializer(final AsyncHttpClient client,
-      final EventDispatcher eventDispatcher) {
+  public HttpSpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
     this(client, eventDispatcher, null);
   }
 
