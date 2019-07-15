@@ -26,7 +26,7 @@ public class ReactiveBasicHttpGetSimulation {
 
   @Dsl(name = "Shop Benchmarks")
   public LoadDsl singleTestDsl() {
-    return Start.spec()
+    return Start.dsl()
         .run(http("localhost:8089/api/files")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
