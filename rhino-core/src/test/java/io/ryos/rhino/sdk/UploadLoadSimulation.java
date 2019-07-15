@@ -35,7 +35,7 @@ public class UploadLoadSimulation {
   @Dsl(name = "Upload File")
   public LoadDsl singleTestDsl() {
     return Start
-        .spec()
+        .dsl()
         .run(http("text.txt")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
