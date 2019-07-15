@@ -20,12 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
-import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
 import io.ryos.rhino.sdk.users.data.User;
-import java.util.Optional;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
@@ -34,14 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link Authenticator} implementation for OAuth 2.0.
+ * {@link UserAuthenticator} implementation for OAuth 2.0.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class OAuthAuthenticatorImpl implements Authenticator<OAuthUser> {
-  private static final Logger LOG = LoggerFactory.getLogger(OAuthAuthenticatorImpl.class);
+public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> {
+  private static final Logger LOG = LoggerFactory.getLogger(OAuthUserAuthenticatorImpl.class);
 
   private static final String CLIENT_ID = "client_id";
   private static final String CLIENT_SECRET = "client_secret";

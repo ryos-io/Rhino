@@ -180,7 +180,24 @@ public class SimulationConfig {
   private String getAuthClientCode() {
     return properties.getProperty(environment + ".oauth.clientCode");
   }
-  
+
+  private String getServiceAuthClientId() {
+    return properties.getProperty(environment + ".oauth.service.clientId");
+  }
+
+  private String getServiceAuthClientCode() {
+    return properties.getProperty(environment + ".oauth.service.clientCode");
+  }
+
+  private String getServiceAuthGrantType() {
+    return properties.getProperty(environment + ".oauth.service.grantType");
+  }
+
+  private String getServiceAuthClientSecret() {
+    return properties.getProperty(environment + ".oauth.service.clientSecret");
+  }
+
+
   private String getEndpoint() {
     return properties.getProperty(environment + ".endpoint");
   }
@@ -299,5 +316,21 @@ public class SimulationConfig {
 
   public static String getGrafanaPassword() {
     return instance.grafanaPassword();
+  }
+
+  public static String getServiceClientId() {
+    return instance.getServiceAuthClientId();
+  }
+
+  public static String getServiceClientCode() {
+    return instance.getServiceAuthClientCode();
+  }
+
+  public static String getServiceGrantType() {
+    return instance.getServiceAuthGrantType();
+  }
+
+  public static String getServiceClientSecret() {
+    return instance.getServiceAuthClientSecret();
   }
 }
