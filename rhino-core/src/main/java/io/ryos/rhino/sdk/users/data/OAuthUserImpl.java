@@ -26,10 +26,12 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
 
   private String accessToken;
   private String refreshToken;
+  private OAuthService service;
   private String scope;
   private String clientId;
 
-  public OAuthUserImpl(final String user,
+  public OAuthUserImpl(final OAuthService service,
+      final String user,
       final String password,
       final String accessToken,
       final String refreshToken,
@@ -40,6 +42,7 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
 
     super(user, password, id, scope, region);
 
+    this.service = service;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.clientId = clientId;
@@ -80,6 +83,11 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
   @Override
   public String getClientId() {
     return clientId;
+  }
+
+  @Override
+  public OAuthService getOAuthService() {
+    return service;
   }
 
   @Override

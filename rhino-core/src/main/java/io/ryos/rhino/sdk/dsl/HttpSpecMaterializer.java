@@ -22,8 +22,10 @@ import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
+import io.ryos.rhino.sdk.exceptions.UnknownTokenTypeException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpResponse;
 import io.ryos.rhino.sdk.specs.HttpSpec;
@@ -55,12 +57,15 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
   private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
   private static final String HEADER_AUTHORIZATION = "Authorization";
+  private static final String BEARER = "Bearer ";
+  private static final String USER = "user";
+  private static final String SERVICE = "service";
 
   private final AsyncHttpClient client;
   private final EventDispatcher eventDispatcher;
   private final Predicate<UserSession> conditionalSpec;
 
-  public HttpSpecMaterializer(final AsyncHttpClient client,
+  HttpSpecMaterializer(final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
       final Predicate<UserSession> predicate) {
     this.client = client;
@@ -91,31 +96,37 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     var responseMono = Mono
         .just(userSession)
-        .flatMap(s -> Mono.fromFuture(client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
-            .toCompletableFuture()));
+        .flatMap(
+            s -> Mono.fromFuture(client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
+                .toCompletableFuture()));
 
     var retriableMono = Optional.ofNullable(spec.getRetryInfo())
         .map(retryInfo ->
             responseMono
                 .map(HttpResponse::new)
                 .map(hr -> isRetriable(retryInfo, hr))
-                .retryWhen(companion -> companion.zipWith(Flux.range(1, retryInfo.getNumOfRetries()), (error, index) -> {
-                    if (index < retryInfo.getNumOfRetries() && error instanceof RetryableOperationException) {
-                      return index;
-                    } else {
-                      throw Exceptions.propagate(error);
-                    }
-            })))
+                .retryWhen(companion -> companion
+                    .zipWith(Flux.range(1, retryInfo.getNumOfRetries()), (error, index) -> {
+                      if (index < retryInfo.getNumOfRetries()
+                          && error instanceof RetryableOperationException) {
+                        return index;
+                      } else {
+                        throw Exceptions.propagate(error);
+                      }
+                    })))
         .orElse(responseMono);
 
-    return retriableMono.map(response -> (UserSession) userSession.add(Optional.ofNullable(spec.getResponseKey()).orElse("result"),
-        response))
+    return retriableMono.map(response -> (UserSession) userSession
+        .add(Optional.ofNullable(spec.getResponseKey()).orElse("result"),
+            response))
         .onErrorResume(e -> Mono.empty())
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
   private Response isRetriable(final RetryInfo retryInfo, final HttpResponse hr) {
-    if (retryInfo.getPredicate().test(hr)) { throw new RetryableOperationException(String.valueOf(hr.getStatusCode())); }
+    if (retryInfo.getPredicate().test(hr)) {
+      throw new RetryableOperationException(String.valueOf(hr.getStatusCode()));
+    }
     return hr.getResponse();
   }
 
@@ -162,8 +173,23 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     if (httpSpec.isAuth()) {
       var user = userSession.getUser();
       if (user instanceof OAuthUser) {
-        var token = ((OAuthUser) user).getAccessToken();
-        builder = builder.addHeader(HEADER_AUTHORIZATION, "Bearer " + token);
+        var authService = ((OAuthUser) user).getOAuthService();
+        if (SimulationConfig.isServiceAuthenticationEnabled()) {
+          var serviceAccessToken = authService.getAccessToken();
+          var userToken = ((OAuthUser) user).getAccessToken();
+          if (USER.equals(SimulationConfig.getBearerType())) {
+            builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + userToken);
+            builder = builder.addHeader(SimulationConfig.getHeaderName(), serviceAccessToken);
+          } else if (SERVICE.equals(SimulationConfig.getBearerType())) {
+            builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + serviceAccessToken);
+            builder = builder.addHeader(SimulationConfig.getHeaderName(), userToken);
+          } else {
+            throw new UnknownTokenTypeException(SimulationConfig.getBearerType());
+          }
+        } else {
+          var token = ((OAuthUser) user).getAccessToken();
+          builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + token);
+        }
       }
     }
 

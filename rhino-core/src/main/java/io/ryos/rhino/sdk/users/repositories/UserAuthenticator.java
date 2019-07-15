@@ -9,7 +9,7 @@ import io.ryos.rhino.sdk.users.data.User;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface UserAuthenticator<T extends User> {
+public interface UserAuthenticator<T extends User> extends Authenticator<User, T> {
 
   /**
    * Authenticates a user against an authorization server.
@@ -20,5 +20,4 @@ public interface UserAuthenticator<T extends User> {
    * {@link io.ryos.rhino.sdk.users.data.OAuthUser}.
    */
   T authenticate(User user);
-
 }

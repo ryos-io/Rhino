@@ -28,7 +28,6 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   private final long loginDelay;
   private final OAuthUserAuthenticatorImpl authenticator;
-
   private final UserSource userSource;
 
   OAuthUserRepositoryImpl(final UserSource userSource, long loginDelay) {

@@ -21,6 +21,7 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import io.ryos.rhino.sdk.users.OAuthEntity;
+import io.ryos.rhino.sdk.users.data.OAuthService;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.data.OAuthUserImpl;
 import io.ryos.rhino.sdk.users.data.User;
@@ -48,7 +49,19 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
   private static final String PASSWORD = "password";
   private static final String SCOPE = "scope";
 
+  private final OAuthService service;
   private final ObjectMapper objectMapper = new ObjectMapper();
+
+  public OAuthUserAuthenticatorImpl() {
+
+    final OAuthService serviceData = new OAuthService();
+    serviceData.setGrantType(SimulationConfig.getServiceGrantType());
+    serviceData.setClientCode(SimulationConfig.getServiceClientCode());
+    serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
+    serviceData.setClientId(SimulationConfig.getServiceClientId());
+
+    this.service = new OAuthServiceAuthenticatorImpl().authenticate(serviceData);
+  }
 
   @Override
   public OAuthUser authenticate(User user) {
@@ -85,8 +98,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        LOG.info(
-            "Cannot login user, status={} message={}", response.getStatus(), response.readEntity(String.class));
+        LOG.info("Cannot login user, status={} message={}", response.getStatus(), response.readEntity(String.class));
         return null;
       }
 
@@ -94,7 +106,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
 
       var entity = mapToEntity(s);
 
-      return new OAuthUserImpl(user.getUsername(),
+      return new OAuthUserImpl(service, user.getUsername(),
           user.getPassword(),
           entity.getAccessToken(),
           entity.getRefreshToken(),
@@ -120,5 +132,4 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     }
     return o;
   }
-
 }

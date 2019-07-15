@@ -73,8 +73,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     return Arrays.stream(inPackages)
         .map(p -> p.replace(DOT, File.separator))
-        .flatMap(p -> scanBenchmarkClassesIn(p).stream()
-            .filter(a -> forSimulation.equals(getSimulationName(a))))
+        .flatMap(p -> scanBenchmarkClassesIn(p).stream().filter(a -> forSimulation.equals(getSimulationName(a))))
         .map(this::createBenchmarkJob)
         .collect(toList());
   }
