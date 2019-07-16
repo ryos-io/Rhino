@@ -16,10 +16,6 @@ for
 testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
- 
- <p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_grafana.png"  width="640"/>
-</p>
 
 **Rhino's philosophy is:**
 
