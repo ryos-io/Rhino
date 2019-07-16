@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_logo.png"  width="200"/>
+  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
 </p>
 
 <p align="center">
