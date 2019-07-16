@@ -27,13 +27,12 @@ import java.util.Objects;
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   private final long loginDelay;
-  private final OAuthAuthenticatorImpl authenticator;
-
+  private final OAuthUserAuthenticatorImpl authenticator;
   private final UserSource userSource;
 
   OAuthUserRepositoryImpl(final UserSource userSource, long loginDelay) {
     this.userSource = Objects.requireNonNull(userSource);
-    this.authenticator = new OAuthAuthenticatorImpl();
+    this.authenticator = new OAuthUserAuthenticatorImpl();
     this.loginDelay = loginDelay;
   }
 

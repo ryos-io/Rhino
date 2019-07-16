@@ -37,7 +37,7 @@ import java.util.UUID;
  *
  * @author Erhan Bagdemir
  * @see SimulationImpl
- * @since 1.0
+ * @since 1.0.0
  */
 public class SimulationConfig {
 
@@ -56,9 +56,8 @@ public class SimulationConfig {
     this.properties = new Properties();
     this.environment = environment.toString();
     this.simulationId = Optional
-            .ofNullable(System.getenv().get(SIM_ID))
-            .orElse(UUID.randomUUID().toString());
-
+        .ofNullable(System.getenv().get(SIM_ID))
+        .orElse(UUID.randomUUID().toString());
     loadConfig(path);
   }
 
@@ -74,7 +73,7 @@ public class SimulationConfig {
 
   private void loadConfig(final String path) {
 
-    try(var is = new ConfigResource(path).getInputStream()) {
+    try (var is = new ConfigResource(path).getInputStream()) {
       properties.load(is);
 
       var propsValidator = new PropsValidatorImpl();
@@ -180,7 +179,36 @@ public class SimulationConfig {
   private String getAuthClientCode() {
     return properties.getProperty(environment + ".oauth.clientCode");
   }
-  
+
+  private String getServiceAuthEnabled() {
+    return properties.getProperty(environment + ".oauth.service.authentication");
+  }
+
+  private String getServiceAuthClientId() {
+    return properties.getProperty(environment + ".oauth.service.clientId");
+  }
+
+  private String getServiceAuthClientCode() {
+    return properties.getProperty(environment + ".oauth.service.clientCode");
+  }
+
+  private String getAuthBearerType() {
+    return properties.getProperty(environment + ".oauth.bearer");
+  }
+
+  private String getAuthHeaderName() {
+    return properties.getProperty(environment + ".oauth.headerName");
+  }
+
+  private String getServiceAuthGrantType() {
+    return properties.getProperty(environment + ".oauth.service.grantType");
+  }
+
+  private String getServiceAuthClientSecret() {
+    return properties.getProperty(environment + ".oauth.service.clientSecret");
+  }
+
+
   private String getEndpoint() {
     return properties.getProperty(environment + ".endpoint");
   }
@@ -299,5 +327,33 @@ public class SimulationConfig {
 
   public static String getGrafanaPassword() {
     return instance.grafanaPassword();
+  }
+
+  public static String getServiceClientId() {
+    return instance.getServiceAuthClientId();
+  }
+
+  public static String getServiceClientCode() {
+    return instance.getServiceAuthClientCode();
+  }
+
+  public static String getServiceGrantType() {
+    return instance.getServiceAuthGrantType();
+  }
+
+  public static String getServiceClientSecret() {
+    return instance.getServiceAuthClientSecret();
+  }
+
+  public static boolean isServiceAuthenticationEnabled() {
+    return "true".equalsIgnoreCase(instance.getServiceAuthEnabled());
+  }
+
+  public static String getBearerType() {
+    return instance.getAuthBearerType();
+  }
+
+  public static String getHeaderName() {
+    return instance.getAuthHeaderName();
   }
 }

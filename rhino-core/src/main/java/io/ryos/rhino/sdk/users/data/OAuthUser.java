@@ -51,4 +51,10 @@ public interface OAuthUser extends User {
    * @return Client id.
    */
   String getClientId();
+
+  /**
+   * OAuth Service.
+   * @return  OAuth Service.
+   */
+  OAuthService getOAuthService();
 }
