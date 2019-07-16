@@ -48,7 +48,7 @@ Add maven dependency into your project:
 </dependency>
 ```
 
-[Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
+For more information about project setup: [Getting Started with Rhino Load Testing](https://github.com/bagdemir/rhino/wiki/Getting-Started).
 
 ## How do the load tests look like?
 
