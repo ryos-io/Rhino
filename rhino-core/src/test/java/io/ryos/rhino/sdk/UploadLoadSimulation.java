@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk;
 
 import static io.ryos.rhino.sdk.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.specs.Spec.http;
+import static io.ryos.rhino.sdk.specs.UploadStream.file;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
@@ -15,7 +16,6 @@ import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
-import java.io.InputStream;
 
 @Simulation(name = "Reactive Upload Test", userRegion = "US")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -41,15 +41,8 @@ public class UploadLoadSimulation {
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint((c) -> DISCOVERY_ENDPOINT)
-            .upload(this::getStream)
+            .upload(() -> file("classpath:///test.txt"))
             .put()
             .saveTo("result"));
-  }
-
-  private InputStream getStream() {
-
-    final InputStream resourceAsStream = getClass().getResourceAsStream("/test.txt");
-    assert resourceAsStream != null;
-    return resourceAsStream;
   }
 }
