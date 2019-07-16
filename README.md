@@ -15,7 +15,13 @@ Rhino is a lightweight annotation-based JUnit-style load and performance testing
 for 
 testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
- added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project.
+ added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project. 
+ 
+ <p align="center">
+  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_grafana.png"  width="882"/>
+</p>
+
+> **_1.5.0:_** Grafana/InfluxDB Integration is included!
 
 **Rhino's philosophy is:**
 
@@ -41,6 +47,8 @@ Add maven dependency into your project:
   <version>1.5.0</version>
 </dependency>
 ```
+
+[Getting started with Rhino load testing](https://github.com/bagdemir/rhino/wiki/Getting-Started)
 
 ## How do the load tests look like?
 
@@ -104,6 +112,8 @@ public class Rhino {
     }
 }
 ```
+
+[Simulations and Scenarios](https://github.com/bagdemir/Rhino/wiki/Simulations-and-Scenarios)
 
 ## How to run? 
 
