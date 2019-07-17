@@ -55,12 +55,8 @@ import reactor.util.function.Tuple2;
 public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
-
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
-  private static final int CONNECT_TIMEOUT = 500;
-  private static final int HANDSHAKE_TIMEOUT = 60000;
-  private static final int READ_TIMEOUT = 5000;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
@@ -95,9 +91,9 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     var httpClientConfig = Dsl.config()
         .setMaxConnections(SimulationConfig.getMaxConnections())
         .setKeepAlive(true)
-        .setConnectTimeout(CONNECT_TIMEOUT)
-        .setHandshakeTimeout(HANDSHAKE_TIMEOUT)
-        .setReadTimeout(READ_TIMEOUT)
+        .setConnectTimeout(SimulationConfig.getHttpConnectTimeout())
+        .setHandshakeTimeout(SimulationConfig.getHttpHandshakeTimeout())
+        .setReadTimeout(SimulationConfig.getHttpReadTimeout())
         .addRequestFilter(new ThrottleRequestFilter(SimulationConfig.getMaxConnections()))
         .build();
 

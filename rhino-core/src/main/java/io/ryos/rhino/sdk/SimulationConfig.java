@@ -130,9 +130,24 @@ public class SimulationConfig {
     return UserSource.SourceType.valueOf(source.toUpperCase());
   }
 
-  private String getMaxConnection() {
-    return properties.getProperty("reactive.maxConnections",
+  private String getConfigHttpMaxConnections() {
+    return properties.getProperty("http.maxConnections",
         "1000");
+  }
+
+  private String getConfigHttpConnectTimeout() {
+    return properties.getProperty("http.connectTimeout",
+        "60000");
+  }
+
+  private String getConfigHttpReadTimeout() {
+    return properties.getProperty("http.readTimeout",
+        "5000");
+  }
+
+  private String getConfigHttpHandshakeTimeout() {
+    return properties.getProperty("http.handshakeTimeout",
+        "60000");
   }
 
   private String getRunnerParallelisation() {
@@ -226,10 +241,21 @@ public class SimulationConfig {
   }
 
   public static int getMaxConnections() {
-    var maxConnection = instance.getMaxConnection();
+    var maxConnection = instance.getConfigHttpMaxConnections();
     return Integer.min(Integer.parseInt(maxConnection), MAX_CONN);
   }
 
+  public static int getHttpConnectTimeout() {
+    return Integer.parseInt(instance.getConfigHttpConnectTimeout());
+  }
+
+  public static int getHttpReadTimeout() {
+    return Integer.parseInt(instance.getConfigHttpReadTimeout());
+  }
+
+  public static int getHttpHandshakeTimeout() {
+    return Integer.parseInt(instance.getConfigHttpHandshakeTimeout());
+  }
 
   public static int getParallelisation() {
     var runnerParallelisation = instance.getRunnerParallelisation();
