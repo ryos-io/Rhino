@@ -16,6 +16,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final String stepName;
   private final String specName;
   private final String userId;
+  private final Boolean measurementEnabled;
   private final MeasurementImpl measurement;
   private volatile long start = -1;
   private volatile int status;
@@ -25,12 +26,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   public HttpSpecAsyncHandler(final String userId,
       final String specName,
       final String stepName,
-      final EventDispatcher eventDispatcher) {
+      final EventDispatcher eventDispatcher,
+      final Boolean measurementEnabled) {
     this.measurement = new MeasurementImpl(specName, userId);
     this.specName = specName;
     this.userId = userId;
     this.stepName = stepName;
     this.eventDispatcher = eventDispatcher;
+    this.measurementEnabled = measurementEnabled;
   }
 
   @Override
@@ -55,9 +58,30 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     return State.CONTINUE;
   }
 
+  /**
+   * Handling the errors came out of the Http client, e.g connection timeouts.
+   * <p>
+   *
+   * @param t Throwable instance.
+   */
   @Override
   public void onThrowable(final Throwable t) {
+    // There is no start event for user measurement, so we need to create one.
+    // In Error case, we just want to make the error visible in stdout. We don't actually record
+    // any metric here, thus the start/end timestamps are irrelevant.
+    if (!measurementEnabled) {
+      this.start = System.currentTimeMillis();
+      var userEventStart = new UserEvent();
+      userEventStart.elapsed = 0;
+      userEventStart.start = start;
+      userEventStart.end = start;
+      userEventStart.scenario = specName;
+      userEventStart.eventType = EventType.START;
+      userEventStart.id = userId;
+      measurement.record(userEventStart);
+    }
 
+    // Store the error event in the measurement stack.
     measurement.measure(t.getMessage(), "N/A");
 
     var userEventEnd = new UserEvent();
@@ -74,20 +98,23 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public Response onCompleted() {
-    var elapsed = System.currentTimeMillis() - start;
 
-    measurement.measure(stepName, String.valueOf(status));
+    if (measurementEnabled) {
+      var elapsed = System.currentTimeMillis() - start;
 
-    var userEventEnd = new UserEvent();
-    userEventEnd.elapsed = elapsed;
-    userEventEnd.start = start;
-    userEventEnd.end = start + elapsed;
-    userEventEnd.scenario = specName;
-    userEventEnd.eventType = EventType.END;
-    userEventEnd.id = userId;
-    measurement.record(userEventEnd);
+      measurement.measure(stepName, String.valueOf(status));
 
-    eventDispatcher.dispatchEvents(measurement);
+      var userEventEnd = new UserEvent();
+      userEventEnd.elapsed = elapsed;
+      userEventEnd.start = start;
+      userEventEnd.end = start + elapsed;
+      userEventEnd.scenario = specName;
+      userEventEnd.eventType = EventType.END;
+      userEventEnd.id = userId;
+      measurement.record(userEventEnd);
+
+      eventDispatcher.dispatchEvents(measurement);
+    }
 
     return builder.build();
   }
@@ -95,14 +122,16 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   @Override
   public void onRequestSend(NettyRequest request) {
 
-    this.start = System.currentTimeMillis();
-    var userEventStart = new UserEvent();
-    userEventStart.elapsed = 0;
-    userEventStart.start = start;
-    userEventStart.end = start;
-    userEventStart.scenario = specName;
-    userEventStart.eventType = EventType.START;
-    userEventStart.id = userId;
-    measurement.record(userEventStart);
+    if (measurementEnabled) {
+      this.start = System.currentTimeMillis();
+      var userEventStart = new UserEvent();
+      userEventStart.elapsed = 0;
+      userEventStart.start = start;
+      userEventStart.end = start;
+      userEventStart.scenario = specName;
+      userEventStart.eventType = EventType.START;
+      userEventStart.id = userId;
+      measurement.record(userEventStart);
+    }
   }
 }

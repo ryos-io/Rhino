@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 public interface HttpConfigSpec extends HttpMethodSpec {
 
   HttpConfigSpec endpoint(String endpoint);
+
   HttpConfigSpec endpoint(Function<UserSession, String> endpoint);
 
   /**
@@ -27,11 +28,15 @@ public interface HttpConfigSpec extends HttpMethodSpec {
    * @return {@link HttpSpec} instance with headers initialized.
    */
   HttpConfigSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction);
+
   HttpConfigSpec header(String key, List<String> values);
+
   HttpConfigSpec header(String key, String value);
 
   HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction);
+
   HttpConfigSpec queryParam(String key, List<String> values);
+
   HttpConfigSpec queryParam(String key, String value);
 
   HttpConfigSpec auth();

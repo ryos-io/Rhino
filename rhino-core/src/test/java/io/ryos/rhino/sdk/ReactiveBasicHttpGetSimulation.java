@@ -33,7 +33,8 @@ public class ReactiveBasicHttpGetSimulation {
             .auth()
             .endpoint(FILES_ENDPOINT)
             .get()
-            .saveTo("result"));
+            .saveTo("result")
+            .noMeasurement());
   }
 
   @Prepare
