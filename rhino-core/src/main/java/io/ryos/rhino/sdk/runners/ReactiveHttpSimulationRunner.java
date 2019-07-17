@@ -89,11 +89,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     var userRepository = simulationMetadata.getUserRepository();
     var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, "all");
     var httpClientConfig = Dsl.config()
-        .setMaxConnections(SimulationConfig.getMaxConnections())
         .setKeepAlive(true)
+        .setMaxConnections(SimulationConfig.getMaxConnections())
         .setConnectTimeout(SimulationConfig.getHttpConnectTimeout())
         .setHandshakeTimeout(SimulationConfig.getHttpHandshakeTimeout())
         .setReadTimeout(SimulationConfig.getHttpReadTimeout())
+        .setRequestTimeout(SimulationConfig.getHttpRequestTimeout())
         .addRequestFilter(new ThrottleRequestFilter(SimulationConfig.getMaxConnections()))
         .build();
 
