@@ -150,6 +150,11 @@ public class SimulationConfig {
         "60000");
   }
 
+  private String getConfigHttpRequestTimeout() {
+    return properties.getProperty("http.requestTimeout",
+        "60000");
+  }
+
   private String getRunnerParallelisation() {
     return properties.getProperty("runner.parallelisim",
         Integer.toString(Runtime.getRuntime().availableProcessors() * PAR_RATIO));
@@ -255,6 +260,10 @@ public class SimulationConfig {
 
   public static int getHttpHandshakeTimeout() {
     return Integer.parseInt(instance.getConfigHttpHandshakeTimeout());
+  }
+
+  public static int getHttpRequestTimeout() {
+    return Integer.parseInt(instance.getConfigHttpRequestTimeout());
   }
 
   public static int getParallelisation() {
