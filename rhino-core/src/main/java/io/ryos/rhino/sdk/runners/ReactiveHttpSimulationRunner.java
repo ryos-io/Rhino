@@ -31,11 +31,12 @@ import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
-import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.specs.ConditionalSpecAdapter;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
+import io.ryos.rhino.sdk.specs.WaitUntilSpecAdapter;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.Objects;
@@ -141,7 +142,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       var next = specIt.next();
       acc = acc.flatMap(s -> {
         if (isConditionalSpec(next)) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+          var predicate = ((ConditionalSpecAdapter) next).getPredicate();
           if (!predicate.test(s)) {
             return Mono.just(s);
           }
@@ -153,7 +154,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private boolean isConditionalSpec(Spec next) {
-    return next instanceof ConditionalSpecWrapper;
+    return next instanceof ConditionalSpecAdapter;
   }
 
   private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
@@ -202,9 +203,8 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     } else if (spec instanceof WaitSpec) {
       return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
     } else if (isConditionalSpec(spec)) {
-      return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
+      return materialize(((ConditionalSpecAdapter) spec).getSpec(), client, session);
     }
-
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
   }
 

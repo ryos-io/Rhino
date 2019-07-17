@@ -27,12 +27,12 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class ConditionalSpecWrapper extends AbstractSpec {
+public class ConditionalSpecAdapter extends AbstractSpec {
 
   private final Predicate<UserSession> predicate;
   private final Spec spec;
 
-  public ConditionalSpecWrapper(Spec spec, Predicate<UserSession> predicate) {
+  public ConditionalSpecAdapter(Spec spec, Predicate<UserSession> predicate) {
     super(spec.getMeasurementPoint());
 
     this.spec = spec;

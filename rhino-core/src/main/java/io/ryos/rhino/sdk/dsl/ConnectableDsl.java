@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.specs.ConditionalSpecAdapter;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpecImpl;
 import java.time.Duration;
@@ -50,7 +50,7 @@ public class ConnectableDsl implements LoadDsl {
 
   @Override
   public ConnectableDsl runIf(Predicate<UserSession> predicate, Spec spec) {
-    executableFunctions.add(new ConditionalSpecWrapper(spec, predicate));
+    executableFunctions.add(new ConditionalSpecAdapter(spec, predicate));
     return this;
   }
 

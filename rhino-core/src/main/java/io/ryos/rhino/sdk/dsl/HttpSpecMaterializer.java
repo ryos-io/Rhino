@@ -68,6 +68,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   HttpSpecMaterializer(final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
       final Predicate<UserSession> predicate) {
+
     this.client = client;
     this.eventDispatcher = eventDispatcher;
     this.conditionalSpec = predicate;
