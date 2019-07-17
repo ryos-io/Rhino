@@ -27,9 +27,21 @@ public class AbstractSpec implements Spec {
 
   private String enclosingSpec;
   private String measurementPoint;
+  private boolean measurementEnabled = true;
 
-  public AbstractSpec(String measurement) {
+  AbstractSpec(String measurement) {
     this.measurementPoint = measurement;
+  }
+
+  @Override
+  public boolean isMeasurementEnabled() {
+    return measurementEnabled;
+  }
+
+  @Override
+  public Spec noMeasurement() {
+    this.measurementEnabled = false;
+    return this;
   }
 
   @Override

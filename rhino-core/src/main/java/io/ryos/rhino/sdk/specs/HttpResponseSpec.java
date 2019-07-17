@@ -7,7 +7,7 @@ package io.ryos.rhino.sdk.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface HttpResponseSpec {
+public interface HttpResponseSpec extends Spec {
 
   HttpSpec saveTo(String keyName);
 }

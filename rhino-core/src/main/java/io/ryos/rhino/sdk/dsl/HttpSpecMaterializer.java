@@ -80,7 +80,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
    * @param client Async HTTP client instance.
    * @param eventDispatcher Event dispatcher instance.
    */
-  public HttpSpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
+  public HttpSpecMaterializer(final AsyncHttpClient client,
+      final EventDispatcher eventDispatcher) {
     this(client, eventDispatcher, null);
   }
 
@@ -92,7 +93,9 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession.getUser().getId(),
         spec.getTestName(),
-        spec.getMeasurementPoint(), eventDispatcher);
+        spec.getMeasurementPoint(),
+        eventDispatcher,
+        spec.isMeasurementEnabled());
 
     var responseMono = Mono
         .just(userSession)
@@ -166,8 +169,9 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     for (var f : httpSpec.getQueryParameters()) {
       var paramEntry = f.apply(userSession);
-      builder = builder.addQueryParam(paramEntry.getKey(), paramEntry.getValue().stream().collect(
-          Collectors.joining(",")));
+      builder = builder
+          .addQueryParam(paramEntry.getKey(), paramEntry.getValue().stream()
+              .collect(Collectors.joining(",")));
     }
 
     if (httpSpec.isAuth()) {

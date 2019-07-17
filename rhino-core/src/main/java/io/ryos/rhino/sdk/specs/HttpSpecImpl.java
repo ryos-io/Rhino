@@ -24,12 +24,10 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
 
   private List<Function<UserSession, Entry<String, List<String>>>> headers = new ArrayList<>();
   private List<Function<UserSession, Entry<String, List<String>>>> queryParams = new ArrayList<>();
-  private boolean auth;
-
+  private boolean authEnabled;
   private Method httpMethod;
   private Function<UserSession, String> endpoint;
   private RetryInfo retryInfo;
-
   private String saveTo;
 
   /**
@@ -116,7 +114,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
 
   @Override
   public HttpConfigSpec auth() {
-    this.auth = true;
+    this.authEnabled = true;
     return this;
   }
 
@@ -183,7 +181,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
 
   @Override
   public boolean isAuth() {
-    return auth;
+    return authEnabled;
   }
 
   @Override
