@@ -39,7 +39,7 @@ public interface Spec {
    * Whether the measurement is enabled.
    * <p>
    *
-   * @return
+   * @return True if is measurement enabled.
    */
   boolean isMeasurementEnabled();
 
