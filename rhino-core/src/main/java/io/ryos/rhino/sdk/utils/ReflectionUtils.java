@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -102,6 +101,19 @@ public class ReflectionUtils {
 
     try {
         return (T) method.invoke(declaring, args);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      LOG.error(e.getCause().getMessage());
+      throw new RuntimeException(
+          "Cannot invoke the method with step: " + method.getName() + "()", e);
+    }
+  }
+
+  public static <T> T executeStaticMethod(final Method method,
+      final Object... args) {
+    Objects.requireNonNull(method);
+
+    try {
+      return (T) method.invoke(null, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(

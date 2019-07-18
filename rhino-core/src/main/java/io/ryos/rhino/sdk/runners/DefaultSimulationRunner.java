@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.runners;
 
 import static io.ryos.rhino.sdk.runners.Throttler.throttle;
-import static reactor.core.publisher.Flux.fromStream;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -26,11 +26,10 @@ import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.io.Out;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
-import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Stream;
@@ -96,10 +95,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
       setUpGrafanaDashboard();
     }
 
-    prepareUserSessions();
-
-    new DefaultRunnerSimulationInjector(simulationMetadata, null)
-        .injectOn(simulationMetadata.getTestInstance());
+    prepareUserSessions(userSessionProvider.getUserList());
 
     var users = Stream.generate(userSessionProvider::take);
     var flux = Flux.fromStream(users);
@@ -122,14 +118,22 @@ public class DefaultSimulationRunner implements SimulationRunner {
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
-        .doOnNext(userSession ->
-            // Run the scenario subsequently.
+        .doOnNext(userSession -> {
+          var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
+          new DefaultRunnerSimulationInjector(simulationMetadata, null)
+              .injectOn(instance);
+          // Run the scenario subsequently.
             simulationMetadata.getScenarios().forEach(scenario ->
                 new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
-                    eventDispatcher).call()))
+                    eventDispatcher, instance).call()); })
         .subscribe();
     await();
     stop();
+
+    LOG.info("Cleaning up ...");
+    cleanupUserSessions(userSessionProvider.getUserList());
+
+    LOG.info("Bye!");
   }
 
   private void setUpGrafanaDashboard() {
@@ -175,9 +179,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
     LOG.info("Stopping the simulation...");
 
     subscribe.dispose();
-    // run cleanup.
-    LOG.info("Cleaning up.");
-    cleanupUserSessions();
 
     // proceed with shutdown.
     LOG.info("Shutting down the system ...");
@@ -193,7 +194,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
     scheduler.shutdownNow();
 
     LOG.info("Shutting down completed ...");
-    LOG.info("Bye!");
   }
 
   private void waitForASec() {
@@ -205,17 +205,20 @@ public class DefaultSimulationRunner implements SimulationRunner {
     }
   }
 
-  private void prepareUserSessions() {
+  private void prepareUserSessions(List<UserSession> userSessionList) {
     if (simulationMetadata.getPrepareMethod() != null) {
-      ReflectionUtils.executeMethod(simulationMetadata.getPrepareMethod(),
-          simulationMetadata.getTestInstance());
+      userSessionList.forEach(session -> {
+        ReflectionUtils.executeStaticMethod(simulationMetadata.getPrepareMethod());
+      });
     }
   }
 
-  private void cleanupUserSessions() {
+  private void cleanupUserSessions(List<UserSession> userSessionList) {
     if (simulationMetadata.getCleanupMethod() != null) {
-      ReflectionUtils.executeMethod(simulationMetadata.getCleanupMethod(),
-          simulationMetadata.getTestInstance());
+      userSessionList.forEach(session -> {
+        ReflectionUtils.executeStaticMethod(simulationMetadata.getCleanupMethod());
+        session.empty();
+      });
     }
   }
 }

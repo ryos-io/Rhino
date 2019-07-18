@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.users.repositories;
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.data.UserSession;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -50,15 +51,22 @@ public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionReposit
     Objects.requireNonNull(region);
 
     var filteredUsers = userRepository.leaseUsers(maxNumberOfUsers, region);
+
+    this.backingList = filteredUsers;
     this.filteredIterator = new CyclicIterator<>(filteredUsers);
   }
 
   private final CyclicIterator<UserSession> filteredIterator;
+  private final List<UserSession> backingList;
 
   @Override
   public UserSession take() {
     final UserSession next = filteredIterator.next();
     next.empty();
     return next;
+  }
+
+  public List<UserSession> getUserList() {
+    return backingList;
   }
 }

@@ -267,8 +267,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withInjectUser(simAnnotation.maxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
-        .withPrepare(findMethodWith(clazz, Prepare.class).orElse(null))
-        .withCleanUp(findMethodWith(clazz, CleanUp.class).orElse(null))
+        .withPrepare(findStaticMethodWith(clazz, Prepare.class).orElse(null))
+        .withCleanUp(findStaticMethodWith(clazz, CleanUp.class).orElse(null))
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
         .withScenarios(scenarioMethods)
@@ -347,5 +347,24 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         filter(m -> Arrays.stream(m.getDeclaredAnnotations()).
             anyMatch(annotation::isInstance)).
         findFirst(); // TODO only the first step method?
+  }
+
+  private <T extends Annotation> Optional<Method> findStaticMethodWith(Class<?> clazz, Class<T> annotation) {
+
+    return Arrays.stream(clazz.getMethods()).
+        filter(m -> Arrays.stream(m.getAnnotations()).
+            anyMatch(annotation::isInstance)).
+        findFirst()
+        .map(Method::getName)
+        .map(name -> getStaticMethod(clazz, name));
+  }
+
+  private Method getStaticMethod(Class<?> clazz, String name) {
+    try {
+      return clazz.getMethod(name, (Class<?>[]) null);
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+    throw new IllegalArgumentException();
   }
 }

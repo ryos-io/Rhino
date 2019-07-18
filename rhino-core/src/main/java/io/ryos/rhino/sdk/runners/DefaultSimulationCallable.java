@@ -1,29 +1,16 @@
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
-
 import io.ryos.rhino.sdk.SimulationMetadata;
-import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.SessionFeeder;
-import io.ryos.rhino.sdk.annotations.UserProvider;
-import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
-import io.ryos.rhino.sdk.users.data.User;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,6 +29,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   private final UserSession userSession;
   private final Scenario scenario;
   private final EventDispatcher eventDispatcher;
+  private final Object instance;
 
   /**
    * Instantiates a new {@link DefaultSimulationCallable} instance.
@@ -56,11 +44,13 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
   DefaultSimulationCallable(final SimulationMetadata simulationMetadata,
       final UserSession userSession,
       final Scenario scenario,
-      final EventDispatcher eventDispatcher) {
+      final EventDispatcher eventDispatcher,
+      final Object instance) {
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
     this.userSession = Objects.requireNonNull(userSession);
     this.scenario = Objects.requireNonNull(scenario);
     this.eventDispatcher = Objects.requireNonNull(eventDispatcher);
+    this.instance = instance;
   }
 
   @Override
@@ -69,7 +59,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     var user = userSession.getUser();
 
     // Before method call.
-    executeMethod(simulationMetadata.getBeforeMethod(), simulationMetadata.getTestInstance(),
+    executeMethod(simulationMetadata.getBeforeMethod(), instance,
         userSession);
 
     var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
@@ -84,7 +74,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     measurement.record(userEventStart);
 
-    executeScenario(scenario, measurement, simulationMetadata.getTestInstance(), userSession);
+    executeScenario(scenario, measurement, instance, userSession);
 
     var elapsed = System.currentTimeMillis() - start;
     var userEventEnd = new UserEvent();
@@ -97,7 +87,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
-    executeMethod(simulationMetadata.getAfterMethod(), simulationMetadata.getTestInstance(),
+    executeMethod(simulationMetadata.getAfterMethod(), instance,
         userSession);
 
     return measurement;
