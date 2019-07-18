@@ -26,13 +26,9 @@ public class BlockingJerseyClientLoadTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.get(urlEqualTo("/api/files"))
+    stubFor(WireMock.get(urlEqualTo("/api/status"))
         .willReturn(aResponse()
-            .withStatus(200)));
-
-    stubFor(WireMock.get(urlEqualTo("/api/invalid"))
-        .willReturn(aResponse()
-            .withStatus(500)));
+            .withStatus(1000)));
 
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
   }

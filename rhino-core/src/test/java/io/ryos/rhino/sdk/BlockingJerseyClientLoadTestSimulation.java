@@ -16,103 +16,51 @@
 
 package io.ryos.rhino.sdk;
 
-import io.ryos.rhino.sdk.annotations.After;
-import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
 
 @Simulation(name = "Server-Status Simulation")
 @UserRepository(factory = OAuthUserRepositoryFactory.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
-  @UserProvider(region = "US")
-  private OAuthUserProvider userProviderUS;
+  private static final String TARGET = "http://localhost:8089/api/status";
+  private static final String X_REQUEST_ID = "X-Request-Id";
 
-  @UserProvider(region = "EU")
-  private OAuthUserProvider userProviderEU;
+  private Client client = ClientBuilder.newClient();
 
   @Provider(factory = UUIDProvider.class)
   private String uuid;
 
   @Prepare
-  public void prepare() {
-    System.out.println("Preparation in progress.");
-  }
-
-  @CleanUp
-  public void cleanUp() {
-    System.out.println("Clean-up in progress.");
-  }
-
-  @Before
-  public void setUp(UserSession us) {
-    System.out.println("Before the test with user:" + us.getUser().getUsername());
-  }
-
-  @Scenario(name = "Discovery")
-  public void performDiscovery(Measurement measurement, UserSession userSession) {
-
-    OAuthUser user = userProviderEU.take();
-
-
-    String region = userSession.getUser().getRegion();
-
-    System.out.println(region + " - " + user.getRegion());
-
-
-    final Client client = ClientBuilder.newClient();
-    final Response response = client
-        .target("http://localhost:8089/api/files")
-        .request()
-        .header("Authorization", "Bearer " + user.getAccessToken())
-        .header("X-Request-Id", "Rhino-" + uuid)
-        .header("X-Api-Key", "CCStorage")
-        .get();
-
-    measurement.measure("Discovery API Call", String.valueOf(response.getStatus()));
+  public static void prepare() {
+    System.out.println("Prepare");
   }
 
   @Scenario(name = "Health")
-  public void performHealth(Measurement measurement, UserSession userSession) {
+  public void performHealth(Measurement measurement) {
 
-    final Client client = ClientBuilder.newClient();
-    final Response response = client
-        .target("http://localhost:8089/api/files")
+    System.out.println("Perform");
+
+    var response = client
+        .target(TARGET)
         .request()
-        .header("X-Request-Id", "Rhino-" + uuid)
+        .header(X_REQUEST_ID, "Rhino-" + uuid)
         .get();
 
     measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }
 
-  @Scenario(name = "KO OK")
-  public void performKO(Measurement measurement, UserSession userSession) {
-
-    final Client client = ClientBuilder.newClient();
-    final Response response = client
-        .target("http://localhost:8089/api/invalid")
-        .request()
-        .get();
-
-    measurement.measure("Broken Call", String.valueOf(response.getStatus()));
-  }
-
-  @After
-  public void after(UserSession us) {
-    System.out.println("Clean up the test with user:" + us.getUser().getUsername());
+  @CleanUp
+  public static void clean() {
+    System.out.println("cleanup");
   }
 }
