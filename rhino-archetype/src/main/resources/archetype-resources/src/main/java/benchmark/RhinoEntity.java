@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Client;
 
 @Simulation(name = "Server-Status Simulation")
 @UserRepository(factory = OAuthUserRepositoryFactory.class)
@@ -33,13 +34,14 @@ public class RhinoEntity {
     private static final String TARGET = "http://localhost:8089/api/status";
     private static final String X_REQUEST_ID = "X-Request-Id";
 
+    private Client client = ClientBuilder.newClient();
+
     @Provider(factory = UUIDProvider.class)
     private String uuid;
 
     @Scenario(name = "Health")
     public void performHealth(Measurement measurement) {
 
-        var client = ClientBuilder.newClient();
         var response = client
                 .target(TARGET)
                 .request()
