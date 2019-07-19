@@ -38,7 +38,21 @@ public interface UserSession extends Context {
    */
   User getUser();
 
+  /**
+   * Optional of user token.
+   * <p>
+   *
+   * @return {@link Optional} type.
+   */
   Optional<String> getUserToken();
 
+  /**
+   * Optional of refresh token.
+   * <p>
+   *
+   * @return {@link Optional} type.
+   */
   Optional<String> getRefreshToken();
+
+  SimulationSession getSimulationSession();
 }

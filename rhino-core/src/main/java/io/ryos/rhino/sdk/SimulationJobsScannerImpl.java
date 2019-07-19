@@ -31,6 +31,7 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
@@ -361,7 +362,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private Method getStaticMethod(Class<?> clazz, String name) {
     try {
-      return clazz.getMethod(name, (Class<?>[]) null);
+      return clazz.getMethod(name, UserSession.class);
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }

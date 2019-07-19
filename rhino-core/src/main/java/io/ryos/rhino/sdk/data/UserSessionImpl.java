@@ -21,8 +21,8 @@ import io.ryos.rhino.sdk.users.data.User;
 import java.util.Optional;
 
 /**
- * User session is a stash to store objects and share them among scenarios per user session. A
- * user will be created before the simulation starts, and it will existing during the simulation
+ * User session is a stash to store objects and share them among scenarios per user session. A user
+ * will be created before the simulation starts, and it will existing during the simulation
  * execution.
  *
  * @author Erhan Bagdemir
@@ -30,10 +30,12 @@ import java.util.Optional;
  */
 public class UserSessionImpl extends ContextImpl implements UserSession {
 
-  private User user;
+  private final User user;
+  private SimulationSession simulationSession;
 
   public UserSessionImpl(final User user) {
     this.user = user;
+    this.simulationSession = new SimulationSession(this);
   }
 
   @Override
@@ -55,5 +57,9 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
       return Optional.ofNullable(((OAuthUser) user).getRefreshToken());
     }
     return Optional.empty();
+  }
+
+  public SimulationSession getSimulationSession() {
+    return simulationSession;
   }
 }

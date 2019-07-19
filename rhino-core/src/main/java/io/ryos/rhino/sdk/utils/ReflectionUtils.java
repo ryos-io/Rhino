@@ -58,7 +58,9 @@ public class ReflectionUtils {
             .orElseThrow());
   }
 
-  /** get the list of annotations along with {@link Field} instances. */
+  /**
+   * get the list of annotations along with {@link Field} instances.
+   */
   public static <T extends Annotation> List<Pair<Field, T>> getFieldsByAnnotation(
       final Class clazz,
       final Class<T> clzAnnotation) {
@@ -68,7 +70,8 @@ public class ReflectionUtils {
         .collect(Collectors.toList());
 
     return fields.stream().map(f ->
-        new Pair<>(f, f.getDeclaredAnnotationsByType(clzAnnotation)[0])).collect(Collectors.toList());
+        new Pair<>(f, f.getDeclaredAnnotationsByType(clzAnnotation)[0]))
+        .collect(Collectors.toList());
   }
 
   public static <T extends Annotation> Optional<T> getClassLevelAnnotation(final Class clazz,
@@ -96,11 +99,11 @@ public class ReflectionUtils {
     return Optional.empty();
   }
 
-  public static <T> T executeMethod(final Method method, final Object declaring, final Object... args) {
+  public static <T> T executeMethod(Method method, Object declaring, Object... args) {
     Objects.requireNonNull(method);
 
     try {
-        return (T) method.invoke(declaring, args);
+      return (T) method.invoke(declaring, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(
@@ -108,12 +111,14 @@ public class ReflectionUtils {
     }
   }
 
-  public static <T> T executeStaticMethod(final Method method,
-      final Object... args) {
+  public static <T> T executeStaticMethod(Method method, Object... args) {
     Objects.requireNonNull(method);
 
     try {
       return (T) method.invoke(null, args);
+    } catch (NullPointerException npe) {
+      throw new RuntimeException("@Prepare/@CleanUp annotation must be used on public static "
+          + "methods.");
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
       throw new RuntimeException(

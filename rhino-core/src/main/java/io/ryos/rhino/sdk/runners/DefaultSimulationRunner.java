@@ -136,6 +136,23 @@ public class DefaultSimulationRunner implements SimulationRunner {
     LOG.info("Bye!");
   }
 
+  private void prepareUserSessions(List<UserSession> userSessionList) {
+    if (simulationMetadata.getPrepareMethod() != null) {
+      userSessionList.forEach(session -> {
+        ReflectionUtils.executeStaticMethod(simulationMetadata.getPrepareMethod(), session);
+      });
+    }
+  }
+
+  private void cleanupUserSessions(List<UserSession> userSessionList) {
+    if (simulationMetadata.getCleanupMethod() != null) {
+      userSessionList.forEach(session -> {
+        ReflectionUtils.executeStaticMethod(simulationMetadata.getCleanupMethod(), session);
+        session.empty();
+      });
+    }
+  }
+
   private void setUpGrafanaDashboard() {
     LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
     new GrafanaGateway(simulationMetadata.getGrafanaInfo())
@@ -202,23 +219,6 @@ public class DefaultSimulationRunner implements SimulationRunner {
       Thread.sleep(DefaultSimulationRunner.ONE_SEC);
     } catch (InterruptedException e) {
       // intentionally left empty.
-    }
-  }
-
-  private void prepareUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getPrepareMethod() != null) {
-      userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getPrepareMethod());
-      });
-    }
-  }
-
-  private void cleanupUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getCleanupMethod() != null) {
-      userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getCleanupMethod());
-        session.empty();
-      });
     }
   }
 }
