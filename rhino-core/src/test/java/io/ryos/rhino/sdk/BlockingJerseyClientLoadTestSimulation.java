@@ -50,9 +50,6 @@ public class BlockingJerseyClientLoadTestSimulation {
 
   @Scenario(name = "Health")
   public void performHealth(Measurement measurement) {
-
-    System.out.println("Perform");
-
     var response = client
         .target(TARGET)
         .request()
