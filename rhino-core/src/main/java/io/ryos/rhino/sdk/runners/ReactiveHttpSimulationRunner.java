@@ -31,7 +31,6 @@ import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
-import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.SomeSpec;
@@ -39,7 +38,6 @@ import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Condition;
@@ -58,13 +56,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-public class ReactiveHttpSimulationRunner implements SimulationRunner {
+public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
 
   private final Context context;
-  private SimulationMetadata simulationMetadata;
   private CyclicIterator<ConnectableDsl> dslIterator;
   private Disposable subscribe;
 
@@ -79,19 +76,21 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   private final EventDispatcher eventDispatcher;
 
   public ReactiveHttpSimulationRunner(final Context context) {
+    super(context.<SimulationMetadata>get(JOB).orElseThrow());
     this.context = context;
-    this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
-    this.dslIterator = new CyclicIterator<>(simulationMetadata.getDsls()
+    this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDsls()
         .stream()
         .filter(Objects::nonNull)
         .map(spec -> (ConnectableDsl) spec)
         .collect(Collectors.toList()));
-    this.eventDispatcher = new EventDispatcher(simulationMetadata);
+    this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
     this.masterLock = new ReentrantLock();
     this.continueCondition = masterLock.newCondition();
   }
 
   public void start() {
+
+    var simulationMetadata = getSimulationMetadata();
 
     LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
 
@@ -141,7 +140,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void cleanup(AsyncHttpClient client, List<UserSession> userList) {
-    if (simulationMetadata.getCleanupMethod() != null) {
+    if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
       cleanUpUserSessions(userList, client);
       awaitIf(!isCleanupCompleted);
@@ -149,7 +148,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void prepare(AsyncHttpClient client, List<UserSession> userList) {
-    if (simulationMetadata.getPrepareMethod() != null) {
+    if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
       prepareUserSessions(userList, client);
       awaitIf(!isPrepareCompleted);
@@ -179,7 +178,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
-    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+    var throttlingInfo = getSimulationMetadata().getThrottlingInfo();
     if (throttlingInfo != null) {
       var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
           throttlingInfo.getDuration());
@@ -189,23 +188,12 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
+    var rampUpInfo = getSimulationMetadata().getRampUpInfo();
     if (rampUpInfo != null) {
       flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
           rampUpInfo.getDuration()));
     }
     return flux;
-  }
-
-  private void setUpGrafanaDashboard() {
-    LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
-    var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
-    grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
-        simulationMetadata.getDsls()
-            .stream()
-            .map(dsl -> (ConnectableDsl) dsl)
-            .map(ConnectableDsl::getName)
-            .toArray(String[]::new));
   }
 
   private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
@@ -251,26 +239,26 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
-    if (simulationMetadata.getPrepareMethod() != null) {
-      if (simulationMetadata.getPrepareMethod() != null) {
-        materializeMethod(simulationMetadata.getPrepareMethod(),
-            userSessionList, client,
-            () -> {
-          isPrepareCompleted = true;
-          LOG.info("Preparation completed.");
-        });
-      }
+    if (getSimulationMetadata().getPrepareMethod() != null) {
+      materializeMethod(getSimulationMetadata().getPrepareMethod(),
+          userSessionList, client,
+          () -> {
+        isPrepareCompleted = true;
+        LOG.info("Preparation completed.");
+      });
     }
   }
 
   private void cleanUpUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
-    materializeMethod(simulationMetadata.getCleanupMethod(),
-        userSessionList, client,
-        () -> {
-      LOG.info("Clean-up completed.");
-      isCleanupCompleted = true;
-      eventDispatcher.stop();
-    });
+    if (getSimulationMetadata().getCleanupMethod() != null) {
+      materializeMethod(getSimulationMetadata().getCleanupMethod(),
+          userSessionList, client,
+          () -> {
+            LOG.info("Clean-up completed.");
+            isCleanupCompleted = true;
+            eventDispatcher.stop();
+          });
+    }
   }
 
   private void materializeMethod(final Method method, final List<UserSession> userSessionList,

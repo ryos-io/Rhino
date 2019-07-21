@@ -58,12 +58,11 @@ import reactor.core.scheduler.Schedulers;
  * @see ReactiveHttpSimulationRunner
  * @since 1.0.0
  */
-public class DefaultSimulationRunner implements SimulationRunner {
+public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultSimulationRunner.class);
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
 
-  private final SimulationMetadata simulationMetadata;
   private final ScheduledExecutorService scheduler;
   private final EventDispatcher eventDispatcher;
 
@@ -77,13 +76,14 @@ public class DefaultSimulationRunner implements SimulationRunner {
    * @param context {@link ContextImpl} instance.
    */
   public DefaultSimulationRunner(Context context) {
-    this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
+    super(context.<SimulationMetadata>get(JOB).orElseThrow());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
-    this.eventDispatcher = new EventDispatcher(simulationMetadata);
+    this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
   }
 
   public void start() {
 
+    var simulationMetadata = getSimulationMetadata();
     LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
 
     var userRepository = simulationMetadata.getUserRepository();
@@ -137,17 +137,17 @@ public class DefaultSimulationRunner implements SimulationRunner {
   }
 
   private void prepareUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getPrepareMethod() != null) {
+    if (getSimulationMetadata().getPrepareMethod() != null) {
       userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getPrepareMethod(), session);
+        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getPrepareMethod(), session);
       });
     }
   }
 
   private void cleanupUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getCleanupMethod() != null) {
+    if (getSimulationMetadata().getCleanupMethod() != null) {
       userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getCleanupMethod(), session);
+        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getCleanupMethod(), session);
         session.empty();
       });
     }
@@ -155,9 +155,9 @@ public class DefaultSimulationRunner implements SimulationRunner {
 
   private void setUpGrafanaDashboard() {
     LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-    new GrafanaGateway(simulationMetadata.getGrafanaInfo())
+    new GrafanaGateway(getSimulationMetadata().getGrafanaInfo())
         .setUpDashboard(SimulationConfig.getSimulationId(),
-            simulationMetadata.getScenarios()
+            getSimulationMetadata().getScenarios()
                 .stream()
                 .map(Scenario::getDescription)
                 .toArray(String[]::new));
@@ -166,7 +166,7 @@ public class DefaultSimulationRunner implements SimulationRunner {
   private void await() {
     synchronized (this) {
       try {
-        wait(simulationMetadata.getDuration().toMillis() + 1000);
+        wait(getSimulationMetadata().getDuration().toMillis() + 1000);
       } catch (InterruptedException e) {
         // Intentionally left empty.
       }
