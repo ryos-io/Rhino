@@ -153,16 +153,6 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private void setUpGrafanaDashboard() {
-    LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-    new GrafanaGateway(getSimulationMetadata().getGrafanaInfo())
-        .setUpDashboard(SimulationConfig.getSimulationId(),
-            getSimulationMetadata().getScenarios()
-                .stream()
-                .map(Scenario::getDescription)
-                .toArray(String[]::new));
-  }
-
   private void await() {
     synchronized (this) {
       try {
