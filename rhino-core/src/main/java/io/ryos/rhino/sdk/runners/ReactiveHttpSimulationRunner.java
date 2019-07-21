@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.runners;
 
 import static com.google.common.collect.Streams.stream;
 import static io.ryos.rhino.sdk.runners.Throttler.throttle;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeStaticMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -29,7 +30,7 @@ import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
-import io.ryos.rhino.sdk.io.Out;
+import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.HttpSpec;
@@ -37,8 +38,13 @@ import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
-import io.ryos.rhino.sdk.utils.ReflectionUtils;
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.asynchttpclient.AsyncHttpClient;
@@ -56,26 +62,33 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
-  private static final long ONE_SEC = 1000L;
 
   private final Context context;
   private SimulationMetadata simulationMetadata;
   private CyclicIterator<ConnectableDsl> dslIterator;
   private Disposable subscribe;
+
   private volatile boolean shutdownInitiated;
+  private volatile boolean isCleanupCompleted;
+  private volatile boolean isPrepareCompleted;
+  private volatile boolean isPipelineCompleted;
+
+  private final Condition continueCondition;
+  private final Lock masterLock;
+
   private final EventDispatcher eventDispatcher;
 
   public ReactiveHttpSimulationRunner(final Context context) {
     this.context = context;
     this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
-    this.dslIterator = new CyclicIterator<>(
-        simulationMetadata
-            .getDsls()
-            .stream()
-            .filter(Objects::nonNull)
-            .map(spec -> (ConnectableDsl) spec)
-            .collect(Collectors.toList()));
+    this.dslIterator = new CyclicIterator<>(simulationMetadata.getDsls()
+        .stream()
+        .filter(Objects::nonNull)
+        .map(spec -> (ConnectableDsl) spec)
+        .collect(Collectors.toList()));
     this.eventDispatcher = new EventDispatcher(simulationMetadata);
+    this.masterLock = new ReentrantLock();
+    this.continueCondition = masterLock.newCondition();
   }
 
   public void start() {
@@ -100,10 +113,11 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     var client = Dsl.asyncHttpClient(httpClientConfig);
     var injector = new ReactiveRunnerSimulationInjector(simulationMetadata, null);
+    var userList = userSessionProvider.getUserList();
 
     injector.injectOn(simulationMetadata.getTestInstance());
 
-    prepareUserSessions();
+    prepare(client, userList);
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
@@ -113,43 +127,51 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
         .zipWith(Flux.fromStream(stream(dslIterator)))
         .onErrorResume(this::handleError)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
-        .doOnTerminate(this::terminate)
-        .doOnComplete(() -> shutdownInitiated = true)
-        .flatMap(tuple -> getPublisher(client, tuple));
+        .doOnTerminate(this::shutdown)
+        .doOnComplete(() -> signalCompletion(() -> isPrepareCompleted = true))
+        .flatMap(tuple -> materializeToPublisher(client, tuple.getT1(), tuple.getT2()));
+
     this.subscribe = flux.subscribe();
 
-    await();
-    stop();
+    awaitIf(!isPipelineCompleted);
+
+    cleanup(client, userList);
+
+    shutdown();
+  }
+
+  private void cleanup(AsyncHttpClient client, List<UserSession> userList) {
+    if (simulationMetadata.getCleanupMethod() != null) {
+      LOG.info("Clean-up started.");
+      cleanUpUserSessions(userList, client);
+      awaitIf(!isCleanupCompleted);
+    }
+  }
+
+  private void prepare(AsyncHttpClient client, List<UserSession> userList) {
+    if (simulationMetadata.getPrepareMethod() != null) {
+      LOG.info("Preparation started.");
+      prepareUserSessions(userList, client);
+      awaitIf(!isPrepareCompleted);
+    }
+  }
+
+  private void awaitIf(boolean conditional) {
+    try {
+      masterLock.lock();
+      if (conditional) {
+        continueCondition.await();
+      }
+    } catch (InterruptedException e) {
+      LOG.error("Interrupted.", e);
+    } finally {
+      masterLock.unlock();
+    }
   }
 
   private Publisher<? extends Tuple2<UserSession, ConnectableDsl>> handleError(Throwable t) {
     LOG.error("Skipping error", t);
     return Mono.empty();
-  }
-
-  private Publisher<? extends UserSession> getPublisher(AsyncHttpClient client,
-      Tuple2<UserSession, ConnectableDsl> tuple) {
-    var session = tuple.getT1();
-    var dsl = tuple.getT2();
-    var specIt = dsl.getSpecs().iterator();
-    if (!specIt.hasNext()) {
-      throw new RuntimeException("No spec found in DSL.");
-    }
-    var acc = materialize(specIt.next(), client, session);
-    while (specIt.hasNext()) {
-      // Never move the following statement into lambda body. next() call is required to be eager.
-      var next = specIt.next();
-      acc = acc.flatMap(s -> {
-        if (isConditionalSpec(next)) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-          if (!predicate.test(s)) {
-            return Mono.just(s);
-          }
-        }
-        return materialize(next, client, session);
-      });
-    }
-    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 
   private boolean isConditionalSpec(Spec next) {
@@ -173,12 +195,6 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
           rampUpInfo.getDuration()));
     }
     return flux;
-  }
-
-  private void terminate() {
-    cleanupUserSessions();
-    shutdown();
-    notifyAwaiting();
   }
 
   private void setUpGrafanaDashboard() {
@@ -208,29 +224,10 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
   }
 
-  private void await() {
-    synchronized (this) {
-      try {
-        while (!shutdownInitiated) {
-          wait(ONE_SEC);
-        }
-      } catch (InterruptedException e) {
-        LOG.error(e.getMessage());
-        // Intentionally left empty.
-      }
-    }
-  }
-
-  private void notifyAwaiting() {
-    synchronized (this) {
-      notifyAll();
-    }
-  }
-
   @Override
   public void stop() {
-    Out.info("Someone pushed the stop() button on runner.");
-    terminate();
+    LOG.info("Someone pushed the stop() button on runner.");
+    shutdown();
   }
 
   private void shutdown() {
@@ -238,31 +235,103 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
       return;
     }
 
+    if (!isCleanupCompleted) {
+      return;
+    }
+
     shutdownInitiated = true;
 
     LOG.info("Stopping the simulation...");
     subscribe.dispose();
-
-    // proceed with shutdown.
-    LOG.info("Shutting down the system ...");
-    eventDispatcher.stop();
     dslIterator.stop();
+    eventDispatcher.stop();
 
     LOG.info("Shutting down completed ...");
     LOG.info("Bye!");
   }
 
-  private void prepareUserSessions() {
+  private void prepareUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
     if (simulationMetadata.getPrepareMethod() != null) {
-      ReflectionUtils.executeMethod(simulationMetadata.getPrepareMethod(),
-          simulationMetadata.getTestInstance());
+      if (simulationMetadata.getPrepareMethod() != null) {
+        materializeMethod(simulationMetadata.getPrepareMethod(),
+            userSessionList, client,
+            () -> {
+          isPrepareCompleted = true;
+          LOG.info("Preparation completed.");
+        });
+      }
     }
   }
 
-  private void cleanupUserSessions() {
-    if (simulationMetadata.getCleanupMethod() != null) {
-      ReflectionUtils.executeMethod(simulationMetadata.getCleanupMethod(),
-          simulationMetadata.getTestInstance());
+  private void cleanUpUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
+    materializeMethod(simulationMetadata.getCleanupMethod(),
+        userSessionList, client,
+        () -> {
+      LOG.info("Clean-up completed.");
+      isCleanupCompleted = true;
+      eventDispatcher.stop();
+    });
+  }
+
+  private void materializeMethod(final Method method, final List<UserSession> userSessionList,
+      final AsyncHttpClient client, final Action action) {
+
+    if (method != null) {
+      Flux.fromStream(userSessionList.stream())
+          .onErrorResume(this::handleThrowable)
+          .flatMap(session -> materializeToPublisher(client, session, executeStaticMethod(method, session)))
+          .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
+          .doOnComplete(() -> signalCompletion(action))
+          .blockLast();
     }
+  }
+
+  @FunctionalInterface
+  public interface Action {
+
+    void execute();
+  }
+
+  private void signalCompletion(Action action) {
+    try {
+      masterLock.lock();
+      action.execute();
+      continueCondition.signal();
+    } catch (IllegalMonitorStateException e) {
+      LOG.debug("Await not called yet. The cleanup completed before the main thread got to"
+          + " be awaited. Main thread will continue.");
+    } finally {
+      masterLock.unlock();
+    }
+  }
+
+  private Publisher<? extends UserSession> handleThrowable(Throwable throwable) {
+    LOG.error("Skipping error. Pipeline continues.", throwable);
+    return Mono.empty();
+  }
+
+  private Publisher<? extends UserSession> materializeToPublisher(final AsyncHttpClient client,
+      final UserSession session,
+      final ConnectableDsl dsl) {
+
+    var specIt = dsl.getSpecs().iterator();
+    if (!specIt.hasNext()) {
+      throw new NoSpecDefinedException();
+    }
+    var acc = materialize(specIt.next(), client, session);
+    while (specIt.hasNext()) {
+      // Never move the following statement into lambda body. next() call is required to be eager.
+      var next = specIt.next();
+      acc = acc.flatMap(s -> {
+        if (isConditionalSpec(next)) {
+          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+          if (!predicate.test(s)) {
+            return Mono.just(s);
+          }
+        }
+        return materialize(next, client, session);
+      });
+    }
+    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 }
