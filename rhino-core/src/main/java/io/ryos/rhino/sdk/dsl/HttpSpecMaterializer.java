@@ -84,18 +84,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
       final EventDispatcher eventDispatcher) {
     this(client, eventDispatcher, null);
   }
-
-  /**
-   * Specification materializer translates the specifications into reactor implementations.
-   * <p>
-   *
-   * @param client Async HTTP client instance.
-   */
-  public HttpSpecMaterializer(final AsyncHttpClient client) {
-    this(client, null, null);
-  }
-
-
+  
   public Mono<UserSession> materialize(final HttpSpec spec, final UserSession userSession) {
 
     if (conditionalSpec != null && !conditionalSpec.test(userSession)) {
