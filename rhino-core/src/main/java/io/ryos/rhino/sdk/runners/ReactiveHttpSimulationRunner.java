@@ -316,7 +316,7 @@ public class ReactiveHttpSimulationRunner implements SimulationRunner {
 
     var specIt = dsl.getSpecs().iterator();
     if (!specIt.hasNext()) {
-      throw new NoSpecDefinedException();
+      throw new NoSpecDefinedException(dsl.getName());
     }
     var acc = materialize(specIt.next(), client, session);
     while (specIt.hasNext()) {
