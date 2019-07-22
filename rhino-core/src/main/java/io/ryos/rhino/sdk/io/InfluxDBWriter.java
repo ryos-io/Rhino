@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.ConsistencyLevel;
-import org.influxdb.InfluxDB.LogLevel;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 
@@ -61,8 +60,10 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
         .writeTimeout(1, TimeUnit.MINUTES)
         .retryOnConnectionFailure(true);
 
-    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(), client)
-        .setLogLevel(LogLevel.NONE)
+    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(),
+        SimulationConfig.getInfluxUsername(),
+        SimulationConfig.getInfluxPassword(),
+        client)
         .setConsistency(ConsistencyLevel.ONE)
         .enableBatch(2000, 100, TimeUnit.MICROSECONDS);
 
@@ -116,7 +117,7 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
 
   @Override
   public void write(final String report) {
-    System.out.println("string");
+    // Not implemented.
   }
 
   @Override
