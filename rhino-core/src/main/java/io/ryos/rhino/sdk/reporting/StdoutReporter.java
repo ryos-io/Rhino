@@ -114,9 +114,9 @@ public class StdoutReporter extends AbstractActor {
       return;
     }
 
+    flushReport(endEvent);
     this.receivedTerminationEvent = true;
     this.timer.cancel();
-    flushReport(endEvent);
     sender().tell(MSG_OK, self());
   }
 

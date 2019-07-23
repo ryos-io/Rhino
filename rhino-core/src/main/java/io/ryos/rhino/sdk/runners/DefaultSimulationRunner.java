@@ -24,14 +24,17 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.ContextImpl;
-import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner.Action;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +61,20 @@ import reactor.core.scheduler.Schedulers;
  * @see ReactiveHttpSimulationRunner
  * @since 1.0.0
  */
-public class DefaultSimulationRunner implements SimulationRunner {
+public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultSimulationRunner.class);
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
 
-  private final SimulationMetadata simulationMetadata;
   private final ScheduledExecutorService scheduler;
   private final EventDispatcher eventDispatcher;
 
+  private final Condition continueCondition;
+  private final Lock masterLock;
+
   private volatile boolean shutdownInitiated;
   private volatile Disposable subscribe;
+  private volatile boolean isPipelineCompleted;
 
   /**
    * Creates a new {@link DefaultSimulationRunner} instance.
@@ -77,13 +83,16 @@ public class DefaultSimulationRunner implements SimulationRunner {
    * @param context {@link ContextImpl} instance.
    */
   public DefaultSimulationRunner(Context context) {
-    this.simulationMetadata = context.<SimulationMetadata>get(JOB).orElseThrow();
+    super(context.<SimulationMetadata>get(JOB).orElseThrow());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
-    this.eventDispatcher = new EventDispatcher(simulationMetadata);
+    this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
+    this.masterLock = new ReentrantLock();
+    this.continueCondition = masterLock.newCondition();
   }
 
   public void start() {
 
+    var simulationMetadata = getSimulationMetadata();
     LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
 
     var userRepository = simulationMetadata.getUserRepository();
@@ -114,62 +123,73 @@ public class DefaultSimulationRunner implements SimulationRunner {
     }
 
     this.subscribe = flux.onErrorResume(t -> Mono.empty())
-        .take((simulationMetadata.getDuration()))
+        .take(Duration.ofSeconds(6))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
         .doOnNext(userSession -> {
           var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
-          new DefaultRunnerSimulationInjector(simulationMetadata, null)
-              .injectOn(instance);
+          new DefaultRunnerSimulationInjector(simulationMetadata, null).injectOn(instance);
           // Run the scenario subsequently.
             simulationMetadata.getScenarios().forEach(scenario ->
                 new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
                     eventDispatcher, instance).call()); })
+        .doOnComplete(() -> signalCompletion(() -> isPipelineCompleted = true))
         .subscribe();
-    await();
-    stop();
+
+    awaitIf(!isPipelineCompleted);
 
     LOG.info("Cleaning up ...");
     cleanupUserSessions(userSessionProvider.getUserList());
 
+    shutdown();
     LOG.info("Bye!");
   }
 
+  private void signalCompletion(Action action) {
+    try {
+      masterLock.lock();
+      action.execute();
+      continueCondition.signal();
+    } catch (IllegalMonitorStateException e) {
+      LOG.debug("Await not called yet. The cleanup completed before the main thread got to"
+          + " be awaited. Main thread will continue.");
+    } finally {
+      masterLock.unlock();
+    }
+  }
+
+  private void awaitIf(boolean conditional) {
+    try {
+      masterLock.lock();
+      if (conditional) {
+        continueCondition.await();
+      }
+    } catch (InterruptedException e) {
+      LOG.error("Interrupted.", e);
+    } finally {
+      masterLock.unlock();
+    }
+  }
+
   private void prepareUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getPrepareMethod() != null) {
+    if (getSimulationMetadata().getPrepareMethod() != null) {
+      LOG.info("Preparation started.");
       userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getPrepareMethod(), session);
+        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getPrepareMethod(), session);
       });
+      LOG.info("Preparation completed.");
     }
   }
 
   private void cleanupUserSessions(List<UserSession> userSessionList) {
-    if (simulationMetadata.getCleanupMethod() != null) {
+    if (getSimulationMetadata().getCleanupMethod() != null) {
+      LOG.info("Clean-up started.");
       userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(simulationMetadata.getCleanupMethod(), session);
+        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getCleanupMethod(), session);
         session.empty();
       });
-    }
-  }
-
-  private void setUpGrafanaDashboard() {
-    LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
-    new GrafanaGateway(simulationMetadata.getGrafanaInfo())
-        .setUpDashboard(SimulationConfig.getSimulationId(),
-            simulationMetadata.getScenarios()
-                .stream()
-                .map(Scenario::getDescription)
-                .toArray(String[]::new));
-  }
-
-  private void await() {
-    synchronized (this) {
-      try {
-        wait(simulationMetadata.getDuration().toMillis() + 1000);
-      } catch (InterruptedException e) {
-        // Intentionally left empty.
-      }
+      LOG.info("Clean-up completed.");
     }
   }
 
@@ -200,9 +220,8 @@ public class DefaultSimulationRunner implements SimulationRunner {
     // proceed with shutdown.
     LOG.info("Shutting down the system ...");
     eventDispatcher.stop();
-
-    LOG.info("Shutting down the scheduler ...");
     scheduler.shutdown();
+
     int retry = 0;
     while (!scheduler.isShutdown() && ++retry < 5) {
       waitForASec();

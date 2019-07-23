@@ -24,7 +24,7 @@ public class ReactiveBasicHttpGetTest {
       .containerThreads(100));
 
   @Test
-  public void testReactiveBasicHttp() {
+  public void testReactiveBasicHttp() throws InterruptedException {
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
@@ -35,6 +35,14 @@ public class ReactiveBasicHttpGetTest {
             .withFixedDelay(800)
             .withStatus(200)));
 
+    stubFor(WireMock.get(urlEqualTo("/api/prepare"))
+        .willReturn(aResponse()
+            .withFixedDelay(800)
+            .withStatus(200)));
+
+
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+
+    Thread.sleep(5000L);
   }
 }
