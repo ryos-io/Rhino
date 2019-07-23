@@ -38,7 +38,6 @@ public class MeasurementImpl implements Measurement {
 
   @Override
   public void measure(final String stepName, final String status) {
-
     if (events.isEmpty()) {
 
       final ScenarioEvent simLog = new ScenarioEvent();
@@ -50,7 +49,7 @@ public class MeasurementImpl implements Measurement {
       simLog.userId = userId;
       simLog.status = status;
 
-      events.add(simLog);
+      addEvent(simLog);
 
     } else {
 
@@ -67,8 +66,12 @@ public class MeasurementImpl implements Measurement {
       simLog.userId = userId;
       simLog.status = status;
 
-      events.add(simLog);
+      addEvent(simLog);
     }
+  }
+
+  private synchronized void addEvent(ScenarioEvent event) {
+    events.add(event);
   }
 
   public void record(final LogEvent event) {
@@ -77,5 +80,9 @@ public class MeasurementImpl implements Measurement {
 
   public List<LogEvent> getEvents() {
     return events;
+  }
+
+  public synchronized void purge() {
+    events.clear();
   }
 }

@@ -142,7 +142,7 @@ public class SimulationConfig {
 
   private String getConfigHttpReadTimeout() {
     return properties.getProperty("http.readTimeout",
-        "5000");
+        "15000");
   }
 
   private String getConfigHttpHandshakeTimeout() {

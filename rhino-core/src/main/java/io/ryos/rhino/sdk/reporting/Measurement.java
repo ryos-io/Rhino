@@ -32,7 +32,21 @@ public interface Measurement {
    * @param stepName The name of the step.
    * @param status HTTP status of the load execution.
    */
-  void measure(final String stepName, final String status);
+  void measure(String stepName, String status);
 
-  void record(final LogEvent event);
+  /**
+   * The {@link LogEvent} will be recorded and stored internally. The
+   * {@link io.ryos.rhino.sdk.runners.EventDispatcher} will then dispatch the persisted events to
+   * the instances which process these events.
+   * <p>
+   *
+   * @param event log event.
+   */
+  void record(LogEvent event);
+
+  /**
+   * Purge the backing data structure by deleting all the events stored.
+   * <p>
+   */
+  void purge();
 }

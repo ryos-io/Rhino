@@ -17,7 +17,8 @@
 package io.ryos.rhino.sdk.exceptions;
 
 /**
- * TODO
+ * The exception is thrown, whenever a retriable operation fails, that causes the operation will
+ * get retried till the attempts reaches maximum number of retries.
  * <p>
  *
  * @author Erhan Bagdemir

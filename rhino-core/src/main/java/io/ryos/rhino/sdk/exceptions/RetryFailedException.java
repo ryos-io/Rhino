@@ -14,32 +14,19 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk;
-
-import io.ryos.rhino.sdk.monitoring.GrafanaDashboard;
+package io.ryos.rhino.sdk.exceptions;
 
 /**
- * Grafana integration entity.
+ * The exception will be thrown, when the number of retries exceeded the max number of retries while
+ * executing the spec.
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.6.0
  */
-public class GrafanaInfo {
+public class RetryFailedException extends RuntimeException {
 
-  private Class<? extends GrafanaDashboard> dashboard;
-  private String pathToTemplate;
-
-  GrafanaInfo(Class<? extends GrafanaDashboard> dashboard, String pathToTemplate) {
-    this.dashboard = dashboard;
-    this.pathToTemplate = pathToTemplate;
-  }
-
-  public Class<? extends GrafanaDashboard> getDashboard() {
-    return dashboard;
-  }
-
-  public String getPathToTemplate() {
-    return pathToTemplate;
+  public RetryFailedException(Throwable cause) {
+    super(cause);
   }
 }

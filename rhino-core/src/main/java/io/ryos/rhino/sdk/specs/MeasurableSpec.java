@@ -14,23 +14,30 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.reporting;
+package io.ryos.rhino.sdk.specs;
 
-public class ScenarioEvent extends LogEvent {
-  public String status;
-  public String step;
+/**
+ * Retriable spec is the DSL spec which is to be retried if predicate turns true.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
+ */
+public interface MeasurableSpec extends Spec {
 
-  @Override
-  public String toString() {
-    return "ScenarioEvent{" +
-        "status='" + status + '\'' +
-        ", step='" + step + '\'' +
-        ", username='" + username + '\'' +
-        ", userId='" + userId + '\'' +
-        ", scenario='" + scenario + '\'' +
-        ", start=" + start +
-        ", end=" + end +
-        ", elapsed=" + elapsed +
-        '}';
-  }
+  /**
+   * Disables the measurement recording.
+   * <p>
+   *
+   * @return {@link HttpConfigSpec} instance.
+   */
+  Spec noMeasurement();
+
+  /**
+   * Cumulative measurement.
+   * <p>
+   *
+   * @return {@link HttpConfigSpec} instance.
+   */
+  Spec cumulativeMeasurement();
 }

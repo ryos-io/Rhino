@@ -28,20 +28,20 @@ public interface Spec {
   }
 
   /**
-   * Disables the measurement recording.
-   * <p>
-   *
-   * @return {@link HttpConfigSpec} instance.
-   */
-  Spec noMeasurement();
-
-  /**
    * Whether the measurement is enabled.
    * <p>
    *
-   * @return True if is measurement enabled.
+   * @return True if measurement is enabled.
    */
   boolean isMeasurementEnabled();
+
+  /**
+   * Whether the measurement is cumulative.
+   * <p>
+   *
+   * @return True if cumulative measurement is enabled.
+   */
+  boolean isCumulativeMeasurement();
 
   /**
    * The name of the spec. It is the step name in scenario counterpart.
