@@ -23,10 +23,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.asynchttpclient.Dsl;
-import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.filter.ThrottleRequestFilter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +68,5 @@ public class FluxTimingsTest {
           System.out.println("completed");
         })
         .blockLast();
-
-    System.out.println("After flux");
   }
 }

@@ -143,7 +143,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public HttpSpec retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
+  public MeasurableSpec retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
     this.retryInfo = new RetryInfo(predicate, numOfRetries);
     return this;
   }

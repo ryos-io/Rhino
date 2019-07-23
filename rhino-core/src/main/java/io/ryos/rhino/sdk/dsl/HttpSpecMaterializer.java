@@ -35,7 +35,6 @@ import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,19 +93,23 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, spec, eventDispatcher);
     var responseMono = Mono.just(userSession)
-        .flatMap(s -> Mono.fromCompletionStage(client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
+        .flatMap(s -> Mono.fromCompletionStage(
+            client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
                 .toCompletableFuture()));
 
     var retriableMono = Optional.ofNullable(spec.getRetryInfo())
-        .map(retryInfo -> responseMono.map(HttpResponse::new)
-            .map(hr -> isRetriable(retryInfo, hr))
-            .retryWhen(companion -> companion
-                .zipWith(Flux.range(1, retryInfo.getNumOfRetries() + 3), (error, index) -> {
-                  if (index < retryInfo.getNumOfRetries() && error instanceof RetryableOperationException) {
-                    return index;
-                  } else {
-                    throw Exceptions.propagate(new RetryFailedException(error));
-                  }
+        .map(retryInfo ->
+            responseMono.map(HttpResponse::new)
+                .map(hr -> isRetriable(retryInfo, hr))
+                .retryWhen(companion ->
+                    companion
+                        .zipWith(Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
+                          if (index < retryInfo.getNumOfRetries() + 1
+                              && error instanceof RetryableOperationException) {
+                            return index;
+                          } else {
+                            throw Exceptions.propagate(new RetryFailedException(error));
+                          }
                 })))
         .orElse(responseMono);
 
@@ -165,8 +168,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     for (var f : httpSpec.getQueryParameters()) {
       var paramEntry = f.apply(userSession);
       builder = builder
-          .addQueryParam(paramEntry.getKey(), paramEntry.getValue().stream()
-              .collect(Collectors.joining(",")));
+          .addQueryParam(paramEntry.getKey(), String.join(",", paramEntry.getValue()));
     }
 
     if (httpSpec.isAuth()) {

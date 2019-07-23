@@ -23,7 +23,7 @@ package io.ryos.rhino.sdk.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public abstract class AbstractSpec implements Spec {
+public abstract class AbstractSpec implements MeasurableSpec {
 
   private String enclosingSpec;
   private String measurementPoint;

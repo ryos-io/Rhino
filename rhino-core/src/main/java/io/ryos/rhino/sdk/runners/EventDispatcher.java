@@ -91,15 +91,19 @@ public class EventDispatcher {
     }
   }
 
-  public void dispatchEvents(final MeasurementImpl measurement) {
-    measurement.getEvents().forEach(e -> {
-      loggerActor.tell(e, ActorRef.noSender());
-      stdOutReptorter.tell(e, ActorRef.noSender());
+  public void dispatchEvents(MeasurementImpl measurement) {
+    try {
+      measurement.getEvents().forEach(e -> {
+        loggerActor.tell(e, ActorRef.noSender());
+        stdOutReptorter.tell(e, ActorRef.noSender());
 
-      if (simulationMetadata.isEnableInflux()) {
-        influxActor.tell(e, ActorRef.noSender());
-      }
-    });
+        if (simulationMetadata.isEnableInflux()) {
+          influxActor.tell(e, ActorRef.noSender());
+        }
+      });
+    } finally {
+      measurement.purge();
+    }
   }
 
   public void stop() {

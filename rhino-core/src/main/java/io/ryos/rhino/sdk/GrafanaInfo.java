@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk;
 import io.ryos.rhino.sdk.monitoring.GrafanaDashboard;
 
 /**
- * TODO
+ * Grafana integration entity.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -30,8 +30,7 @@ public class GrafanaInfo {
   private Class<? extends GrafanaDashboard> dashboard;
   private String pathToTemplate;
 
-  public GrafanaInfo(
-      Class<? extends GrafanaDashboard> dashboard, String pathToTemplate) {
+  GrafanaInfo(Class<? extends GrafanaDashboard> dashboard, String pathToTemplate) {
     this.dashboard = dashboard;
     this.pathToTemplate = pathToTemplate;
   }

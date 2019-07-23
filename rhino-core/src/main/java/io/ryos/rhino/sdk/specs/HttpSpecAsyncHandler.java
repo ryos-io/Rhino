@@ -7,7 +7,6 @@ import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
-import java.util.function.Predicate;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -19,7 +18,8 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final String stepName;
   private final String specName;
   private final String userId;
-  private final Boolean measurementEnabled;
+  private final boolean measurementEnabled;
+  private final boolean cumulativeMeasurement;
   private final MeasurementImpl measurement;
   private volatile long start = -1;
   private volatile int status;
@@ -38,6 +38,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     this.eventDispatcher = eventDispatcher;
     this.measurementEnabled = spec.isMeasurementEnabled();
     this.retryInfo = spec.getRetryInfo();
+    this.cumulativeMeasurement = spec.isCumulativeMeasurement();
   }
 
   @Override
@@ -105,6 +106,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     Response response = builder.build();
     var httpResponse = new HttpResponse(response);
+
     if (measurementEnabled && isReadyToMeasure(httpResponse)) {
       completeMeasurement();
     }
@@ -113,6 +115,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
+
     var elapsed = System.currentTimeMillis() - start;
 
     measurement.measure(stepName, String.valueOf(status));
@@ -124,20 +127,35 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     userEventEnd.scenario = specName;
     userEventEnd.eventType = EventType.END;
     userEventEnd.id = userId;
+
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
   }
 
   private boolean isReadyToMeasure(HttpResponse httpResponse) {
-    return retryInfo == null || retryInfo.getPredicate().test(httpResponse);
+    if (retryInfo == null) {
+      return true;
+    }
+
+    if (!cumulativeMeasurement) {
+      return true;
+    }
+
+    return !retryInfo.getPredicate().test(httpResponse);
   }
 
   @Override
   public void onRequestSend(NettyRequest request) {
 
     if (measurementEnabled) {
-      this.start = System.currentTimeMillis();
+
+      // if the start timestamp is not set, then set it. Otherwise, if it is a cumulative
+      // measurement, and the start is already set, then skip it.
+      if (start < 0 || !cumulativeMeasurement) {
+        this.start = System.currentTimeMillis();
+      }
+
       var userEventStart = new UserEvent();
       userEventStart.elapsed = 0;
       userEventStart.start = start;

@@ -121,7 +121,6 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private void persist(final ScenarioEvent logEvent) {
-
     String countKey = String.format("Count/%s/%s/%s",
         logEvent.scenario,
         logEvent.step,

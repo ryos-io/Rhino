@@ -67,7 +67,6 @@ public class ReactiveMonitorWaitSimulation {
             .endpoint((c) -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-        .retryIf((httpResponse) -> httpResponse.getStatusCode() != 200, 2)
-            .cumulativeMeasurement());
+            .retryIf((httpResponse) -> httpResponse.getStatusCode() != 200, 2));
   }
 }

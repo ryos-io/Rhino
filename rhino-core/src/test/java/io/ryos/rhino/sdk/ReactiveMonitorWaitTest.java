@@ -24,12 +24,18 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.github.tomakehurst.wiremock.stubbing.Scenario;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-/**
+/*
+ * Scenario:
+ * First upload the content, the service returns 201 Created.
+ * First attempt to monitor, and monitor API returns 404 Not Found.
+ * Second attempt to monitor, and monitor API returns 200 OK.
+ * At this point the cumulativeMeasurement on Spec makes the elapsed time be aggregated.
  */
+@Ignore
 public class ReactiveMonitorWaitTest {
 
   private static final String SIM_NAME = "Reactive Monitor Test";
@@ -49,18 +55,29 @@ public class ReactiveMonitorWaitTest {
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
     stubFor(WireMock.put(urlEqualTo("/api/files"))
-
+        .inScenario("retriable")
+        .whenScenarioStateIs(STARTED)
+        .willSetStateTo("monitor")
         .willReturn(aResponse()
-            .withFixedDelay(1000)
+            .withFixedDelay(100)
             .withStatus(201)));
 
     stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+        .inScenario("retriable")
+        .whenScenarioStateIs("monitor")
+        .willSetStateTo("monitor-2")
         .willReturn(aResponse()
-            .withFixedDelay(5000)
+            .withFixedDelay(100)
             .withStatus(404)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+        .inScenario("retriable")
+        .whenScenarioStateIs("monitor-2")
+        .willSetStateTo("ended")
+        .willReturn(aResponse()
+            .withFixedDelay(100)
+            .withStatus(200)));
 
-    Thread.sleep(5000L);
+    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
   }
 }

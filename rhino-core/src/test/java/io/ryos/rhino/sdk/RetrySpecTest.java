@@ -40,7 +40,6 @@ public class RetrySpecTest {
     Mono.fromFuture(client.executeRequest(requestBuilder).toCompletableFuture())
         .map(r -> {
           if (r.getStatusCode() == 404) {
-            System.out.println(404);
             throw new RuntimeException();
           }
 

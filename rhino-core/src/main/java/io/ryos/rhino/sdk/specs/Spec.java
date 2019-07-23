@@ -28,22 +28,6 @@ public interface Spec {
   }
 
   /**
-   * Disables the measurement recording.
-   * <p>
-   *
-   * @return {@link HttpConfigSpec} instance.
-   */
-  Spec noMeasurement();
-
-  /**
-   * Cumulative measurement.
-   * <p>
-   *
-   * @return {@link HttpConfigSpec} instance.
-   */
-  Spec cumulativeMeasurement();
-
-  /**
    * Whether the measurement is enabled.
    * <p>
    *
