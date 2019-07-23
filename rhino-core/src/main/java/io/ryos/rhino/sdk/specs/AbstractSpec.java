@@ -23,24 +23,26 @@ package io.ryos.rhino.sdk.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class AbstractSpec implements Spec {
+public abstract class AbstractSpec implements Spec {
 
   private String enclosingSpec;
   private String measurementPoint;
   private boolean measurementEnabled = true;
+  private boolean cumulativeMeasurement = false;
 
   AbstractSpec(String measurement) {
     this.measurementPoint = measurement;
   }
 
   @Override
-  public boolean isMeasurementEnabled() {
-    return measurementEnabled;
+  public Spec noMeasurement() {
+    this.measurementEnabled = false;
+    return this;
   }
 
   @Override
-  public Spec noMeasurement() {
-    this.measurementEnabled = false;
+  public Spec cumulativeMeasurement() {
+    this.cumulativeMeasurement = true;
     return this;
   }
 
@@ -58,4 +60,15 @@ public class AbstractSpec implements Spec {
   public void setTestName(String testName) {
     this.enclosingSpec = testName;
   }
+
+  @Override
+  public boolean isCumulativeMeasurement() {
+    return cumulativeMeasurement;
+  }
+
+  @Override
+  public boolean isMeasurementEnabled() {
+    return measurementEnabled;
+  }
+
 }

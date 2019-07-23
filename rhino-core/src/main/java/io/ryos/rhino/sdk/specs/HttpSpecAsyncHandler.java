@@ -1,10 +1,13 @@
 package io.ryos.rhino.sdk.specs;
 
 import io.netty.handler.codec.http.HttpHeaders;
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
+import java.util.function.Predicate;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -22,18 +25,19 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private volatile int status;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
   private final EventDispatcher eventDispatcher;
+  private final RetryInfo retryInfo;
 
-  public HttpSpecAsyncHandler(final String userId,
-      final String specName,
-      final String stepName,
-      final EventDispatcher eventDispatcher,
-      final Boolean measurementEnabled) {
-    this.measurement = new MeasurementImpl(specName, userId);
-    this.specName = specName;
-    this.userId = userId;
-    this.stepName = stepName;
+  public HttpSpecAsyncHandler(final UserSession session,
+      final HttpSpec spec,
+      final EventDispatcher eventDispatcher) {
+
+    this.measurement = new MeasurementImpl(spec.getTestName(), session.getUser().getId());
+    this.specName = spec.getTestName();
+    this.userId = session.getUser().getId();
+    this.stepName = spec.getMeasurementPoint();
     this.eventDispatcher = eventDispatcher;
-    this.measurementEnabled = measurementEnabled;
+    this.measurementEnabled = spec.isMeasurementEnabled();
+    this.retryInfo = spec.getRetryInfo();
   }
 
   @Override
@@ -99,24 +103,34 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   @Override
   public Response onCompleted() {
 
-    if (measurementEnabled) {
-      var elapsed = System.currentTimeMillis() - start;
-
-      measurement.measure(stepName, String.valueOf(status));
-
-      var userEventEnd = new UserEvent();
-      userEventEnd.elapsed = elapsed;
-      userEventEnd.start = start;
-      userEventEnd.end = start + elapsed;
-      userEventEnd.scenario = specName;
-      userEventEnd.eventType = EventType.END;
-      userEventEnd.id = userId;
-      measurement.record(userEventEnd);
-
-      eventDispatcher.dispatchEvents(measurement);
+    Response response = builder.build();
+    var httpResponse = new HttpResponse(response);
+    if (measurementEnabled && isReadyToMeasure(httpResponse)) {
+      completeMeasurement();
     }
 
-    return builder.build();
+    return response;
+  }
+
+  public void completeMeasurement() {
+    var elapsed = System.currentTimeMillis() - start;
+
+    measurement.measure(stepName, String.valueOf(status));
+
+    var userEventEnd = new UserEvent();
+    userEventEnd.elapsed = elapsed;
+    userEventEnd.start = start;
+    userEventEnd.end = start + elapsed;
+    userEventEnd.scenario = specName;
+    userEventEnd.eventType = EventType.END;
+    userEventEnd.id = userId;
+    measurement.record(userEventEnd);
+
+    eventDispatcher.dispatchEvents(measurement);
+  }
+
+  private boolean isReadyToMeasure(HttpResponse httpResponse) {
+    return retryInfo == null || retryInfo.getPredicate().test(httpResponse);
   }
 
   @Override

@@ -17,16 +17,16 @@
 package io.ryos.rhino.sdk.exceptions;
 
 /**
- * The exception is thrown, whenever a retriable operation fails, that causes the operation will
- * get retried till the attempts reaches maximum number of retries.
+ * The exception will be thrown, when the number of retries exceeded the max number of retries while
+ * executing the spec.
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.6.0
  */
-public class RetryableOperationException extends RuntimeException {
+public class RetryFailedException extends RuntimeException {
 
-  public RetryableOperationException(String message) {
-    super(message);
+  public RetryFailedException(Throwable cause) {
+    super(cause);
   }
 }
