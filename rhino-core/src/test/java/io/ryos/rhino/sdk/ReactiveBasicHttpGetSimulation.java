@@ -4,6 +4,7 @@ import static io.ryos.rhino.sdk.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.specs.Spec.http;
 import static io.ryos.rhino.sdk.specs.Spec.some;
 
+import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Prepare;
@@ -14,9 +15,13 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import io.ryos.rhino.sdk.specs.LoopBuilder;
+import io.ryos.rhino.sdk.specs.MapperBuilder;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import java.util.List;
 import java.util.UUID;
 import org.asynchttpclient.Response;
+import scala.Int;
 
 @Simulation(name = "Reactive Test", durationInMins = 1)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -52,7 +57,18 @@ public class ReactiveBasicHttpGetSimulation {
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(FILES_ENDPOINT)
-            .get());
+            .get()
+            .saveTo("result"))
+        .map(MapperBuilder.<Response, List<Integer>>from("result")
+            .doMap(s -> ImmutableList.of(s.getStatusCode(), 666)))
+        .forEach(
+            new LoopBuilder<Integer, Iterable<Integer>>()
+                .in("result")
+                .apply(o ->
+                    some("measurement")
+                      .as((u, m) -> { System.out.println(u.get("result").get());
+                                      return u; }))
+                .saveTo("result"));
   }
 
   @CleanUp
