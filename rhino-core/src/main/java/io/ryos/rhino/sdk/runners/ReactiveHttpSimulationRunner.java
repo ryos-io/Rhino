@@ -26,18 +26,7 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
-<<<<<<< HEAD
-import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.MapperSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
-import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
-import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
-=======
 import io.ryos.rhino.sdk.dsl.MaterializerFactory;
-import io.ryos.rhino.sdk.io.Out;
-import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
->>>>>>> forEach initial
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
@@ -132,7 +121,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
         .doOnComplete(() -> signalCompletion(() -> isPrepareCompleted = true))
-        .flatMap(tuple -> materializeToPublisher(client, tuple.getT1(), tuple.getT2()));
+        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()));
 
     this.subscribe = flux.subscribe();
 
@@ -151,7 +140,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-<<<<<<< HEAD
   private void prepare(AsyncHttpClient client, List<UserSession> userList) {
     if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
@@ -170,11 +158,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       LOG.error("Interrupted.", e);
     } finally {
       masterLock.unlock();
-=======
+    }
+  }
+
   private Publisher<? extends UserSession> getPublisher(AsyncHttpClient client,
-      Tuple2<UserSession, ConnectableDsl> tuple) {
-    var session = tuple.getT1();
-    var dsl = tuple.getT2();
+      UserSession session, ConnectableDsl dsl) {
+
     var specIt = dsl.getSpecs().iterator();
     var materializerFactory = new MaterializerFactory(client, eventDispatcher);
 
@@ -189,12 +178,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       acc = acc.flatMap(s -> {
         if (isConditionalSpec(next)) {
           var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-          if (!predicate.test(s)) { return Mono.just(s); }
+          if (!predicate.test(s)) {
+            return Mono.just(s);
+          }
         }
         return materializerFactory.monoFrom(next, session);
       });
->>>>>>> forEach initial
     }
+
+    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 
   private Publisher<? extends Tuple2<UserSession, ConnectableDsl>> handleError(Throwable t) {
@@ -225,61 +217,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     return flux;
   }
 
-<<<<<<< HEAD
-  private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
-      final UserSession session) {
-
-    if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(client, eventDispatcher)
-          .materialize((HttpSpec) spec, session);
-    } else if (spec instanceof SomeSpec) {
-      return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
-    } else if (spec instanceof WaitSpec) {
-      return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
-    } else if (spec instanceof MapperSpec) {
-      return new MapperSpecMaterializer().materialize((MapperSpec) spec, session);
-    } else if (isConditionalSpec(spec)) {
-      return materialize(((ConditionalSpecWrapper) spec).getSpec(), client, session);
-    }
-
-    throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
-=======
-  private void terminate() {
-    cleanupUserSessions();
-    shutdown();
-    notifyAwaiting();
-  }
-
-  private void setUpGrafanaDashboard() {
-    LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
-    var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
-    grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
-        simulationMetadata.getDsls()
-            .stream()
-            .map(dsl -> (ConnectableDsl) dsl)
-            .map(ConnectableDsl::getName)
-            .toArray(String[]::new));
-  }
-
-  private void await() {
-    synchronized (this) {
-      try {
-        while (!shutdownInitiated) {
-          wait(ONE_SEC);
-        }
-      } catch (InterruptedException e) {
-        LOG.error(e.getMessage());
-        // Intentionally left empty.
-      }
-    }
-  }
-
-  private void notifyAwaiting() {
-    synchronized (this) {
-      notifyAll();
-    }
->>>>>>> forEach initial
-  }
 
   @Override
   public void stop() {
@@ -312,9 +249,9 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       materializeMethod(getSimulationMetadata().getPrepareMethod(),
           userSessionList, client,
           () -> {
-        isPrepareCompleted = true;
-        LOG.info("Preparation completed.");
-      });
+            isPrepareCompleted = true;
+            LOG.info("Preparation completed.");
+          });
     }
   }
 
@@ -336,7 +273,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     if (method != null) {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
-          .flatMap(session -> materializeToPublisher(client, session, executeStaticMethod(method, session)))
+          .flatMap(session -> getPublisher(client, session,
+              executeStaticMethod(method, session)))
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))
           .blockLast();
@@ -367,28 +305,4 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     return Mono.empty();
   }
 
-  private Publisher<? extends UserSession> materializeToPublisher(final AsyncHttpClient client,
-      final UserSession session,
-      final ConnectableDsl dsl) {
-
-    var specIt = dsl.getSpecs().iterator();
-    if (!specIt.hasNext()) {
-      throw new NoSpecDefinedException(dsl.getName());
-    }
-    var acc = materialize(specIt.next(), client, session);
-    while (specIt.hasNext()) {
-      // Never move the following statement into lambda body. next() call is required to be eager.
-      var next = specIt.next();
-      acc = acc.flatMap(s -> {
-        if (isConditionalSpec(next)) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-          if (!predicate.test(s)) {
-            return Mono.just(s);
-          }
-        }
-        return materialize(next, client, session);
-      });
-    }
-    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
-  }
 }
