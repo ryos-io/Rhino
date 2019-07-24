@@ -26,18 +26,20 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
+<<<<<<< HEAD
 import io.ryos.rhino.sdk.dsl.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.MapperSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.WaitSpecMaterializer;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
+=======
+import io.ryos.rhino.sdk.dsl.MaterializerFactory;
+import io.ryos.rhino.sdk.io.Out;
+import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
+>>>>>>> forEach initial
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.specs.HttpSpec;
-import io.ryos.rhino.sdk.specs.MapperSpec;
-import io.ryos.rhino.sdk.specs.SomeSpec;
 import io.ryos.rhino.sdk.specs.Spec;
-import io.ryos.rhino.sdk.specs.WaitSpec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -149,6 +151,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
+<<<<<<< HEAD
   private void prepare(AsyncHttpClient client, List<UserSession> userList) {
     if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
@@ -167,6 +170,30 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       LOG.error("Interrupted.", e);
     } finally {
       masterLock.unlock();
+=======
+  private Publisher<? extends UserSession> getPublisher(AsyncHttpClient client,
+      Tuple2<UserSession, ConnectableDsl> tuple) {
+    var session = tuple.getT1();
+    var dsl = tuple.getT2();
+    var specIt = dsl.getSpecs().iterator();
+    var materializerFactory = new MaterializerFactory(client, eventDispatcher);
+
+    if (!specIt.hasNext()) {
+      throw new RuntimeException("No spec found in DSL.");
+    }
+
+    var acc = materializerFactory.monoFrom(specIt.next(), session);
+    while (specIt.hasNext()) {
+      // Never move the following statement into lambda body. next() call is required to be eager.
+      var next = specIt.next();
+      acc = acc.flatMap(s -> {
+        if (isConditionalSpec(next)) {
+          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+          if (!predicate.test(s)) { return Mono.just(s); }
+        }
+        return materializerFactory.monoFrom(next, session);
+      });
+>>>>>>> forEach initial
     }
   }
 
@@ -198,6 +225,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     return flux;
   }
 
+<<<<<<< HEAD
   private Mono<UserSession> materialize(final Spec spec, final AsyncHttpClient client,
       final UserSession session) {
 
@@ -215,6 +243,42 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
 
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
+=======
+  private void terminate() {
+    cleanupUserSessions();
+    shutdown();
+    notifyAwaiting();
+  }
+
+  private void setUpGrafanaDashboard() {
+    LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
+    var grafanaGateway = new GrafanaGateway(simulationMetadata.getGrafanaInfo());
+    grafanaGateway.setUpDashboard(SimulationConfig.getSimulationId(),
+        simulationMetadata.getDsls()
+            .stream()
+            .map(dsl -> (ConnectableDsl) dsl)
+            .map(ConnectableDsl::getName)
+            .toArray(String[]::new));
+  }
+
+  private void await() {
+    synchronized (this) {
+      try {
+        while (!shutdownInitiated) {
+          wait(ONE_SEC);
+        }
+      } catch (InterruptedException e) {
+        LOG.error(e.getMessage());
+        // Intentionally left empty.
+      }
+    }
+  }
+
+  private void notifyAwaiting() {
+    synchronized (this) {
+      notifyAll();
+    }
+>>>>>>> forEach initial
   }
 
   @Override

@@ -17,23 +17,21 @@
 package io.ryos.rhino.sdk.specs;
 
 /**
- * <p>
- *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.7.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public class LoopSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements LoopSpec {
 
-  private final MapperBuilder<R, T> mapper;
+  private final LoopBuilder<E, R> loopBuilder;
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
+  public LoopSpecImpl(LoopBuilder<E, R> loopBuilder) {
 
     super("N/A");
 
-    this.mapper = mapper;
+    this.loopBuilder = loopBuilder;
   }
 
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
+  public LoopBuilder<E, R> getLoopBuilder() {
+    return loopBuilder;
   }
 }

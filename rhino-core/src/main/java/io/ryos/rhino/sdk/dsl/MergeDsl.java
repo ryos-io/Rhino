@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.dsl;
 
 /**
- * <p>
- *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.7.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public interface MergeDsl {
 
-  private final MapperBuilder<R, T> mapper;
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
-
-    super("N/A");
-
-    this.mapper = mapper;
-  }
-
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
-  }
 }

@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.specs;
+package io.ryos.rhino.sdk.dsl;
+
+import io.ryos.rhino.sdk.specs.Spec;
 
 /**
- * <p>
- *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.7.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public interface LoopDsl {
 
-  private final MapperBuilder<R, T> mapper;
+  /**
+   * Runs a {@link Spec} by materializing it.
+   * <p>
+   *
+   * @param spec {@link Spec} to materialize and run.
+   * @return {@link ConnectableDsl} instance.
+   */
+  ConnectableDsl run(Spec spec);
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
-
-    super("N/A");
-
-    this.mapper = mapper;
-  }
-
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
-  }
 }

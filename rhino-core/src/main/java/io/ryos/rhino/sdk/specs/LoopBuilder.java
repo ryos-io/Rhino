@@ -16,24 +16,42 @@
 
 package io.ryos.rhino.sdk.specs;
 
+import java.util.function.Function;
+
 /**
- * <p>
- *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @since 1.7.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public class LoopBuilder<E, R extends Iterable<E>> {
 
-  private final MapperBuilder<R, T> mapper;
+  private String key;
+  private String saveTo;
+  private Function<E, Spec> loopFunction;
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
-
-    super("N/A");
-
-    this.mapper = mapper;
+  public LoopBuilder<E, R> in(String key) {
+    this.key = key;
+    return this;
   }
 
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
+  public LoopBuilder<E, R> apply(Function<E, Spec> loopFunction) {
+    this.loopFunction = loopFunction;
+    return this;
+  }
+
+  public LoopBuilder<E, R> saveTo(String saveTo) {
+    this.saveTo = saveTo;
+    return this;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public String getSaveTo() {
+    return saveTo;
+  }
+
+  public Function<E, Spec> getLoopFunction() {
+    return loopFunction;
   }
 }

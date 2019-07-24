@@ -2,6 +2,8 @@ package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.specs.LoopBuilder;
+import io.ryos.rhino.sdk.specs.LoopSpecImpl;
 import io.ryos.rhino.sdk.specs.MapperBuilder;
 import io.ryos.rhino.sdk.specs.MapperSpecImpl;
 import io.ryos.rhino.sdk.specs.Spec;
@@ -53,6 +55,12 @@ public class ConnectableDsl implements LoadDsl, ConfigurableDsl {
   @Override
   public <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper) {
     executableFunctions.add(new MapperSpecImpl<>(mapper));
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>> ConfigurableDsl forEach(LoopBuilder<E, R> loopBuilder) {
+    executableFunctions.add(new LoopSpecImpl<>(loopBuilder));
     return this;
   }
 
