@@ -19,6 +19,9 @@ package io.ryos.rhino.sdk.specs;
 import java.util.function.Function;
 
 /**
+ * Loop builder is a builder providing the spec with looping information to be executed.
+ * <p>
+ *
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
@@ -28,9 +31,12 @@ public class LoopBuilder<E, R extends Iterable<E>> {
   private String saveTo;
   private Function<E, Spec> loopFunction;
 
-  public LoopBuilder<E, R> in(String key) {
+  public LoopBuilder(final String key) {
     this.key = key;
-    return this;
+  }
+
+  public static <E, R extends Iterable<E>> LoopBuilder<E, R> in(String key) {
+    return new LoopBuilder<>(key);
   }
 
   public LoopBuilder<E, R> apply(Function<E, Spec> loopFunction) {
