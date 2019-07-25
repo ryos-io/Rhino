@@ -46,6 +46,8 @@ public class SimulationConfig {
   private static final int MAX_PAR = 1000;
   private static final int MAX_CONN = 1000;
   private static final String SIM_ID = "SIM_ID";
+  private static final int DEFAULT_BATCH_DURATION = 200;
+  private static final int DEFAULT_BATCH_ACTIONS = 1000;
   private static SimulationConfig instance;
 
   private final Properties properties;
@@ -119,6 +121,24 @@ public class SimulationConfig {
 
   private String getDBSupportInfluxPassword() {
     return properties.getProperty("db.influx.password");
+  }
+
+  public static int getInfluxBatchActions() {
+    if (instance.getDBSupportInfluxBatchActions() != null) {
+      return Integer.parseInt(instance.getDBSupportInfluxBatchActions());
+    }
+    return DEFAULT_BATCH_ACTIONS;
+  }
+
+  public static int getInfluxBatchDuration() {
+    if (instance.getDBSupportInfluxBatchDuration() != null) {
+      return Integer.parseInt(instance.getDBSupportInfluxBatchDuration());
+    }
+    return DEFAULT_BATCH_DURATION;
+  }
+
+  public static String getInfluxRetentionPolicy() {
+    return instance.getDBSupportInfluxRetentionPolicy();
   }
 
   private String getNodeName() {
@@ -326,6 +346,18 @@ public class SimulationConfig {
 
   public static String getInfluxPassword() {
     return instance.getDBSupportInfluxPassword();
+  }
+
+  private String getDBSupportInfluxBatchActions() {
+    return properties.getProperty("db.influx.batch.actions");
+  }
+
+  private String getDBSupportInfluxBatchDuration() {
+    return properties.getProperty("db.influx.batch.duration");
+  }
+
+  private String getDBSupportInfluxRetentionPolicy() {
+    return properties.getProperty("db.influx.policy");
   }
 
   public static String getVaultEndpoint() {

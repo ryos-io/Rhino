@@ -62,10 +62,12 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
 
     this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(),
         SimulationConfig.getInfluxUsername(),
-        SimulationConfig.getInfluxPassword(),
-        client)
+        SimulationConfig.getInfluxPassword(), client)
+        .setRetentionPolicy(SimulationConfig.getInfluxRetentionPolicy())
         .setConsistency(ConsistencyLevel.ONE)
-        .enableBatch(2000, 100, TimeUnit.MICROSECONDS);
+        .enableBatch(SimulationConfig.getInfluxBatchActions(),
+            SimulationConfig.getInfluxBatchDuration(),
+            TimeUnit.MICROSECONDS);
 
     influxDB.createDatabase(dbName);
   }
