@@ -32,7 +32,7 @@ public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
 
   private BiFunction<UserSession, Measurement, UserSession> function;
 
-  public SomeSpecImpl(final String measurement) {
+  SomeSpecImpl(final String measurement) {
     super(Objects.requireNonNull(measurement));
   }
 

@@ -1,9 +1,13 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.specs.LoopBuilder;
+import io.ryos.rhino.sdk.specs.MapperBuilder;
 import io.ryos.rhino.sdk.specs.Spec;
 import java.time.Duration;
-import java.util.function.Predicate;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Load DSL to describe load tests. The reactive runner materializes the DSL provided and run the
@@ -33,16 +37,11 @@ public interface LoadDsl {
    * @param spec {@link Spec} to materialize and run.
    * @return {@link ConnectableDsl} instance.
    */
-  ConnectableDsl run(Spec spec);
+  ConfigurableDsl run(Spec spec);
 
-  /**
-   * Runs a {@link Spec} by materializing it if {@link Predicate} returns true.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @param predicate {@link Predicate} which is conditional for execution of {@link Spec}
-   * provided.
-   * @return {@link ConnectableDsl} instance.
-   */
-  ConnectableDsl runIf(Predicate<UserSession> predicate, Spec spec);
+  // <T> ConfigurableDsl fromJsonTo(Class<T> clazz);
+
+  <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper);
+
+  <E, R extends Iterable<E>> ConfigurableDsl forEach(LoopBuilder<E, R> loopBuilder);
 }

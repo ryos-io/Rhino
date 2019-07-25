@@ -4,6 +4,7 @@ import static io.ryos.rhino.sdk.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.specs.Spec.http;
 import static io.ryos.rhino.sdk.specs.Spec.some;
 
+import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Prepare;
@@ -14,7 +15,10 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
+import io.ryos.rhino.sdk.specs.LoopBuilder;
+import io.ryos.rhino.sdk.specs.MapperBuilder;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import java.util.List;
 import java.util.UUID;
 import org.asynchttpclient.Response;
 
@@ -47,12 +51,22 @@ public class ReactiveBasicHttpGetSimulation {
   @Dsl(name = "Shop Benchmarks")
   public LoadDsl singleTestDsl() {
     return Start.dsl()
-        .run(http("localhost:8089/api/files")
+        .run(http("Files Request")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(FILES_ENDPOINT)
-            .get());
+            .get()
+            .saveTo("result"))
+        .map(MapperBuilder.<Response, List<Integer>>from("result")
+            .doMap(s -> ImmutableList.of(s.getStatusCode(), 666)))
+        .forEach(LoopBuilder.in("result")
+            .apply(o -> some("measurement")
+                .as((u, m) -> {
+                  u.get("result").ifPresent(System.out::println);
+                  return u;
+                }))
+                .saveTo("result"));
   }
 
   @CleanUp
