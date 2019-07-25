@@ -28,7 +28,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner.Action;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -123,7 +122,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
     }
 
     this.subscribe = flux.onErrorResume(t -> Mono.empty())
-        .take(Duration.ofSeconds(6))
+        .take((simulationMetadata.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::notifyAwaiting)
