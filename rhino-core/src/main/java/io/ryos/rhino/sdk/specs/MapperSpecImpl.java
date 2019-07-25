@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.specs;
 
 /**
+ * Mapper spec implementation.
  * <p>
  *
  * @author Erhan Bagdemir
