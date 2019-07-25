@@ -21,7 +21,6 @@ import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import java.util.List;
 import java.util.UUID;
 import org.asynchttpclient.Response;
-import scala.Int;
 
 @Simulation(name = "Reactive Test", durationInMins = 1)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -52,7 +51,7 @@ public class ReactiveBasicHttpGetSimulation {
   @Dsl(name = "Shop Benchmarks")
   public LoadDsl singleTestDsl() {
     return Start.dsl()
-        .run(http("localhost:8089/api/files")
+        .run(http("Files Request")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
@@ -61,13 +60,12 @@ public class ReactiveBasicHttpGetSimulation {
             .saveTo("result"))
         .map(MapperBuilder.<Response, List<Integer>>from("result")
             .doMap(s -> ImmutableList.of(s.getStatusCode(), 666)))
-        .forEach(
-            new LoopBuilder<Integer, Iterable<Integer>>()
-                .in("result")
-                .apply(o ->
-                    some("measurement")
-                      .as((u, m) -> { System.out.println(u.get("result").get());
-                                      return u; }))
+        .forEach(LoopBuilder.in("result")
+            .apply(o -> some("measurement")
+                .as((u, m) -> {
+                  u.get("result").ifPresent(System.out::println);
+                  return u;
+                }))
                 .saveTo("result"));
   }
 
