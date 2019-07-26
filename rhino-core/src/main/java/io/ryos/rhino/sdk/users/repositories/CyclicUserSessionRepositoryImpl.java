@@ -17,10 +17,12 @@
 package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.CyclicIterator;
+import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.data.UserSession;
-
+import io.ryos.rhino.sdk.data.UserSessionImpl;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * User session repository provides the user sessions limited by maxNumberOfUsers. The take() method returns the next
@@ -33,11 +35,14 @@ import java.util.Objects;
  */
 public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionRepository<UserSession> {
 
-  public static final int MAX_NUMBER_OF_USERS = 1000;
+  private static final int MAX_NUMBER_OF_USERS = 1000;
+
+  private final CyclicIterator<LoadToken> filteredIterator;
+  private final List<LoadToken> backingList;
 
   public CyclicUserSessionRepositoryImpl(
-          final UserRepository<UserSession> userRepository,
-          final String region) {
+      final UserRepository<UserSession> userRepository,
+      final String region) {
 
     this(userRepository, region, MAX_NUMBER_OF_USERS);
   }
@@ -51,22 +56,28 @@ public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionReposit
     Objects.requireNonNull(region);
 
     var filteredUsers = userRepository.leaseUsers(maxNumberOfUsers, region);
+    this.backingList = filteredUsers
+        .stream()
+        .map(u -> new LoadToken(u.getUser(), new SimulationSession(u.getUser())))
+        .collect(Collectors.toList());
 
-    this.backingList = filteredUsers;
-    this.filteredIterator = new CyclicIterator<>(filteredUsers);
+    this.filteredIterator = new CyclicIterator<>(backingList);
   }
 
-  private final CyclicIterator<UserSession> filteredIterator;
-  private final List<UserSession> backingList;
 
   @Override
   public UserSession take() {
-    final UserSession next = filteredIterator.next();
-    next.empty();
-    return next;
+    final LoadToken token = filteredIterator.next();
+    return new UserSessionImpl(token.getUser(), token.getSimulationSession());
   }
 
   public List<UserSession> getUserList() {
+    return backingList.stream().map(token ->
+        new UserSessionImpl(token.getUser(), token.getSimulationSession()))
+        .collect(Collectors.toList());
+  }
+
+  public List<LoadToken> getTokenList() {
     return backingList;
   }
 }

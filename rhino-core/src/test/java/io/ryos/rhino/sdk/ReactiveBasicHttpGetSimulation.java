@@ -17,6 +17,7 @@ import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.specs.LoopBuilder;
 import io.ryos.rhino.sdk.specs.MapperBuilder;
+import io.ryos.rhino.sdk.specs.Spec.Scope;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class ReactiveBasicHttpGetSimulation {
             .auth()
             .endpoint(FILES_ENDPOINT)
             .get()
-            .saveTo("result"))
+            .saveTo("result", Scope.SIMULATION))
         .run(some("Status").as((u, s) -> {
           u.<Response>get("result")
               .ifPresent(httpResponse -> System.out.println(httpResponse.getStatusCode()));
@@ -63,7 +64,7 @@ public class ReactiveBasicHttpGetSimulation {
         .forEach(LoopBuilder.in("result")
             .apply(o -> some("measurement")
                 .as((u, m) -> {
-                  u.get("result").ifPresent(System.out::println);
+                  System.out.println(u.get("result").get());
                   return u;
                 }))
                 .saveTo("result"));

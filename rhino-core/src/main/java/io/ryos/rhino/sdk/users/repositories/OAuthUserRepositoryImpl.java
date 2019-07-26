@@ -19,7 +19,6 @@ package io.ryos.rhino.sdk.users.repositories;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import io.ryos.rhino.sdk.users.source.UserSource;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +42,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
     users.forEach(u -> {
       delay();
-      var userSession = new UserSessionImpl(authenticator.authenticate(u));
+      var userSession = new UserSessionImpl(authenticator.authenticate(u), null);
       result.add(userSession);
     });
 

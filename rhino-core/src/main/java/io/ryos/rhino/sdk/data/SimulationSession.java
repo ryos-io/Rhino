@@ -16,22 +16,27 @@
 
 package io.ryos.rhino.sdk.data;
 
-import java.util.List;
+import io.ryos.rhino.sdk.users.data.User;
 
 /**
+ * Simulation session is a context instance of which life cycle is spanning from the beginning of
+ * simulations till they complete. In contrary to {@link UserSession} which life cycle ends after
+ * every test execution, the simulation session retain its state until the end of the simulation
+ * which makes the simulation sessions handy for simulation preparation.
  * <p>
+ *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public class SimulationSession extends ContextImpl {
 
-  private final UserSession userSessions;
+  private final User user;
 
-  public SimulationSession(UserSession userSessions) {
-    this.userSessions = userSessions;
+  public SimulationSession(User user) {
+    this.user = user;
   }
 
-  public UserSession getUserSessions() {
-    return userSessions;
+  public User getUser() {
+    return user;
   }
 }

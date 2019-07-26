@@ -27,15 +27,18 @@ import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.MaterializerFactory;
+import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.asynchttpclient.AsyncHttpClient;
@@ -120,12 +123,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
         .onErrorResume(this::handleError)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
-        .doOnComplete(() -> signalCompletion(() -> isPrepareCompleted = true))
+        .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true))
         .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()));
 
     this.subscribe = flux.subscribe();
 
-    awaitIf(!isPipelineCompleted);
+    awaitIf(() -> !isPipelineCompleted);
 
     cleanup(client, userList);
 
@@ -136,7 +139,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
       cleanUpUserSessions(userList, client);
-      awaitIf(!isCleanupCompleted);
+      awaitIf(() -> !isCleanupCompleted);
     }
   }
 
@@ -144,15 +147,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
       prepareUserSessions(userList, client);
-      awaitIf(!isPrepareCompleted);
+      awaitIf(() -> !isPrepareCompleted);
     }
   }
 
-  private void awaitIf(boolean conditional) {
+  private void awaitIf(Supplier<Boolean> supplier) {
     try {
       masterLock.lock();
-      if (conditional) {
-        continueCondition.await();
+      while (supplier.get()) {
+        final boolean await = continueCondition.await(1, TimeUnit.SECONDS);
       }
     } catch (InterruptedException e) {
       LOG.error("Interrupted.", e);
@@ -168,7 +171,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     var materializerFactory = new MaterializerFactory(client, eventDispatcher);
 
     if (!specIt.hasNext()) {
-      throw new RuntimeException("No spec found in DSL.");
+      throw new NoSpecDefinedException(dsl.getName());
     }
 
     var acc = materializerFactory.monoFrom(specIt.next(), session);
@@ -291,7 +294,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     try {
       masterLock.lock();
       action.execute();
-      continueCondition.signal();
+      continueCondition.signalAll();
     } catch (IllegalMonitorStateException e) {
       LOG.debug("Await not called yet. The cleanup completed before the main thread got to"
           + " be awaited. Main thread will continue.");
@@ -304,5 +307,4 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     LOG.error("Skipping error. Pipeline continues.", throwable);
     return Mono.empty();
   }
-
 }

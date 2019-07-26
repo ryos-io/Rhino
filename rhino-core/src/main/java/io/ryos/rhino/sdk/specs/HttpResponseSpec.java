@@ -10,4 +10,6 @@ package io.ryos.rhino.sdk.specs;
 public interface HttpResponseSpec extends Spec {
 
   HttpSpec saveTo(String keyName);
+
+  HttpSpec saveTo(String keyName, Scope scope);
 }

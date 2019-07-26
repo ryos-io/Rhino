@@ -48,7 +48,7 @@ public class ReactiveMonitorWaitTest {
       .containerThreads(100));
 
   @Test
-  public void testReactiveBasicHttp() throws InterruptedException {
+  public void testReactiveBasicHttp() {
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)

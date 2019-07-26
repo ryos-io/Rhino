@@ -12,6 +12,11 @@ import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
  */
 public interface Spec {
 
+  enum Scope {
+    USER,
+    SIMULATION
+  }
+
   /**
    * Static factory method to create a new {@link HttpSpec} instance.
    * <p>

@@ -12,13 +12,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Html implementation of {@link Spec}.
+ * HTTP spec implementation of {@link Spec}.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSpec, HttpRetriableSpec {
+
 
   private Supplier<InputStream> toUpload;
 
@@ -29,6 +30,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private Function<UserSession, String> endpoint;
   private RetryInfo retryInfo;
   private String saveTo;
+  private Scope storageScope;
 
   /**
    * Creates a new {@link HttpSpecImpl}.
@@ -149,8 +151,16 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
+  public HttpSpec saveTo(String keyName, Scope scope) {
+    this.saveTo = keyName;
+    this.storageScope = scope;
+    return this;
+  }
+
+  @Override
   public HttpSpec saveTo(String keyName) {
     this.saveTo = keyName;
+    this.storageScope = Scope.USER;
     return this;
   }
 
@@ -187,6 +197,11 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   @Override
   public String getResponseKey() {
     return saveTo;
+  }
+
+  @Override
+  public Scope getStorageScope() {
+    return storageScope;
   }
 
   public RetryInfo getRetryInfo() {

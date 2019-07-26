@@ -33,9 +33,13 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
   private final User user;
   private SimulationSession simulationSession;
 
-  public UserSessionImpl(final User user) {
+  public UserSessionImpl(final User user, final SimulationSession session) {
     this.user = user;
-    this.simulationSession = new SimulationSession(this);
+    this.simulationSession = session;
+  }
+
+  public UserSessionImpl(final User user) {
+    this(user, null);
   }
 
   @Override

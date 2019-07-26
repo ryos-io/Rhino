@@ -174,8 +174,10 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private void prepareUserSessions(List<UserSession> userSessionList) {
     if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
-      userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getPrepareMethod(), session);
+      userSessionList.forEach(userSession -> {
+        ReflectionUtils.executeStaticMethod(
+            getSimulationMetadata().getPrepareMethod(),
+            userSession.getSimulationSession());
       });
       LOG.info("Preparation completed.");
     }
@@ -184,9 +186,11 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private void cleanupUserSessions(List<UserSession> userSessionList) {
     if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
-      userSessionList.forEach(session -> {
-        ReflectionUtils.executeStaticMethod(getSimulationMetadata().getCleanupMethod(), session);
-        session.empty();
+      userSessionList.forEach(userSession -> {
+        ReflectionUtils.executeStaticMethod(
+            getSimulationMetadata().getCleanupMethod(),
+            userSession.getSimulationSession());
+        userSession.empty();
       });
       LOG.info("Clean-up completed.");
     }

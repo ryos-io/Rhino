@@ -42,7 +42,5 @@ public class ReactiveBasicHttpGetTest {
 
 
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
-
-    Thread.sleep(5000L);
   }
 }

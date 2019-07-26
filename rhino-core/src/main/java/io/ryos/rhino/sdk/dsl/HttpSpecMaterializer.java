@@ -32,6 +32,7 @@ import io.ryos.rhino.sdk.specs.HttpResponse;
 import io.ryos.rhino.sdk.specs.HttpSpec;
 import io.ryos.rhino.sdk.specs.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.specs.HttpSpecImpl.RetryInfo;
+import io.ryos.rhino.sdk.specs.Spec.Scope;
 import io.ryos.rhino.sdk.users.data.OAuthUser;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -60,6 +61,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   private static final String BEARER = "Bearer ";
   private static final String USER = "user";
   private static final String SERVICE = "service";
+  public static final String DEFAULT_RESULT = "result";
 
   private final AsyncHttpClient client;
   private final EventDispatcher eventDispatcher;
@@ -96,8 +98,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
             client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
                 .toCompletableFuture()));
 
-    var retriableMono = Optional.ofNullable(spec.getRetryInfo())
-        .map(retryInfo ->
+    var retriableMono = Optional.ofNullable(spec.getRetryInfo()).map(retryInfo ->
             responseMono.map(HttpResponse::new)
                 .map(hr -> isRetriable(retryInfo, hr))
                 .retryWhen(companion ->
@@ -109,11 +110,19 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
                           } else {
                             throw Exceptions.propagate(new RetryFailedException(error));
                           }
-                })))
+                        })))
         .orElse(responseMono);
 
-    return retriableMono.map(response -> (UserSession) userSession
-        .add(Optional.ofNullable(spec.getResponseKey()).orElse("result"), response))
+    return retriableMono.map(response -> {
+      final String key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
+      if (spec.getStorageScope() == Scope.USER) {
+        userSession.add(key, response);
+      } else {
+        userSession.getSimulationSession().add(key, response);
+      }
+
+      return userSession;
+    })
         .onErrorResume(error -> {
           if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
             httpSpecAsyncHandler.completeMeasurement();
