@@ -71,9 +71,6 @@ might have multiple scenarios defined which are run during testing, independentl
 @Simulation(name = "Server-Status Simulation")
 @UserRepository(factory = OAuthUserRepositoryFactory.class)
 public class RhinoEntity {
-
-  private static final String TARGET = "http://localhost:8089/api/status";
-  private static final String X_REQUEST_ID = "X-Request-Id";
   
   // Some http client
   private Client client = ClientBuilder.newClient();
