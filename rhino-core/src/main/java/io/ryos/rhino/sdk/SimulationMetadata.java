@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.reporting.LogFormatter;
+import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.specs.Spec;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -189,7 +189,7 @@ public class SimulationMetadata {
     this.grafanaInfo = builder.grafanaInfo;
   }
 
-  public LogFormatter getLogFormatter() {
+  public SimulationLogFormatter getLogFormatter() {
     var loggingAnnotation = getClassLevelAnnotation(simulationClass, Logging.class);
     var logging = loggingAnnotation.orElseGet(() -> null);
 
@@ -197,7 +197,8 @@ public class SimulationMetadata {
       return null;
     }
 
-    final Optional<? extends LogFormatter> logFormatterInstance = instanceOf(logging.formatter());
+    final Optional<? extends SimulationLogFormatter> logFormatterInstance = instanceOf(
+        logging.formatter());
     return logFormatterInstance.orElseThrow(RuntimeException::new);
   }
 

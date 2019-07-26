@@ -16,17 +16,18 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.reporting.DefaultLogFormatter;
-import io.ryos.rhino.sdk.reporting.LogFormatter;
+import io.ryos.rhino.sdk.reporting.DefaultSimulationLogFormatter;
+import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
  * Class annotation to provide metadata about logging strategy. The benchmark metrics will be
  * written into the log file where this annotation points.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @see LogFormatter
+ * @see SimulationLogFormatter
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -34,6 +35,7 @@ public @interface Logging {
 
   /**
    * The path where benchmark metrics should be written.
+   * <p>
    *
    * @return The path where to log.
    */
@@ -41,8 +43,9 @@ public @interface Logging {
 
   /**
    * Log formatter.
+   * <p>
    *
    * @return Log formatter instance.
    */
-  Class<? extends LogFormatter> formatter() default DefaultLogFormatter.class;
+  Class<? extends SimulationLogFormatter> formatter() default DefaultSimulationLogFormatter.class;
 }

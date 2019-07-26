@@ -24,13 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO
+ * Abstract runner contains common methods used in concrete sub-classes.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public abstract class AbstractSimulationRunner implements SimulationRunner {
+
   private static final Logger LOG = LoggerFactory.getLogger(AbstractSimulationRunner.class);
 
   private final SimulationMetadata simulationMetadata;

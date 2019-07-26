@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.reporting;
 /**
  * @author Erhan Bagdemir
  */
-public interface LogFormatter{
+public interface SimulationLogFormatter {
 
   String format(LogEvent event);
 }

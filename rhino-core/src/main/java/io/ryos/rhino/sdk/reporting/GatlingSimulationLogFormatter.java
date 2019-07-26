@@ -31,7 +31,7 @@ package io.ryos.rhino.sdk.reporting;
  * @author Erhan Bagdemir
  * @since 1.0
  */
-public class GatlingLogFormatter implements LogFormatter {
+public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
 
   public static final String GATLING_VERSION = "3.0.0-RC4";
   public static final String GATLING_HEADLINE_TEMPLATE = "RUN\t%s\t%s\t%s\trhino\t%s\n";

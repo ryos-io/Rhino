@@ -21,7 +21,7 @@ package io.ryos.rhino.sdk.reporting;
  *
  * @author Erhan Bagdemir
  */
-public class DefaultLogFormatter implements LogFormatter {
+public class DefaultSimulationLogFormatter implements SimulationLogFormatter {
 
   @Override
   public String format(final LogEvent event) {

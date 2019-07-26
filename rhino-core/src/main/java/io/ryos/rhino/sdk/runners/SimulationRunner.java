@@ -20,21 +20,24 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 
 /**
  * Simulation runner. The implementations of this type run the simulation instances.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @version 1.0
+ * @version 1.0.0
  * @see SimulationMetadata
  */
 public interface SimulationRunner {
 
   /**
    * Starts the simulation instance.
+   * <p>
    */
   void start();
 
 
   /**
-   * Stop the simulation instance.
+   * Stop the simulation instance, by shutting down all components.
+   * <p>
    */
   void stop();
 }

@@ -20,7 +20,7 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import io.ryos.rhino.sdk.reporting.LogEvent;
-import io.ryos.rhino.sdk.reporting.LogFormatter;
+import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -41,35 +41,21 @@ public class SimulationLogWriter extends AbstractActor implements ResultWriter {
 
   private static final Logger LOG = LogManager.getLogger(SimulationLogWriter.class);
 
-  private LogFormatter logFormatter;
+  private SimulationLogFormatter simulationLogFormatter;
   private Writer writer;
 
   /**
-   * Static factory method to create a new instance of {@link LogFormatter}.
-   *
-   * @param pathToLogFile Path to the log file.
-   * @param logFormatter Log formatter instance.
-   * @param <T> A type of {@link LogFormatter}.
-   * @return {@link LogFormatter} instance.
-   */
-  public static <T extends LogFormatter> Props props(final String pathToLogFile,
-      final T logFormatter) {
-    return Props.create(
-        SimulationLogWriter.class, () -> new SimulationLogWriter(pathToLogFile, logFormatter));
-  }
-
-  /**
-   * Constructs a new {@link LogFormatter} instance.
+   * Constructs a new {@link SimulationLogFormatter} instance.
    *
    * @param logFile Path to the log file.
    * @param formatter Log formatter.
    */
-  public SimulationLogWriter(final String logFile, final LogFormatter formatter) {
+  public SimulationLogWriter(final String logFile, final SimulationLogFormatter formatter) {
     if (formatter == null) {
       return;
     }
 
-    this.logFormatter = formatter;
+    this.simulationLogFormatter = formatter;
 
     try { // do not close the stream till the load test completes.
       this.writer = new BufferedWriter(new FileWriter(new File(Objects.requireNonNull(logFile))));
@@ -78,10 +64,24 @@ public class SimulationLogWriter extends AbstractActor implements ResultWriter {
     }
   }
 
+  /**
+   * Static factory method to create a new instance of {@link SimulationLogFormatter}.
+   *
+   * @param pathToLogFile Path to the log file.
+   * @param logFormatter Log formatter instance.
+   * @param <T> A type of {@link SimulationLogFormatter}.
+   * @return {@link SimulationLogFormatter} instance.
+   */
+  public static <T extends SimulationLogFormatter> Props props(final String pathToLogFile,
+      final T logFormatter) {
+    return Props.create(
+        SimulationLogWriter.class, () -> new SimulationLogWriter(pathToLogFile, logFormatter));
+  }
+
   @Override
   public void write(final LogEvent report) {
-    if (logFormatter != null) {
-      write(logFormatter.format(report));
+    if (simulationLogFormatter != null) {
+      write(simulationLogFormatter.format(report));
     }
   }
 

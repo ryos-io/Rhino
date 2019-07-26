@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.reporting.GatlingLogFormatter.GATLING_HEADLINE_TEMPLATE;
+import static io.ryos.rhino.sdk.reporting.GatlingSimulationLogFormatter.GATLING_HEADLINE_TEMPLATE;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -10,7 +10,7 @@ import akka.pattern.Patterns;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.SimulationLogWriter;
-import io.ryos.rhino.sdk.reporting.GatlingLogFormatter;
+import io.ryos.rhino.sdk.reporting.GatlingSimulationLogFormatter;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
@@ -79,14 +79,14 @@ public class EventDispatcher {
       influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
     }
 
-    if (simulationMetadata.getLogFormatter() instanceof GatlingLogFormatter) {
+    if (simulationMetadata.getLogFormatter() instanceof GatlingSimulationLogFormatter) {
       loggerActor.tell(
           String.format(
               GATLING_HEADLINE_TEMPLATE,
               simulationMetadata.getSimulationClass().getName(),
               simulationMetadata.getSimulationName(),
               System.currentTimeMillis(),
-              GatlingLogFormatter.GATLING_VERSION),
+              GatlingSimulationLogFormatter.GATLING_VERSION),
           ActorRef.noSender());
     }
   }
