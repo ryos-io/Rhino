@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -57,10 +58,14 @@ public class SimulationLogWriter extends AbstractActor implements ResultWriter {
 
     this.simulationLogFormatter = formatter;
 
+    var pathToLogFile = Objects.requireNonNull(logFile);
+    var file = new File(pathToLogFile);
+
     try { // do not close the stream till the load test completes.
-      this.writer = new BufferedWriter(new FileWriter(new File(Objects.requireNonNull(logFile))));
+      this.writer = new BufferedWriter(new FileWriter(file));
     } catch (IOException e) {
-      LOG.error(e);
+      LOG.error("Something went wrong while writing to the stream.", e);
+      ExceptionUtils.rethrow(e);
     }
   }
 
@@ -99,6 +104,12 @@ public class SimulationLogWriter extends AbstractActor implements ResultWriter {
   @Override
   public void close() {
     // Nothing to close.
+    try {
+      writer.close();
+    } catch (IOException e) {
+      LOG.error("Something went wrong while closing the stream.", e);
+      ExceptionUtils.rethrow(e);
+    }
   }
 
   @Override
