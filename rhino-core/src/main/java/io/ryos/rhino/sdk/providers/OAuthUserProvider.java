@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.providers;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.users.data.OAuthUser;
+import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepository;
 
 public class OAuthUserProvider implements Provider<OAuthUser> {

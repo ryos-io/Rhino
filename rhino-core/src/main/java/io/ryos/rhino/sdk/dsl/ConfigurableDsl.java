@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Predicate;
 
 /**

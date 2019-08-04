@@ -1,13 +1,13 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.specs.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.specs.LoopBuilder;
-import io.ryos.rhino.sdk.specs.LoopSpecImpl;
-import io.ryos.rhino.sdk.specs.MapperBuilder;
-import io.ryos.rhino.sdk.specs.MapperSpecImpl;
-import io.ryos.rhino.sdk.specs.Spec;
-import io.ryos.rhino.sdk.specs.WaitSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.LoopSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,13 +1,9 @@
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.specs.LoopBuilder;
-import io.ryos.rhino.sdk.specs.MapperBuilder;
-import io.ryos.rhino.sdk.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * Load DSL to describe load tests. The reactive runner materializes the DSL provided and run the

@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.specs.Spec.some;
+import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
@@ -25,11 +25,12 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.impl.SomeSpecImpl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 
 /**
- * Reactive test spec for arbitrary code execution with {@link io.ryos.rhino.sdk.specs.SomeSpecImpl}.
+ * Reactive test spec for arbitrary code execution with {@link SomeSpecImpl}.
  * <p>
  *
  * @author Erhan Bagdemir

@@ -14,49 +14,49 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk.users.data;
+package io.ryos.rhino.sdk.users.oauth;
+
+import io.ryos.rhino.sdk.users.data.User;
 
 /**
- * Representation of a User, that is used in requests against the backend. Every request is
- * associated with an user.
- * <p>
+ * Represents an authenticated user.
  *
  * @author Erhan Bagdemir
+ * @since 1.0.0
  */
-public interface User {
+public interface OAuthUser extends User {
 
   /**
-   * User name.
+   * Access token.
    *
-   * @return User name.
+   * @return Access token.
    */
-  String getUsername();
+  String getAccessToken();
 
   /**
-   * Password, if authentication is required.
+   * Refresh token.
    *
-   * @return Password.
+   * @return Refresh token.
    */
-  String getPassword();
+  String getRefreshToken();
 
   /**
-   * Scope of the user.
+   * Authorized scope.
    *
-   * @return Authorization scope.
+   * @return Authorized scope.
    */
   String getScope();
 
   /**
-   * A unique id to distinguish the user from others.
+   * Client id of the user.
    *
-   * @return The id of the user.
+   * @return Client id.
    */
-  String getId();
+  String getClientId();
 
   /**
-   * Region of the user, if it belongs to one.
-   *
-   * @return Region of the user
+   * OAuth Service.
+   * @return  OAuth Service.
    */
-  String getRegion();
+  OAuthService getOAuthService();
 }

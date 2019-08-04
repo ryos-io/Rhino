@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
+package io.ryos.rhino.sdk.dsl.mat;
 
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
+import reactor.core.publisher.Mono;
 
 /**
+ * Spec materializer takes the spec instances and convert them into reactive components, that are to
+ * be executed by reactive framework in runtime.
+ * <p>
+ *
  * @author Erhan Bagdemir
- * @since 1.7.0
+ * @since 1.1.0
  */
-public interface LoopDsl {
+public interface SpecMaterializer<T extends Spec, E> {
 
   /**
-   * Runs a {@link Spec} by materializing it.
+   * Materializer takes the spec and convert it into a {@link Mono}.
    * <p>
    *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
+   * @param spec List of DSL Spec.
+   * @return Mono instance.
    */
-  ConnectableDsl run(Spec spec);
-
+  Mono<E> materialize(T spec, final UserSession userSession);
 }

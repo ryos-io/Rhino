@@ -1,8 +1,8 @@
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.specs.HttpSpec.from;
-import static io.ryos.rhino.sdk.specs.Spec.http;
-import static io.ryos.rhino.sdk.specs.Spec.some;
+import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
+import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
+import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
 
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.annotations.CleanUp;
@@ -14,10 +14,10 @@ import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.specs.LoopBuilder;
-import io.ryos.rhino.sdk.specs.MapperBuilder;
-import io.ryos.rhino.sdk.specs.Spec.Scope;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import java.util.List;
 import java.util.UUID;

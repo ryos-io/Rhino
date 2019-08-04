@@ -16,9 +16,9 @@
 
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.specs.HttpSpec.from;
-import static io.ryos.rhino.sdk.specs.Spec.http;
-import static io.ryos.rhino.sdk.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
+import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
+import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
