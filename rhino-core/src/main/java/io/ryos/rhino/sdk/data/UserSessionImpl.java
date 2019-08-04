@@ -16,12 +16,13 @@
 
 package io.ryos.rhino.sdk.data;
 
-import io.ryos.rhino.sdk.users.data.OAuthUser;
 import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import java.util.Optional;
 
 /**
- * User session is a stash to store objects and share them among scenarios per user session. A user
+ * User session is a stash to store objects and share them among scenarios or DSLs in every load
+ * generation cycle. Once load generation cycle completes,
  * will be created before the simulation starts, and it will existing during the simulation
  * execution.
  *

@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
+import io.ryos.rhino.sdk.users.oauth.OAuthUserAuthenticatorImpl;
 import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.ArrayList;
 import java.util.List;

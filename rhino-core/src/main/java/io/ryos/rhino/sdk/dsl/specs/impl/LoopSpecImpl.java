@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
+package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.LoopSpec;
 
 /**
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public interface LoopDsl {
+public class LoopSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements LoopSpec {
 
-  /**
-   * Runs a {@link Spec} by materializing it.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
-   */
-  ConnectableDsl run(Spec spec);
+  private final LoopBuilder<E, R> loopBuilder;
 
+  public LoopSpecImpl(LoopBuilder<E, R> loopBuilder) {
+
+    super("N/A");
+
+    this.loopBuilder = loopBuilder;
+  }
+
+  public LoopBuilder<E, R> getLoopBuilder() {
+    return loopBuilder;
+  }
 }

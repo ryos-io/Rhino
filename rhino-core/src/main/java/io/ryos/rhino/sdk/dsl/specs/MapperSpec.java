@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
+package io.ryos.rhino.sdk.dsl.specs;
 
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 
 /**
+ * <p>
+ *
  * @author Erhan Bagdemir
- * @since 1.7.0
+ * @since 1.1.0
  */
-public interface LoopDsl {
+public interface MapperSpec<R, T> extends Spec {
 
-  /**
-   * Runs a {@link Spec} by materializing it.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
-   */
-  ConnectableDsl run(Spec spec);
-
+  MapperBuilder<R, T> getMapper();
 }

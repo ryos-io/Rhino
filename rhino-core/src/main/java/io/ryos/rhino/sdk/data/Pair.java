@@ -17,31 +17,55 @@
 package io.ryos.rhino.sdk.data;
 
 /**
- * The type holding pair of objects.
+ * The type holding a pair of objects.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @version 1.0.0
  */
 public class Pair<T, E> {
-    private final T first;
-    private final E second;
 
-    /**
-     * Constructs a pair of objects.
-     *
-     * @param first  The first value.
-     * @param second The second value.
-     */
-    public Pair(T first, E second) {
-        this.first = first;
-        this.second = second;
-    }
+  /**
+   * The first item which the pair holds.
+   * <p>
+   */
+  private final T first;
 
-    public T getFirst() {
-        return first;
-    }
+  /**
+   * The second item which the pair holds.
+   * <p>
+   */
+  private final E second;
 
-    public E getSecond() {
-        return second;
-    }
+  /**
+   * Constructs a {@link Pair} instance.
+   * <p>
+   *
+   * @param first The first value.
+   * @param second The second value.
+   */
+  public Pair(T first, E second) {
+
+    this.first = first;
+    this.second = second;
+  }
+
+  /**
+   * Getter for the first item.
+   * <p>
+   *
+   * @return The first item.
+   */
+  public T getFirst() {
+    return first;
+  }
+
+  /**
+   * Getter for the second item.
+   * <p>
+   *
+   * @return The second item.
+   */
+  public E getSecond() {
+    return second;
+  }
 }

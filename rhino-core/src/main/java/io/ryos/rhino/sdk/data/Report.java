@@ -19,96 +19,114 @@ package io.ryos.rhino.sdk.data;
 import io.ryos.rhino.sdk.annotations.Scenario;
 
 /**
- * Report value type is used to prepare step results. Create result instances in step
- * methods to report step metrics. The metrics collected in the {@link Report} instances are
- * returned from the step methods, that are annotated with {@link Scenario}.
+ * Report value type is used to prepare step results. Create result instances in step methods to
+ * report step metrics. The metrics collected in the {@link Report} instances are returned from the
+ * step methods, that are annotated with {@link Scenario}.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.0
+ * @since 1.0.0
  */
 public class Report {
 
+  /**
+   * Status of HTTP request will be written into the benchmark logs. Those are well-known HTTP
+   * status codes e.g 200 for HTTP OK, etc.
+   * <p>
+   */
+  private int status;
+
+  /**
+   * Status description will be output in the benchmark logs. The description is mostly useful of
+   * the request fails.
+   * <p>
+   */
+  private String description;
+
+  /**
+   * Private constructor initializes {@link Report} instance.
+   * <p>
+   *
+   * @param builder Builder instance.
+   */
+  private Report(Builder builder) {
+
+    this.status = builder.status;
+    this.description = builder.description;
+  }
+
+  /**
+   * Getter method for the status code.
+   * <p>
+   *
+   * @return HTTP status code.
+   */
+  public int getStatus() {
+    return status;
+  }
+
+  /**
+   * Getter method for the description.
+   * <p>
+   *
+   * @return Description of the result.
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * Nested builder type to create new instances of {@link Report}.
+   * <p>
+   *
+   * @author Erhan Bagdemir
+   */
+  public static class Builder {
+
     /**
-     * Status of HTTP request will be written into the benchmark logs. Those are well-known HTTP
-     * status codes e.g 200 for HTTP OK, etc.
+     * Status of HTTP request will be written into the benchmark logs.
+     * <p>
      */
     private int status;
 
     /**
-     * Status description will be output in the benchmark logs. The description is mostly useful
-     * of the request fails.
+     * Status description will be output in the benchmark logs.
+     * <p>
      */
     private String description;
 
-    private Report(Builder builder) {
-        this.status = builder.status;
-        this.description = builder.description;
+    /**
+     * Builder method for status.
+     * <p>
+     *
+     * @param status HTTP status of the step.
+     * @return {@link Builder} instance with status.
+     */
+    public Builder status(int status) {
+      this.status = status;
+      return this;
     }
 
     /**
-     * Nested builder type to create new instances of {@link Report}.
+     * Description of the result.
+     * <p>
      *
-     * @author Erhan Bagdemir
+     * @param description Description of the step result.
+     * @return {@link Builder} instance with description.
      */
-    public static class Builder {
-
-        /**
-         * Status of HTTP request will be written into the benchmark logs.
-         */
-        private int status;
-
-        /**
-         * Status description will be output in the benchmark logs.
-         */
-        private String description;
-
-        /**
-         * Builder method for status.
-         *
-         * @param status HTTP status of the step.
-         * @return {@link Builder} instance with status.
-         */
-        public Builder status(int status) {
-            this.status = status;
-            return this;
-        }
-
-        /**
-         * Description of the result.
-         *
-         * @param description Description of the step result.
-         * @return {@link Builder} instance with description.
-         */
-        public Builder description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        /**
-         * Builder method to construct the {@link Report} instances.
-         *
-         * @return A {@link Report} instance.
-         */
-        public Report build() {
-            return new Report(this);
-        }
+    public Builder description(String description) {
+      this.description = description;
+      return this;
     }
 
     /**
-     * Getter method for the status code.
+     * Builder method to construct the {@link Report} instances.
+     * <p>
      *
-     * @return HTTP status code.
+     * @return A {@link Report} instance.
      */
-    public int getStatus() {
-        return status;
+    public Report build() {
+      return new Report(this);
     }
-
-    /**
-     * Getter method for the description.
-     *
-     * @return Description of the result.
-     */
-    public String getDescription() {
-        return description;
-    }
+  }
 }

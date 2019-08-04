@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
+package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.WaitSpec;
+import reactor.core.publisher.Mono;
 
 /**
+ * Wait spec to pause the load testing execution for duration provided.
+ * <p>
+ *
  * @author Erhan Bagdemir
- * @since 1.7.0
+ * @since 1.1.0
  */
-public interface LoopDsl {
+public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec, UserSession> {
 
-  /**
-   * Runs a {@link Spec} by materializing it.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
-   */
-  ConnectableDsl run(Spec spec);
-
+  @Override
+  public Mono<UserSession> materialize(WaitSpec spec, UserSession userSession) {
+    return Mono
+        .just(userSession)
+        .flatMap(s -> Mono.fromCallable(() -> {
+          Thread.sleep(spec.getWaitTime().toMillis());
+          return s;
+        }));
+  }
 }

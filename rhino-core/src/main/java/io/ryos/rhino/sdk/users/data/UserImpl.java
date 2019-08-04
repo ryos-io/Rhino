@@ -24,8 +24,7 @@ public class UserImpl implements User {
   private final String scope;
   private final String region;
 
-  public UserImpl(final String username, final String password, final String id,
-      final String scope, final String region) {
+  public UserImpl(String username, String password, String id, String scope, String region) {
     this.username = username;
     this.password = password;
     this.id = id;
@@ -33,8 +32,7 @@ public class UserImpl implements User {
     this.region = region;
   }
 
-  public UserImpl(final String username, final String password, final String id,
-      final String scope) {
+  public UserImpl(String username, String password, String id, String scope) {
     this(username, password, id, scope, "default");
   }
 
