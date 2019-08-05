@@ -11,7 +11,6 @@ import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
@@ -33,7 +32,7 @@ public class ReactiveBasicHttpGetSimulation {
   private static final String X_API_KEY = "X-Api-Key";
 
   @Prepare
-  public static LoadDsl prepare(UserSession userSession) {
+  public static LoadDsl prepare() {
     return Start.dsl()
         .run(http("Prepare")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
@@ -71,7 +70,7 @@ public class ReactiveBasicHttpGetSimulation {
   }
 
   @CleanUp
-  public static LoadDsl cleanUp(UserSession userSession) {
+  public static LoadDsl cleanUp() {
     return Start.dsl()
         .run(http("Clean-up")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))

@@ -31,7 +31,7 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
-import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
@@ -74,7 +74,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     return Arrays.stream(inPackages)
         .map(p -> p.replace(DOT, File.separator))
-        .flatMap(p -> scanBenchmarkClassesIn(p).stream().filter(a -> forSimulation.equals(getSimulationName(a))))
+        .flatMap(p -> scanBenchmarkClassesIn(p).stream()
+            .filter(a -> forSimulation.equals(getSimulationName(a))))
         .map(this::createBenchmarkJob)
         .collect(toList());
   }
@@ -257,6 +258,18 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactory().create());
 
+    Method prepareMethod = null, cleanupMethod = null;
+
+    if (isReactiveSimulation(runnerAnnotation)) {
+      prepareMethod = findStaticMethodWith(clazz, Prepare.class).orElse(null);
+      cleanupMethod = findStaticMethodWith(clazz, CleanUp.class).orElse(null);
+    } else if (isBlockingSimulation(runnerAnnotation)) {
+      prepareMethod = findStaticMethodWith(clazz, Prepare.class, SimulationSession.class)
+          .orElse(null);
+      cleanupMethod = findStaticMethodWith(clazz, CleanUp.class, SimulationSession.class)
+          .orElse(null);
+    }
+
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
@@ -268,8 +281,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withInjectUser(simAnnotation.maxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
-        .withPrepare(findStaticMethodWith(clazz, Prepare.class).orElse(null))
-        .withCleanUp(findStaticMethodWith(clazz, CleanUp.class).orElse(null))
+        .withPrepare(prepareMethod)
+        .withCleanUp(cleanupMethod)
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
         .withScenarios(scenarioMethods)
@@ -350,19 +363,20 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         findFirst(); // TODO only the first step method?
   }
 
-  private <T extends Annotation> Optional<Method> findStaticMethodWith(Class<?> clazz, Class<T> annotation) {
+  private <T extends Annotation> Optional<Method> findStaticMethodWith(Class<?> clazz,
+      Class<T> annotation, Class<?>... args) {
 
     return Arrays.stream(clazz.getMethods()).
         filter(m -> Arrays.stream(m.getAnnotations()).
             anyMatch(annotation::isInstance)).
         findFirst()
         .map(Method::getName)
-        .map(name -> getStaticMethod(clazz, name));
+        .map(name -> getStaticMethod(clazz, name, args));
   }
 
-  private Method getStaticMethod(Class<?> clazz, String name) {
+  private Method getStaticMethod(Class<?> clazz, String name, Class<?>... args) {
     try {
-      return clazz.getMethod(name, UserSession.class);
+      return clazz.getMethod(name, args);
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }

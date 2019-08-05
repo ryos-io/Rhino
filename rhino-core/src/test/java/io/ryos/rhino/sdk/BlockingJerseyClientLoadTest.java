@@ -28,7 +28,7 @@ public class BlockingJerseyClientLoadTest {
 
     stubFor(WireMock.get(urlEqualTo("/api/status"))
         .willReturn(aResponse()
-            .withStatus(1000)));
+            .withStatus(200)));
 
     Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
   }
