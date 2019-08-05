@@ -276,8 +276,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     if (method != null) {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
-          .flatMap(session -> getPublisher(client, session,
-              executeStaticMethod(method, session)))
+          .flatMap(session -> getPublisher(client, session, executeStaticMethod(method)))
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))
           .blockLast();

@@ -22,7 +22,7 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
@@ -42,10 +42,10 @@ public class BlockingJerseyClientLoadTestSimulation {
   private String uuid;
 
   @Prepare
-  public static void prepare(UserSession userSession) {
+  public static void prepare(SimulationSession session) {
     System.out.println("Prepare");
 
-    userSession.getSimulationSession().add("number", 1);
+    session.add("number", 1);
   }
 
   @Scenario(name = "Health")
@@ -60,9 +60,9 @@ public class BlockingJerseyClientLoadTestSimulation {
   }
 
   @CleanUp
-  public static void clean(UserSession userSession) {
+  public static void clean(SimulationSession session) {
     System.out.println("cleanup");
 
-    System.out.println(userSession.getSimulationSession().get("number"));
+    System.out.println(session.get("number"));
   }
 }
