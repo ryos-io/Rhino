@@ -29,9 +29,6 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OAuthEntity implements Serializable {
 
-  public OAuthEntity() {
-  }
-
   @JsonProperty("access_token")
   private String accessToken;
   @JsonProperty("refresh_token")

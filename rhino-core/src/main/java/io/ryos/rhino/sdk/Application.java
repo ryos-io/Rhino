@@ -20,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Applications executor. In fact, the application which leverage the SDK does not need this
@@ -30,9 +32,11 @@ import java.io.InputStreamReader;
  */
 public class Application {
 
-  private static final String CLASSPATH_RHINO_PROPERTIES = "classpath:///rhino.properties";
+  private static final String CLASSPATH_SCHEME = "classpath://";
+  private static final String CLASSPATH_RHINO_PROPERTIES = CLASSPATH_SCHEME + "/rhino.properties";
   private static final String BRANDING = "/branding.txt";
   private static final String SIMULATION = "Server-Status Simulation";
+  private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
 
   public static void main(String... arg) {
 
@@ -47,10 +51,10 @@ public class Application {
     final InputStream stream = Application.class.getResourceAsStream(BRANDING);
     try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
       while (bufferedReader.ready()) {
-        System.out.println(bufferedReader.readLine());
+        LOG.info(bufferedReader.readLine());
       }
     } catch (IOException e) {
-      System.err.println("Can not start the application:" + e.getMessage());
+      LOG.error("Can not start the application.", e);
     }
   }
 }

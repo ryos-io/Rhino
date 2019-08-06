@@ -46,7 +46,7 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
   private final InfluxDB influxDB;
   private final String dbName;
 
-  public static <T extends InfluxDBWriter> Props props() {
+  public static Props props() {
     return Props.create(InfluxDBWriter.class, InfluxDBWriter::new);
   }
 
@@ -95,23 +95,23 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
 
   private void createPoint(ScenarioEvent report) {
     var builder = Point.measurement("simulation_" + SimulationConfig.getSimulationId())
-        .tag("step", report.step)
-        .tag("status", report.status)
-        .addField("scenario", report.scenario)
-        .addField("pt", report.elapsed)
+        .tag("step", report.getStep())
+        .tag("status", report.getStatus())
+        .addField("scenario", report.getScenario())
+        .addField("pt", report.getElapsed())
         .addField("node", SimulationConfig.getNode());
     influxDB.setDatabase(dbName);
     influxDB.write(builder.build());
   }
 
   private void createPoint(UserEvent report) {
-    if (report.eventType == EventType.END) {
+    if (report.getEventType() == EventType.END) {
       var builder =
           Point.measurement("user_" + SimulationConfig.getSimulationId())
-              .tag("scenario", report.scenario)
-              .addField("id", report.id)
+              .tag("scenario", report.getScenario())
+              .addField("id", report.getId())
               .addField("node", SimulationConfig.getNode())
-              .addField("pt", report.elapsed);
+              .addField("pt", report.getElapsed());
       influxDB.setDatabase(dbName);
       influxDB.write(builder.build());
     }

@@ -386,12 +386,6 @@ public class SimulationMetadata {
     private String reportingURI;
 
     /**
-     * Log formatter.
-     * <p>
-     */
-    private String logFormatter;
-
-    /**
      * Duration of the performance test.
      * <p>
      */

@@ -41,7 +41,7 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
   }
 
   protected void setUpGrafanaDashboard() {
-    LOG.info("Grafana is enabled. Creating dashboard: " + SimulationConfig.getSimulationId());
+    LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
     new GrafanaGateway(simulationMetadata.getGrafanaInfo())
         .setUpDashboard(SimulationConfig.getSimulationId(),
             simulationMetadata.getScenarios()

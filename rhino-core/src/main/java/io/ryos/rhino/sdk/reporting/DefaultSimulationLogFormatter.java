@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.reporting;
 
 /**
  * Default log formatter used in step log results.
+ * <p>
  *
  * @author Erhan Bagdemir
  */
@@ -25,12 +26,13 @@ public class DefaultSimulationLogFormatter implements SimulationLogFormatter {
 
   @Override
   public String format(final LogEvent event) {
-    return String.format("\"%s\"\t\"%s\"\t%s\t%s\t%s\t%s\n",
-        event.scenario,
-        event.start,
-        event.elapsed,
-        event.username,
-        event.start
+    return String.format("\"%s\"\t\"%s\"\t%s\t%s\t%s\t%s%n",
+        event.getScenario(),
+        event.getStart(),
+        event.getElapsed(),
+        event.getUsername(),
+        event.getStart(),
+        ""
     );
   }
 }

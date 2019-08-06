@@ -6,7 +6,6 @@ import static java.time.Duration.ofSeconds;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -14,6 +13,10 @@ import reactor.util.function.Tuple2;
 
 public class Throttler {
   private static final Logger LOG = LoggerFactory.getLogger(Throttler.class);
+
+  private Throttler() {
+    throw new UnsupportedOperationException("Utils class.");
+  }
 
   public static <T> Function<Flux<T>, Flux<T>> throttle(final Limit... rps) {
     final Flux<Long> reduce = Arrays.stream(rps)
@@ -24,10 +27,8 @@ public class Throttler {
               .onBackpressureDrop();
         })
         .reduce(Flux::concatWith).orElse(Flux.generate(sink -> sink.next(0L)));
-    final UnaryOperator<Flux<T>> res = f ->
-        f.zipWith(reduce.concatWith(Flux.generate(sink -> sink.next(0L))))
-            .map(Tuple2::getT1);
-    return res;
+    return f -> f.zipWith(reduce.concatWith(Flux.generate(sink -> sink.next(0L))))
+        .map(Tuple2::getT1);
   }
 
   public static class Limit {

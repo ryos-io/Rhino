@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.users.oauth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.IllegalAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.User;
@@ -37,13 +38,14 @@ import org.slf4j.LoggerFactory;
  * @since 1.1.0
  */
 public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> {
+
   private static final Logger LOG = LoggerFactory.getLogger(OAuthUserAuthenticatorImpl.class);
 
   private static final String CLIENT_ID = "client_id";
   private static final String CLIENT_SECRET = "client_secret";
   private static final String GRANT_TYPE = "grant_type";
   private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
+  private static final String STR_PASSWORD = "password";
   private static final String SCOPE = "scope";
 
   private final OAuthService service;
@@ -83,7 +85,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
       }
 
       if (user.getPassword() != null) {
-        form.param(PASSWORD, user.getPassword());
+        form.param(STR_PASSWORD, user.getPassword());
       }
 
       form.param(USERNAME, user.getUsername());
@@ -95,13 +97,14 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        LOG.info("Cannot login user, status={} message={}", response.getStatus(), response.readEntity(String.class));
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Cannot login user, status={} message={}", response.getStatus(),
+              response.readEntity(String.class));
+        }
         return null;
       }
 
-      var s = response.readEntity(String.class);
-
-      var entity = mapToEntity(s);
+      var entity = mapToEntity(response.readEntity(String.class));
 
       return new OAuthUserImpl(service, user.getUsername(),
           user.getPassword(),
@@ -122,8 +125,8 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     final OAuthEntity o;
     try {
       o = objectMapper.readValue(s, OAuthEntity.class);
-    } catch (Throwable t) {
-      throw new RuntimeException(
+    } catch (Exception t) {
+      throw new IllegalAuthResponseException(
           "Cannot map authorization server response to entity type: " + OAuthEntity.class.getName(),
           t);
     }

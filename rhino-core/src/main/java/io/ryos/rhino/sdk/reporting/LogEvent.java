@@ -16,14 +16,31 @@
 
 package io.ryos.rhino.sdk.reporting;
 
-public class LogEvent {
+import java.io.Serializable;
 
-  public String username;
-  public String userId;
-  public String scenario;
-  public long start;
-  public long end;
-  public long elapsed;
+public class LogEvent implements Serializable {
+
+  private final String username;
+  private final String userId;
+  private final String scenario;
+  private final long start;
+  private final long end;
+  private final long elapsed;
+
+  public LogEvent(String username,
+      String userId,
+      String scenario,
+      long start,
+      long end,
+      long elapsed) {
+
+    this.username = username;
+    this.userId = userId;
+    this.scenario = scenario;
+    this.start = start;
+    this.end = end;
+    this.elapsed = elapsed;
+  }
 
   public String getUsername() {
     return username;

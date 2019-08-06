@@ -34,7 +34,7 @@ package io.ryos.rhino.sdk.reporting;
 public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
 
   public static final String GATLING_VERSION = "3.0.0-RC4";
-  public static final String GATLING_HEADLINE_TEMPLATE = "RUN\t%s\t%s\t%s\trhino\t%s\n";
+  public static final String GATLING_HEADLINE_TEMPLATE = "RUN\t%s\t%s\t%s\trhino\t%s%n";
 
   /**
    * Gatling formatter, writes the log event in the Gatling format so that Gatling can generate
@@ -57,22 +57,22 @@ public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
   }
 
   private String convert(ScenarioEvent event) {
-    return String.format("REQUEST\t%s\t\t%s\t%s\t%s\t%s\t \n",
-        event.userId,
-        event.step,
-        event.start,
-        event.end,
-        event.status.equals("200") ? "OK" : "KO"
+    return String.format("REQUEST\t%s\t\t%s\t%s\t%s\t%s\t %n",
+        event.getUserId(),
+        event.getStep(),
+        event.getStart(),
+        event.getEnd(),
+        event.getStatus().equals("200") ? "OK" : "KO"
     );
   }
 
   private String convert(UserEvent event) {
-    return String.format("USER\t%s\t%d\t%s\t%d\t%d\n",
-        event.scenario,
-        event.id,
-        event.eventType,
-        event.start,
-        event.end
+    return String.format("USER\t%s\t%s\t%s\t%d\t%d%n",
+        event.getScenario(),
+        event.getId(),
+        event.getEventType(),
+        event.getStart(),
+        event.getEnd()
     );
   }
 }

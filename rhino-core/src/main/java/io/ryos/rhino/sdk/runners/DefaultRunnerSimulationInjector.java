@@ -20,10 +20,8 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.SessionFeeder;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.util.Arrays;
@@ -48,22 +46,13 @@ public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector 
   private final SimulationMetadata simulationMetadata;
 
   /**
-   * Current user session, that is actively running.
-   * <p>
-   */
-  private final UserSession userSession;
-
-  /**
    * Instantiates a new {@link DefaultRunnerSimulationInjector} instance.
    * <p>
    *
    * @param simulationMetadata Simulation metadata provided by annotations.
-   * @param userSession User session.
    */
-  public DefaultRunnerSimulationInjector(final SimulationMetadata simulationMetadata,
-      final UserSession userSession) {
+  public DefaultRunnerSimulationInjector(SimulationMetadata simulationMetadata) {
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.userSession = userSession;
   }
 
   @Override
@@ -72,14 +61,6 @@ public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector 
 
     injectUser(injectable);// Each thread will run as the same user.
     injectCustomFeeders(injectable);
-  }
-
-  void injectSession(final UserSession userSession) {
-    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
-        SessionFeeder.class);
-
-    fieldAnnotation.forEach(f -> setValueToInjectionPoint(null, f.getFirst(),
-        simulationMetadata.getTestInstance()));
   }
 
   private void injectUser(final Object simulationInstance) {

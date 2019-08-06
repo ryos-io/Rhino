@@ -34,7 +34,10 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
+import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
@@ -167,8 +170,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     try {
       return Class.forName(name);
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      ExceptionUtils.rethrow(e, RuntimeException.class, "Class with name: " + name + " not found.");
     }
+    return null;
   }
 
   private SimulationMetadata createBenchmarkJob(final Class clazz) {
@@ -258,7 +262,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactory().create());
 
-    Method prepareMethod = null, cleanupMethod = null;
+    Method prepareMethod = null;
+    Method cleanupMethod = null;
 
     if (isReactiveSimulation(runnerAnnotation)) {
       prepareMethod = findStaticMethodWith(clazz, Prepare.class).orElse(null);
@@ -318,7 +323,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
             "Not sufficient permissions to write the simulation file: " + simFile);
       }
     } catch (IOException e) {
-      System.err.println(String.format("! Simulation log file is invalid: \"%s\"", simFile));
+      LOG.error("! Simulation log file is invalid: {}", simFile);
       System.exit(-1);
     }
     return logFile;
@@ -351,7 +356,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
       return factory.getDeclaredConstructor().newInstance().create();
     } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
       LOG.error(e);
-      throw new RuntimeException(e);
+      throw new RhinoFrameworkError("Cannot create object instance.", e);
     }
   }
 
@@ -378,8 +383,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     try {
       return clazz.getMethod(name, args);
     } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+      throw new IllegalMethodSignatureException(
+          "Static method with name: " + name + "on class:" + clazz.toString());
     }
-    throw new IllegalArgumentException();
   }
 }

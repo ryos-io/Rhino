@@ -35,8 +35,6 @@ public interface LoadDsl {
    */
   ConfigurableDsl run(Spec spec);
 
-  // <T> ConfigurableDsl fromJsonTo(Class<T> clazz);
-
   <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper);
 
   <E, R extends Iterable<E>> ConfigurableDsl forEach(LoopBuilder<E, R> loopBuilder);

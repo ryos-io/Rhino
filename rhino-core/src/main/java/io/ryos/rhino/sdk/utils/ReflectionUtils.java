@@ -18,6 +18,8 @@ package io.ryos.rhino.sdk.utils;
 
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
+import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -106,7 +108,7 @@ public class ReflectionUtils {
       return (T) method.invoke(declaring, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(
+      throw new RhinoFrameworkError(
           "Cannot invoke the method with step: " + method.getName() + "()", e);
     }
   }
@@ -117,11 +119,10 @@ public class ReflectionUtils {
     try {
       return (T) method.invoke(null, args);
     } catch (NullPointerException npe) {
-      throw new RuntimeException("@Prepare/@CleanUp annotation must be used on public static "
-          + "methods.");
+      throw new IllegalMethodSignatureException(
+          "@Prepare/@CleanUp annotation must be used on public static methods.");
     } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(
+      throw new RhinoFrameworkError(
           "Cannot invoke the method with step: " + method.getName() + "()", e);
     }
   }

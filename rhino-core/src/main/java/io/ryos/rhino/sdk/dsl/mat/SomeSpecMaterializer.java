@@ -43,30 +43,40 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
   public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
 
     return Mono.just(userSession)
-        .flatMap(s -> Mono.fromCallable(() -> {
+        .flatMap(session -> Mono.fromCallable(() -> {
           var userId = userSession.getUser().getId();
           var measurement = new MeasurementImpl(spec.getTestName(), userId);
           var start = System.currentTimeMillis();
-          var userEventStart = new UserEvent();
-          userEventStart.elapsed = 0;
-          userEventStart.start = start;
-          userEventStart.end = start;
-          userEventStart.scenario = spec.getTestName();
-          userEventStart.eventType = EventType.START;
-          userEventStart.id = s.getUser().getId();
+          var userEventStart = new UserEvent(
+              session.getUser().getUsername(),
+              session.getUser().getId(),
+              spec.getTestName(),
+              start,
+              start,
+              0,
+              EventType.START,
+              null,
+              session.getUser().getId()
+          );
 
           measurement.record(userEventStart);
 
-          var resultingSession = spec.getFunction().apply(s, measurement);
+          var resultingSession = spec.getFunction().apply(session, measurement);
           var elapsed = System.currentTimeMillis() - start;
-          var userEventEnd = new UserEvent();
-          userEventEnd.elapsed = elapsed;
-          userEventEnd.start = start;
-          userEventEnd.end = start + elapsed;
-          userEventEnd.scenario = spec.getTestName();
-          userEventEnd.eventType = EventType.END;
-          userEventEnd.id = userId;
+          var userEventEnd = new UserEvent(
+              session.getUser().getUsername(),
+              session.getUser().getId(),
+              spec.getTestName(),
+              start,
+              start + elapsed,
+              elapsed,
+              EventType.END,
+              null,
+              session.getUser().getId()
+          );
+
           measurement.record(userEventEnd);
+
           dispatcher.dispatchEvents(measurement);
 
           return resultingSession;

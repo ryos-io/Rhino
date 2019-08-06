@@ -16,9 +16,9 @@
 
 package io.ryos.rhino.sdk.users;
 
+import io.ryos.rhino.sdk.exceptions.UserSourceNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
-import io.ryos.rhino.sdk.users.source.FileBasedUserSourceImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +37,7 @@ public class CSVUserParserImpl implements UserParser {
   @Override
   public List<User> unmarshal(InputStream inputStream) {
     if (inputStream == null) {
-      throw new RuntimeException("User file not found.");
+      throw new UserSourceNotFoundException("N/A");
     }
     var userList = new ArrayList<User>();
     try (var isr = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -47,7 +47,7 @@ public class CSVUserParserImpl implements UserParser {
           .map(arr -> new UserImpl(arr[0], arr[1], "user-" + UUID.randomUUID(), arr[2], arr[3]))
           .collect(Collectors.toList());
     } catch (IOException e) {
-      LOG.error(e); // TODO
+      LOG.error("Cannot read from the user source's stream.", e);
     }
     return userList;
   }

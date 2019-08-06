@@ -54,7 +54,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
     try {
       Thread.sleep(loginDelay);
     } catch (InterruptedException e) {
-      // interrupted
+      Thread.currentThread().interrupt();
     }
   }
 }

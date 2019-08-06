@@ -24,11 +24,9 @@ import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -97,7 +95,7 @@ public class GrafanaGateway {
       return null;
     }
     if (grafanaToken.length() < 2) {
-      throw new RuntimeException("Invalid Grafana token.");
+      throw new IllegalArgumentException("Grafana token is invalid.");
     }
     return SimulationConfig.getGrafanaToken()
         .substring(1, SimulationConfig.getGrafanaToken().length() - 1);

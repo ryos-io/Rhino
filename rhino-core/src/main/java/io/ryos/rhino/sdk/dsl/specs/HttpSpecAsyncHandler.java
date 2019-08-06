@@ -76,26 +76,36 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     // any metric here, thus the start/end timestamps are irrelevant.
     if (!measurementEnabled) {
       this.start = System.currentTimeMillis();
-      var userEventStart = new UserEvent();
-      userEventStart.elapsed = 0;
-      userEventStart.start = start;
-      userEventStart.end = start;
-      userEventStart.scenario = specName;
-      userEventStart.eventType = EventType.START;
-      userEventStart.id = userId;
+      var userEventStart = new UserEvent(
+          "",
+          userId,
+          specName,
+          start,
+          start,
+          0L,
+          EventType.START,
+          "",
+          userId
+      );
+
       measurement.record(userEventStart);
     }
 
     // Store the error event in the measurement stack.
     measurement.measure(t.getMessage(), "N/A");
 
-    var userEventEnd = new UserEvent();
-    userEventEnd.elapsed = 0;
-    userEventEnd.start = start;
-    userEventEnd.end = 0;
-    userEventEnd.scenario = specName;
-    userEventEnd.eventType = EventType.END;
-    userEventEnd.id = userId;
+    var userEventEnd = new UserEvent(
+        "",
+        userId,
+        specName,
+        start,
+        0,
+        0L,
+        EventType.END,
+        "",
+        userId
+    );
+
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
@@ -119,14 +129,17 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     var elapsed = System.currentTimeMillis() - start;
 
     measurement.measure(stepName, String.valueOf(status));
-
-    var userEventEnd = new UserEvent();
-    userEventEnd.elapsed = elapsed;
-    userEventEnd.start = start;
-    userEventEnd.end = start + elapsed;
-    userEventEnd.scenario = specName;
-    userEventEnd.eventType = EventType.END;
-    userEventEnd.id = userId;
+    var userEventEnd = new UserEvent(
+        "",
+        userId,
+        specName,
+        start,
+        start + elapsed,
+        elapsed,
+        EventType.END,
+        "",
+        userId
+    );
 
     measurement.record(userEventEnd);
 
@@ -156,13 +169,18 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
         this.start = System.currentTimeMillis();
       }
 
-      var userEventStart = new UserEvent();
-      userEventStart.elapsed = 0;
-      userEventStart.start = start;
-      userEventStart.end = start;
-      userEventStart.scenario = specName;
-      userEventStart.eventType = EventType.START;
-      userEventStart.id = userId;
+      var userEventStart = new UserEvent(
+          "",
+          userId,
+          specName,
+          start,
+          start,
+          0L,
+          EventType.START,
+          "",
+          userId
+      );
+
       measurement.record(userEventStart);
     }
   }

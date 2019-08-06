@@ -31,9 +31,11 @@ import io.ryos.rhino.sdk.utils.ReflectionUtils;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,7 @@ import reactor.core.scheduler.Schedulers;
  * @since 1.0.0
  */
 public class DefaultSimulationRunner extends AbstractSimulationRunner {
+
   private static final Logger LOG = LoggerFactory.getLogger(DefaultSimulationRunner.class);
   private static final String JOB = "job";
   private static final long ONE_SEC = 1000L;
@@ -128,15 +131,16 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
         .doOnTerminate(this::notifyAwaiting)
         .doOnNext(userSession -> {
           var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
-          new DefaultRunnerSimulationInjector(simulationMetadata, null).injectOn(instance);
+          new DefaultRunnerSimulationInjector(simulationMetadata).injectOn(instance);
           // Run the scenario subsequently.
-            simulationMetadata.getScenarios().forEach(scenario ->
-                new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
-                    eventDispatcher, instance).call()); })
+          simulationMetadata.getScenarios().forEach(scenario ->
+              new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
+                  eventDispatcher, instance).call());
+        })
         .doOnComplete(() -> signalCompletion(() -> isPipelineCompleted = true))
         .subscribe();
 
-    awaitIf(!isPipelineCompleted);
+    awaitIf(() -> !isPipelineCompleted);
 
     LOG.info("Cleaning up ...");
     cleanupUserSessions(userSessionProvider.getUserList());
@@ -150,22 +154,19 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
       masterLock.lock();
       action.execute();
       continueCondition.signal();
-    } catch (IllegalMonitorStateException e) {
-      LOG.debug("Await not called yet. The cleanup completed before the main thread got to"
-          + " be awaited. Main thread will continue.");
     } finally {
       masterLock.unlock();
     }
   }
 
-  private void awaitIf(boolean conditional) {
+  private void awaitIf(Supplier<Boolean> supplier) {
     try {
       masterLock.lock();
-      if (conditional) {
-        continueCondition.await();
+      while (supplier.get()) {
+        continueCondition.await(1, TimeUnit.SECONDS);
       }
     } catch (InterruptedException e) {
-      LOG.error("Interrupted.", e);
+      Thread.currentThread().interrupt();
     } finally {
       masterLock.unlock();
     }
@@ -174,11 +175,9 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private void prepareUserSessions(List<UserSession> userSessionList) {
     if (getSimulationMetadata().getPrepareMethod() != null) {
       LOG.info("Preparation started.");
-      userSessionList.forEach(userSession -> {
-        ReflectionUtils.executeStaticMethod(
-            getSimulationMetadata().getPrepareMethod(),
-            userSession.getSimulationSession());
-      });
+      userSessionList.forEach(userSession -> ReflectionUtils.executeStaticMethod(
+          getSimulationMetadata().getPrepareMethod(),
+          userSession.getSimulationSession()));
       LOG.info("Preparation completed.");
     }
   }
@@ -240,7 +239,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
     try {
       Thread.sleep(DefaultSimulationRunner.ONE_SEC);
     } catch (InterruptedException e) {
-      // intentionally left empty.
+      Thread.currentThread().interrupt();
     }
   }
 }

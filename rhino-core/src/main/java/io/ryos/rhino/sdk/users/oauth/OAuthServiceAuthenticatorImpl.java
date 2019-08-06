@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk.users.oauth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
+import io.ryos.rhino.sdk.exceptions.IllegalAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -52,7 +53,10 @@ public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
           .post(Entity.form(form));
 
       if (response.getStatus() != Status.OK.getStatusCode()) {
-        LOG.info("Cannot login the service, status={} message={}", response.getStatus(), response.readEntity(String.class));
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Cannot login the service, status={} message={}", response.getStatus(),
+              response.readEntity(String.class));
+        }
         return null;
       }
 
@@ -72,8 +76,9 @@ public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
     try {
       o = objectMapper.readValue(s, OAuthService.class);
     } catch (Exception e) {
-      throw new RuntimeException("Cannot map authorization server response to entity type: " + OAuthService.class.getName(),
-          e);
+      throw new IllegalAuthResponseException(
+          "Cannot map authorization server response to entity type: " + OAuthService.class
+              .getName(), e);
     }
     return o;
   }

@@ -37,37 +37,28 @@ public class MeasurementImpl implements Measurement {
   }
 
   @Override
-  public void measure(final String stepName, final String status) {
-    if (events.isEmpty()) {
+  public void measure(String stepName, String status) {
 
-      final ScenarioEvent simLog = new ScenarioEvent();
-      simLog.elapsed = 0;
-      simLog.start = 0;
-      simLog.end = 0;
-      simLog.step = stepName;
-      simLog.scenario = scenarioName;
-      simLog.userId = userId;
-      simLog.status = status;
+    long start = 0;
+    long end = 0;
+    long elapsed = 0;
 
-      addEvent(simLog);
-
-    } else {
-
-      final long end = System.currentTimeMillis();
-      final LogEvent lastEvent = events.get(events.size() - 1);
-      final long start = lastEvent.end;
-
-      final ScenarioEvent simLog = new ScenarioEvent();
-      simLog.elapsed = end - start;
-      simLog.start = start;
-      simLog.end = end;
-      simLog.step = stepName;
-      simLog.scenario = scenarioName;
-      simLog.userId = userId;
-      simLog.status = status;
-
-      addEvent(simLog);
+    if (!events.isEmpty()) {
+      LogEvent lastEvent = events.get(events.size() - 1);
+      end = System.currentTimeMillis();
+      start = lastEvent.getEnd();
+      elapsed = end - start;
     }
+
+    final ScenarioEvent emptyEvent = new ScenarioEvent("",
+        userId,
+        scenarioName,
+        start,
+        end,
+        elapsed,
+        status,
+        stepName);
+    addEvent(emptyEvent);
   }
 
   private synchronized void addEvent(ScenarioEvent event) {

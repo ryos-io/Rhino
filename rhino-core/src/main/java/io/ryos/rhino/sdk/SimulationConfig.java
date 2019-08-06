@@ -48,6 +48,9 @@ public class SimulationConfig {
   private static final String SIM_ID = "SIM_ID";
   private static final int DEFAULT_BATCH_DURATION = 200;
   private static final int DEFAULT_BATCH_ACTIONS = 1000;
+  private static final String DEFAULT_TIMEOUT = "60000";
+  private static final String DEFAULT_CONNECTIONS = "1000";
+  private static final String DEFAULT_READ_TIMEOUT = "15000";
   private static SimulationConfig instance;
 
   private final Properties properties;
@@ -152,27 +155,27 @@ public class SimulationConfig {
 
   private String getConfigHttpMaxConnections() {
     return properties.getProperty("http.maxConnections",
-        "1000");
+        DEFAULT_CONNECTIONS);
   }
 
   private String getConfigHttpConnectTimeout() {
     return properties.getProperty("http.connectTimeout",
-        "60000");
+        DEFAULT_TIMEOUT);
   }
 
   private String getConfigHttpReadTimeout() {
     return properties.getProperty("http.readTimeout",
-        "15000");
+        DEFAULT_READ_TIMEOUT);
   }
 
   private String getConfigHttpHandshakeTimeout() {
     return properties.getProperty("http.handshakeTimeout",
-        "60000");
+        DEFAULT_TIMEOUT);
   }
 
   private String getConfigHttpRequestTimeout() {
     return properties.getProperty("http.requestTimeout",
-        "60000");
+        DEFAULT_TIMEOUT);
   }
 
   private String getRunnerParallelisation() {
@@ -206,10 +209,6 @@ public class SimulationConfig {
 
   private String getAuthVaultPath() {
     return properties.getProperty(environment + ".users.vault.path");
-  }
-
-  private String getAuthVaultKey() {
-    return properties.getProperty(environment + ".users.vault.key");
   }
 
   private String getAuthClientSecret() {

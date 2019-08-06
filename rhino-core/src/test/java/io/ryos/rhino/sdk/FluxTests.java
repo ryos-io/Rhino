@@ -169,7 +169,7 @@ class FluxTests {
   }
 
   @Test
-  @Disabled
+  @Disabled("Long running verification tests.")
   void testThrottling() throws InterruptedException {
     final var latch = new CountDownLatch(1);
     final Limit limit = Limit.of(1, Duration.ofSeconds(5));
@@ -185,7 +185,7 @@ class FluxTests {
   }
 
   @Test
-  @Disabled
+  @Disabled("Long running verification tests.")
   void testRampump2() throws InterruptedException {
     final var latch = new CountDownLatch(1);
 

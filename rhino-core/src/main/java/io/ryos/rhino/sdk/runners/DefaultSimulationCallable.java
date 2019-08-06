@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk.runners;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
@@ -64,26 +65,35 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
-    var userEventStart = new UserEvent();
-    userEventStart.elapsed = 0;
-    userEventStart.start = start;
-    userEventStart.end = start;
-    userEventStart.scenario = scenario.getDescription();
-    userEventStart.eventType = EventType.START;
-    userEventStart.id = user.getId();
+    var userEventStart = new UserEvent(
+        user.getUsername(),
+        user.getId(),
+        scenario.getDescription(),
+        start,
+        start,
+        0,
+        EventType.START,
+        "",
+        user.getId()
+    );
 
     measurement.record(userEventStart);
 
     executeScenario(scenario, measurement, instance, userSession);
 
     var elapsed = System.currentTimeMillis() - start;
-    var userEventEnd = new UserEvent();
-    userEventEnd.elapsed = elapsed;
-    userEventEnd.start = start;
-    userEventEnd.end = start + elapsed;
-    userEventEnd.scenario = scenario.getDescription();
-    userEventEnd.eventType = EventType.END;
-    userEventEnd.id = user.getId();
+    var userEventEnd = new UserEvent(
+        user.getUsername(),
+        user.getId(),
+        scenario.getDescription(),
+        start,
+        start + elapsed,
+        elapsed,
+        EventType.END,
+        "",
+        user.getId()
+    );
+
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
@@ -105,21 +115,21 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
       if (parameterTypes.length == 0) {
         method.invoke(simulationInstance);
       } else if (parameterTypes.length == 2 &&
-              parameterTypes[0].isAssignableFrom(Measurement.class) &&
-              parameterTypes[1].isAssignableFrom(UserSession.class)) {
+          parameterTypes[0].isAssignableFrom(Measurement.class) &&
+          parameterTypes[1].isAssignableFrom(UserSession.class)) {
         method.invoke(simulationInstance, measurement, userSession);
       } else if (parameterTypes.length == 1 &&
-              parameterTypes[0].isAssignableFrom(Measurement.class)) {
+          parameterTypes[0].isAssignableFrom(Measurement.class)) {
         method.invoke(simulationInstance, measurement);
       } else if (parameterTypes.length == 1 &&
-              parameterTypes[0].isAssignableFrom(UserSession.class)) {
+          parameterTypes[0].isAssignableFrom(UserSession.class)) {
         method.invoke(simulationInstance, userSession);
       } else {
         throw new IllegalAccessException("No proper scenario method found.");
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(e.getCause());
+      LOG.error(e);
+      throw new RhinoFrameworkError();
     }
   }
 
@@ -138,9 +148,8 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
         }
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e.getCause().getMessage());
-      throw new RuntimeException(
-          "Cannot invoke the method with step: " + method.getName() + "()", e);
+      LOG.error(e);
+      throw new RhinoFrameworkError();
     }
   }
 }

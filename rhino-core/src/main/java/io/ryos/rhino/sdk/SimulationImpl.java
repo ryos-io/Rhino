@@ -81,7 +81,7 @@ public class SimulationImpl implements Simulation {
               pair.getFirst().getRunner(), pair.getSecond()))
           .collect(Collectors.toList());
 
-    } catch (Throwable pe) {
+    } catch (Exception pe) {
       LOG.error("Cannot start application", pe);
       System.exit(-1);
     }
@@ -130,7 +130,7 @@ public class SimulationImpl implements Simulation {
             "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
       }
       simulationRunners.forEach(SimulationRunner::start);
-    } catch (Throwable t) {
+    } catch (Exception t) {
       LOG.error("Cannot start application", t);
       System.exit(-1);
     }

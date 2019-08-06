@@ -122,14 +122,14 @@ public class StdoutReporter extends AbstractActor {
 
   private void persist(final ScenarioEvent logEvent) {
     String countKey = String.format("Count/%s/%s/%s",
-        logEvent.scenario,
-        logEvent.step,
-        logEvent.status);
+        logEvent.getScenario(),
+        logEvent.getStep(),
+        logEvent.getStatus());
 
     String responseTypeKey = String.format("ResponseTime/%s/%s/%s",
-        logEvent.scenario,
-        logEvent.step,
-        logEvent.status);
+        logEvent.getScenario(),
+        logEvent.getStep(),
+        logEvent.getStatus());
 
     if (!metrics.containsKey(countKey)) {
       metrics.put(countKey, 0L);
@@ -143,7 +143,7 @@ public class StdoutReporter extends AbstractActor {
     metrics.put(countKey, ++currVal);
 
     Long currElapsed = metrics.get(responseTypeKey);
-    metrics.put(responseTypeKey, currElapsed + logEvent.elapsed);
+    metrics.put(responseTypeKey, currElapsed + logEvent.getElapsed());
   }
 
   private void flushReport(EndTestEvent event) {
@@ -212,7 +212,9 @@ public class StdoutReporter extends AbstractActor {
     output.append(String.format("%50s %9s ", "Total Request", totalNumberOfRequests)).append('\n');
     output.append(BORDER_LINE_BOLD).append('\n');
 
-    LOG.info(output.toString());
+    if (LOG.isInfoEnabled()) {
+      LOG.info(output.toString());
+    }
   }
 
   private String formatDate(Instant dateTime) {

@@ -31,6 +31,10 @@ public class ExceptionUtils {
 
   private static final Logger LOG = LogManager.getLogger(ExceptionUtils.class);
 
+  private ExceptionUtils() {
+    throw new UnsupportedOperationException("Utils class.");
+  }
+
   /**
    * Rethrow any instance of {@link RuntimeException} by wrapping it into a new one, of which type
    * passed as method parameter while logging the error out.

@@ -24,7 +24,6 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.util.Arrays;
@@ -55,21 +54,13 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
   private final SimulationMetadata simulationMetadata;
 
   /**
-   * Current user session, that is actively running.
-   * <p>
-   */
-  private final UserSession userSession;
-
-  /**
    * Instantiates a new {@link ReactiveRunnerSimulationInjector} instance.
    * <p>
    *
    * @param simulationMetadata Simulation metadata.
    */
-  public ReactiveRunnerSimulationInjector(final SimulationMetadata simulationMetadata,
-      final UserSession userSession) {
+  public ReactiveRunnerSimulationInjector(final SimulationMetadata simulationMetadata) {
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.userSession = userSession;
   }
 
   @Override
@@ -99,6 +90,7 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
   }
 
   // Provider the feeder value into the field.
+  @Override
   protected void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
     Objects.requireNonNull(instance, "Object instance is null.");
     var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();

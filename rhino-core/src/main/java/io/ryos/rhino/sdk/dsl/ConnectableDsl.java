@@ -23,12 +23,6 @@ import java.util.function.Predicate;
 public class ConnectableDsl implements LoadDsl, ConfigurableDsl {
 
   /**
-   * Wait duration.
-   * <p>
-   */
-  private Duration pause;
-
-  /**
    * Test name, that is the name of the load DSL or scenario.
    * <p>
    */

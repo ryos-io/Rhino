@@ -19,15 +19,20 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import java.util.function.Function;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
 
 /**
+ * Mapper spec materializer implementation.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
 public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec, UserSession> {
+
+  private static final Logger LOG = LogManager.getLogger(MapperSpecMaterializer.class);
 
   @Override
   public Mono<UserSession> materialize(MapperSpec spec, UserSession userSession) {
@@ -36,12 +41,11 @@ public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec, User
         var mapper = spec.getMapper();
         var value = userSession
             .get(mapper.getKey())
-            .map((Function<Object, Object>) mapper.getMappingFunction()::apply)
+            .map((Function<Object, Object>) mapper.getMappingFunction())
             .orElse(null);
         return session.add(mapper.getSaveTo(), value);
       } catch (Exception e) {
-
-        System.out.println(e);
+        LOG.error(e);
       }
       return userSession;
     });

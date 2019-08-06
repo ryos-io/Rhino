@@ -16,16 +16,9 @@
 
 package io.ryos.rhino.sdk.monitoring;
 
-import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.stream.Collectors;
-
 /**
- * TODO
+ * Dashboard template generator takes the simulation metadata and generates a new dashboard from
+ * the dashboard template given.
  * <p>
  *
  * @author Erhan Bagdemir

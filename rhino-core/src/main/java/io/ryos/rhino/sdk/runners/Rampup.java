@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -15,6 +14,10 @@ import reactor.util.function.Tuple2;
 
 public class Rampup {
   private static final Logger LOG = LoggerFactory.getLogger(Rampup.class);
+
+  private Rampup() {
+    throw new UnsupportedOperationException("Static class");
+  }
 
   /**
    * Defines a linear ramp up of the load beginning with the start rate until target rate is reached.
@@ -44,9 +47,8 @@ public class Rampup {
       return Mono.delay(ofNanos(tickNano));
     });
 
-    final UnaryOperator<Flux<T>> res = f ->
+    return f ->
         f.zipWith(rampup.concatWith(Flux.generate(sink -> sink.next(0L))))
             .map(Tuple2::getT1);
-    return res;
   }
 }

@@ -55,8 +55,6 @@ public class VaultUserParserImpl implements UserParser {
       if (!path.isNull() && path.isValueNode()) {
         JsonNode payload = objectMapper.readTree(path.textValue());
         Iterator<JsonNode> elements = payload.elements();
-        int id = 0;
-
         while (elements.hasNext()) {
           JsonNode next = elements.next();
           userList.add(
@@ -68,7 +66,7 @@ public class VaultUserParserImpl implements UserParser {
         }
       }
     } catch (IOException e) {
-      LOG.error(e); // TODO
+      LOG.error(e);
     }
     return userList;
   }

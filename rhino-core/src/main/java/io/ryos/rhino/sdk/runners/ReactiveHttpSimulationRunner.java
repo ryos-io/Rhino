@@ -56,8 +56,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
-
-  private final Context context;
   private CyclicIterator<ConnectableDsl> dslIterator;
   private Disposable subscribe;
 
@@ -73,7 +71,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   public ReactiveHttpSimulationRunner(final Context context) {
     super(context.<SimulationMetadata>get(JOB).orElseThrow());
-    this.context = context;
+
     this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDsls()
         .stream()
         .filter(Objects::nonNull)
@@ -107,7 +105,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
         .build();
 
     var client = Dsl.asyncHttpClient(httpClientConfig);
-    var injector = new ReactiveRunnerSimulationInjector(simulationMetadata, null);
+    var injector = new ReactiveRunnerSimulationInjector(simulationMetadata);
     var userList = userSessionProvider.getUserList();
 
     injector.injectOn(simulationMetadata.getTestInstance());
@@ -155,10 +153,11 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     try {
       masterLock.lock();
       while (supplier.get()) {
-        final boolean await = continueCondition.await(1, TimeUnit.SECONDS);
+        continueCondition.await(1, TimeUnit.SECONDS);
       }
     } catch (InterruptedException e) {
       LOG.error("Interrupted.", e);
+      Thread.currentThread().interrupt();
     } finally {
       masterLock.unlock();
     }
@@ -294,9 +293,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       masterLock.lock();
       action.execute();
       continueCondition.signalAll();
-    } catch (IllegalMonitorStateException e) {
-      LOG.debug("Await not called yet. The cleanup completed before the main thread got to"
-          + " be awaited. Main thread will continue.");
     } finally {
       masterLock.unlock();
     }
