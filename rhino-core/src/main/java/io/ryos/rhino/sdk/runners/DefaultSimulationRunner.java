@@ -75,7 +75,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   private final Lock masterLock;
 
   private volatile boolean shutdownInitiated;
-  private volatile Disposable subscribe;
+  private Disposable subscribe;
   private volatile boolean isPipelineCompleted;
 
   /**
