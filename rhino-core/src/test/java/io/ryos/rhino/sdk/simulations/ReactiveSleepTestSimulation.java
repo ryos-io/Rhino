@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
 

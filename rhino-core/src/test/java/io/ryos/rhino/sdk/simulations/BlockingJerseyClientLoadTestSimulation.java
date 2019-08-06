@@ -14,7 +14,7 @@
   limitations under the License.
 */
 
-package io.ryos.rhino.sdk;
+package io.ryos.rhino.sdk.simulations;
 
 import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Prepare;
