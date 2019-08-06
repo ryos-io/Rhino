@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.users.source;
 
+import io.ryos.rhino.sdk.exceptions.NoUserFoundException;
 import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.CSVUserParserImpl;
 import io.ryos.rhino.sdk.users.UserParser;
@@ -42,7 +43,7 @@ public class FileBasedUserSourceImpl implements UserSource {
   public List<User> getUsers() {
     var userList = parser.unmarshal(new ConfigResource(pathToFile).getInputStream());
     if (userList.isEmpty()) {
-      throw new RuntimeException(
+      throw new NoUserFoundException(
           "No valid user found in " + pathToFile + ". The CSV file should contain "
               + "lines in the following format: username;password;scope");
     }

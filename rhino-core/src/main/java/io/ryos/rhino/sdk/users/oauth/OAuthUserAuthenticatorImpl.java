@@ -45,7 +45,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
   private static final String CLIENT_SECRET = "client_secret";
   private static final String GRANT_TYPE = "grant_type";
   private static final String USERNAME = "username";
-  private static final String STR_PASSWORD = "password";
+  private static final String PW = "password";
   private static final String SCOPE = "scope";
 
   private final OAuthService service;
@@ -85,7 +85,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
       }
 
       if (user.getPassword() != null) {
-        form.param(STR_PASSWORD, user.getPassword());
+        form.param(PW, user.getPassword());
       }
 
       form.param(USERNAME, user.getUsername());

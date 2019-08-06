@@ -234,14 +234,16 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private String formatKey(String key) {
-
     String normalizedStr = key
         .replace(RESPONSE_TIME, "")
         .replace(COUNT, "");
 
-    String[] split = normalizedStr.split("/");
+    String[] sections = normalizedStr.split("/");
+    if (sections.length > 2) {
+      return String.format("> %-15.15s  %-15.15s %25s", sections[0], sections[1], sections[2]);
+    }
 
-    return String.format("> %-15.15s  %-15.15s %25s", split);
+    return "";
   }
 
   public static class EndTestEvent {

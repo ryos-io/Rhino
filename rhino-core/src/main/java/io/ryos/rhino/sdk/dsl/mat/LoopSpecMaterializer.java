@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.LoopSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.Iterator;
 import java.util.Optional;
@@ -55,26 +56,30 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
       return Mono.empty();
     }
 
-    Iterable<E> it = es.get();
-    var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
+    return es.map(it -> {
+      var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
 
-    Function<E, Spec> loopFunction = spec.getLoopBuilder().getLoopFunction();
-    Iterator<E> inputIt = it.iterator();
-    Mono<UserSession> acc = materializerFactory.monoFrom(loopFunction.apply(inputIt.next()), session);
+      Function<E, Spec> loopFunction = spec.getLoopBuilder().getLoopFunction();
+      Iterator<E> inputIt = it.iterator();
+      Mono<UserSession> acc = materializerFactory
+          .monoFrom(loopFunction.apply(inputIt.next()), session);
 
-    while (inputIt.hasNext()) {
-      // Never move the following statement into lambda body. next() call is required to be eager.
-      var next = inputIt.next();
-      acc = acc.flatMap(s -> {
-        if (next instanceof ConditionalSpecWrapper) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-          if (!predicate.test(s)) { return Mono.just(s); }
-        }
-        return materializerFactory.monoFrom(loopFunction.apply(next), session);
-      });
-    }
-    acc = acc.doOnError(e -> LOG.error("Unexpected error: ", e));
+      while (inputIt.hasNext()) {
+        // Never move the following statement into lambda body. next() call is required to be eager.
+        var next = inputIt.next();
+        acc = acc.flatMap(s -> {
+          if (next instanceof ConditionalSpecWrapper) {
+            var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+            if (!predicate.test(s)) {
+              return Mono.just(s);
+            }
+          }
+          return materializerFactory.monoFrom(loopFunction.apply(next), session);
+        });
+      }
+      acc = acc.doOnError(e -> LOG.error("Unexpected error: ", e));
 
-    return acc;
+      return acc;
+    }).orElseThrow(RhinoFrameworkError::new);
   }
 }

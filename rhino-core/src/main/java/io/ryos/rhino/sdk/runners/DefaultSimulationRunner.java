@@ -128,7 +128,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
         .take((simulationMetadata.getDuration()))
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
-        .doOnTerminate(this::notifyAwaiting)
+        .doOnTerminate(this::shutdown)
         .doOnNext(userSession -> {
           var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
           new DefaultRunnerSimulationInjector(simulationMetadata).injectOn(instance);
@@ -160,15 +160,16 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   }
 
   private void awaitIf(Supplier<Boolean> supplier) {
-    try {
-      masterLock.lock();
-      while (supplier.get()) {
+    while (supplier.get()) {
+      try {
+        masterLock.lock();
         continueCondition.await(1, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        break;
+      } finally {
+        masterLock.unlock();
       }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    } finally {
-      masterLock.unlock();
     }
   }
 
@@ -192,12 +193,6 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
         userSession.empty();
       });
       LOG.info("Clean-up completed.");
-    }
-  }
-
-  private void notifyAwaiting() {
-    synchronized (this) {
-      notify();
     }
   }
 

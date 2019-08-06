@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.validators;
 
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -25,15 +24,18 @@ import java.util.Properties;
  */
 public class PropsValidatorImpl implements Validator<Properties> {
 
+  private static final String PACKAGE_TO_SCAN = "packageToScan";
+
   @Override
   public void validate(Properties props) {
     validatePackageToScan(props);
   }
 
   private void validatePackageToScan(Properties props) {
-    Optional.ofNullable(props.get("packageToScan"))
-        .orElseThrow(() -> new PropsValidationException("packageToScan", "packageToScan "
-            + "property must not be null. Please set packageToScan property in rhino.properties "
-            + "file to tell Rhino where to find test entities."));
+    if (props.get(PACKAGE_TO_SCAN) == null) {
+      throw new PropsValidationException(PACKAGE_TO_SCAN, PACKAGE_TO_SCAN
+          + " property must not be null. Please set packageToScan property in rhino.properties "
+          + "file to tell Rhino where to find test entities.");
+    }
   }
 }
