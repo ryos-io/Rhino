@@ -34,7 +34,6 @@ import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.dsl.ConnectableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -105,7 +104,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
             filter(File::isFile).
             map(File::getName).
             map(f -> buildClassNameFrom(path, f)).
-            map(this::getClassFor).filter(this::isBenchmarkClass).collect(toList());
+            map(this::getClassFor)
+            .filter(this::isBenchmarkClass)
+            .collect(toList());
       }
     } catch (URISyntaxException e) {
       LOG.error("URL syntax not valid.", e);
@@ -170,9 +171,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     try {
       return Class.forName(name);
     } catch (ClassNotFoundException e) {
-      ExceptionUtils.rethrow(e, RuntimeException.class, "Class with name: " + name + " not found.");
+      throw new SimulationNotFoundException("Class with name: " + name + " not found.");
     }
-    return null;
   }
 
   private SimulationMetadata createBenchmarkJob(final Class clazz) {
