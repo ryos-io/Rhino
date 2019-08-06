@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -60,11 +61,8 @@ public class CyclicIterator<T> implements Iterator<T> {
    * @param list The list backing the iterator.
    */
   public CyclicIterator(final List<T> list) {
-
-    if (list.isEmpty()) { throw new IllegalArgumentException("Backing list in CyclicIterator is "
-        + "empty."); }
-
-    this.list = list;
+    this.list = Objects.requireNonNull(list, "Backing list in CyclicIterator is empty.");
+    this.hasNext = !list.isEmpty();
   }
 
   /**
@@ -80,8 +78,8 @@ public class CyclicIterator<T> implements Iterator<T> {
 
   /**
    * Returns the next item where the cursor points to. Calling this method sets the cursor forward
-   * to point the next item in the list. If the cursor is at the end of the list, it begins from
-   * the first item.
+   * to point the next item in the list. If the cursor is at the end of the list, it begins from the
+   * first item.
    * <p>
    *
    * @return The current item, pointed by the cursor.
@@ -99,8 +97,8 @@ public class CyclicIterator<T> implements Iterator<T> {
   }
 
   /**
-   * Sets the hasNext attribute to false. Every next method call after stop causes a
-   * {@link NoSuchElementException}.
+   * Sets the hasNext attribute to false. Every next method call after stop causes a {@link
+   * NoSuchElementException}.
    * <p>
    */
   public void stop() {
