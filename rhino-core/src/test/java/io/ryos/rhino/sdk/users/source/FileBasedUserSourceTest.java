@@ -22,6 +22,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 
 import io.ryos.rhino.sdk.exceptions.ConfigurationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.NoUserFoundException;
+import io.ryos.rhino.sdk.users.repositories.Regions;
 import java.util.UUID;
 import org.junit.Test;
 
@@ -39,6 +40,44 @@ public class FileBasedUserSourceTest {
     assertThat(users, notNullValue());
     assertThat(users.isEmpty(), equalTo(false));
     assertThat(users.size(), equalTo(EXPECTED_NUM_USERS));
+  }
+
+  @Test
+  public void testGetSingleUserForRegionAndCount() {
+
+    var fileBasedUserSource = new FileBasedUserSourceImpl(CSV_FILE);
+    var users = fileBasedUserSource.getUsers(1, Regions.US);
+    assertThat(users, notNullValue());
+    assertThat(users.isEmpty(), equalTo(false));
+    assertThat(users.size(), equalTo(1));
+  }
+
+  @Test
+  public void testGetMultipleUserForEUAndExceedingCount() {
+
+    var fileBasedUserSource = new FileBasedUserSourceImpl(CSV_FILE);
+    var users = fileBasedUserSource.getUsers(4, Regions.EU);
+    assertThat(users, notNullValue());
+    assertThat(users.isEmpty(), equalTo(false));
+    assertThat(users.size(), equalTo(3));
+  }
+
+  @Test
+  public void testGetSingleUserForNonExistingRegion() {
+
+    var fileBasedUserSource = new FileBasedUserSourceImpl(CSV_FILE);
+    var users = fileBasedUserSource.getUsers(1, Regions.AP);
+    assertThat(users, notNullValue());
+    assertThat(users.isEmpty(), equalTo(true));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetSingleUserForInvalidNumber() {
+
+    var fileBasedUserSource = new FileBasedUserSourceImpl(CSV_FILE);
+    var users = fileBasedUserSource.getUsers(-1, Regions.AP);
+    assertThat(users, notNullValue());
+    assertThat(users.isEmpty(), equalTo(true));
   }
 
   @Test(expected = NoUserFoundException.class)
