@@ -61,6 +61,10 @@ public class ConfigResource {
 
   public InputStream getInputStream() {
     final String[] split = sourceURI.split(SEPARATOR);
+    if (split.length != 2) {
+      throw new IllegalArgumentException(sourceURI + " is invalid path. The path should follow "
+          + "scheme://<absolute-path> convention.");
+    }
     var sourceType = split[0].toUpperCase();
     var pathToSource = split[1];
     switch (Type.valueOf(sourceType)) {
