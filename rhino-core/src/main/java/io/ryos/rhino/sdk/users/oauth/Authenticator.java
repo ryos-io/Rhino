@@ -2,7 +2,7 @@ package io.ryos.rhino.sdk.users.oauth;
 
 /**
  * Generic authenticator authenticates an entity against an authorization server. The entity can
- * be a user or a service.
+ * be a user or a service instance.
  * <p>
  *
  * @param <T> The entity type being authenticated.
