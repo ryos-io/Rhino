@@ -60,8 +60,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     var user = userSession.getUser();
 
     // Before method call.
-    executeMethod(simulationMetadata.getBeforeMethod(), instance,
-        userSession);
+    executeMethod(simulationMetadata.getBeforeMethod(), instance, userSession);
 
     var measurement = new MeasurementImpl(scenario.getDescription(), user.getId());
     var start = System.currentTimeMillis();
@@ -97,8 +96,9 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
     measurement.record(userEventEnd);
 
     eventDispatcher.dispatchEvents(measurement);
-    executeMethod(simulationMetadata.getAfterMethod(), instance,
-        userSession);
+
+    // after call.
+    executeMethod(simulationMetadata.getAfterMethod(), instance, userSession);
 
     return measurement;
   }
@@ -127,9 +127,11 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
       } else {
         throw new IllegalAccessException("No proper scenario method found.");
       }
-    } catch (IllegalAccessException | InvocationTargetException e) {
+    } catch (IllegalAccessException e) {
       LOG.error(e);
       throw new RhinoFrameworkError();
+    } catch (InvocationTargetException e) {
+      LOG.error(e.getTargetException());
     }
   }
 

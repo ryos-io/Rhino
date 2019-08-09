@@ -22,8 +22,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Method annotation to mark preparation methods, that is run before every test execution. Use
- * these to set up your benchmarks.
+ * Method annotation to mark clean up methods, that is run after every scenario (or DSL) execution.
+ * Use methods, for instance, to release resources and clean up the testing environment. If
+ * simulation contains multiple scenarios, then before and after methods will be run before and
+ * after every scenarios in the simulation.
+ * <p>
+ *
+ * If the simulation is need to be set up you might prefer to use {@link Prepare} static method -
+ * and {@link CleanUp}, respectively, which is called before the simulation run for every user.
+ * Prepare and clean up static methods might be handy e.g to create some resources for
+ * simulation, and release them after after simulation.
+ * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.0.0

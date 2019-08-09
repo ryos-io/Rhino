@@ -22,13 +22,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Method annotation to mark clean up methods, that is run after test execution. Use clean-up
- * methods, for instance, to release resources and clean up testing environment.
+ * Method annotation to mark clean up methods which is run after every scenario (or DSL execution).
+ * Use such methods, for instance, to release resources and clean up testing environment. If
+ * simulation contains multiple scenarios, then before and after methods will be run before and
+ * after every scenarios in the simulation.
+ * <p>
+ *
+ * If the simulation is need to be set up you might prefer to use {@link Prepare} static method -
+ * and {@link CleanUp}, respectively, which is called before the simulation run for every user.
+ * Prepare and clean up static methods might be handy e.g to create some resources for
+ * simulation, and release them after after simulation.
+ * <p>
  *
  * @author Erhan Bagdemir
+ * @see Before
+ * @see Prepare
+ * @see CleanUp
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface After {
+
 }

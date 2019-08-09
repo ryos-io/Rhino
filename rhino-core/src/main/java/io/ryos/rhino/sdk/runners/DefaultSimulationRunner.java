@@ -125,7 +125,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
     }
 
     this.subscribe = flux.onErrorResume(t -> Mono.empty())
-        .take((simulationMetadata.getDuration()))
+        .take(simulationMetadata.getDuration())
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::shutdown)

@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.annotations;
 
+import io.ryos.rhino.sdk.providers.UUIDProvider;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,10 +24,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark the {@link Provider} injection point. Feeders are data providers.
+ * Annotation is used to mark the {@link Provider} injection point. A provider, is a factory
+ * class of type {@link io.ryos.rhino.sdk.providers.Provider} which provides scenario methods
+ * with object instances of that particular provider. An example of provider is {@link UUIDProvider}
+ * which generates random UUIDs:
+ * <p>
+ *
+ * <code>
+ *    @Provider(factory = UUIDProvider.class)
+ *    private UUIDProvider uuidProvider;
+ * </code>
+ *
+ * Test developers might choose to write their own {@link io.ryos.rhino.sdk.providers.Provider}
+ * instances in addition to such the framework includes.
+ * <p>
  *
  * @author Erhan Bagdemir
- * @see Provider
+ * @see io.ryos.rhino.sdk.providers.Provider
  * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

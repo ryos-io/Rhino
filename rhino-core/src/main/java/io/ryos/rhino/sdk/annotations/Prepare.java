@@ -23,13 +23,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation is to mark the methods which are to be run before the user session started.
- * The prepare methods are useful to allocate resources and shared among scenarios run by the
- * same user. The test developers might create some resources in prepare method, and scenarios
- * access the same resources without having need of creating them repeatedly.
+ * The annotation is used to mark static method which are run before the simulation is started
+ * for each user. It allows test developers to prepare the simulation before the simulation run
+ * e.g create some resources on server.
+ * <p>
+ *
+ * The prepare method is useful to allocate resources used by scenarios run in simulations. The
+ * test developers might create some resources in prepare method so that scenarios can access the
+ * same resources without having need of creating them, repeatedly.
+ * <p>
+ *
+ * Prepare method must be public and static:
+ *
+ * <code>
+ * @Prepare
+ * public static void prepare(SimulationSession session) {
+ * // your code here.
+ * }
+ * </code>
+ *
+ * Prepare method might take an argument which is {@link io.ryos.rhino.sdk.data.SimulationSession}
+ * a global context, that might be accessed by scenarios. The simulation session will not be
+ * cleaned up after every scenario execution, but in clean-up method after the simulation completes.
  * <p>
  *
  * @author Erhan Bagdemir
+ * @see CleanUp
+ * @see io.ryos.rhino.sdk.data.SimulationSession
  * @see UserSession
  * @since 1.1.0
  */
