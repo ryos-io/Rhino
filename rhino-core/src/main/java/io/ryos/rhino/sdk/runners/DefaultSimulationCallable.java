@@ -149,9 +149,11 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
           throw new IllegalAccessException("No proper scenario method found.");
         }
       }
-    } catch (IllegalAccessException | InvocationTargetException e) {
+    } catch (IllegalAccessException e) {
       LOG.error(e);
       throw new RhinoFrameworkError();
+    } catch (InvocationTargetException e) {
+      LOG.error(e.getTargetException());
     }
   }
 }
