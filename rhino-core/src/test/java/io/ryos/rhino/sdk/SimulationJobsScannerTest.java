@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -25,6 +26,7 @@ import io.ryos.rhino.sdk.simulations.NonUniqueSimpleBlockingSimulationTwo;
 import io.ryos.rhino.sdk.simulations.SimpleBlockingSimulation;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class SimulationJobsScannerTest {
@@ -32,7 +34,6 @@ public class SimulationJobsScannerTest {
   private static final String PACKAGE_TO_SCAN = "io.ryos.rhino.sdk.simulations";
   private static final String SIMULATION = "Simple Blocking Simulation";
   private static final String NON_UNIQUE_SIM = "Simple Blocking Simulation Not Unique Test";
-
 
   @Test
   public void testSimulationScanWithScenarios() {
@@ -53,10 +54,12 @@ public class SimulationJobsScannerTest {
         NON_UNIQUE_SIM, PACKAGE_TO_SCAN);
     assertThat(metadataList, notNullValue());
     assertThat(metadataList.size(), equalTo(2));
-    assertThat(metadataList.get(0).getSimulationClass(), equalTo(
+
+    List<Class> clazzes = metadataList.stream()
+        .map(SimulationMetadata::getSimulationClass)
+        .collect(Collectors.toList());
+    assertThat(clazzes, hasItems(NonUniqueSimpleBlockingSimulationOne.class,
         NonUniqueSimpleBlockingSimulationTwo.class));
-    assertThat(metadataList.get(1).getSimulationClass(), equalTo(
-        NonUniqueSimpleBlockingSimulationOne.class));
   }
 
   @Test
