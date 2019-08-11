@@ -41,4 +41,9 @@ public class ContextImpl implements Context {
     public void empty() {
         storage.clear();
     }
+
+    @Override
+    public boolean isEmpty() {
+        return storage.isEmpty();
+    }
 }

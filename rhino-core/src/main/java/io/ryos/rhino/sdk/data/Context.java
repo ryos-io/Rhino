@@ -49,4 +49,6 @@ public interface Context {
    * Empties the context.
    */
   void empty();
+
+  boolean isEmpty();
 }
