@@ -50,5 +50,11 @@ public interface Context {
    */
   void empty();
 
+  /**
+   * Checks whether the context is empty.
+   * <p>
+   * 
+   * @return true if the context is empty.
+   */
   boolean isEmpty();
 }
