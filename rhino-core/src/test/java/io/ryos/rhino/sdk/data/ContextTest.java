@@ -16,13 +16,37 @@
 
 package io.ryos.rhino.sdk.data;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNull.notNullValue;
+
+import org.junit.Test;
+
 /**
- * TODO
+ * {@link ContextImpl} unit test.
  * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class ContextTest {
 
+  @Test
+  public void testAdd() {
+    Context context = new ContextImpl();
+    context.add("test", "abc");
+    assertThat(context.get("test"), notNullValue());
+    assertThat(context.get("test").isPresent(), equalTo(true));
+    assertThat(context.get("test").get(), equalTo("abc"));
+  }
+
+  @Test
+  public void testEmpty() {
+    Context context = new ContextImpl();
+    context.add("test1", "abc1");
+    context.add("test2", "abc2");
+
+    context.empty();
+
+    assertThat(context.get("test1"), notNullValue());
+    assertThat(context.get("test1").isEmpty(), equalTo(true));
+    assertThat(context.isEmpty(), equalTo(true));
+  }
 }
