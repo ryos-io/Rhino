@@ -1,15 +1,14 @@
 package io.ryos.rhino.sdk;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-
-@Ignore
 public class UploadLoadTest {
 
   private static final String SIM_NAME = "Reactive Upload Test";
@@ -19,7 +18,7 @@ public class UploadLoadTest {
   public WireMockRule wireMockRule = new WireMockRule(8089);
 
   @Test
-  public void testReactiveBasicHttp() {
+  public void testUploadLoad() {
 
     stubFor(WireMock.post(urlEqualTo("/token"))
             .willReturn(aResponse()

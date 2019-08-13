@@ -19,3 +19,4 @@ public class BlockingLoadTestWithoutUserSimulation {
     measurement.measure("measurement1", Status.OK.toString());
   }
 }
+

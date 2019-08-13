@@ -6,11 +6,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-@Ignore
 public class BlockingJerseyClientLoadTest {
 
   private static final String SIM_NAME = "Server-Status Simulation";
@@ -20,7 +18,7 @@ public class BlockingJerseyClientLoadTest {
   public WireMockRule wireMockRule = new WireMockRule(8089);
 
   @Test
-  public void testReactiveBasicHttp() {
+  public void testBlockingJerseyClientLoad() {
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)

@@ -7,11 +7,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-@Ignore
 public class ReactiveBasicHttpGetTest {
 
   private static final String SIM_NAME = "Reactive Test";
@@ -24,7 +22,7 @@ public class ReactiveBasicHttpGetTest {
       .containerThreads(100));
 
   @Test
-  public void testReactiveBasicHttp() throws InterruptedException {
+  public void testReactiveBasicHttpGet() throws InterruptedException {
 
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
