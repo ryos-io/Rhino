@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import org.junit.Test;
  * Second attempt to monitor, and monitor API returns 200 OK.
  * At this point the cumulativeMeasurement on Spec makes the elapsed time be aggregated.
  */
+@Ignore
 public class ReactiveMonitorWaitTest {
 
   private static final String SIM_NAME = "Reactive Monitor Test";
