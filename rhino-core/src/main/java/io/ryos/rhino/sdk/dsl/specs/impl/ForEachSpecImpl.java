@@ -27,15 +27,30 @@ import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
  */
 public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements ForEachSpec {
 
+  /**
+   * Builder implementation for {@link ForEachSpec}.
+   * <p>
+   */
   private final ForEachBuilder<E, R> forEachBuilder;
 
+  /**
+   * Constructs a new {@link ForEachSpec} instance.
+   * <p>
+   *
+   * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
+   */
   public ForEachSpecImpl(ForEachBuilder<E, R> forEachBuilder) {
-
     super("N/A");
 
     this.forEachBuilder = forEachBuilder;
   }
 
+  /**
+   * Getter for {@link ForEachBuilder}.
+   * <p>
+   *
+   * @return {@link ForEachBuilder} instance.
+   */
   public ForEachBuilder<E, R> getForEachBuilder() {
     return forEachBuilder;
   }
