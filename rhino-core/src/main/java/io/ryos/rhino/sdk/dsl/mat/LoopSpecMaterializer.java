@@ -54,7 +54,8 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
         .filter(obj -> obj instanceof Iterable)
         .map(obj -> (Iterable<E>) obj)
         .orElseThrow(() -> new IllegalArgumentException("forEach() failed. The instance with key: "
-            + "\""+ spec.getForEachBuilder().getKey() + "\" must be iterable."));
+            + "\"" + spec.getForEachBuilder().getKey() + "\" must be iterable, but was " + session
+            .get(key)));
 
     var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
     Function<E, Spec> loopFunction = spec.getForEachBuilder().getForEachFunction();
