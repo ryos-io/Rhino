@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import java.time.Duration;
 
@@ -37,5 +37,5 @@ public interface LoadDsl {
 
   <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper);
 
-  <E, R extends Iterable<E>> ConfigurableDsl forEach(LoopBuilder<E, R> loopBuilder);
+  <E, R extends Iterable<E>> ConfigurableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
 }

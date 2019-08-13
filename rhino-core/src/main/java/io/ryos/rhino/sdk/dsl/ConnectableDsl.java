@@ -3,8 +3,8 @@ package io.ryos.rhino.sdk.dsl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
-import io.ryos.rhino.sdk.dsl.specs.impl.LoopSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
@@ -53,8 +53,8 @@ public class ConnectableDsl implements LoadDsl, ConfigurableDsl {
   }
 
   @Override
-  public <E, R extends Iterable<E>> ConfigurableDsl forEach(LoopBuilder<E, R> loopBuilder) {
-    executableFunctions.add(new LoopSpecImpl<>(loopBuilder));
+  public <E, R extends Iterable<E>> ConfigurableDsl forEach(ForEachBuilder<E, R> forEachBuilder) {
+    executableFunctions.add(new ForEachSpecImpl<>(forEachBuilder));
     return this;
   }
 

@@ -15,7 +15,7 @@ import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
-import io.ryos.rhino.sdk.dsl.specs.impl.LoopBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
@@ -59,9 +59,8 @@ public class ReactiveBasicHttpGetSimulation {
             .endpoint(FILES_ENDPOINT)
             .get()
             .saveTo("result"))
-        .map(MapperBuilder.<Response, List<Integer>>from("result")
-            .doMap(s -> ImmutableList.of(s.getStatusCode(), 666)))
-        .forEach(LoopBuilder.in("result")
+        .map(MapperBuilder.<Response, List<Integer>>from("result").doMap(s -> ImmutableList.of(s.getStatusCode(), 666)))
+        .forEach(ForEachBuilder.in("result")
             .apply(o -> some("measurement")
                 .as((u, m) -> {
                   System.out.println(u.get("result").get());

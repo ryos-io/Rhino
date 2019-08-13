@@ -26,26 +26,26 @@ import java.util.function.Function;
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class LoopBuilder<E, R extends Iterable<E>> {
+public class ForEachBuilder<E, R extends Iterable<E>> {
 
   private String key;
   private String saveTo;
-  private Function<E, Spec> loopFunction;
+  private Function<E, Spec> forEachFunction;
 
-  public LoopBuilder(final String key) {
+  public ForEachBuilder(final String key) {
     this.key = key;
   }
 
-  public static <E, R extends Iterable<E>> LoopBuilder<E, R> in(String key) {
-    return new LoopBuilder<>(key);
+  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(String key) {
+    return new ForEachBuilder<>(key);
   }
 
-  public LoopBuilder<E, R> apply(Function<E, Spec> loopFunction) {
-    this.loopFunction = loopFunction;
+  public ForEachBuilder<E, R> apply(Function<E, Spec> forEachFunction) {
+    this.forEachFunction = forEachFunction;
     return this;
   }
 
-  public LoopBuilder<E, R> saveTo(String saveTo) {
+  public ForEachBuilder<E, R> saveTo(String saveTo) {
     this.saveTo = saveTo;
     return this;
   }
@@ -58,7 +58,7 @@ public class LoopBuilder<E, R extends Iterable<E>> {
     return saveTo;
   }
 
-  public Function<E, Spec> getLoopFunction() {
-    return loopFunction;
+  public Function<E, Spec> getForEachFunction() {
+    return forEachFunction;
   }
 }

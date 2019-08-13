@@ -16,24 +16,27 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.dsl.specs.LoopSpec;
+import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 
 /**
+ * For-each loop representation.
+ * <p>
+ *
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class LoopSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements LoopSpec {
+public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements ForEachSpec {
 
-  private final LoopBuilder<E, R> loopBuilder;
+  private final ForEachBuilder<E, R> forEachBuilder;
 
-  public LoopSpecImpl(LoopBuilder<E, R> loopBuilder) {
+  public ForEachSpecImpl(ForEachBuilder<E, R> forEachBuilder) {
 
     super("N/A");
 
-    this.loopBuilder = loopBuilder;
+    this.forEachBuilder = forEachBuilder;
   }
 
-  public LoopBuilder<E, R> getLoopBuilder() {
-    return loopBuilder;
+  public ForEachBuilder<E, R> getForEachBuilder() {
+    return forEachBuilder;
   }
 }

@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.LoopSpec;
+import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
  * @since 1.7.0
  */
 public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
-    SpecMaterializer<LoopSpec<E, R>, UserSession> {
+    SpecMaterializer<ForEachSpec<E, R>, UserSession> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LoopSpecMaterializer.class);
 
@@ -49,8 +49,8 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
   }
 
   @Override
-  public Mono<UserSession> materialize(LoopSpec<E, R> spec, UserSession session) {
-    String key = spec.getLoopBuilder().getKey();
+  public Mono<UserSession> materialize(ForEachSpec<E, R> spec, UserSession session) {
+    String key = spec.getForEachBuilder().getKey();
     Optional<Iterable<E>> es = session.get(key);
     if (es.isEmpty()) {
       return Mono.empty();
@@ -59,7 +59,7 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
     return es.map(it -> {
       var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
 
-      Function<E, Spec> loopFunction = spec.getLoopBuilder().getLoopFunction();
+      Function<E, Spec> loopFunction = spec.getForEachBuilder().getForEachFunction();
       Iterator<E> inputIt = it.iterator();
       Mono<UserSession> acc = materializerFactory
           .monoFrom(loopFunction.apply(inputIt.next()), session);
