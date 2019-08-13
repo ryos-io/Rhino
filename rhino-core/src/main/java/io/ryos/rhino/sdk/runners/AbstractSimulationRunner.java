@@ -16,12 +16,16 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static io.ryos.rhino.sdk.runners.Throttler.throttle;
+
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Scenario;
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 /**
  * Abstract runner contains common methods used in concrete sub-classes.
@@ -48,6 +52,46 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
                 .stream()
                 .map(Scenario::getDescription)
                 .toArray(String[]::new));
+  }
+
+  protected int getStopAfter() {
+    var envVars = System.getenv();
+    var numberOfTurns = envVars.get("STOP_AFTER");
+    int stopAfter = -1;
+    if (numberOfTurns != null) {
+      stopAfter = Integer.parseInt(numberOfTurns);
+    }
+    return stopAfter;
+  }
+
+  protected Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
+    var throttlingInfo = getSimulationMetadata().getThrottlingInfo();
+    if (throttlingInfo != null) {
+      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
+          throttlingInfo.getDuration());
+      flux = flux.transform(throttle(rpsLimit));
+    }
+    return flux;
+  }
+
+  protected Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
+    var rampUpInfo = getSimulationMetadata().getRampUpInfo();
+    if (rampUpInfo != null) {
+      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
+          rampUpInfo.getDuration()));
+    }
+    return flux;
+  }
+
+  protected Flux<UserSession> appendTake(
+      Flux<UserSession> flux) {
+    int stopAfter = getStopAfter();
+    if (stopAfter > 0) {
+      flux = flux.take(stopAfter);
+    } else {
+      flux = flux.take(getSimulationMetadata().getDuration());
+    }
+    return flux;
   }
 
   public SimulationMetadata getSimulationMetadata() {

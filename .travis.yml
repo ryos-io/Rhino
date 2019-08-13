@@ -7,6 +7,9 @@ addons:
     token:
       secure: "P6VqCJMzvOv0Tn1nEv+oK4YQVeGIw6k4uValEHq1fr7R5Rp+iwYYG8gWGDuPyhUby98FRE4a7vXzp707DbiSX6uMwW5Q9KRBVURHc5tjC1/Q/3kamGGWjtkppF9Nbja0bVlwddUJ2jZb5+/+/p+wNFSvLe0Hq+VZop1qbWLC99M9WXkZfaTBDgUV5XQC8Qe0XhrrFlqBmVhDzCAcd1tTteeWoAoaMjejabmw+Wr0WeOFS5R5yHcvI7YLEQKp2UeUAVk1H7s92GiZOlTYcih5R4+M7oSxfhunhiBAokPYzx+7qdpaI0PyuyLim9mQCAk0hAzyeTpZ/eG64mGbVenFiPrEVezWkaVTWgelnzt440VOTnmYLsepjxxJfJQeUMpE7ap27W3DCDcKJxrStW/8CVJejv/bJMYth6LeGFYYBGzxMZ7r4aWw0STYnL3UNyitt0BEJDiYdmPEf9kZgnCHcAIciXH42lf+Rt9EvG8RmfdIfg5Z4IK9upl3WO9I6uZnWtiWbm6O3miz33ckocka2BEPfe4sWmVg3f385HwBkJ7f0qedxv0ed6cjTeZmu8ceA4UOeSKjpsNdQJn2dD5ZJJiuFRxSI7H0DW1o3wb7X6YtyFrceJ7RKw/wzx52cKCHUfarQoa5MRKsaxfMO64/eVHKKBTtqrH1x6EJTFr1Oew=" # encrypted value of your token
 
+env:
+  - STOP_AFTER=1
+
 script:
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ryos-io_Rhino

@@ -25,6 +25,7 @@ public class ReactiveBasicHttpGetTest {
 
   @Test
   public void testReactiveBasicHttp() throws InterruptedException {
+
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)

@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 
 import io.ryos.rhino.sdk.CyclicIterator;
@@ -110,28 +109,19 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
 
     var users = Stream.generate(userSessionProvider::take);
     var flux = Flux.fromStream(users);
-    var throttlingInfo = simulationMetadata.getThrottlingInfo();
+    flux = appendRampUp(flux);
+    flux = appendThrottling(flux);
+    flux = appendTake(flux);
 
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
-
-    var rampUpInfo = simulationMetadata.getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
+    var injector = new DefaultRunnerSimulationInjector(simulationMetadata);
 
     this.subscribe = flux.onErrorResume(t -> Mono.empty())
-        .take(simulationMetadata.getDuration())
         .parallel(SimulationConfig.getParallelisation())
         .runOn(Schedulers.elastic())
         .doOnTerminate(this::shutdown)
         .doOnNext(userSession -> {
           var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
-          new DefaultRunnerSimulationInjector(simulationMetadata).injectOn(instance);
+          injector.injectOn(instanceOf(simulationMetadata.getSimulationClass()).orElseThrow());
           // Run the scenario subsequently.
           simulationMetadata.getScenarios().forEach(scenario ->
               new DefaultSimulationCallable(simulationMetadata, userSession, scenario,

@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk.runners;
 
 import static com.google.common.collect.Streams.stream;
-import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeStaticMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
@@ -50,7 +49,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
@@ -116,8 +114,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     flux = appendRampUp(flux);
     flux = appendThrottling(flux);
-    flux = flux.take(simulationMetadata.getDuration())
-        .zipWith(Flux.fromStream(stream(dslIterator)))
+    flux = appendTake(flux);
+    flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .onErrorResume(t -> Mono.empty())
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
@@ -199,26 +197,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   private boolean isConditionalSpec(Spec next) {
     return next instanceof ConditionalSpecWrapper;
   }
-
-  private Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
-    var throttlingInfo = getSimulationMetadata().getThrottlingInfo();
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
-    return flux;
-  }
-
-  private Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
-    var rampUpInfo = getSimulationMetadata().getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-    return flux;
-  }
-
 
   @Override
   public void stop() {
