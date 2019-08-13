@@ -118,7 +118,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = flux.take(simulationMetadata.getDuration())
         .zipWith(Flux.fromStream(stream(dslIterator)))
-        .onErrorResume(this::handleError)
+        .onErrorResume(t -> Mono.empty())
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
         .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true))
@@ -163,7 +163,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private Publisher<? extends UserSession> getPublisher(AsyncHttpClient client,
+  private Publisher<UserSession> getPublisher(AsyncHttpClient client,
       UserSession session, ConnectableDsl dsl) {
 
     var specIt = dsl.getSpecs().iterator();
@@ -188,12 +188,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       });
     }
 
-    return acc.doOnError(e -> LOG.error("Unexpected error: ", e));
-  }
-
-  private Publisher<? extends Tuple2<UserSession, ConnectableDsl>> handleError(Throwable t) {
-    LOG.error("Skipping error", t);
-    return Mono.empty();
+    return acc
+        .onErrorResume(e -> {
+          LOG.error(e.getMessage());
+          return Mono.empty();
+        })
+        .doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 
   private boolean isConditionalSpec(Spec next) {
