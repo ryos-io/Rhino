@@ -6,7 +6,7 @@
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
   <a href="https://sonarcloud.io/dashboard?id=ryos-io_Rhino"><img src="https://sonarcloud.io/api/project_badges/measure?project=ryos-io_Rhino&metric=alert_status" border="0"/></a>
-  <img src="https://img.shields.io/badge/rhino--core-1.6.1-%2371c247" />
+  <img src="https://img.shields.io/badge/rhino--core-1.6.2-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
@@ -45,7 +45,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>1.6.1</version>
+  <version>1.6.2</version>
 </dependency>
 ```
 
