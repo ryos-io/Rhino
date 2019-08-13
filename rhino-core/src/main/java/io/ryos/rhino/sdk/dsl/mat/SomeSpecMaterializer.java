@@ -61,7 +61,9 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
 
           measurement.record(userEventStart);
 
-          var resultingSession = spec.getFunction().apply(session, measurement);
+          var status = spec.getFunction().apply(session);
+
+          measurement.measure(spec.getMeasurementPoint(), status);
           var elapsed = System.currentTimeMillis() - start;
           var userEventEnd = new UserEvent(
               session.getUser().getUsername(),
@@ -79,7 +81,7 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
 
           dispatcher.dispatchEvents(measurement);
 
-          return resultingSession;
+          return session;
         }));
   }
 }

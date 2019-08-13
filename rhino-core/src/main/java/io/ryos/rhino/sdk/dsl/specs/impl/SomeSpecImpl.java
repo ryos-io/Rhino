@@ -19,9 +19,8 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.reporting.Measurement;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Spec implementation for arbitrary code execution.
@@ -32,20 +31,20 @@ import java.util.function.BiFunction;
  */
 public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
 
-  private BiFunction<UserSession, Measurement, UserSession> function;
+  private Function<UserSession, String> function;
 
   public SomeSpecImpl(final String measurement) {
     super(Objects.requireNonNull(measurement));
   }
 
   @Override
-  public Spec as(final BiFunction<UserSession, Measurement, UserSession> function) {
+  public Spec as(final Function<UserSession, String> function) {
     this.function = Objects.requireNonNull(function);
     return this;
   }
 
   @Override
-  public BiFunction<UserSession, Measurement, UserSession> getFunction() {
+  public Function<UserSession, String> getFunction() {
     return function;
   }
 }

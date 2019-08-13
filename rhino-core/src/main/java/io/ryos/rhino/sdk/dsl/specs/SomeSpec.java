@@ -1,8 +1,7 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.reporting.Measurement;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Some spec is a custom spec to enable developers to add arbitrary code snippets into the DSL.
@@ -19,11 +18,11 @@ public interface SomeSpec extends Spec {
    *
    * @return Spec function.
    */
-  BiFunction<UserSession, Measurement, UserSession> getFunction();
+  Function<UserSession, String> getFunction();
 
   /**
    * Method to add a spec function into the DSL.
    * <p>
    */
-  Spec as(BiFunction<UserSession, Measurement, UserSession> function);
+  Spec as(Function<UserSession, String> function);
 }

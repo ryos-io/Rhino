@@ -20,6 +20,7 @@ public class SomeSpecMaterializerTest {
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
+
   @Mock
   EventDispatcher eventDispatcher;
 
@@ -29,9 +30,9 @@ public class SomeSpecMaterializerTest {
     var user = new UserSessionImpl(
         new UserImpl("user", UUID.randomUUID().toString(), "", ""));
 
-    final SomeSpec spec = (SomeSpec) some("test").as((u, m) -> {
-      u.add("test", 1);
-      return u;
+    final SomeSpec spec = (SomeSpec) some("test").as(session -> {
+      session.add("test", 1);
+      return "OK";
     });
 
     var materialize = new SomeSpecMaterializer(eventDispatcher)

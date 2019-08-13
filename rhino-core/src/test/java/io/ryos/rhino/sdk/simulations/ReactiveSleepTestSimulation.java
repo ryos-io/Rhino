@@ -48,9 +48,6 @@ public class ReactiveSleepTestSimulation {
   public LoadDsl testSleep() {
     return Start
         .dsl()
-        .run(some("Sleeping 1 sec.").as((u, m) -> {
-          m.measure("1. measurement", "OK");
-          return u;
-        }));
+        .run(some("Sleeping 1 sec.").as(session -> "OK"));
   }
 }
