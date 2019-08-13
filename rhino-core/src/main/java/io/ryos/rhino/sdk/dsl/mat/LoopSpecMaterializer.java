@@ -20,10 +20,8 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.function.Function;
 import org.asynchttpclient.AsyncHttpClient;
 import org.slf4j.Logger;
@@ -50,36 +48,35 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
 
   @Override
   public Mono<UserSession> materialize(ForEachSpec<E, R> spec, UserSession session) {
-    String key = spec.getForEachBuilder().getKey();
-    Optional<Iterable<E>> es = session.get(key);
-    if (es.isEmpty()) {
-      return Mono.empty();
-    }
+    var key = spec.getForEachBuilder().getKey();
 
-    return es.map(it -> {
-      var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
+    final Iterable<E> iterable = session.get(key)
+        .filter(obj -> obj instanceof Iterable)
+        .map(obj -> (Iterable<E>) obj)
+        .orElseThrow(() -> new IllegalArgumentException("forEach() failed. The instance with key: "
+            + "\""+ spec.getForEachBuilder().getKey() + "\" must be iterable."));
 
-      Function<E, Spec> loopFunction = spec.getForEachBuilder().getForEachFunction();
-      Iterator<E> inputIt = it.iterator();
-      Mono<UserSession> acc = materializerFactory
-          .monoFrom(loopFunction.apply(inputIt.next()), session);
+    var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
+    Function<E, Spec> loopFunction = spec.getForEachBuilder().getForEachFunction();
+    Iterator<E> inputIt = iterable.iterator();
+    Mono<UserSession> acc = materializerFactory.monoFrom(loopFunction.apply(inputIt.next()),
+        session);
 
-      while (inputIt.hasNext()) {
-        // Never move the following statement into lambda body. next() call is required to be eager.
-        var next = inputIt.next();
-        acc = acc.flatMap(s -> {
-          if (next instanceof ConditionalSpecWrapper) {
-            var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-            if (!predicate.test(s)) {
-              return Mono.just(s);
-            }
+    while (inputIt.hasNext()) {
+      // Never move the following statement into lambda body. next() call is required to be eager.
+      var next = inputIt.next();
+      acc = acc.flatMap(s -> {
+        if (next instanceof ConditionalSpecWrapper) {
+          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+          if (!predicate.test(s)) {
+            return Mono.just(s);
           }
-          return materializerFactory.monoFrom(loopFunction.apply(next), session);
-        });
-      }
-      acc = acc.doOnError(e -> LOG.error("Unexpected error: ", e));
+        }
+        return materializerFactory.monoFrom(loopFunction.apply(next), session);
+      });
+    }
+    acc = acc.doOnError(e -> LOG.error("Unexpected error: ", e));
 
-      return acc;
-    }).orElseThrow(RhinoFrameworkError::new);
+    return acc;
   }
 }
