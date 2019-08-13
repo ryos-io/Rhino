@@ -32,7 +32,6 @@ public class WaitSpecMaterializerTest {
       mono.block();
       long end = System.currentTimeMillis();
       long elapsed = end - start;
-      System.out.println(elapsed);
       assertThat(elapsed >= WAIT_TIME, equalTo(true));
       assertThat(elapsed <  WAIT_TIME * OVERHEAD_RATIO, equalTo(true));
     }
