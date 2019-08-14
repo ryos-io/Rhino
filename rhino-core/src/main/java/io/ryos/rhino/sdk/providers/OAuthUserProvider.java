@@ -50,15 +50,15 @@ public class OAuthUserProvider implements Provider<OAuthUser> {
    * will be thrown.
    * <p>
    *
-   * @param user User instance.
+   * @param excludedUser User instance.
    * @return {@link OAuthUser} instance different than the user provided.
    */
-  public OAuthUser take(User user) {
+  public OAuthUser take(User excludedUser) {
 
     int attempt = 0;
     while (attempt++ < MAX_ATTEMPT) {
       var userTaken = take();
-      if (!userTaken.equals(user)) {
+      if (!userTaken.equals(excludedUser)) {
         return userTaken;
       }
     }
