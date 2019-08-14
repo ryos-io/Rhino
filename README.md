@@ -14,9 +14,9 @@
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
-testing cloud services which consists of the Rhino Java framework as well as a collection of libraries
+testing web services which consists of the Rhino Java SDK as well as a collection of libraries
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
- added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project. 
+ added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project. The deployable artifact will be a **Docker** container which can be run on container orchestration platforms like **Mesos, Kubernetes, AWS ECS**, and so on.
  
  <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/rhino_grafana.png"  width="882"/>
@@ -25,7 +25,7 @@ testing cloud services which consists of the Rhino Java framework as well as a c
 > **_1.5.0:_** Grafana/InfluxDB Integration is included!
 
 
-With Influx DB and Grafana Integration, you can also monitor the current load testing and watch how services under test behaves under certain load pattern.  
+With **Influx DB** and **Grafana** Integration, you can also monitor the current load testing and watch how services under test behaves under certain load pattern.  
 
 <p align="center">
 <img src="http://ryos.io/static/integration.jpg" width="640"/>
