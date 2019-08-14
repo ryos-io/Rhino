@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.users.oauth;
 
 import io.ryos.rhino.sdk.users.data.UserImpl;
+import java.util.Objects;
 
 /**
  * Implementation of authenticated user representation.
@@ -26,10 +27,9 @@ import io.ryos.rhino.sdk.users.data.UserImpl;
  */
 public class OAuthUserImpl extends UserImpl implements OAuthUser {
 
+  private OAuthService service;
   private String accessToken;
   private String refreshToken;
-  private OAuthService service;
-  private String scope;
   private String clientId;
 
   public OAuthUserImpl(final OAuthService service,
@@ -48,7 +48,6 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.clientId = clientId;
-    this.scope = scope;
   }
 
   public void setAccessToken(String accessToken) {
@@ -57,10 +56,6 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
 
   public void setRefreshToken(String refreshToken) {
     this.refreshToken = refreshToken;
-  }
-
-  public void setScope(String scope) {
-    this.scope = scope;
   }
 
   public void setClientId(String clientId) {
@@ -75,11 +70,6 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
   @Override
   public String getRefreshToken() {
     return refreshToken;
-  }
-
-  @Override
-  public String getScope() {
-    return scope;
   }
 
   @Override
@@ -98,5 +88,25 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
         "userName='" + getUsername() + '\'' +
         "clientId='" + getClientId() + '\'' +
         '}';
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    final OAuthUserImpl oAuthUser = (OAuthUserImpl) o;
+    return Objects.equals(clientId, oAuthUser.clientId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), clientId);
   }
 }

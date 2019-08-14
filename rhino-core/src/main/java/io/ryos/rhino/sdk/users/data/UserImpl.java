@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.users.data;
 
+import java.util.Objects;
+
 public class UserImpl implements User {
 
   private final String username;
@@ -59,5 +61,24 @@ public class UserImpl implements User {
   @Override
   public String getRegion() {
     return region;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final UserImpl user = (UserImpl) o;
+    return username.equals(user.username) &&
+        id.equals(user.id) &&
+        region.equals(user.region);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(username, id, region);
   }
 }
