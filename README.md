@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
-## Rhino: Load and Performance Testing for Web Services
+## Rhino: Dockerized Load and Performance Testing for Web Services
 
 Rhino is a lightweight annotation-based JUnit-style load and performance testing framework tailored 
 for 
