@@ -23,7 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
@@ -77,7 +77,7 @@ public class StdoutReporter extends AbstractActor {
    * moneyTransfer_checkDebit_responseTime = 15ms moneyTransfer_checkDebit_OK = 250
    * moneyTransfer_checkDebit_NOTFOUND = 2
    */
-  private final Map<String, Long> metrics = new HashMap<>();
+  private final Map<String, Long> metrics = new LinkedHashMap<>();
 
   // Akka static factory.
   public static Props props(int numberOfUsers, Instant startTime, Duration duration) {
