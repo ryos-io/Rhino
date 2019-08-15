@@ -147,7 +147,7 @@ If you think that the Rhino is the right framework for you, you can follow the w
 ### Integrations
 * [Influx DB Integration](https://github.com/bagdemir/Rhino/wiki/Influx-DB-Integration) - Push the metrics into Influx DB. 
 * [Grafana Integration](https://github.com/bagdemir/Rhino/wiki/Grafana-Integration) - Show the metrics on Grafana. 
-
+* [Gatling Integration](https://github.com/ryos-io/Rhino/wiki/Generating-Gatling-Reports) - To create Gatling simulation reports.
 
 Questions/Contributions?
 ---
