@@ -130,7 +130,7 @@ $ docker run -t yourproject:latest
 ```
 
 
-## Get Started
+## Getting Started
 
 If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
 
