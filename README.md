@@ -94,7 +94,7 @@ public class RhinoEntity {
             .header(X_REQUEST_ID, "Rhino-" + uuid)
             .get();
 
-    measurement.measure("Health API Call", String.valueOf(response.getStatus()));
+    measurement.measure("Health API Call", response.getStatus());
   }
 }
 ```
