@@ -22,20 +22,20 @@ public interface LoadDsl {
    * <p>
    *
    * @param duration {@link Duration} to wait.
-   * @return {@link ConnectableDsl} instance.
+   * @return {@link RunnableDslImpl} instance.
    */
-  ConnectableDsl wait(Duration duration);
+  RunnableDslImpl wait(Duration duration);
 
   /**
    * Runs a {@link Spec} by materializing it.
    * <p>
    *
    * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
+   * @return {@link RunnableDslImpl} instance.
    */
-  ConfigurableDsl run(Spec spec);
+  RunnableDsl run(Spec spec);
 
-  <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper);
+  <R, T> RunnableDsl map(MapperBuilder<R, T> mapper);
 
-  <E, R extends Iterable<E>> ConfigurableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
+  <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
 }

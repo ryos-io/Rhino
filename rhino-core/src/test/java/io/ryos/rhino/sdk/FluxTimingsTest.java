@@ -33,6 +33,7 @@ import reactor.core.publisher.Mono;
 public class FluxTimingsTest {
 
   public static final String TARGET = "http://localhost:8089/api/files";
+
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(options().port(8089)
       .jettyAcceptors(2)

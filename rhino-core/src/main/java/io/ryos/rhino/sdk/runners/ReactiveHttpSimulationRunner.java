@@ -24,7 +24,7 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.ConnectableDsl;
+import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.MaterializerFactory;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
@@ -54,7 +54,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
-  private CyclicIterator<ConnectableDsl> dslIterator;
+  private CyclicIterator<RunnableDslImpl> dslIterator;
   private Disposable subscribe;
 
   private volatile boolean shutdownInitiated;
@@ -73,7 +73,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDsls()
         .stream()
         .filter(Objects::nonNull)
-        .map(spec -> (ConnectableDsl) spec)
+        .map(spec -> (RunnableDslImpl) spec)
         .collect(Collectors.toList()));
     this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
     this.masterLock = new ReentrantLock();
@@ -162,7 +162,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private Publisher<UserSession> getPublisher(AsyncHttpClient client,
-      UserSession session, ConnectableDsl dsl) {
+      UserSession session, RunnableDslImpl dsl) {
 
     var specIt = dsl.getSpecs().iterator();
     var materializerFactory = new MaterializerFactory(client, eventDispatcher);

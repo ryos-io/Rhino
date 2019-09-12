@@ -7,6 +7,7 @@ import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.MeasurableSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,9 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
 
   private List<Function<UserSession, Entry<String, List<String>>>> headers = new ArrayList<>();
   private List<Function<UserSession, Entry<String, List<String>>>> queryParams = new ArrayList<>();
+  private List<Function<UserSession, Entry<String, List<String>>>> formParams = new ArrayList<>();
   private boolean authEnabled;
+  private User authUser;
   private Method httpMethod;
   private Function<UserSession, String> endpoint;
   private RetryInfo retryInfo;
@@ -122,8 +125,33 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
+  public HttpConfigSpec formParam(String key, List<String> values) {
+    this.formParams.add(e -> Map.entry(key, values));
+    return this;
+  }
+
+  @Override
+  public HttpConfigSpec formParam(String key, String value) {
+    this.formParams.add(e -> Map.entry(key, Collections.singletonList(value)));
+    return this;
+  }
+
+  @Override
+  public HttpConfigSpec formParam(Function<UserSession, Entry<String, List<String>>> formParamFunction) {
+    this.formParams.add(formParamFunction);
+    return this;
+  }
+
+  @Override
   public HttpConfigSpec auth() {
     this.authEnabled = true;
+    return this;
+  }
+
+  @Override
+  public HttpConfigSpec auth(User user) {
+    this.authEnabled = true;
+    this.authUser = user;
     return this;
   }
 
@@ -140,8 +168,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction) {
-    this.queryParams.add(headerFunction);
+  public HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> queryParamFunction) {
+    this.queryParams.add(queryParamFunction);
     return this;
   }
 
@@ -192,6 +220,11 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
+  public List<Function<UserSession, Entry<String, List<String>>>> getFormParameters() {
+    return formParams;
+  }
+
+  @Override
   public Function<UserSession, String> getEndpoint() {
     return endpoint;
   }
@@ -199,6 +232,11 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   @Override
   public boolean isAuth() {
     return authEnabled;
+  }
+
+  @Override
+  public User getAuthUser() {
+    return authUser;
   }
 
   @Override

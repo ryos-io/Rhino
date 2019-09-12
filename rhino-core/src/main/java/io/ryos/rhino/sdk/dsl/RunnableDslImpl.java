@@ -20,7 +20,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class ConnectableDsl implements LoadDsl, ConfigurableDsl {
+public class RunnableDslImpl implements LoadDsl, RunnableDsl {
 
   /**
    * Test name, that is the name of the load DSL or scenario.
@@ -35,31 +35,31 @@ public class ConnectableDsl implements LoadDsl, ConfigurableDsl {
   private final List<Spec> executableFunctions = new ArrayList<>();
 
   @Override
-  public ConnectableDsl wait(Duration duration) {
+  public RunnableDslImpl wait(Duration duration) {
     executableFunctions.add(new WaitSpecImpl(duration));
     return this;
   }
 
   @Override
-  public ConfigurableDsl run(Spec spec) {
+  public RunnableDsl run(Spec spec) {
     executableFunctions.add(spec);
     return this;
   }
 
   @Override
-  public <R, T> ConfigurableDsl map(MapperBuilder<R, T> mapper) {
+  public <R, T> RunnableDsl map(MapperBuilder<R, T> mapper) {
     executableFunctions.add(new MapperSpecImpl<>(mapper));
     return this;
   }
 
   @Override
-  public <E, R extends Iterable<E>> ConfigurableDsl forEach(ForEachBuilder<E, R> forEachBuilder) {
+  public <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder) {
     executableFunctions.add(new ForEachSpecImpl<>(forEachBuilder));
     return this;
   }
 
   @Override
-  public ConfigurableDsl runIf(Predicate<UserSession> predicate, Spec spec) {
+  public RunnableDsl runIf(Predicate<UserSession> predicate, Spec spec) {
     executableFunctions.add(new ConditionalSpecWrapper(spec, predicate));
     return this;
   }
