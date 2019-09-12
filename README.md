@@ -5,10 +5,10 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <a href="https://sonarcloud.io/dashboard?id=ryos-io_Rhino"><img src="https://sonarcloud.io/api/project_badges/measure?project=ryos-io_Rhino&metric=alert_status" border="0"/></a>
   <img src="https://img.shields.io/badge/rhino--core-1.6.2-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
+
 
 ## Rhino: Dockerized Load and Performance Testing for Web Services
 
@@ -18,7 +18,7 @@ testing web services which consists of the Rhino Java SDK as well as a collectio
  and tools which enable developers to develop load and performance tests very fast. The Rhino can be 
  added as library dependency into your project or the Rhino Maven archetype can be used to create a new maven project. The deployable artifact will be a **Docker** container which can be run on container orchestration platforms like **Mesos, Kubernetes, AWS ECS**, and so on.
  
- <p align="center">
+<p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/rhino_grafana.png"  width="882"/>
 </p>
 
@@ -43,6 +43,10 @@ make them reusable in your load and performance test,
 the framework every time they need to write new load tests.
 
 Considering all these aspects, we began with Project Rhino in 2018 and it is available as F/OSS  with Apache 2.0 License, now.
+
+<p align="center">
+  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="140"/>
+</p>
 
 ## How to use?
 
