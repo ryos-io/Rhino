@@ -1,3 +1,8 @@
+<p align="right">
+  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="140"/>
+</p>
+
+
 <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
 </p>
@@ -43,10 +48,6 @@ make them reusable in your load and performance test,
 the framework every time they need to write new load tests.
 
 Considering all these aspects, we began with Project Rhino in 2018 and it is available as F/OSS  with Apache 2.0 License, now.
-
-<p align="center">
-  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="140"/>
-</p>
 
 ## How to use?
 
