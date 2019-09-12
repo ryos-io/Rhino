@@ -1,3 +1,6 @@
+<p align="right">
+  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="90"/>
+</p>
 <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
 </p>
@@ -7,9 +10,6 @@
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
   <img src="https://img.shields.io/badge/rhino--core-1.6.2-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
-</p>
-<p align="right">
-  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="90"/>
 </p>
 
 ## Rhino: Dockerized Load and Performance Testing for Web Services
