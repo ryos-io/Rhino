@@ -35,6 +35,7 @@ With **Influx DB** and **Grafana** Integration, you can also monitor the current
 
 **Rhino's philosophy is:**
 
+* one repository for project's source code as well as Unit, Integration, Load and Performance Tests.
 * to speed up load and performance test development,
 * to afford a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
