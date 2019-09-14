@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk.dsl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
@@ -43,6 +44,18 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl {
   @Override
   public RunnableDsl run(Spec spec) {
     executableFunctions.add(spec);
+    return this;
+  }
+
+  @Override
+  public RunnableDsl ensure(Predicate<UserSession> predicate) {
+    executableFunctions.add(new EnsureSpecImpl(predicate));
+    return this;
+  }
+
+  @Override
+  public RunnableDsl ensure(Predicate<UserSession> predicate, String reason) {
+    executableFunctions.add(new EnsureSpecImpl(predicate, reason));
     return this;
   }
 

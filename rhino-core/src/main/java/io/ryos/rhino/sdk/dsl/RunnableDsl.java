@@ -43,4 +43,18 @@ public interface RunnableDsl extends LoadDsl {
    * @return {@link RunnableDslImpl} instance.
    */
   RunnableDsl run(Spec spec);
+
+  /**
+   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
+   *
+   * @return {@link RunnableDslImpl} instance.
+   */
+  RunnableDsl ensure(Predicate<UserSession> predicate);
+
+  /**
+   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
+   *
+   * @return {@link RunnableDslImpl} instance.
+   */
+  RunnableDsl ensure(Predicate<UserSession> predicate, String reason);
 }

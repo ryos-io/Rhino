@@ -29,6 +29,7 @@ import io.ryos.rhino.sdk.dsl.mat.MaterializerFactory;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
+import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
@@ -82,6 +84,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   public void start() {
 
+    Hooks.onErrorDropped((t) -> {
+    });
     var simulationMetadata = getSimulationMetadata();
 
     LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
@@ -116,11 +120,11 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
+        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()))
         .onErrorResume(t -> Mono.empty())
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
-        .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true))
-        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()));
+        .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true));
 
     this.subscribe = flux.subscribe();
 
@@ -186,12 +190,13 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       });
     }
 
-    return acc
-        .onErrorResume(e -> {
-          LOG.error(e.getMessage());
+    return acc.onErrorResume(exception -> {
+      LOG.error(exception.getMessage());
+      if (exception instanceof TerminateSimulationException) {
+        return Mono.error(exception);
+      }
           return Mono.empty();
-        })
-        .doOnError(e -> LOG.error("Unexpected error: ", e));
+    });
   }
 
   private boolean isConditionalSpec(Spec next) {
