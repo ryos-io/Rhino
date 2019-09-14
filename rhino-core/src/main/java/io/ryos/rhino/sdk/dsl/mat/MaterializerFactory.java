@@ -17,8 +17,9 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
+import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
@@ -57,6 +58,8 @@ public class MaterializerFactory {
       return new LoopSpecMaterializer<>(eventDispatcher, httpClient).materialize((ForEachSpec) spec, session);
     } else if (isConditionalSpec(spec)) {
       return monoFrom(((ConditionalSpecWrapper) spec).getSpec(), session);
+    } else if (spec instanceof EnsureSpec) {
+      return new EnsureSpecMaterializer().materialize((EnsureSpec) spec, session);
     }
 
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());
