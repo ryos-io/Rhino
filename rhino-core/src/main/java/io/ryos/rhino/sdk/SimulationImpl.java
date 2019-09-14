@@ -67,8 +67,8 @@ public class SimulationImpl implements Simulation {
   SimulationImpl(final String path, final String simulationName) {
 
     try {
+      Runtime.getRuntime().addShutdownHook(new Thread(SimulationImpl.this::stop));
       Application.showBranding();
-
       var environment = getEnvironment();
       var simulationConfig = SimulationConfig.newInstance(path, environment);
       var jobs = SimulationJobsScanner.create().scan(simulationName,
