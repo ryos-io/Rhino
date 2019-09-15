@@ -2,13 +2,8 @@ package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
-import io.ryos.rhino.sdk.dsl.specs.impl.MapperSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.*;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +16,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class RunnableDslImpl implements LoadDsl, RunnableDsl {
+public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
 
   /**
    * Test name, that is the name of the load DSL or scenario.
@@ -68,6 +63,12 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl {
   @Override
   public <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder) {
     executableFunctions.add(new ForEachSpecImpl<>(forEachBuilder));
+    return this;
+  }
+
+  @Override
+  public RunnableDsl runUntil(Predicate<UserSession> predicate, Spec spec) {
+    executableFunctions.add(new RunUntilSpecImpl(spec, predicate));
     return this;
   }
 

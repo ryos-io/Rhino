@@ -40,8 +40,7 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
   private final EventDispatcher eventDispatcher;
   private final AsyncHttpClient asyncHttpClient;
 
-  public LoopSpecMaterializer(EventDispatcher eventDispatcher,
-      AsyncHttpClient asyncHttpClient) {
+  public LoopSpecMaterializer(EventDispatcher eventDispatcher, AsyncHttpClient asyncHttpClient) {
     this.eventDispatcher = eventDispatcher;
     this.asyncHttpClient = asyncHttpClient;
   }
@@ -49,19 +48,16 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
   @Override
   public Mono<UserSession> materialize(ForEachSpec<E, R> spec, UserSession session) {
     var key = spec.getForEachBuilder().getKey();
-
-    final Iterable<E> iterable = session.get(key)
+    var iterable = session.get(key)
         .filter(obj -> obj instanceof Iterable)
         .map(obj -> (Iterable<E>) obj)
         .orElseThrow(() -> new IllegalArgumentException("forEach() failed. The instance with key: "
             + "\"" + spec.getForEachBuilder().getKey() + "\" must be iterable, but was " + session
             .get(key)));
-
     var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
-    Function<E, Spec> loopFunction = spec.getForEachBuilder().getForEachFunction();
-    Iterator<E> inputIt = iterable.iterator();
-    Mono<UserSession> acc = materializerFactory.monoFrom(loopFunction.apply(inputIt.next()),
-        session);
+    var loopFunction = spec.getForEachBuilder().getForEachFunction();
+    var inputIt = iterable.iterator();
+    var acc = materializerFactory.monoFrom(loopFunction.apply(inputIt.next()), session);
 
     while (inputIt.hasNext()) {
       // Never move the following statement into lambda body. next() call is required to be eager.

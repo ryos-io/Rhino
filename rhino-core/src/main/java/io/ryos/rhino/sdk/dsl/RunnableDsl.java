@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface RunnableDsl extends LoadDsl {
+public interface RunnableDsl extends LoadDsl, IterableDsl {
 
   /**
    * Conditional runnable DSL is a {@link LoadDsl}if {@link Predicate} returns {@code true}, then

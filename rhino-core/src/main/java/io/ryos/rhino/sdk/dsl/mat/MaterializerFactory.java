@@ -17,13 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
-import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
-import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
-import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.WaitSpec;
+import io.ryos.rhino.sdk.dsl.specs.*;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.MaterializerNotFound;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
@@ -60,6 +54,8 @@ public class MaterializerFactory {
       return monoFrom(((ConditionalSpecWrapper) spec).getSpec(), session);
     } else if (spec instanceof EnsureSpec) {
       return new EnsureSpecMaterializer().materialize((EnsureSpec) spec, session);
+    } else if (spec instanceof RunUntilSpec) {
+      return new RunUntilSpecMaterializer(eventDispatcher, httpClient).materialize((RunUntilSpec) spec, session);
     }
 
     throw new MaterializerNotFound("Materializer not found for spec: " + spec.getClass().getName());

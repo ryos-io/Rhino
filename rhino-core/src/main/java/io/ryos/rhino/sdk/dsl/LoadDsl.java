@@ -26,16 +26,6 @@ public interface LoadDsl {
    */
   RunnableDslImpl wait(Duration duration);
 
-  /**
-   * Runs a {@link Spec} by materializing it.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link RunnableDslImpl} instance.
-   */
-  RunnableDsl run(Spec spec);
-
   <R, T> RunnableDsl map(MapperBuilder<R, T> mapper);
 
-  <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
 }
