@@ -74,6 +74,7 @@ public class ReactiveBasicHttpGetSimulation {
             .endpoint(FILES_ENDPOINT)
             .get()
             .saveTo("result"))
+        .ensure((s) -> false)
         .map(MapperBuilder.<Response, String>from("result")
             .doMap(s -> s.getStatusCode() + " returned."))
         .forEach(in("result").apply(o -> some("measurement")
