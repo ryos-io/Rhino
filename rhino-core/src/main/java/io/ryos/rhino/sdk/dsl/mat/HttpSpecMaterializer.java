@@ -33,6 +33,7 @@ import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.exceptions.UnknownTokenTypeException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -179,15 +180,24 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
           .addQueryParam(paramEntry.getKey(), String.join(",", paramEntry.getValue()));
     }
 
+    for (var f : httpSpec.getFormParameters()) {
+      var paramEntry = f.apply(userSession);
+      builder = builder
+          .addFormParam(paramEntry.getKey(), String.join(",", paramEntry.getValue()));
+    }
+
     if (httpSpec.isAuth()) {
-      builder = handleAuth(userSession, builder);
+      User user = httpSpec.getAuthUser();
+      if (user == null) {
+        user = userSession.getUser();
+      }
+      builder = handleAuth(user, builder);
     }
 
     return builder;
   }
 
-  private RequestBuilder handleAuth(UserSession userSession, RequestBuilder builder) {
-    var user = userSession.getUser();
+  private RequestBuilder handleAuth(User user, RequestBuilder builder) {
     if (user instanceof OAuthUser) {
       var authService = ((OAuthUser) user).getOAuthService();
       if (SimulationConfig.isServiceAuthenticationEnabled()) {

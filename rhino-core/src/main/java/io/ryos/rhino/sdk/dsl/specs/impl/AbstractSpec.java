@@ -28,8 +28,8 @@ import io.ryos.rhino.sdk.dsl.specs.Spec;
  */
 public abstract class AbstractSpec implements MeasurableSpec {
 
-  private String enclosingSpec;
-  private String measurementPoint;
+  private String enclosingSpec = "";
+  private String measurementPoint = "";
   private boolean measurementEnabled = true;
   private boolean cumulativeMeasurement = false;
 

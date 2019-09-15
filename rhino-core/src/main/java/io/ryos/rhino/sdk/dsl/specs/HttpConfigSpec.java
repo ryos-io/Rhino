@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
@@ -33,13 +34,21 @@ public interface HttpConfigSpec extends HttpMethodSpec {
 
   HttpConfigSpec header(String key, String value);
 
-  HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> headerFunction);
+  HttpConfigSpec formParam(Function<UserSession, Entry<String, List<String>>> formParamFunction);
+
+  HttpConfigSpec formParam(String key, List<String> values);
+
+  HttpConfigSpec formParam(String key, String value);
+
+  HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> queryParamFunction);
 
   HttpConfigSpec queryParam(String key, List<String> values);
 
   HttpConfigSpec queryParam(String key, String value);
 
   HttpConfigSpec auth();
+
+  HttpConfigSpec auth(User user);
 
   HttpConfigSpec upload(final Supplier<InputStream> inputStream);
 }

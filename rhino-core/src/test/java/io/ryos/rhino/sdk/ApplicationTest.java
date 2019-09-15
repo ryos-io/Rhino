@@ -15,6 +15,11 @@ import org.junit.Test;
 public class ApplicationTest {
 
   @Test
+  public void testReplaceAll() {
+    System.out.println("a/b/c/".replaceFirst("^.*?/", String.format("%s/", "testbuck")));
+  }
+
+  @Test
   public void testURIWithCustomURIs() throws URISyntaxException {
 
     String uris = "classpath:///rhino.properties";

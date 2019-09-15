@@ -32,7 +32,7 @@ import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
-import io.ryos.rhino.sdk.dsl.ConnectableDsl;
+import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
@@ -241,8 +241,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
             ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
         .map(p -> {
           var loadDsl = p.getSecond();
-          if (loadDsl instanceof ConnectableDsl) {
-            return ((ConnectableDsl) loadDsl).withName(p.getFirst());
+          if (loadDsl instanceof RunnableDslImpl) {
+            return ((RunnableDslImpl) loadDsl).withName(p.getFirst());
           }
           return loadDsl;
         })

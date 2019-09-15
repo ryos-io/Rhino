@@ -24,11 +24,12 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.ConnectableDsl;
+import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.MaterializerFactory;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
+import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -48,13 +49,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
 public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
-  private CyclicIterator<ConnectableDsl> dslIterator;
+  private CyclicIterator<RunnableDslImpl> dslIterator;
   private Disposable subscribe;
 
   private volatile boolean shutdownInitiated;
@@ -73,7 +75,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDsls()
         .stream()
         .filter(Objects::nonNull)
-        .map(spec -> (ConnectableDsl) spec)
+        .map(spec -> (RunnableDslImpl) spec)
         .collect(Collectors.toList()));
     this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
     this.masterLock = new ReentrantLock();
@@ -82,6 +84,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   public void start() {
 
+    Hooks.onErrorDropped((t) -> {
+    });
     var simulationMetadata = getSimulationMetadata();
 
     LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
@@ -116,11 +120,11 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
+        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()))
         .onErrorResume(t -> Mono.empty())
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
-        .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true))
-        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()));
+        .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true));
 
     this.subscribe = flux.subscribe();
 
@@ -162,7 +166,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private Publisher<UserSession> getPublisher(AsyncHttpClient client,
-      UserSession session, ConnectableDsl dsl) {
+      UserSession session, RunnableDslImpl dsl) {
 
     var specIt = dsl.getSpecs().iterator();
     var materializerFactory = new MaterializerFactory(client, eventDispatcher);
@@ -186,12 +190,13 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       });
     }
 
-    return acc
-        .onErrorResume(e -> {
-          LOG.error(e.getMessage());
+    return acc.onErrorResume(exception -> {
+      LOG.error(exception.getMessage());
+      if (exception instanceof TerminateSimulationException) {
+        return Mono.error(exception);
+      }
           return Mono.empty();
-        })
-        .doOnError(e -> LOG.error("Unexpected error: ", e));
+    });
   }
 
   private boolean isConditionalSpec(Spec next) {

@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.dsl.specs;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
+import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
@@ -29,9 +30,13 @@ public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, M
 
   List<Function<UserSession, Entry<String, List<String>>>> getQueryParameters();
 
+  List<Function<UserSession, Entry<String, List<String>>>> getFormParameters();
+
   RetryInfo getRetryInfo();
 
   boolean isAuth();
+
+  User getAuthUser();
 
   String getResponseKey();
 

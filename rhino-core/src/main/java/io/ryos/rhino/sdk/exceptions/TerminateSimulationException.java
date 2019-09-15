@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
-
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+package io.ryos.rhino.sdk.exceptions;
 
 /**
  * @author Erhan Bagdemir
- * @since 1.7.0
+ * @since 1.1.0
  */
-public interface LoopDsl {
+public class TerminateSimulationException extends Error {
 
-  /**
-   * Runs a {@link Spec} by materializing it.
-   * <p>
-   *
-   * @param spec {@link Spec} to materialize and run.
-   * @return {@link ConnectableDsl} instance.
-   */
-  ConnectableDsl run(Spec spec);
-
+  public TerminateSimulationException(String message) {
+    super(message);
+  }
 }
