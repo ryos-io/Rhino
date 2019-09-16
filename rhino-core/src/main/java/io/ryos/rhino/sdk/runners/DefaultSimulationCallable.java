@@ -80,6 +80,10 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     executeScenario(scenario, measurement, instance, userSession);
 
+    if (!measurement.isLastEventScenarioEvent()) {
+      measurement.measure("", "-");
+    }
+
     var elapsed = System.currentTimeMillis() - start;
     var userEventEnd = new UserEvent(
         user.getUsername(),

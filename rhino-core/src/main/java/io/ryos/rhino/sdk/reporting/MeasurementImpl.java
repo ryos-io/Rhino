@@ -27,6 +27,7 @@ import java.util.List;
  */
 public class MeasurementImpl implements Measurement {
 
+  private static final String STR_BLANK = "";
   private final List<LogEvent> events = new ArrayList<>();
   private final String scenarioName;
   private final String userId;
@@ -44,20 +45,19 @@ public class MeasurementImpl implements Measurement {
     long elapsed = 0;
 
     if (!events.isEmpty()) {
-      LogEvent lastEvent = events.get(events.size() - 1);
+      var lastEvent = events.get(events.size() - 1);
       end = System.currentTimeMillis();
       start = lastEvent.getEnd();
       elapsed = end - start;
     }
 
-    final ScenarioEvent emptyEvent = new ScenarioEvent("",
-        userId,
-        scenarioName,
+    var emptyEvent = new ScenarioEvent(STR_BLANK, userId, scenarioName,
         start,
         end,
         elapsed,
         status,
         stepName);
+
     addEvent(emptyEvent);
   }
 
@@ -67,6 +67,14 @@ public class MeasurementImpl implements Measurement {
 
   public void record(final LogEvent event) {
     events.add(event);
+  }
+
+  public boolean isLastEventScenarioEvent() {
+    if (!events.isEmpty()) {
+      var lastEvent = events.get(events.size() - 1);
+      return lastEvent instanceof ScenarioEvent;
+    }
+    return false;
   }
 
   public List<LogEvent> getEvents() {
