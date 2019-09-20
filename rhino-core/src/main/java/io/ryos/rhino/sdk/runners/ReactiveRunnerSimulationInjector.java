@@ -16,20 +16,16 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
-
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
-import io.ryos.rhino.sdk.data.InjectionPoint;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
-import java.util.Arrays;
-import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 
 /**
  * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is the
@@ -48,19 +44,13 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
   private static final Logger LOG = LogManager.getLogger(ReactiveRunnerSimulationInjector.class);
 
   /**
-   * Simulation metadata.
-   * <p>
-   */
-  private final SimulationMetadata simulationMetadata;
-
-  /**
    * Instantiates a new {@link ReactiveRunnerSimulationInjector} instance.
    * <p>
    *
    * @param simulationMetadata Simulation metadata.
    */
   public ReactiveRunnerSimulationInjector(final SimulationMetadata simulationMetadata) {
-    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
+    super(simulationMetadata);
   }
 
   @Override
@@ -71,38 +61,11 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
 
   private void injectUserProvider(final Object simulationInstance) {
 
-    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
-        UserProvider.class);
+    var fieldAnnotation = getFieldsByAnnotation(getSimulationMetadata().getSimulationClass(), UserProvider.class);
 
     fieldAnnotation.stream().map(pair ->
-        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(simulationMetadata.getUserRepository(),
+        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(getSimulationMetadata().getUserRepository(),
             pair.getSecond().region())), pair.getFirst()))
         .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
-  }
-
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void injectCustomFeeders(final Object simulationInstance) {
-
-    Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
-        .filter(hasFeeder)
-        .map(injectionPointFunction)
-        .forEach(ip -> feed(simulationInstance, ip));
-  }
-
-  // Provider the feeder value into the field.
-  @Override
-  protected void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
-    Objects.requireNonNull(instance, "Object instance is null.");
-    var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
-    try {
-      var field = injectionPoint.getField();
-      field.setAccessible(true);
-      //TODO pre-check before assignment.
-      field.set(instance, factoryInstance);
-    } catch (IllegalAccessException e) {
-      LOG.error("Access to field failed.", e);
-    } catch (IllegalArgumentException e) {
-      LOG.error("Provider's return type and field's type is not compatible: " + e.getMessage());
-    }
   }
 }
