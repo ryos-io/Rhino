@@ -39,7 +39,7 @@ public class BlockingJerseyClientLoadTestSimulation {
   private Client client = ClientBuilder.newClient();
 
   @Provider(factory = UUIDProvider.class)
-  private String uuid;
+  private UUIDProvider provider;
 
   @Prepare
   public static void prepare(SimulationSession session) {
@@ -51,10 +51,10 @@ public class BlockingJerseyClientLoadTestSimulation {
   @Scenario(name = "Health")
   public void performHealth(Measurement measurement) {
     var response = client
-            .target(TARGET)
-            .request()
-            .header(X_REQUEST_ID, "Rhino-" + uuid)
-            .get();
+        .target(TARGET)
+        .request()
+        .header(X_REQUEST_ID, "Rhino-" + provider.take())
+        .get();
 
     measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }

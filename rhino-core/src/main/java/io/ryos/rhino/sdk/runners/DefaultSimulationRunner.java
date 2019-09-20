@@ -121,7 +121,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
         .doOnTerminate(this::shutdown)
         .doOnNext(userSession -> {
           var instance = instanceOf(simulationMetadata.getSimulationClass()).orElseThrow();
-          injector.injectOn(instanceOf(simulationMetadata.getSimulationClass()).orElseThrow());
+          injector.injectOn(instance);
           simulationMetadata.getScenarios().forEach(scenario ->
               new DefaultSimulationCallable(simulationMetadata, userSession, scenario,
                   eventDispatcher, instance).call());
