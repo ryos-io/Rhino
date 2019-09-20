@@ -39,7 +39,7 @@ With **Influx DB** and **Grafana** Integration, you can also monitor the current
 * to speed up load and performance test development,
 * to afford a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
-* to provide a Cloud-native which is elastic, scalable, covering region and environment aware load scenarios,
+* to provide a Cloud-native load testing environment, that is elastic, scalable, covering region and environment- aware load scenarios,
 * to enable the integration with the existing code, e.g your integration test frameworks to 
 make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or
