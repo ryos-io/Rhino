@@ -19,26 +19,13 @@ package io.ryos.rhino.sdk;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import static java.util.stream.Collectors.toList;
 
-import io.ryos.rhino.sdk.annotations.After;
-import io.ryos.rhino.sdk.annotations.Before;
-import io.ryos.rhino.sdk.annotations.CleanUp;
-import io.ryos.rhino.sdk.annotations.Dsl;
-import io.ryos.rhino.sdk.annotations.Grafana;
-import io.ryos.rhino.sdk.annotations.Influx;
-import io.ryos.rhino.sdk.annotations.Logging;
-import io.ryos.rhino.sdk.annotations.Prepare;
-import io.ryos.rhino.sdk.annotations.Runner;
-import io.ryos.rhino.sdk.annotations.Throttle;
+import io.ryos.rhino.sdk.annotations.*;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
-import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
-import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
-import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
-import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
+import io.ryos.rhino.sdk.exceptions.*;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
@@ -225,10 +212,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     // Read scenario methods.
     var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
-        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(a -> a instanceof io.ryos.rhino.sdk.annotations.Scenario))
-        .map(s -> new Scenario(
-            s.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name(), s))
+        .filter(this::hasScenarioAnnotation)
+        .filter(this::isEnabled)
+        .map(method -> new Scenario(getScenarioName(method), method))
         .collect(toList());
 
     // Create test instance.
@@ -249,7 +235,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .collect(toList());
 
     if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
-      throw new SimulationNotFoundException(clazz.getName());
+      throw new ScenarioNotFoundException(clazz.getName());
     }
 
     if (dsls.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
@@ -297,6 +283,18 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withRampUp(rampupInfo)
         .withGrafana(grafanaInfo)
         .build();
+  }
+
+  private boolean hasScenarioAnnotation(Method method) {
+    return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(annotation -> annotation instanceof io.ryos.rhino.sdk.annotations.Scenario);
+  }
+
+  private boolean isEnabled(Method method) {
+    return method.getDeclaredAnnotation(Disabled.class) == null;
+  }
+
+  private String getScenarioName(Method method) {
+    return method.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name();
   }
 
   private boolean isBlockingSimulation(final Runner runnerAnnotation) {

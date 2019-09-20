@@ -23,8 +23,12 @@ import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.SimulationSession;
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
+import io.ryos.rhino.sdk.users.data.User;
+import io.ryos.rhino.sdk.users.oauth.OAuthService;
+import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -48,15 +52,31 @@ public class BlockingJerseyClientLoadTestSimulation {
     session.add("number", 1);
   }
 
-  @Scenario(name = "Health")
-  public void performHealth(Measurement measurement) {
+  @Scenario(name = "Discovery API")
+  public void performHealth(Measurement measurement, UserSession session) {
+
+    User user = session.getUser();
+    OAuthUser oauthUser = null;
+    if (user instanceof OAuthUser) {
+      oauthUser = ((OAuthUser) session.getUser());
+    }
+
+    assert oauthUser != null;
+
+    String serviceAccessToken = null;
+    if (oauthUser.getOAuthService() != null) {
+      serviceAccessToken = oauthUser.getOAuthService().getAccessToken();
+    }
+
     var response = client
         .target(TARGET)
         .request()
         .header(X_REQUEST_ID, "Rhino-" + uuid)
+        .header("Authorization", "Bearer " + serviceAccessToken)
+        .header("X-User-Token", oauthUser.getAccessToken())
         .get();
 
-    measurement.measure("Health API Call", String.valueOf(response.getStatus()));
+    measurement.measure("Discovery API Call", String.valueOf(response.getStatus()));
   }
 
   @CleanUp
