@@ -20,7 +20,7 @@ package io.ryos.rhino.sdk.exceptions;
  * Thrown, if the step is not found.
  *
  * @author Erhan Bagdemir
- * @since 1.0
+ * @since 1.0.0
  */
 public class SimulationNotFoundException extends RuntimeException {
 

@@ -51,10 +51,10 @@ public class BlockingJerseyClientLoadTestSimulation {
   @Scenario(name = "Health")
   public void performHealth(Measurement measurement) {
     var response = client
-        .target(TARGET)
-        .request()
-        .header(X_REQUEST_ID, "Rhino-" + uuid)
-        .get();
+            .target(TARGET)
+            .request()
+            .header(X_REQUEST_ID, "Rhino-" + uuid)
+            .get();
 
     measurement.measure("Health API Call", String.valueOf(response.getStatus()));
   }

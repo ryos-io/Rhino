@@ -139,6 +139,8 @@ public class SimulationImpl implements Simulation {
   @Override
   public void stop() {
     LOG.info("Stopping simulation...");
-    simulationRunners.forEach(SimulationRunner::stop);
+    if (simulationRunners != null) {
+      simulationRunners.forEach(SimulationRunner::stop);
+    }
   }
 }
