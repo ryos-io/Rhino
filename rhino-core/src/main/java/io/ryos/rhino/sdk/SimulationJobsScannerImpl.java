@@ -19,13 +19,28 @@ package io.ryos.rhino.sdk;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import static java.util.stream.Collectors.toList;
 
-import io.ryos.rhino.sdk.annotations.*;
+import io.ryos.rhino.sdk.annotations.After;
+import io.ryos.rhino.sdk.annotations.Before;
+import io.ryos.rhino.sdk.annotations.CleanUp;
+import io.ryos.rhino.sdk.annotations.Disabled;
+import io.ryos.rhino.sdk.annotations.Dsl;
+import io.ryos.rhino.sdk.annotations.Grafana;
+import io.ryos.rhino.sdk.annotations.Influx;
+import io.ryos.rhino.sdk.annotations.Logging;
+import io.ryos.rhino.sdk.annotations.Prepare;
+import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
-import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.exceptions.*;
+import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
+import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
+import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
+import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
+import io.ryos.rhino.sdk.exceptions.ScenarioNotFoundException;
+import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
+import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
@@ -162,7 +177,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     }
   }
 
-  private SimulationMetadata createBenchmarkJob(final Class clazz) {
+  public SimulationMetadata createBenchmarkJob(final Class clazz) {
 
     // Simulation class.
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz

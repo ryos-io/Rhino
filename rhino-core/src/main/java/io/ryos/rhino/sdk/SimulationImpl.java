@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.utils.Environment;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class SimulationImpl implements Simulation {
+
   private static final Logger LOG = LoggerFactory.getLogger(SimulationImpl.class);
 
   private static final String KEY_PROFILE = "profile";
@@ -56,6 +58,21 @@ public class SimulationImpl implements Simulation {
    * <p>
    */
   private List<SimulationRunner> simulationRunners;
+
+  SimulationImpl(final String path, final Class<?> simulationClass) {
+
+    try {
+      Runtime.getRuntime().addShutdownHook(new Thread(SimulationImpl.this::stop));
+      Application.showBranding();
+      var environment = getEnvironment();
+      var simulationConfig = SimulationConfig.newInstance(path, environment);
+      SimulationMetadata simulationMetadata = extractJobFromClass(simulationClass);
+      this.simulationRunners = getSimulationRunners(Collections.singletonList(simulationMetadata));
+    } catch (Exception pe) {
+      LOG.error("Cannot start application", pe);
+      System.exit(-1);
+    }
+  }
 
   /**
    * Constructs a new instance of {@link SimulationImpl}.
@@ -71,20 +88,27 @@ public class SimulationImpl implements Simulation {
       Application.showBranding();
       var environment = getEnvironment();
       var simulationConfig = SimulationConfig.newInstance(path, environment);
-      var jobs = SimulationJobsScanner.create().scan(simulationName,
-          simulationConfig.getPackageToScan());
-      this.simulationRunners = jobs
-          .stream()
-          .map(simulation -> new Pair<SimulationMetadata, Context>(simulation,
-              getContext(simulation)))
-          .map(pair -> getRunner(
-              pair.getFirst().getRunner(), pair.getSecond()))
-          .collect(Collectors.toList());
-
+      var jobs = SimulationJobsScanner.create()
+          .scan(simulationName, simulationConfig.getPackageToScan());
+      this.simulationRunners = getSimulationRunners(jobs);
     } catch (Exception pe) {
       LOG.error("Cannot start application", pe);
       System.exit(-1);
     }
+  }
+
+  private SimulationMetadata extractJobFromClass(Class<?> simulationClass) {
+    var simulationJobsScanner = SimulationJobsScanner.create();
+    return simulationJobsScanner.createBenchmarkJob(simulationClass);
+  }
+
+  private List<SimulationRunner> getSimulationRunners(List<SimulationMetadata> jobs) {
+    return jobs
+        .stream()
+        .map(
+            simulation -> new Pair<SimulationMetadata, Context>(simulation, getContext(simulation)))
+        .map(pair -> getRunner(pair.getFirst().getRunner(), pair.getSecond()))
+        .collect(Collectors.toList());
   }
 
   private SimulationRunner getRunner(final Class<? extends SimulationRunner> runnerClass,

@@ -39,7 +39,6 @@ public interface Simulation {
    */
   void stop();
 
-
   /**
    * Static factory method to create a new {@link Simulation} instance for convenience.
    * <p>
@@ -50,5 +49,17 @@ public interface Simulation {
    */
   static Simulation create(String path, String simulationToRun) {
     return new SimulationImpl(path, simulationToRun);
+  }
+
+  /**
+   * Static factory method to create a new {@link Simulation} instance for convenience.
+   * <p>
+   *
+   * @param path Path to the rhino.properties file.
+   * @param simulationClass Simulation class to be run.
+   * @return Simulation instance.
+   */
+  static Simulation create(String path, Class<?> simulationClass) {
+    return new SimulationImpl(path, simulationClass);
   }
 }
