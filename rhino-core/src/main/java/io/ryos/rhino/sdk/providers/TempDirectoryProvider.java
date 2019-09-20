@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.exceptions;
+package io.ryos.rhino.sdk.providers;
 
-/**
- * @author Erhan Bagdemir
- * @since 2019
- */
-public class RhinoIOException extends RuntimeException {
+import io.ryos.rhino.sdk.exceptions.RhinoIOException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
-  public RhinoIOException(String message) {
-    super(message);
-  }
+public class TempDirectoryProvider implements Provider<File> {
 
-  public RhinoIOException(String message, Throwable cause) {
-    super(message, cause);
+  @Override
+  public File take() {
+    try {
+      return Files.createTempDirectory("rhino").toFile();
+    } catch (IOException e) {
+      throw new RhinoIOException("Cannot create a temp directory.", e);
+    }
   }
 }
