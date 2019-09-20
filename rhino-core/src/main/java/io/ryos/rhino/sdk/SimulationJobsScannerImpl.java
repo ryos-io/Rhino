@@ -221,10 +221,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var testInstance = instanceOf(clazz).orElseThrow();
 
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
-        .filter(method -> Arrays.stream(method.getDeclaredAnnotations())
-            .anyMatch(a -> a instanceof Dsl))
-        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
-            ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
+        .filter(this::hasDslAnnotation)
+        .filter(this::isEnabled)
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
         .map(p -> {
           var loadDsl = p.getSecond();
           if (loadDsl instanceof RunnableDslImpl) {
@@ -283,6 +282,10 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withRampUp(rampupInfo)
         .withGrafana(grafanaInfo)
         .build();
+  }
+
+  private boolean hasDslAnnotation(Method method) {
+    return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(a -> a instanceof Dsl);
   }
 
   private boolean hasScenarioAnnotation(Method method) {
