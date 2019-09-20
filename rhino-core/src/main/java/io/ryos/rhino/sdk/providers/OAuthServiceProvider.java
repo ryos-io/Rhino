@@ -14,14 +14,11 @@ public class OAuthServiceProvider implements Provider<OAuthService> {
         serviceData.setClientCode(SimulationConfig.getServiceClientCode());
         serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
         serviceData.setClientId(SimulationConfig.getServiceClientId());
-        var authenticate = new OAuthServiceAuthenticatorImpl().authenticate(serviceData);
-        synchronized (this) {
-            this.oAuthService = authenticate;
-        }
+        this.oAuthService = new OAuthServiceAuthenticatorImpl().authenticate(serviceData);
     }
 
     @Override
-    public synchronized OAuthService take() {
+    public OAuthService take() {
         return oAuthService;
     }
 }
