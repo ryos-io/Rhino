@@ -23,12 +23,18 @@ import java.nio.file.Files;
 
 public class TempDirectoryProvider implements Provider<File> {
 
-  @Override
-  public File take() {
+  private final File tempFile;
+
+  public TempDirectoryProvider() {
     try {
-      return Files.createTempDirectory("rhino").toFile();
+      this.tempFile = Files.createTempDirectory("rhino").toFile();
     } catch (IOException e) {
       throw new RhinoIOException("Cannot create a temp directory.", e);
     }
+  }
+
+  @Override
+  public File take() {
+    return this.tempFile;
   }
 }
