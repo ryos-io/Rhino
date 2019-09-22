@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-1.6.2-72c247" />
+  <img src="https://img.shields.io/badge/rhino--core-1.7.1-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
@@ -39,7 +39,7 @@ With **Influx DB** and **Grafana** Integration, you can also monitor the current
 * to speed up load and performance test development,
 * to afford a debuggable test framework written in Java, so that you can go through the breakpoints while 
 investigating problems in your load testing code, 
-* to provide a Cloud-native which is elastic, scalable, covering region and environment aware load scenarios,
+* to provide a Cloud-native load testing environment, that is elastic, scalable, covering region and environment- aware load scenarios,
 * to enable the integration with the existing code, e.g your integration test frameworks to 
 make them reusable in your load and performance test,
 * to provide an intuitive framework so that the engineers do not need to re-learn the language, or
@@ -55,7 +55,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>1.6.2</version>
+  <version>1.7.1</version>
 </dependency>
 ```
 
