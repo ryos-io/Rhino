@@ -24,9 +24,13 @@ import io.ryos.rhino.sdk.users.source.UserSource.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
 import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
@@ -247,6 +251,17 @@ public class SimulationConfig {
     return properties.getProperty(environment + ".oauth.service.clientSecret");
   }
 
+  private String _getInMemoryFileProviderMaxSize() {
+    return properties.getProperty("provider.RandomInMemoryFile.maxSize");
+  }
+
+  private String _getInMemoryFileProviderNumberOfFiles() {
+    return properties.getProperty("provider.RandomInMemoryFile.numberOfFiles");
+  }
+
+  private String _getInMemoryFileProviderMimeTypes() {
+    return properties.getProperty("provider.RandomInMemoryFile.mimeTypes");
+  }
 
   private String getEndpoint() {
     return properties.getProperty(environment + ".endpoint");
@@ -262,6 +277,22 @@ public class SimulationConfig {
 
   String getPackageToScan() {
     return instance.getProperty(PACKAGE_TO_SCAN);
+  }
+
+  public static int getInMemoryFileProviderMaxSize() {
+    return Integer.valueOf(instance._getInMemoryFileProviderMaxSize());
+  }
+
+  public static int getInMemoryFileProviderNumberOfFiles() {
+    return Integer.valueOf(instance._getInMemoryFileProviderNumberOfFiles());
+  }
+
+  public static List<String> getInMemoryFileProviderMimeTypes() {
+    String mimeTypes = instance._getInMemoryFileProviderMimeTypes();
+    if (mimeTypes != null) {
+      return Arrays.stream(mimeTypes.split(",")).map(String::trim).collect(Collectors.toList());
+    }
+    return Collections.emptyList();
   }
 
   public static int getMaxConnections() {
