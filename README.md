@@ -142,7 +142,7 @@ If you think that the Rhino is the right framework for you, you can follow the w
 * [Providers](https://github.com/bagdemir/rhino/wiki/Providers) - Data feeders used at injection points in Simulations.
 * [Configuration](https://github.com/bagdemir/rhino/wiki/Configuration) - Configure your load testing project.
 * [Test Users in Simulations](https://github.com/bagdemir/rhino/wiki/Testing-with-Users) - Users in Simulations.
-* [Cross-region Tests](https://github.com/ryos-io/Rhino/wiki/Cross-region-Load-Tests - Writing Simulation for cross-region scenarios.
+* [Cross-region Tests](https://github.com/ryos-io/Rhino/wiki/Cross-region-Load-Tests) - Writing Simulation for cross-region scenarios.
 * [Service Tokens and Service-to-Service Authentication](https://github.com/ryos-io/Rhino/wiki/Service-to-Service-Authentication) - How to enable S2S authentication (OAuth 2.0)
 * [Reporting](https://github.com/bagdemir/Rhino/wiki/Reporting) - Reporting the load metrics.
 * [Measurements](https://github.com/bagdemir/Rhino/wiki/Measurements) - Record measurement. 
