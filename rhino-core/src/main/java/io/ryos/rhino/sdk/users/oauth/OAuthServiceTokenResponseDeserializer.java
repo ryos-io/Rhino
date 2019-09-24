@@ -15,15 +15,13 @@ public class OAuthServiceTokenResponseDeserializer implements ResponseDeserializ
     return mapToEntity(response.readEntity(String.class));
   }
 
-  private OAuthService mapToEntity(final String s) {
-    final OAuthService o;
+  private OAuthService mapToEntity(final String responseEntity) {
     try {
-      o = objectMapper.readValue(s, OAuthService.class);
+      return objectMapper.readValue(responseEntity, OAuthService.class);
     } catch (Exception e) {
       throw new InvalidAuthResponseException(
           "Cannot map authorization server response to entity type: " + OAuthService.class
               .getName(), e);
     }
-    return o;
   }
 }
