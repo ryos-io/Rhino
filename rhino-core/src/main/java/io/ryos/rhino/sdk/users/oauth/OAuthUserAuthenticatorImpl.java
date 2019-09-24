@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.users.oauth;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
@@ -49,7 +50,8 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
   private static final String SCOPE = "scope";
 
   private final OAuthService service;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public OAuthUserAuthenticatorImpl() {
 

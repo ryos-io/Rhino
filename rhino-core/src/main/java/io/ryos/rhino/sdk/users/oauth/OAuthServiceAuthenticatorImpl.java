@@ -1,18 +1,18 @@
 package io.ryos.rhino.sdk.users.oauth;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.IllegalAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.ServiceLoginException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
 
@@ -23,7 +23,8 @@ public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
   private static final String GRANT_TYPE = "grant_type";
   private static final String CODE = "code";
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   @Override
   public OAuthService authenticate(final OAuthService service) {
