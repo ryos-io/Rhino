@@ -1,15 +1,13 @@
 package io.ryos.rhino.sdk.users.oauth;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
-import io.ryos.rhino.sdk.exceptions.InvalidAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.ServiceLoginException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,46 +31,18 @@ public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
   public OAuthService authenticate(final OAuthService service) {
 
     try {
-
       if (!SimulationConfig.isServiceAuthenticationEnabled()) {
         return null;
       }
 
-      var form = new Form();
+      var form = createFormObject(service);
+      var response = executeRequest(form);
 
-      if (service.getClientId() != null) {
-        form.param(CLIENT_ID, service.getClientId());
-      }
-
-      if (service.getClientSecret() != null) {
-        form.param(CLIENT_SECRET, service.getClientSecret());
-      }
-
-      if (service.getGrantType() != null) {
-        form.param(GRANT_TYPE, service.getGrantType());
-      }
-
-      if (service.getClientCode() != null) {
-        form.param(CODE, service.getClientCode());
-      }
-
-      var client = ClientBuilder.newClient();
-      var response = client
-          .target(SimulationConfig.getAuthServer())
-          .request()
-          .post(Entity.form(form));
-
-      if (response.getStatus() != Status.OK.getStatusCode()) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Cannot login the service, status={}", response.getStatus());
-        }
-        throw new ServiceLoginException("Cannot authenticate the client: " + service.getClientId());
-      }
+      handleNonOK(service, response);
 
       var responseServiceEntity = deserializer.deserialize(response);
       service.setAccessToken(responseServiceEntity.getAccessToken());
       service.setRefreshToken(responseServiceEntity.getRefreshToken());
-
       return service;
 
     } catch (Exception e) {
@@ -80,5 +50,43 @@ public class OAuthServiceAuthenticatorImpl implements ServiceAuthenticator {
     }
 
     return null;
+  }
+
+  private Response executeRequest(Form form) {
+    var client = ClientBuilder.newClient();
+    return client
+        .target(SimulationConfig.getAuthServer())
+        .request()
+        .post(Entity.form(form));
+  }
+
+  private Form createFormObject(OAuthService service) {
+    var form = new Form();
+
+    if (service.getClientId() != null) {
+      form.param(CLIENT_ID, service.getClientId());
+    }
+
+    if (service.getClientSecret() != null) {
+      form.param(CLIENT_SECRET, service.getClientSecret());
+    }
+
+    if (service.getGrantType() != null) {
+      form.param(GRANT_TYPE, service.getGrantType());
+    }
+
+    if (service.getClientCode() != null) {
+      form.param(CODE, service.getClientCode());
+    }
+    return form;
+  }
+
+  private void handleNonOK(OAuthService service, Response response) {
+    if (response.getStatus() != Status.OK.getStatusCode()) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Cannot login the service, status={}", response.getStatus());
+      }
+      throw new ServiceLoginException("Cannot authenticate the client: " + service.getClientId());
+    }
   }
 }

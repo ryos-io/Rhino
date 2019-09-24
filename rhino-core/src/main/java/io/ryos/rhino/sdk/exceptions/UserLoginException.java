@@ -22,7 +22,7 @@ package io.ryos.rhino.sdk.exceptions;
  */
 public class UserLoginException extends RuntimeException {
 
-  public UserLoginException(Throwable t, String message) {
-    super(message, t);
+  public UserLoginException(String message) {
+    super(message);
   }
 }
