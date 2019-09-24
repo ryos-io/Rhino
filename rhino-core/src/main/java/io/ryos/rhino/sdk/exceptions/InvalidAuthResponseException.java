@@ -16,26 +16,27 @@
 
 package io.ryos.rhino.sdk.exceptions;
 
+import io.ryos.rhino.sdk.users.OAuthResponseData;
 import io.ryos.rhino.sdk.users.oauth.OAuthService;
 
 /**
  * Thrown if the authorization server's response cannot be mapped to
- * {@link io.ryos.rhino.sdk.users.OAuthEntity} or {@link OAuthService} in case of service
+ * {@link OAuthResponseData} or {@link OAuthService} in case of service
  * authentication.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public class IllegalAuthResponseException extends RuntimeException {
+public class InvalidAuthResponseException extends RuntimeException {
 
   /**
-   * Constructs a new {@link IllegalAuthResponseException} instance.
+   * Constructs a new {@link InvalidAuthResponseException} instance.
    * <p>
    *
    * @param message Message of the exception.
    * @param cause Cause of the exception.
    */
-  public IllegalAuthResponseException(final String message, final Throwable cause) {
+  public InvalidAuthResponseException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

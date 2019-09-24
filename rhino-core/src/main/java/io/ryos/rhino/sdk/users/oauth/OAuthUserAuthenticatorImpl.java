@@ -20,9 +20,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
-import io.ryos.rhino.sdk.exceptions.IllegalAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
-import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.User;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -50,8 +48,6 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
   private static final String SCOPE = "scope";
 
   private final OAuthService service;
-  private final ObjectMapper objectMapper = new ObjectMapper()
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public OAuthUserAuthenticatorImpl() {
 
@@ -61,7 +57,7 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
     serviceData.setClientId(SimulationConfig.getServiceClientId());
 
-    this.service = new OAuthServiceAuthenticatorImpl().authenticate(serviceData);
+    this.service = new OAuthServiceAuthenticatorImpl(new OAuthServiceTokenResponseDeserializer()).authenticate(serviceData);
   }
 
   @Override
@@ -106,12 +102,12 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
         return null;
       }
 
-      var entity = mapToEntity(response.readEntity(String.class));
+      var responseData = new OAuthUserTokenResponseDeserializer().deserialize(response);
 
       return new OAuthUserImpl(service, user.getUsername(),
           user.getPassword(),
-          entity.getAccessToken(),
-          entity.getRefreshToken(),
+          responseData.getAccessToken(),
+          responseData.getRefreshToken(),
           user.getScope(),
           SimulationConfig.getClientId(),
           user.getId(),
@@ -121,17 +117,5 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     }
 
     return null;
-  }
-
-  private OAuthEntity mapToEntity(final String s) {
-    final OAuthEntity o;
-    try {
-      o = objectMapper.readValue(s, OAuthEntity.class);
-    } catch (Exception t) {
-      throw new IllegalAuthResponseException(
-          "Cannot map authorization server response to entity type: " + OAuthEntity.class.getName(),
-          t);
-    }
-    return o;
   }
 }
