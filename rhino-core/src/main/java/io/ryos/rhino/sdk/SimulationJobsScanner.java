@@ -42,6 +42,14 @@ public interface SimulationJobsScanner {
     List<SimulationMetadata> scan(String forSimulation, String... inPackages);
 
     /**
+     * Creates a {@link SimulationMetadata} instance from a simulation class.
+     *
+     * @param clazz Class instance.
+     * @return a new {@link SimulationMetadata} instance.
+     */
+    SimulationMetadata createBenchmarkJob(final Class clazz);
+
+    /**
      * Factory method to create new {@link SimulationJobsScanner} instances.
      *
      * @return An instance of the scanner.

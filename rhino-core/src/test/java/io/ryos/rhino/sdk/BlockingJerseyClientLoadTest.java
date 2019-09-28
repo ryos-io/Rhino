@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.BlockingJerseyClientLoadTestSimulation;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +31,6 @@ public class BlockingJerseyClientLoadTest {
         .willReturn(aResponse()
             .withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    Simulation.create(PROPERTIES_FILE, BlockingJerseyClientLoadTestSimulation.class).start();
   }
 }

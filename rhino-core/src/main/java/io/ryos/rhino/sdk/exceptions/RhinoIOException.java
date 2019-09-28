@@ -25,4 +25,8 @@ public class RhinoIOException extends RuntimeException {
   public RhinoIOException(String message) {
     super(message);
   }
+
+  public RhinoIOException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

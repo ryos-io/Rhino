@@ -22,7 +22,6 @@ import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
-import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
@@ -31,10 +30,12 @@ import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
-import io.ryos.rhino.sdk.exceptions.UnknownTokenTypeException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
+import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.oauth.OAuthUser;
+import io.ryos.rhino.sdk.users.data.UserImpl;
+import io.ryos.rhino.sdk.users.oauth.OAuthService;
 import java.util.Optional;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
@@ -58,10 +59,6 @@ import reactor.core.publisher.Mono;
 public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSession> {
 
   private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
-  private static final String HEADER_AUTHORIZATION = "Authorization";
-  private static final String BEARER = "Bearer ";
-  private static final String USER = "user";
-  private static final String SERVICE = "service";
   private static final String DEFAULT_RESULT = "result";
 
   private final AsyncHttpClient client;
@@ -115,7 +112,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         .orElse(responseMono);
 
     return retriableMono.map(response -> {
-      final String key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
+      var key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
       if (spec.getStorageScope() == Scope.USER) {
         userSession.add(key, response);
       } else {
@@ -198,25 +195,15 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   }
 
   private RequestBuilder handleAuth(User user, RequestBuilder builder) {
-    if (user instanceof OAuthUser) {
-      var authService = ((OAuthUser) user).getOAuthService();
-      if (SimulationConfig.isServiceAuthenticationEnabled()) {
-        var serviceAccessToken = authService.getAccessToken();
-        var userToken = ((OAuthUser) user).getAccessToken();
-        if (USER.equals(SimulationConfig.getBearerType())) {
-          builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + userToken);
-          builder = builder.addHeader(SimulationConfig.getHeaderName(), serviceAccessToken);
-        } else if (SERVICE.equals(SimulationConfig.getBearerType())) {
-          builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + serviceAccessToken);
-          builder = builder.addHeader(SimulationConfig.getHeaderName(), userToken);
-        } else {
-          throw new UnknownTokenTypeException(SimulationConfig.getBearerType());
-        }
-      } else {
-        var token = ((OAuthUser) user).getAccessToken();
-        builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + token);
-      }
+
+    if (user instanceof UserImpl) {
+      return new BasicAuthRequestStrategy().addAuthHeaders(builder, user);
     }
+
+    if (user instanceof OAuthService) {
+      return new OAuth2RequestStrategy().addAuthHeaders(builder, user);
+    }
+
     return builder;
   }
 }

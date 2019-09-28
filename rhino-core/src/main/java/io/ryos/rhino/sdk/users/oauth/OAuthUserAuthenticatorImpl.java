@@ -16,16 +16,14 @@
 
 package io.ryos.rhino.sdk.users.oauth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
-import io.ryos.rhino.sdk.exceptions.IllegalAuthResponseException;
 import io.ryos.rhino.sdk.exceptions.UserLoginException;
-import io.ryos.rhino.sdk.users.OAuthEntity;
 import io.ryos.rhino.sdk.users.data.User;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +47,6 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
   private static final String SCOPE = "scope";
 
   private final OAuthService service;
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public OAuthUserAuthenticatorImpl() {
 
@@ -59,57 +56,23 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
     serviceData.setClientId(SimulationConfig.getServiceClientId());
 
-    this.service = new OAuthServiceAuthenticatorImpl().authenticate(serviceData);
+    this.service = new OAuthServiceAuthenticatorImpl(new OAuthServiceTokenResponseDeserializer()).authenticate(serviceData);
   }
 
   @Override
   public OAuthUser authenticate(User user) {
-
     try {
-      var form = new Form();
+      var form = createFormObject(user);
+      var response = executeRequest(form);
 
-      if (SimulationConfig.getClientId() != null) {
-        form.param(CLIENT_ID, SimulationConfig.getClientId());
-      }
+      handleNonOK(response);
 
-      if (SimulationConfig.getClientSecret() != null) {
-        form.param(CLIENT_SECRET, SimulationConfig.getClientSecret());
-      }
-
-      if (SimulationConfig.getGrantType() != null) {
-        form.param(GRANT_TYPE, SimulationConfig.getGrantType());
-      }
-
-      if (user.getScope() != null) {
-        form.param(SCOPE, user.getScope());
-      }
-
-      if (user.getPassword() != null) {
-        form.param(PW, user.getPassword());
-      }
-
-      form.param(USERNAME, user.getUsername());
-
-      var client = ClientBuilder.newClient();
-      var response = client
-          .target(SimulationConfig.getAuthServer())
-          .request()
-          .post(Entity.form(form));
-
-      if (response.getStatus() != Status.OK.getStatusCode()) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Cannot login user, status={} message={}", response.getStatus(),
-              response.readEntity(String.class));
-        }
-        return null;
-      }
-
-      var entity = mapToEntity(response.readEntity(String.class));
+      var responseData = new OAuthUserTokenResponseDeserializer().deserialize(response);
 
       return new OAuthUserImpl(service, user.getUsername(),
           user.getPassword(),
-          entity.getAccessToken(),
-          entity.getRefreshToken(),
+          responseData.getAccessToken(),
+          responseData.getRefreshToken(),
           user.getScope(),
           SimulationConfig.getClientId(),
           user.getId(),
@@ -121,15 +84,48 @@ public class OAuthUserAuthenticatorImpl implements UserAuthenticator<OAuthUser> 
     return null;
   }
 
-  private OAuthEntity mapToEntity(final String s) {
-    final OAuthEntity o;
-    try {
-      o = objectMapper.readValue(s, OAuthEntity.class);
-    } catch (Exception t) {
-      throw new IllegalAuthResponseException(
-          "Cannot map authorization server response to entity type: " + OAuthEntity.class.getName(),
-          t);
+  private void handleNonOK(Response response) {
+    if (response.getStatus() != Status.OK.getStatusCode()) {
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Cannot login user, status={} message={}", response.getStatus(),
+            response.readEntity(String.class));
+      }
+      throw new UserLoginException("Cannot authenticate the client: " + service.getClientId());
     }
-    return o;
+  }
+
+  private Response executeRequest(Form form) {
+    var client = ClientBuilder.newClient();
+    return client
+        .target(SimulationConfig.getAuthServer())
+        .request()
+        .post(Entity.form(form));
+  }
+
+  private Form createFormObject(User user) {
+    var form = new Form();
+
+    if (SimulationConfig.getClientId() != null) {
+      form.param(CLIENT_ID, SimulationConfig.getClientId());
+    }
+
+    if (SimulationConfig.getClientSecret() != null) {
+      form.param(CLIENT_SECRET, SimulationConfig.getClientSecret());
+    }
+
+    if (SimulationConfig.getGrantType() != null) {
+      form.param(GRANT_TYPE, SimulationConfig.getGrantType());
+    }
+
+    if (user.getScope() != null) {
+      form.param(SCOPE, user.getScope());
+    }
+
+    if (user.getPassword() != null) {
+      form.param(PW, user.getPassword());
+    }
+
+    form.param(USERNAME, user.getUsername());
+    return form;
   }
 }

@@ -32,7 +32,7 @@ import java.util.stream.IntStream;
  *
  * @author Erhan Bagdemir
  */
-public class DefaultUserRepositoryFactory implements UserRepositoryFactory<UserSession> {
+public class DefaultUserRepositoryFactoryImpl implements UserRepositoryFactory<UserSession> {
 
   private static final int START = 1;
   private static final int END = 10;

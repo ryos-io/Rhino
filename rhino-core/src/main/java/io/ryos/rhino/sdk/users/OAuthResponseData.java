@@ -27,7 +27,7 @@ import java.io.Serializable;
  * @since 1.0.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OAuthEntity implements Serializable {
+public class OAuthResponseData implements Serializable {
 
   @JsonProperty("access_token")
   private String accessToken;

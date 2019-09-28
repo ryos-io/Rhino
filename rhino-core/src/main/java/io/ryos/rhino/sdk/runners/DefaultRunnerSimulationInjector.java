@@ -16,16 +16,16 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
-
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
-import java.util.Arrays;
+
 import java.util.Objects;
+
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 
 /**
  * Injector implementation for default runner. The injector goes through all injection points, that
@@ -40,45 +40,28 @@ import java.util.Objects;
 public class DefaultRunnerSimulationInjector extends AbstractSimulationInjector {
 
   /**
-   * Simulation metadata.
-   * <p>
-   */
-  private final SimulationMetadata simulationMetadata;
-
-  /**
    * Instantiates a new {@link DefaultRunnerSimulationInjector} instance.
    * <p>
    *
    * @param simulationMetadata Simulation metadata provided by annotations.
    */
   public DefaultRunnerSimulationInjector(SimulationMetadata simulationMetadata) {
-    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
+    super(simulationMetadata);
   }
 
   @Override
   public void injectOn(final Object injectable) {
     Objects.requireNonNull(injectable);
-
     injectUser(injectable);// Each thread will run as the same user.
     injectCustomFeeders(injectable);
   }
 
   private void injectUser(final Object simulationInstance) {
-    var fieldAnnotation = getFieldsByAnnotation(simulationMetadata.getSimulationClass(),
-        UserProvider.class);
+    var fieldAnnotation = getFieldsByAnnotation(getSimulationMetadata().getSimulationClass(), UserProvider.class);
 
     fieldAnnotation.stream().map(pair ->
-        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(simulationMetadata.getUserRepository(),
+        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(getSimulationMetadata().getUserRepository(),
             pair.getSecond().region())), pair.getFirst()))
         .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
-  }
-
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  private void injectCustomFeeders(final Object simulationInstance) {
-
-    Arrays.stream(simulationMetadata.getSimulationClass().getDeclaredFields())
-        .filter(hasFeeder)
-        .map(injectionPointFunction)
-        .forEach(ip -> feed(simulationInstance, ip));
   }
 }

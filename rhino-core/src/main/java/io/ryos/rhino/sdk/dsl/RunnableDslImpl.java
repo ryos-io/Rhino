@@ -67,8 +67,20 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   }
 
   @Override
+  public RunnableDsl repeat(Spec spec) {
+    executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> true));
+    return this;
+  }
+
+  @Override
   public RunnableDsl runUntil(Predicate<UserSession> predicate, Spec spec) {
     executableFunctions.add(new RunUntilSpecImpl(spec, predicate));
+    return this;
+  }
+
+  @Override
+  public RunnableDsl runAsLongAs(Predicate<UserSession> predicate, Spec spec) {
+    executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));
     return this;
   }
 

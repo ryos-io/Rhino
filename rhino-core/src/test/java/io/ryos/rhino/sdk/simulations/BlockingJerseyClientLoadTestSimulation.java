@@ -25,12 +25,12 @@ import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 @Simulation(name = "Server-Status Simulation")
-@UserRepository(factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
   private static final String TARGET = "http://localhost:8089/api/status";
@@ -39,7 +39,7 @@ public class BlockingJerseyClientLoadTestSimulation {
   private Client client = ClientBuilder.newClient();
 
   @Provider(factory = UUIDProvider.class)
-  private String uuid;
+  private UUIDProvider provider;
 
   @Prepare
   public static void prepare(SimulationSession session) {
@@ -53,7 +53,7 @@ public class BlockingJerseyClientLoadTestSimulation {
     var response = client
         .target(TARGET)
         .request()
-        .header(X_REQUEST_ID, "Rhino-" + uuid)
+        .header(X_REQUEST_ID, "Rhino-" + provider.take())
         .get();
 
     measurement.measure("Health API Call", String.valueOf(response.getStatus()));
