@@ -16,14 +16,12 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.SimulationConfig.getUserAuthType;
 import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
-import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
@@ -32,14 +30,12 @@ import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
-import io.ryos.rhino.sdk.exceptions.UnknownTokenTypeException;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
 import io.ryos.rhino.sdk.users.oauth.OAuthService;
-import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import java.util.Optional;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
@@ -63,10 +59,6 @@ import reactor.core.publisher.Mono;
 public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSession> {
 
   private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
-  private static final String HEADER_AUTHORIZATION = "Authorization";
-  private static final String BEARER = "Bearer ";
-  private static final String USER = "user";
-  private static final String SERVICE = "service";
   private static final String DEFAULT_RESULT = "result";
 
   private final AsyncHttpClient client;
