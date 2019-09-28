@@ -22,13 +22,13 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Client;
 
 @Simulation(name = "Server-Status Simulation")
-@UserRepository(factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class RhinoEntity {
 
     private static final String TARGET = "http://localhost:8089/api/status";

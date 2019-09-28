@@ -43,7 +43,7 @@ import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import io.ryos.rhino.sdk.utils.ReflectionUtils;
@@ -260,7 +260,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var loggingAnnotation = (Logging) clazz.getDeclaredAnnotation(Logging.class);
     var logger = Optional.ofNullable(loggingAnnotation).map(Logging::file).orElse(null);
     var userRepo = repoAnnotation.map(this::createUserRepository)
-        .orElse(new DefaultUserRepositoryFactory().create());
+        .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
     Method prepareMethod = null;
     Method cleanupMethod = null;

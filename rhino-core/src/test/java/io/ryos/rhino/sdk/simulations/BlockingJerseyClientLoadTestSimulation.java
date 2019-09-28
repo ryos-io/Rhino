@@ -25,12 +25,12 @@ import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 @Simulation(name = "Server-Status Simulation")
-@UserRepository(factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class BlockingJerseyClientLoadTestSimulation {
 
   private static final String TARGET = "http://localhost:8089/api/status";

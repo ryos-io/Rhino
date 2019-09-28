@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepositoryFactory;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -26,5 +26,5 @@ public @interface UserRepository {
    *
    * @return The type of the repository factory.
    */
-  Class<? extends UserRepositoryFactory> factory() default DefaultUserRepositoryFactory.class;
+  Class<? extends UserRepositoryFactory> factory() default DefaultUserRepositoryFactoryImpl.class;
 }

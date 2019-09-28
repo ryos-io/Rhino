@@ -153,8 +153,12 @@ public class SimulationConfig {
   }
 
   private UserSource.SourceType getUsersSource() {
-    var source = properties.getProperty(environment + ".users.source", "file");
+    var source = properties.getProperty(environment + ".auth.users.source", "file");
     return UserSource.SourceType.valueOf(source.toUpperCase());
+  }
+
+  private String getAuthUserFileSource() {
+    return properties.getProperty(environment + ".auth.users.file");
   }
 
   private String getConfigHttpMaxConnections() {
@@ -187,20 +191,56 @@ public class SimulationConfig {
         Integer.toString(Runtime.getRuntime().availableProcessors() * PAR_RATIO));
   }
 
-  private String getAuthUserFileSource() {
-    return properties.getProperty(environment + ".users.file");
-  }
-
   private String getAuthClientId() {
-    return properties.getProperty(environment + ".oauth.clientId");
+    return properties.getProperty(environment + ".oauth2.clientId");
   }
 
   private String getAuthApiKey() {
-    return properties.getProperty(environment + ".oauth.apiKey");
+    return properties.getProperty(environment + ".oauth2.apiKey");
   }
 
   private String getAuthEndpoint() {
-    return properties.getProperty(environment + ".oauth.endpoint");
+    return properties.getProperty(environment + ".oauth2.endpoint");
+  }
+
+  private String getAuthClientSecret() {
+    return properties.getProperty(environment + ".oauth2.clientSecret");
+  }
+
+  private String getAuthClientCode() {
+    return properties.getProperty(environment + ".oauth2.clientCode");
+  }
+
+  private String getServiceAuthEnabled() {
+    return properties.getProperty(environment + ".oauth2.service.authentication");
+  }
+
+  private String getServiceAuthClientId() {
+    return properties.getProperty(environment + ".oauth2.service.clientId");
+  }
+
+  private String getServiceAuthClientCode() {
+    return properties.getProperty(environment + ".oauth2.service.clientCode");
+  }
+
+  private String getAuthBearerType() {
+    return properties.getProperty(environment + ".oauth2.bearer");
+  }
+
+  private String getAuthHeaderName() {
+    return properties.getProperty(environment + ".oauth2.headerName");
+  }
+
+  private String getServiceAuthGrantType() {
+    return properties.getProperty(environment + ".oauth2.service.grantType");
+  }
+
+  private String getServiceAuthClientSecret() {
+    return properties.getProperty(environment + ".oauth2.service.clientSecret");
+  }
+
+  private String getAuthGrantType() {
+    return properties.getProperty(environment + ".oauth2.grantType");
   }
 
   private String getAuthVaultEndpoint() {
@@ -215,40 +255,8 @@ public class SimulationConfig {
     return properties.getProperty(environment + ".users.vault.path");
   }
 
-  private String getAuthClientSecret() {
-    return properties.getProperty(environment + ".oauth.clientSecret");
-  }
-
-  private String getAuthClientCode() {
-    return properties.getProperty(environment + ".oauth.clientCode");
-  }
-
-  private String getServiceAuthEnabled() {
-    return properties.getProperty(environment + ".oauth.service.authentication");
-  }
-
-  private String getServiceAuthClientId() {
-    return properties.getProperty(environment + ".oauth.service.clientId");
-  }
-
-  private String getServiceAuthClientCode() {
-    return properties.getProperty(environment + ".oauth.service.clientCode");
-  }
-
-  private String getAuthBearerType() {
-    return properties.getProperty(environment + ".oauth.bearer");
-  }
-
-  private String getAuthHeaderName() {
-    return properties.getProperty(environment + ".oauth.headerName");
-  }
-
-  private String getServiceAuthGrantType() {
-    return properties.getProperty(environment + ".oauth.service.grantType");
-  }
-
-  private String getServiceAuthClientSecret() {
-    return properties.getProperty(environment + ".oauth.service.clientSecret");
+  private String getEndpoint() {
+    return properties.getProperty(environment + ".endpoint");
   }
 
   private String _getInMemoryFileProviderMaxSize() {
@@ -263,12 +271,16 @@ public class SimulationConfig {
     return properties.getProperty("provider.RandomInMemoryFile.mimeTypes");
   }
 
-  private String getEndpoint() {
-    return properties.getProperty(environment + ".endpoint");
+  private String getDBSupportInfluxBatchActions() {
+    return properties.getProperty("db.influx.batch.actions");
   }
 
-  private String getAuthGrantType() {
-    return properties.getProperty(environment + ".oauth.grantType");
+  private String getDBSupportInfluxBatchDuration() {
+    return properties.getProperty("db.influx.batch.duration");
+  }
+
+  private String getDBSupportInfluxRetentionPolicy() {
+    return properties.getProperty("db.influx.policy");
   }
 
   private String getSimId() {
@@ -376,18 +388,6 @@ public class SimulationConfig {
 
   public static String getInfluxPassword() {
     return instance.getDBSupportInfluxPassword();
-  }
-
-  private String getDBSupportInfluxBatchActions() {
-    return properties.getProperty("db.influx.batch.actions");
-  }
-
-  private String getDBSupportInfluxBatchDuration() {
-    return properties.getProperty("db.influx.batch.duration");
-  }
-
-  private String getDBSupportInfluxRetentionPolicy() {
-    return properties.getProperty("db.influx.policy");
   }
 
   public static String getVaultEndpoint() {

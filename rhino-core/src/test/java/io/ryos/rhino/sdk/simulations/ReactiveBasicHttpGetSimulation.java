@@ -17,13 +17,14 @@ import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactory;
+import io.ryos.rhino.sdk.users.repositories.BasicUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.UUID;
 import org.asynchttpclient.Response;
 
 @Simulation(name = "Reactive Test", durationInMins = 1)
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
-@UserRepository(factory = OAuthUserRepositoryFactory.class)
+@UserRepository(factory = BasicUserRepositoryFactoryImpl.class)
 public class ReactiveBasicHttpGetSimulation {
 
   private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
@@ -74,7 +75,6 @@ public class ReactiveBasicHttpGetSimulation {
             .endpoint(FILES_ENDPOINT)
             .get()
             .saveTo("result"))
-        .ensure((s) -> false)
         .map(MapperBuilder.<Response, String>from("result")
             .doMap(s -> s.getStatusCode() + " returned."))
         .forEach(in("result").apply(o -> some("measurement")
