@@ -4,7 +4,7 @@
 
     <groupId>io.ryos.rhino</groupId>
     <artifactId>parent</artifactId>
-    <version>1.8.0-SNAPSHOT</version>
+    <version>1.7.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Rhino</name>
