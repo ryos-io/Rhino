@@ -20,13 +20,16 @@ public class Rhino {
         configureFor("localhost", 8089);
         stubFor(WireMock.get(urlEqualTo("/api/status")).willReturn(aResponse()
                         .withStatus(200)));
+
+        stubFor(WireMock.put(urlEqualTo("/api/files")).willReturn(aResponse()
+            .withStatus(201)));
+
         stubFor(WireMock.post(urlEqualTo("/token"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-
-        Simulation.create(PROPS, SIM_NAME).start();
+        Simulation.create(PROPS, RhinoDSL.class).start();
 
         wireMockServer.stop();
     }
