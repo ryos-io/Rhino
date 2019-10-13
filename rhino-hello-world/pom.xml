@@ -55,7 +55,7 @@
         <dependency>
             <groupId>io.ryos.rhino</groupId>
             <artifactId>rhino-core</artifactId>
-            <version>1.8.0.RC</version>
+            <version>1.8.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
