@@ -24,7 +24,7 @@ public interface LoadDsl {
    * @param duration {@link Duration} to wait.
    * @return {@link RunnableDslImpl} instance.
    */
-  RunnableDslImpl wait(Duration duration);
+  RunnableDsl wait(Duration duration);
 
   <R, T> RunnableDsl map(MapperBuilder<R, T> mapper);
 
