@@ -121,7 +121,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()))
-        .onErrorResume(t -> Mono.empty())
+        .onErrorResume(this::handleThrowable)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
         .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true));
