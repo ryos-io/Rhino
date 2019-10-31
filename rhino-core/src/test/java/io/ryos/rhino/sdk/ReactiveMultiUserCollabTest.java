@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Ryos.io.
+ * Copyright 2019 Ryos.io.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,41 @@
 
 package io.ryos.rhino.sdk;
 
-/**
- * TODO
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.ReactiveMultiUserCollabSimulation;
+import org.junit.Rule;
+import org.junit.Test;
+
 public class ReactiveMultiUserCollabTest {
 
+  private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(8089);
+
+  @Test
+  public void testMultiUser() {
+
+    stubFor(WireMock.post(urlEqualTo("/token"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
+
+    stubFor(WireMock.put(urlEqualTo("/api/files"))
+        .willReturn(aResponse()
+            .withStatus(201)
+            .withFixedDelay(400)));
+
+    stubFor(WireMock.get(urlEqualTo("/api/files"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withFixedDelay(400)));
+
+    Simulation.create(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+  }
 }
