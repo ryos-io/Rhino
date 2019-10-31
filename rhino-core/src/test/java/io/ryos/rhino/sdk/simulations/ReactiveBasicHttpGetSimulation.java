@@ -3,7 +3,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
-import static io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder.in;
+import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder.in;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.CleanUp;
@@ -15,10 +15,9 @@ import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
-import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.BasicUserRepositoryFactoryImpl;
-import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.UUID;
 import org.asynchttpclient.Response;
 

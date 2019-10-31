@@ -38,9 +38,11 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private User authUser;
   private Method httpMethod;
   private Function<UserSession, String> endpoint;
+  private Function<UserSession, User> oauthUserAccessor;
   private RetryInfo retryInfo;
   private String saveTo;
   private Scope storageScope;
+  private HttpResponse response;
 
   /**
    * Creates a new {@link HttpSpecImpl}.
@@ -137,7 +139,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public HttpConfigSpec formParam(Function<UserSession, Entry<String, List<String>>> formParamFunction) {
+  public HttpConfigSpec formParam(
+      Function<UserSession, Entry<String, List<String>>> formParamFunction) {
     this.formParams.add(formParamFunction);
     return this;
   }
@@ -156,6 +159,13 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
+  public HttpConfigSpec auth(Function<UserSession, User> sessionAccessor) {
+    this.oauthUserAccessor = sessionAccessor;
+    this.authEnabled = true;
+    return this;
+  }
+
+  @Override
   public HttpConfigSpec queryParam(String key, List<String> values) {
     this.queryParams.add(e -> Map.entry(key, values));
     return this;
@@ -168,7 +178,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public HttpConfigSpec queryParam(Function<UserSession, Entry<String, List<String>>> queryParamFunction) {
+  public HttpConfigSpec queryParam(
+      Function<UserSession, Entry<String, List<String>>> queryParamFunction) {
     this.queryParams.add(queryParamFunction);
     return this;
   }
@@ -247,6 +258,20 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   @Override
   public Scope getStorageScope() {
     return storageScope;
+  }
+
+  @Override
+  public HttpResponse getResponse() {
+    return response;
+  }
+
+  @Override
+  public void setResponse(HttpResponse response) {
+    this.response = response;
+  }
+
+  public Function<UserSession, User> getUserAccessor() {
+    return oauthUserAccessor;
   }
 
   public RetryInfo getRetryInfo() {

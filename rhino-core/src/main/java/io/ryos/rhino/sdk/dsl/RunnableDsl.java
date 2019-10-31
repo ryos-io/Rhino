@@ -4,6 +4,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.time.Duration;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Runnable DSL is a {@link LoadDsl} instance which is used to describe executable steps.
@@ -57,4 +58,6 @@ public interface RunnableDsl extends LoadDsl, IterableDsl {
    * @return {@link RunnableDslImpl} instance.
    */
   RunnableDsl ensure(Predicate<UserSession> predicate, String reason);
+
+  RunnableDsl session(String key, Supplier<Object> objectFunction);
 }

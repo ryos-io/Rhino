@@ -50,5 +50,9 @@ public interface HttpConfigSpec extends HttpMethodSpec {
 
   HttpConfigSpec auth(User user);
 
+  HttpConfigSpec auth(Function<UserSession, User> sessionAccessor);
+
   HttpConfigSpec upload(final Supplier<InputStream> inputStream);
+
+  Function<UserSession, User> getUserAccessor();
 }

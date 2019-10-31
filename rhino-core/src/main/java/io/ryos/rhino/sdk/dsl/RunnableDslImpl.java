@@ -2,12 +2,20 @@ package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.impl.*;
-
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.RunUntilSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.SessionSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Connectable DSL, is the DSL instance to bind chaining specs.
@@ -51,6 +59,12 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   @Override
   public RunnableDsl ensure(Predicate<UserSession> predicate, String reason) {
     executableFunctions.add(new EnsureSpecImpl(predicate, reason));
+    return this;
+  }
+
+  @Override
+  public RunnableDsl session(String key, Supplier<Object> objectSupplier) {
+    executableFunctions.add(new SessionSpecImpl(key, objectSupplier));
     return this;
   }
 

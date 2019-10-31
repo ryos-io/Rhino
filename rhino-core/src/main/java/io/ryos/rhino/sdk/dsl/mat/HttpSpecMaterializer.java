@@ -37,6 +37,7 @@ import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.data.UserImpl;
 import io.ryos.rhino.sdk.users.oauth.OAuthService;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -114,8 +115,10 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     return retriableMono.map(response -> {
       var key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
       if (spec.getStorageScope() == Scope.USER) {
+        userSession.add(spec.getMeasurementPoint(), spec);
         userSession.add(key, response);
       } else {
+        userSession.getSimulationSession().add(spec.getMeasurementPoint(), spec);
         userSession.getSimulationSession().add(key, response);
       }
 
@@ -124,6 +127,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
         .onErrorResume(error -> {
           if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
             httpSpecAsyncHandler.completeMeasurement();
+          } else {
+            LOG.error(error.getMessage());
           }
           return Mono.empty();
         })
@@ -184,10 +189,18 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     }
 
     if (httpSpec.isAuth()) {
-      User user = httpSpec.getAuthUser();
+      Function<UserSession, User> userAccessor = httpSpec.getUserAccessor();
+      User user = null;
+      if (userAccessor != null) {
+        user = userAccessor.apply(userSession);
+      }
+      if (httpSpec.getAuthUser() != null) {
+        user = httpSpec.getAuthUser();
+      }
       if (user == null) {
         user = userSession.getUser();
       }
+
       builder = handleAuth(user, builder);
     }
 
