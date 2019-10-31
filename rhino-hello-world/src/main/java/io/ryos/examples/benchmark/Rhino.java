@@ -19,10 +19,12 @@ public class Rhino {
 
         configureFor("localhost", 8089);
         stubFor(WireMock.get(urlEqualTo("/api/status")).willReturn(aResponse()
-                        .withStatus(200)));
+                        .withStatus(200)
+                        .withFixedDelay(200)));
 
         stubFor(WireMock.put(urlEqualTo("/api/files")).willReturn(aResponse()
-            .withStatus(201)));
+            .withStatus(201)
+        .withFixedDelay(2000)));
 
         stubFor(WireMock.post(urlEqualTo("/token"))
                 .willReturn(aResponse()
