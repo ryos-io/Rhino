@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.specs.impl;
+package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import java.util.Objects;
 import java.util.function.Function;

@@ -2,7 +2,7 @@ package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import java.util.function.Predicate;
 
 /**

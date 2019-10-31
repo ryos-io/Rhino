@@ -1,8 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.impl.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import java.time.Duration;
 
 /**

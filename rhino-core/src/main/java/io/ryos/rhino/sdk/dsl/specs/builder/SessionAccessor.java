@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.specs;
+package io.ryos.rhino.sdk.dsl.specs.builder;
 
-import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.data.UserSession;
+import java.util.function.Function;
 
-/**
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public interface MapperSpec<R, T> extends Spec {
+public class SessionAccessor {
 
-  MapperBuilder<R, T> getMapper();
+  public static <T> Function<UserSession, T> session(String key) {
+    return (session) -> session.<T>get(key).orElseThrow(() -> new RuntimeException("Value with "
+        + "key: " + key + " not found in session."));
+  }
 }

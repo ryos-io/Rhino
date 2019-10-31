@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 
 /**
  * For-each loop representation.

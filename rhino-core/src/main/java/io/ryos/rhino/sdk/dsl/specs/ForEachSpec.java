@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 
 /**
  * @author Erhan Bagdemir

@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
+import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 
 /**
  * Mapper spec implementation.

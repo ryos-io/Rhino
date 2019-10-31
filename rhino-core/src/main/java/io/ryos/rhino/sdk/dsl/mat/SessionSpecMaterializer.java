@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.specs;
+package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
+import java.util.function.Supplier;
+import reactor.core.publisher.Mono;
 
-/**
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public interface MapperSpec<R, T> extends Spec {
+public class SessionSpecMaterializer implements SpecMaterializer<SessionSpec, UserSession> {
 
-  MapperBuilder<R, T> getMapper();
+  @Override
+  public Mono<UserSession> materialize(SessionSpec spec, UserSession userSession) {
+    Supplier<Object> objectSupplier = spec.getObjectFunction();
+    Object apply = objectSupplier.get();
+    userSession.add(spec.getKey(), apply);
+    return Mono.just(userSession);
+  }
 }

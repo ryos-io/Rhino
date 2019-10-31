@@ -14,17 +14,29 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.specs;
+package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
+import java.util.function.Supplier;
 
-/**
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public interface MapperSpec<R, T> extends Spec {
+public class SessionSpecImpl extends AbstractSpec implements SessionSpec {
 
-  MapperBuilder<R, T> getMapper();
+  private final String key;
+  private final Supplier<Object> objectSupplier;
+
+  public SessionSpecImpl(String key,
+      Supplier<Object> objectSupplier) {
+    super("");
+
+    this.key = key;
+    this.objectSupplier = objectSupplier;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public Supplier<Object> getObjectFunction() {
+    return objectSupplier;
+  }
 }
