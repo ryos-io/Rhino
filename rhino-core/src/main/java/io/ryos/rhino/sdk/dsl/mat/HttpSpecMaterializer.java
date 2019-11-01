@@ -115,10 +115,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     return retriableMono.map(response -> {
       var key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
       if (spec.getStorageScope() == Scope.USER) {
-        userSession.add(spec.getMeasurementPoint(), spec);
         userSession.add(key, response);
       } else {
-        userSession.getSimulationSession().add(spec.getMeasurementPoint(), spec);
         userSession.getSimulationSession().add(key, response);
       }
 
@@ -144,26 +142,31 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
   private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession) {
 
+    HttpSpecData httpSpecData = new HttpSpecData();
+    httpSpecData.setEndpoint(httpSpec.getEndpoint().apply(userSession));
+
+    userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
+
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
       case GET:
-        builder = get(httpSpec.getEndpoint().apply(userSession));
+        builder = get(httpSpecData.getEndpoint());
         break;
       case HEAD:
-        builder = head(httpSpec.getEndpoint().apply(userSession));
+        builder = head(httpSpecData.getEndpoint());
         break;
       case OPTIONS:
-        builder = options(httpSpec.getEndpoint().apply(userSession));
+        builder = options(httpSpecData.getEndpoint());
         break;
       case DELETE:
-        builder = delete(httpSpec.getEndpoint().apply(userSession));
+        builder = delete(httpSpecData.getEndpoint());
         break;
       case PUT:
-        builder = put(httpSpec.getEndpoint().apply(userSession))
+        builder = put(httpSpecData.getEndpoint())
             .setBody(httpSpec.getUploadContent().get());
         break;
       case POST:
-        builder = put(httpSpec.getEndpoint().apply(userSession))
+        builder = put(httpSpecData.getEndpoint())
             .setBody(httpSpec.getUploadContent().get());
         break;
       // case X : rest of methods, we support...
