@@ -152,7 +152,6 @@
     <dependency>
       <artifactId>ognl</artifactId>
       <groupId>ognl</groupId>
-      <version>3.2.1</version>
     </dependency>
 
     <dependency>

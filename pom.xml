@@ -273,6 +273,11 @@
                 <version>2.10.0</version>
             </dependency>
             <dependency>
+                <artifactId>ognl</artifactId>
+                <groupId>ognl</groupId>
+                <version>3.2.1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
                 <version>2.11.0</version>
