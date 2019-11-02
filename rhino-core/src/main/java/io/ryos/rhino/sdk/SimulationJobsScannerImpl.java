@@ -239,7 +239,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     // Create test instance.
     var testInstance = instanceOf(clazz).orElseThrow();
-    initInstance(clazz, testInstance);
+    if (isReactiveSimulation(runnerAnnotation)) {
+      initInstance(clazz, testInstance);
+    }
 
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
         .filter(this::hasDslAnnotation)
