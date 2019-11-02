@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Method annotation to mark clean up methods which is run after every scenario (The annotation is
- * scenario only). Use such methods, for instance, to release resources and clean up testing
+ * scenario mode only). Use such methods, for instance, to release resources and clean up testing
  * environment. If simulation contains multiple scenarios, then before and after methods will be
  * run before and after every scenarios in the simulation.
  * <p>
