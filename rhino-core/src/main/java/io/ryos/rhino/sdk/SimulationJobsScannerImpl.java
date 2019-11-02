@@ -33,6 +33,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Runner;
+import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
@@ -192,43 +193,13 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var repoAnnotation = Optional.ofNullable((io.ryos.rhino.sdk.annotations.UserRepository) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
 
-    // Read runner annotation.
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
 
-    // Ramp-up annotation.
-    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz
-        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
-    RampupInfo rampupInfo = null;
-    if (rampUpAnnotation != null) {
-      var duration = simAnnotation.durationInMins();
-      if (rampUpAnnotation.durationInMins() >= 0) {
-        duration = rampUpAnnotation.durationInMins();
-      }
-      rampupInfo = new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(),
-          Duration.ofMinutes(duration));
-    }
-
-    // Throttling annotation.
-    var throttlingAnnotation = (Throttle) clazz.getDeclaredAnnotation(Throttle.class);
-    ThrottlingInfo throttlingInfo = null;
-    if (throttlingAnnotation != null) {
-      var duration = simAnnotation.durationInMins();
-      if (throttlingAnnotation.durationInMins() >= 0) {
-        duration = throttlingAnnotation.durationInMins();
-      }
-      throttlingInfo = new ThrottlingInfo(throttlingAnnotation.rps(), Duration.ofMinutes(duration));
-    }
-
-    // Read influx DB annotation, to enable influx db.
+    var rampupInfo = getRampupInfo(clazz, simAnnotation);
+    var throttlingInfo = getThrottlingInfo(clazz, simAnnotation);
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
-
-    // Read influx DB annotation, to enable Grafana integration.
-    Grafana grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
-    GrafanaInfo grafanaInfo = null;
-    if (grafanaAnnotation != null) {
-      grafanaInfo = new GrafanaInfo(grafanaAnnotation.dashboard(), grafanaAnnotation.name());
-    }
+    var grafanaInfo = getGrafanaInfo(clazz);
 
     // Read scenario methods.
     var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
@@ -240,21 +211,15 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     // Create test instance.
     var testInstance = instanceOf(clazz).orElseThrow();
     if (isReactiveSimulation(runnerAnnotation)) {
-      initInstance(clazz, testInstance);
+      enhanceInjectionPoints(clazz, testInstance);
     }
 
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
         .filter(this::hasDslAnnotation)
         .filter(this::isEnabled)
-        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
-            ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
-        .map(p -> {
-          var loadDsl = p.getSecond();
-          if (loadDsl instanceof RunnableDslImpl) {
-            return ((RunnableDslImpl) loadDsl).withName(p.getFirst());
-          }
-          return loadDsl;
-        })
+        .map(method -> new Pair<>(method.getDeclaredAnnotation(Dsl.class).name(),
+            ReflectionUtils.<LoadDsl>executeMethod(method, testInstance)))
+        .map(this::getLoadDsl)
         .collect(toList());
 
     if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
@@ -308,7 +273,49 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .build();
   }
 
-  private void initInstance(Class simClass, Object instance) {
+  private LoadDsl getLoadDsl(Pair<String, LoadDsl> pair) {
+    var loadDsl = pair.getSecond();
+    if (loadDsl instanceof RunnableDslImpl) {
+      return ((RunnableDslImpl) loadDsl).withName(pair.getFirst());
+    }
+    return loadDsl;
+  }
+
+  private GrafanaInfo getGrafanaInfo(Class clazz) {
+    Grafana grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
+    if (grafanaAnnotation != null) {
+      return new GrafanaInfo(grafanaAnnotation.dashboard(), grafanaAnnotation.name());
+    }
+    return null;
+  }
+
+  private ThrottlingInfo getThrottlingInfo(Class clazz, Simulation simAnnotation) {
+    var throttlingAnnotation = (Throttle) clazz.getDeclaredAnnotation(Throttle.class);
+    if (throttlingAnnotation != null) {
+      var duration = simAnnotation.durationInMins();
+      if (throttlingAnnotation.durationInMins() >= 0) {
+        duration = throttlingAnnotation.durationInMins();
+      }
+      return new ThrottlingInfo(throttlingAnnotation.rps(), Duration.ofMinutes(duration));
+    }
+    return null;
+  }
+
+  private RampupInfo getRampupInfo(Class clazz, Simulation simAnnotation) {
+    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+    if (rampUpAnnotation != null) {
+      var duration = simAnnotation.durationInMins();
+      if (rampUpAnnotation.durationInMins() >= 0) {
+        duration = rampUpAnnotation.durationInMins();
+      }
+      return new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(),
+          Duration.ofMinutes(duration));
+    }
+    return null;
+  }
+
+  private void enhanceInjectionPoints(Class simClass, Object instance) {
     var userProviders = getFieldsByAnnotation(simClass, UserProvider.class);
     userProviders
         .forEach(p -> setValueAtInjectionPoint(enhanceInstanceAt(p.getFirst()), p.getFirst(),
