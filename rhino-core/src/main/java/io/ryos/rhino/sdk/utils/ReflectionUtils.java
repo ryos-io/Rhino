@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.utils;
 
 import io.ryos.rhino.sdk.data.Pair;
+import io.ryos.rhino.sdk.exceptions.BadInjectionException;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.FixedValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,6 +46,31 @@ public class ReflectionUtils {
   private static final Logger LOG = LogManager.getLogger(ReflectionUtils.class);
 
   private ReflectionUtils() {
+  }
+
+  public static Object enhanceInstanceAt(Field field) {
+    var enhancer = new Enhancer();
+    enhancer.setSuperclass(field.getType());
+    enhancer.setCallback((FixedValue) () -> {
+      throw new BadInjectionException("RH40 - Injection point is not ready. This happens when "
+          + "your code tries to access the providers before they are initialized.\n"
+          + field.toString() + "\n"
+          + "In Job DSL access to providers at injection points must be within the lambdas so "
+          + "that the access occurs lazy. \nPlease refer to documentation regarding this: \n"
+          + "https://github.com/ryos-io/Rhino/wiki/FAQ");
+    });
+    return enhancer.create();
+  }
+
+  public static <T> void setValueAtInjectionPoint(final T object, final Field f,
+      final Object simulationInstance) {
+    try {
+      f.setAccessible(true);
+      f.set(simulationInstance, object);
+    } catch (IllegalAccessException e) {
+      LOG.error(e);
+      //TODO
+    }
   }
 
   /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */

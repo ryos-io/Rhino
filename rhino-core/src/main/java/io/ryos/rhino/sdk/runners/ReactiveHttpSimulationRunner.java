@@ -56,6 +56,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
+  private static final String ALL_REGIONS = "all";
   private CyclicIterator<RunnableDslImpl> dslIterator;
   private Disposable subscribe;
 
@@ -95,7 +96,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
 
     var userRepository = simulationMetadata.getUserRepository();
-    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, "all");
+    var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, ALL_REGIONS);
     var httpClientConfig = Dsl.config()
         .setKeepAlive(true)
         .setMaxConnections(SimulationConfig.getMaxConnections())

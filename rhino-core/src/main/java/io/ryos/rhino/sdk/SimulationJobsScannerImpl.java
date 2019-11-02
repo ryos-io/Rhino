@@ -16,7 +16,10 @@
 
 package io.ryos.rhino.sdk;
 
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.enhanceInstanceAt;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.setValueAtInjectionPoint;
 import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.annotations.After;
@@ -28,8 +31,10 @@ import io.ryos.rhino.sdk.annotations.Grafana;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Prepare;
+import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Throttle;
+import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.SimulationSession;
@@ -234,11 +239,13 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
     // Create test instance.
     var testInstance = instanceOf(clazz).orElseThrow();
+    initInstance(clazz, testInstance);
 
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
         .filter(this::hasDslAnnotation)
         .filter(this::isEnabled)
-        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(), ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
+        .map(s -> new Pair<>(s.getDeclaredAnnotation(Dsl.class).name(),
+            ReflectionUtils.<LoadDsl>executeMethod(s, testInstance)))
         .map(p -> {
           var loadDsl = p.getSecond();
           if (loadDsl instanceof RunnableDslImpl) {
@@ -299,12 +306,24 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .build();
   }
 
+  private void initInstance(Class simClass, Object instance) {
+    var userProviders = getFieldsByAnnotation(simClass, UserProvider.class);
+    userProviders
+        .forEach(p -> setValueAtInjectionPoint(enhanceInstanceAt(p.getFirst()), p.getFirst(),
+            instance));
+
+    var providers = getFieldsByAnnotation(simClass, Provider.class);
+    providers.forEach(p -> setValueAtInjectionPoint(enhanceInstanceAt(p.getFirst()),
+        p.getFirst(), instance));
+  }
+
   private boolean hasDslAnnotation(Method method) {
     return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(a -> a instanceof Dsl);
   }
 
   private boolean hasScenarioAnnotation(Method method) {
-    return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(annotation -> annotation instanceof io.ryos.rhino.sdk.annotations.Scenario);
+    return Arrays.stream(method.getDeclaredAnnotations())
+        .anyMatch(annotation -> annotation instanceof io.ryos.rhino.sdk.annotations.Scenario);
   }
 
   private boolean isEnabled(Method method) {

@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.runners;
 
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
+
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.UserProvider;
@@ -24,8 +26,6 @@ import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.getFieldsByAnnotation;
 
 /**
  * Injector for reactive runner. The difference from {@link DefaultRunnerSimulationInjector} is the
@@ -64,8 +64,9 @@ public class ReactiveRunnerSimulationInjector extends AbstractSimulationInjector
     var fieldAnnotation = getFieldsByAnnotation(getSimulationMetadata().getSimulationClass(), UserProvider.class);
 
     fieldAnnotation.stream().map(pair ->
-        new Pair<>(new OAuthUserProvider(new CyclicUserSessionRepositoryImpl(getSimulationMetadata().getUserRepository(),
-            pair.getSecond().region())), pair.getFirst()))
+        new Pair<>(new OAuthUserProvider(
+            new CyclicUserSessionRepositoryImpl(getSimulationMetadata().getUserRepository(),
+                pair.getSecond().region())), pair.getFirst()))
         .forEach(r -> setValueToInjectionPoint(r.getFirst(), r.getSecond(), simulationInstance));
   }
 }

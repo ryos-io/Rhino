@@ -7,8 +7,8 @@ import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepository;
 
 /**
- * OAuth user provider is to use to inject secondary users in addition to one which is provided
- * by the framework, that is the primary one.
+ * OAuth user provider is to use to inject secondary users in addition to one which is provided by
+ * the framework, that is the primary one.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -22,6 +22,10 @@ public class OAuthUserProvider implements Provider<OAuthUser> {
    * <p>
    */
   private final CyclicUserSessionRepository<UserSession> userSessionRepository;
+
+  public OAuthUserProvider() {
+    userSessionRepository = null;
+  }
 
   /**
    * Constructs a new {@link OAuthUserProvider} instance.
@@ -46,8 +50,8 @@ public class OAuthUserProvider implements Provider<OAuthUser> {
 
   /**
    * Take a user from the repository excluding the one passed as parameter till the repository
-   * provides one. If after three attempts not succeeds, then {@link IllegalArgumentException}
-   * will be thrown.
+   * provides one. If after three attempts not succeeds, then {@link IllegalArgumentException} will
+   * be thrown.
    * <p>
    *
    * @param excludedUser User instance.
