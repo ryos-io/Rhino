@@ -153,7 +153,10 @@
       <artifactId>ognl</artifactId>
       <groupId>ognl</groupId>
     </dependency>
-
+    <dependency>
+      <artifactId>cglib</artifactId>
+      <groupId>cglib</groupId>
+    </dependency>
     <dependency>
         <groupId>io.projectreactor</groupId>
         <artifactId>reactor-test</artifactId>
