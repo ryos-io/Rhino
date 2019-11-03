@@ -64,21 +64,19 @@ public class UserImpl implements User {
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    final UserImpl user = (UserImpl) o;
-    return username.equals(user.username) &&
-        id.equals(user.id) &&
-        region.equals(user.region);
+    UserImpl user = (UserImpl) o;
+    return username.equals(user.username);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(username, id, region);
+    return Objects.hash(username);
   }
 }

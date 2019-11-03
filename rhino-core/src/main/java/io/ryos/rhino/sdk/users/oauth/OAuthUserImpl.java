@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk.users.oauth;
 
 import io.ryos.rhino.sdk.users.data.UserImpl;
-import java.util.Objects;
 
 /**
  * Implementation of authenticated user representation.
@@ -88,25 +87,5 @@ public class OAuthUserImpl extends UserImpl implements OAuthUser {
         "userName='" + getUsername() + '\'' +
         "clientId='" + getClientId() + '\'' +
         '}';
-  }
-
-  @Override
-  public boolean equals(final Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-    final OAuthUserImpl oAuthUser = (OAuthUserImpl) o;
-    return Objects.equals(clientId, oAuthUser.clientId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), clientId);
   }
 }

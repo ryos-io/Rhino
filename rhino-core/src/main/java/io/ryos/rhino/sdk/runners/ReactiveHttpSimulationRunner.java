@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.runners;
 
 import static com.google.common.collect.Streams.stream;
-import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeStaticMethod;
+import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -27,6 +27,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.MaterializerFactory;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
@@ -145,7 +146,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private void prepare(AsyncHttpClient client, List<UserSession> userList) {
-    if (getSimulationMetadata().getPrepareMethod() != null) {
+    if (getSimulationMetadata().getBeforeMethod() != null) {
       LOG.info("Preparation started.");
       prepareUserSessions(userList, client);
       awaitIf(() -> !isPrepareCompleted);
@@ -166,8 +167,9 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private Publisher<UserSession> getPublisher(AsyncHttpClient client,
-      UserSession session, RunnableDslImpl dsl) {
+  private Publisher<UserSession> getPublisher(final AsyncHttpClient client,
+      final UserSession session,
+      final RunnableDslImpl dsl) {
 
     var specIt = dsl.getSpecs().iterator();
     var materializerFactory = new MaterializerFactory(client, eventDispatcher);
@@ -231,8 +233,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private void prepareUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
-    if (getSimulationMetadata().getPrepareMethod() != null) {
-      materializeMethod(getSimulationMetadata().getPrepareMethod(),
+    if (getSimulationMetadata().getBeforeMethod() != null) {
+      materializeMethod(getSimulationMetadata().getBeforeMethod(),
           userSessionList, client,
           () -> {
             isPrepareCompleted = true;
@@ -242,8 +244,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private void cleanUpUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
-    if (getSimulationMetadata().getCleanupMethod() != null) {
-      materializeMethod(getSimulationMetadata().getCleanupMethod(),
+    if (getSimulationMetadata().getAfterMethod() != null) {
+      materializeMethod(getSimulationMetadata().getAfterMethod(),
           userSessionList, client,
           () -> {
             LOG.info("Clean-up completed.");
@@ -253,13 +255,23 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private void materializeMethod(final Method method, final List<UserSession> userSessionList,
-      final AsyncHttpClient client, final Action action) {
+  private void materializeMethod(
+      final Method method,
+      final List<UserSession> userSessionList,
+      final AsyncHttpClient client,
+      final Action action) {
 
     if (method != null) {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
-          .flatMap(session -> getPublisher(client, session, executeStaticMethod(method)))
+          .flatMap(session -> {
+            RunnableDslImpl runnable = executeMethod(method,
+                getSimulationMetadata().getTestInstance());
+            runnable.getSpecs().forEach(spec -> {
+              spec.setSessionScope(Scope.SIMULATION);
+            });
+            return getPublisher(client, session, runnable);
+          })
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))
           .blockLast();

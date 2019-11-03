@@ -16,9 +16,12 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
+import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
+
 public class HttpSpecData {
 
   private String endpoint;
+  private HttpResponse response;
 
   public String getEndpoint() {
     return endpoint;
@@ -26,5 +29,13 @@ public class HttpSpecData {
 
   public void setEndpoint(String endpoint) {
     this.endpoint = endpoint;
+  }
+
+  public HttpResponse getResponse() {
+    return response;
+  }
+
+  public void setResponse(HttpResponse response) {
+    this.response = response;
   }
 }

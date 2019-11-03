@@ -55,4 +55,6 @@ public interface UserSession extends Context {
   Optional<String> getRefreshToken();
 
   SimulationSession getSimulationSession();
+
+  SimulationSession findSimulationSession(User user);
 }

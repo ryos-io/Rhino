@@ -19,9 +19,11 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.before;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -45,6 +47,17 @@ public class ReactiveMultiUserCollabSimulation {
   @UserProvider
   private OAuthUserProvider userProvider;
 
+  @Before
+  public LoadDsl setUp() {
+    return Start.dsl().run(
+        http("Prepare by PUT text.txt")
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(session -> FILES_ENDPOINT)
+            .upload(() -> file("classpath:///test.txt"))
+            .put());
+  }
+
   @Dsl(name = "Upload and Get")
   public LoadDsl loadTestPutAndGetFile() {
     return Start.dsl()
@@ -55,14 +68,12 @@ public class ReactiveMultiUserCollabSimulation {
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
             .upload(() -> file("classpath:///test.txt"))
-            .put()
-            .saveTo("result"))
+            .put())
         .run(http("GET text.txt")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth(session("userB"))
-            .endpoint(c -> FILES_ENDPOINT)
-            .get()
-            .saveTo("result"));
+            .endpoint(before("Prepare by PUT text.txt", "endpoint"))
+            .get());
   }
 }

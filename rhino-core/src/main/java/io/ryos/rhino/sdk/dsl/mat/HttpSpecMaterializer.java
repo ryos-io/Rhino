@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
 import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
@@ -66,7 +67,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   private final EventDispatcher eventDispatcher;
   private final Predicate<UserSession> conditionalSpec;
 
-  HttpSpecMaterializer(final AsyncHttpClient client,
+  HttpSpecMaterializer(
+      final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
       final Predicate<UserSession> predicate) {
     this.client = client;
@@ -93,59 +95,77 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, spec, eventDispatcher);
     var responseMono = Mono.just(userSession)
-        .flatMap(s -> Mono.fromCompletionStage(
-            client.executeRequest(buildRequest(spec, s), httpSpecAsyncHandler)
-                .toCompletableFuture()));
-
+        .flatMap(session -> Mono.fromCompletionStage(client.executeRequest(
+            buildHttpRequest(spec, session), httpSpecAsyncHandler).toCompletableFuture()));
     var retriableMono = Optional.ofNullable(spec.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
-            .map(hr -> isRetriable(retryInfo, hr))
-            .retryWhen(companion ->
-                companion
-                    .zipWith(Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
-                      if (index < retryInfo.getNumOfRetries() + 1
-                          && error instanceof RetryableOperationException) {
+            .map(hr -> isRequestRetriable(retryInfo, hr))
+            .retryWhen(companion -> companion.zipWith(
+                Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
+                  if (index < retryInfo.getNumOfRetries() + 1
+                      && error instanceof RetryableOperationException) {
                         return index;
                       } else {
                         throw Exceptions.propagate(new RetryFailedException(error));
                       }
-                    })))
-        .orElse(responseMono);
+                }))).orElse(responseMono);
 
-    return retriableMono.map(response -> {
-      var key = Optional.ofNullable(spec.getResponseKey()).orElse(DEFAULT_RESULT);
-      if (spec.getStorageScope() == Scope.USER) {
-        userSession.add(key, response);
-      } else {
-        userSession.getSimulationSession().add(key, response);
-      }
-
-      return userSession;
-    })
-        .onErrorResume(error -> {
-          if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
-            httpSpecAsyncHandler.completeMeasurement();
-          } else {
-            LOG.error(error.getMessage());
-          }
-          return Mono.empty();
-        })
+    return retriableMono.map(handleHttpResponse(spec, userSession))
+        .onErrorResume(handleOnErrorResume(spec, httpSpecAsyncHandler))
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
-  private Response isRetriable(final RetryInfo retryInfo, final HttpResponse hr) {
-    if (retryInfo.getPredicate().test(hr)) {
-      throw new RetryableOperationException(String.valueOf(hr.getStatusCode()));
-    }
-    return hr.getResponse();
+  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(
+      final HttpSpec spec,
+      final HttpSpecAsyncHandler httpSpecAsyncHandler) {
+    return error -> {
+      if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
+        httpSpecAsyncHandler.completeMeasurement();
+      } else {
+        LOG.error(error.getMessage());
+      }
+      return Mono.empty();
+    };
   }
 
-  private RequestBuilder buildRequest(HttpSpec httpSpec, UserSession userSession) {
+  private Function<Response, UserSession> handleHttpResponse(
+      final HttpSpec httpSpec,
+      final UserSession userSession) {
 
-    HttpSpecData httpSpecData = new HttpSpecData();
+    return response -> {
+      var key = Optional.ofNullable(httpSpec.getResponseKey()).orElse(DEFAULT_RESULT);
+      var activatedUser = getActiveUser(httpSpec, userSession);
+      if (httpSpec.getSessionScope().equals(Scope.USER)) {
+        userSession.add(key, response);
+      } else {
+        var specData = userSession.findSimulationSession(activatedUser).<HttpSpecData>get(
+            httpSpec.getMeasurementPoint()).orElse(new HttpSpecData());
+        specData.setResponse(new HttpResponse(response));
+        userSession.findSimulationSession(activatedUser)
+            .add(httpSpec.getMeasurementPoint(), specData);
+      }
+      return userSession;
+    };
+  }
+
+  private Response isRequestRetriable(final RetryInfo retryInfo, final HttpResponse httpResponse) {
+    if (retryInfo.getPredicate().test(httpResponse)) {
+      throw new RetryableOperationException(String.valueOf(httpResponse.getStatusCode()));
+    }
+    return httpResponse.getResponse();
+  }
+
+  private RequestBuilder buildHttpRequest(HttpSpec httpSpec, UserSession userSession) {
+
+    var httpSpecData = new HttpSpecData();
+
     httpSpecData.setEndpoint(httpSpec.getEndpoint().apply(userSession));
-
-    userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
+    if (httpSpec.getSessionScope().equals(Scope.SIMULATION)) {
+      userSession.findSimulationSession(getActiveUser(httpSpec, userSession))
+          .add(httpSpec.getMeasurementPoint(), httpSpecData);
+    } else {
+      userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
+    }
 
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
@@ -192,19 +212,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
     }
 
     if (httpSpec.isAuth()) {
-      Function<UserSession, User> userAccessor = httpSpec.getUserAccessor();
-      User user = null;
-      if (userAccessor != null) {
-        user = userAccessor.apply(userSession);
-      }
-      if (httpSpec.getAuthUser() != null) {
-        user = httpSpec.getAuthUser();
-      }
-      if (user == null) {
-        user = userSession.getUser();
-      }
-
-      builder = handleAuth(user, builder);
+      var specOwner = getActiveUser(httpSpec, userSession);
+      builder = handleAuth(specOwner, builder);
     }
 
     return builder;

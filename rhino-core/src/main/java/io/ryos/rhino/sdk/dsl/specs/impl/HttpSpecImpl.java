@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -41,7 +42,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private Function<UserSession, User> oauthUserAccessor;
   private RetryInfo retryInfo;
   private String saveTo;
-  private Scope storageScope;
+  private Scope storageScope = Scope.USER;
   private HttpResponse response;
 
   /**
@@ -105,6 +106,12 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   @Override
   public HttpConfigSpec endpoint(Function<UserSession, String> endpoint) {
     this.endpoint = endpoint;
+    return this;
+  }
+
+  @Override
+  public HttpConfigSpec endpoint(BiFunction<UserSession, HttpSpec, String> endpoint) {
+    this.endpoint = (session) -> endpoint.apply(session, this);
     return this;
   }
 

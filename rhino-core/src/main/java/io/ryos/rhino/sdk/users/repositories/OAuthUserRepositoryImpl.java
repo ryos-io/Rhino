@@ -43,7 +43,7 @@ public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
     users.forEach(u -> {
       delay();
-      var userSession = new UserSessionImpl(authenticator.authenticate(u), null);
+      var userSession = new UserSessionImpl(authenticator.authenticate(u));
       result.add(userSession);
     });
 

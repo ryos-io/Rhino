@@ -5,17 +5,16 @@ import io.ryos.rhino.sdk.users.data.User;
 
 public class LoadToken {
 
-  private final User userSession;
+  private final User user;
   private final SimulationSession simulationSession;
 
-  public LoadToken(final User userSession,
-      final SimulationSession simulationSession) {
-    this.userSession = userSession;
+  public LoadToken(final User user, final SimulationSession simulationSession) {
+    this.user = user;
     this.simulationSession = simulationSession;
   }
 
   public User getUser() {
-    return userSession;
+    return user;
   }
 
   public SimulationSession getSimulationSession() {

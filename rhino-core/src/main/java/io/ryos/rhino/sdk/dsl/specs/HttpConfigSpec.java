@@ -5,6 +5,7 @@ import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -20,6 +21,8 @@ public interface HttpConfigSpec extends HttpMethodSpec {
   HttpConfigSpec endpoint(String endpoint);
 
   HttpConfigSpec endpoint(Function<UserSession, String> endpoint);
+
+  HttpConfigSpec endpoint(BiFunction<UserSession, HttpSpec, String> endpoint);
 
   /**
    * Adds a new header into headers.

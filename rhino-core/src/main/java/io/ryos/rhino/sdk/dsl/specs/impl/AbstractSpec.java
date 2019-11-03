@@ -32,9 +32,20 @@ public abstract class AbstractSpec implements MeasurableSpec {
   private String measurementPoint = "";
   private boolean measurementEnabled = true;
   private boolean cumulativeMeasurement = false;
+  private Scope sessionScope = Scope.USER;
 
   public AbstractSpec(String measurement) {
     this.measurementPoint = measurement;
+  }
+
+  @Override
+  public Scope getSessionScope() {
+    return sessionScope;
+  }
+
+  @Override
+  public void setSessionScope(Scope sessionScope) {
+    this.sessionScope = sessionScope;
   }
 
   @Override

@@ -17,6 +17,6 @@ public class BasicUserRepositoryImpl implements UserRepository<UserSession> {
   @Override
   public List<UserSession> leaseUsers(int numberOfUsers, String region) {
     var users = userSource.getUsers(numberOfUsers, region);
-    return users.stream().map(basicUser -> new UserSessionImpl(basicUser, null)).collect(Collectors.toList());
+    return users.stream().map(UserSessionImpl::new).collect(Collectors.toList());
   }
 }

@@ -39,7 +39,7 @@ public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionReposit
   private static final int MAX_NUMBER_OF_USERS = 1000;
 
   private final CyclicIterator<LoadToken> filteredIterator;
-  private final List<LoadToken> backingList;
+  private final List<LoadToken> loadTokenList;
 
   public CyclicUserSessionRepositoryImpl(
       final UserRepository<UserSession> userRepository,
@@ -57,28 +57,24 @@ public class CyclicUserSessionRepositoryImpl implements CyclicUserSessionReposit
     Objects.requireNonNull(region);
 
     var filteredUsers = userRepository.leaseUsers(maxNumberOfUsers, region);
-    this.backingList = filteredUsers
+    this.loadTokenList = filteredUsers
         .stream()
-        .map(u -> new LoadToken(u.getUser(), new SimulationSession(u.getUser())))
+        .map(userSession -> new LoadToken(userSession.getUser(),
+            new SimulationSession(userSession.getUser())))
         .collect(Collectors.toList());
 
-    this.filteredIterator = new CyclicIterator<>(backingList);
+    this.filteredIterator = new CyclicIterator<>(loadTokenList);
   }
-
 
   @Override
   public UserSession take() {
     final LoadToken token = filteredIterator.next();
-    return new UserSessionImpl(token.getUser(), token.getSimulationSession());
+    return new UserSessionImpl(token.getUser(), token.getSimulationSession(), loadTokenList);
   }
 
   public List<UserSession> getUserList() {
-    return backingList.stream().map(token ->
-        new UserSessionImpl(token.getUser(), token.getSimulationSession()))
+    return loadTokenList.stream().map(token ->
+        new UserSessionImpl(token.getUser(), token.getSimulationSession(), loadTokenList))
         .collect(Collectors.toList());
-  }
-
-  public List<LoadToken> getTokenList() {
-    return backingList;
   }
 }

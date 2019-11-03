@@ -34,6 +34,10 @@ public interface Spec {
     return new SomeSpecImpl(measurementPoint);
   }
 
+  Scope getSessionScope();
+
+  void setSessionScope(Scope scope);
+
   /**
    * Whether the measurement is enabled.
    * <p>

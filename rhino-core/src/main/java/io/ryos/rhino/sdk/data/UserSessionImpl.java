@@ -16,8 +16,10 @@
 
 package io.ryos.rhino.sdk.data;
 
+import io.ryos.rhino.sdk.dsl.LoadToken;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUser;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,14 +35,19 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
 
   private final User user;
   private SimulationSession simulationSession;
+  private final List<LoadToken> tokens;
 
-  public UserSessionImpl(final User user, final SimulationSession session) {
+  public UserSessionImpl(
+      final User user,
+      final SimulationSession session,
+      final List<LoadToken> tokens) {
     this.user = user;
     this.simulationSession = session;
+    this.tokens = tokens;
   }
 
   public UserSessionImpl(final User user) {
-    this(user, null);
+    this(user, null, null);
   }
 
   @Override
@@ -66,5 +73,11 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
 
   public SimulationSession getSimulationSession() {
     return simulationSession;
+  }
+
+  public SimulationSession findSimulationSession(User user) {
+    return this.tokens.stream().filter(t -> t.getUser().getUsername().equals(user.getUsername()))
+        .findFirst().map(
+            LoadToken::getSimulationSession).orElse(new SimulationSession(user));
   }
 }
