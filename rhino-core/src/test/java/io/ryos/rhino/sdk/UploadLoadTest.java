@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.UploadLoadSimulation;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +14,6 @@ import org.junit.Test;
 @Ignore
 public class UploadLoadTest {
 
-  private static final String SIM_NAME = "Reactive Upload Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
   @Rule
@@ -29,8 +29,12 @@ public class UploadLoadTest {
 
     stubFor(WireMock.put(urlEqualTo("/api/files"))
             .willReturn(aResponse()
-                    .withStatus(201)));
+                .withStatus(201).withFixedDelay(200)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    stubFor(WireMock.get(urlEqualTo("/api/files"))
+        .willReturn(aResponse()
+            .withStatus(200).withFixedDelay(200)));
+
+    Simulation.create(PROPERTIES_FILE, UploadLoadSimulation.class).start();
   }
 }

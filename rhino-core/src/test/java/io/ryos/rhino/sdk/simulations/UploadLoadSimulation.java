@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
@@ -18,32 +19,39 @@ import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
-@Simulation(name = "Reactive Upload Test", userRegion = "US")
+@Simulation(name = "Reactive Upload Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class UploadLoadSimulation {
 
-  private static final String DISCOVERY_ENDPOINT = "http://localhost:8089/api/files";
+  private static final String FILES = "http://localhost:8089/api/files";
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
-  @UserProvider(region = "US")
+  @UserProvider
   private OAuthUserProvider userProvider;
 
   @Provider(factory = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
-  public LoadDsl singleTestDsl() {
+  public LoadDsl testUploadAndGetFile() {
     return Start
         .dsl()
-        .run(http("text.txt")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+        .session("2. User", () -> userProvider.take())
+        .run(http("PUT text.txt")
+            .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint((c) -> DISCOVERY_ENDPOINT)
+            .endpoint(s -> FILES)
             .upload(() -> file("classpath:///test.txt"))
             .put()
-            .saveTo("result"));
+            .saveTo("result"))
+        .run(http("GET text.txt")
+            .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth((session("2. User")))
+            .endpoint(s -> FILES)
+            .get());
   }
 }
