@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Marker annotation to enable Influx DB writer. The Influx DB integration must be configured in
- * framework's configuration global the integration is enabled. Otherwise, the connection to
+ * framework's configuration before the integration is enabled. Otherwise, the connection to
  * Influx DB will not be able to established.
  * <p>
  *

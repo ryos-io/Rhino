@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Session feeder annotation marks the injection point where the current user session is to be
- * injected. A user in starts with simulation execution, and ends as soon as the simulation
+ * injected. A user session starts with simulation execution, and ends as soon as the simulation
  * ends. The user sessions are useful e.g if you need a context shared between scenario executions.
  * Test developers might choose to initialize resources in prepare() method, e.g upload a
  * resource beforehand and store the reference of the resource in the session so as to access it
