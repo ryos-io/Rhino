@@ -66,7 +66,7 @@ public class MaterializerFactory {
     } else if (spec instanceof SomeSpec) {
       return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
     } else if (spec instanceof WaitSpec) {
-      return new WaitSpecMaterializer().mategirialize((WaitSpec) spec, session);
+      return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
     } else if (spec instanceof MapperSpec) {
       return new MapperSpecMaterializer().materialize((MapperSpec) spec, session);
     } else if (spec instanceof ForEachSpec) {
