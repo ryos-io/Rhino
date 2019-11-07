@@ -3,7 +3,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
-import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder.in;
+import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.CleanUp;
@@ -76,7 +76,7 @@ public class ReactiveBasicHttpGetSimulation {
             .saveTo("result"))
         .map(MapperBuilder.<Response, String>from("result")
             .doMap(s -> s.getStatusCode() + " returned."))
-        .forEach(in("result").apply(o -> some("measurement")
+        .forEach("simulation", in("result").doRun(o -> some("measurement")
             .as((session) -> {
               System.out.println(o);
               return "OK";

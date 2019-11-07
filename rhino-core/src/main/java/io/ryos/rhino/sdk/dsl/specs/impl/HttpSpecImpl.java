@@ -41,7 +41,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private Function<UserSession, String> endpoint;
   private Function<UserSession, User> oauthUserAccessor;
   private RetryInfo retryInfo;
-  private String saveTo;
+  private String saveTo = "result";
   private Scope storageScope = Scope.USER;
   private HttpResponse response;
 

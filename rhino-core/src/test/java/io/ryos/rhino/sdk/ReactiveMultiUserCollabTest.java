@@ -41,6 +41,16 @@ public class ReactiveMultiUserCollabTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
+    stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
+        .willReturn(aResponse()
+            .withStatus(201)
+            .withFixedDelay(400)));
+
+    stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
+        .willReturn(aResponse()
+            .withStatus(201)
+            .withFixedDelay(400)));
+
     stubFor(WireMock.put(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withStatus(201)

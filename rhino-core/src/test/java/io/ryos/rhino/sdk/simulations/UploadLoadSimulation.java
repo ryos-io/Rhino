@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
+import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
@@ -14,6 +15,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;

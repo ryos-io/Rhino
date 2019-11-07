@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import io.ryos.rhino.sdk.dsl.specs.RunUntilSpec;
@@ -47,23 +48,37 @@ public class MaterializerFactory {
   }
 
   public Mono<UserSession> monoFrom(final Spec spec, final UserSession session) {
+    return monoFrom(spec, session, null);
+  }
+
+  public <R> Mono<UserSession> monoFrom(
+      final Spec spec,
+      final UserSession session,
+      final ResultHandler<R> resultHandler) {
 
     if (spec instanceof HttpSpec) {
-      return new HttpSpecMaterializer(httpClient, eventDispatcher).materialize((HttpSpec) spec, session);
+      var handler = (ResultHandler<HttpResponse>) resultHandler;
+      if (handler == null) {
+        handler = new CollectingHttpResultHandler(session, (HttpSpec) spec);
+      }
+      var materializer = new HttpSpecMaterializer(httpClient, eventDispatcher, handler);
+      return materializer.materialize((HttpSpec) spec, session);
     } else if (spec instanceof SomeSpec) {
       return new SomeSpecMaterializer(eventDispatcher).materialize((SomeSpec) spec, session);
     } else if (spec instanceof WaitSpec) {
-      return new WaitSpecMaterializer().materialize((WaitSpec) spec, session);
+      return new WaitSpecMaterializer().mategirialize((WaitSpec) spec, session);
     } else if (spec instanceof MapperSpec) {
       return new MapperSpecMaterializer().materialize((MapperSpec) spec, session);
     } else if (spec instanceof ForEachSpec) {
-      return new LoopSpecMaterializer<>(eventDispatcher, httpClient).materialize((ForEachSpec) spec, session);
+      return new LoopSpecMaterializer<>(eventDispatcher, httpClient)
+          .materialize((ForEachSpec) spec, session);
     } else if (isConditionalSpec(spec)) {
       return monoFrom(((ConditionalSpecWrapper) spec).getSpec(), session);
     } else if (spec instanceof EnsureSpec) {
       return new EnsureSpecMaterializer().materialize((EnsureSpec) spec, session);
     } else if (spec instanceof RunUntilSpec) {
-      return new RunUntilSpecMaterializer(eventDispatcher, httpClient).materialize((RunUntilSpec) spec, session);
+      return new RunUntilSpecMaterializer(eventDispatcher, httpClient)
+          .materialize((RunUntilSpec) spec, session);
     } else if (spec instanceof SessionSpec) {
       return new SessionSpecMaterializer().materialize((SessionSpec) spec, session);
     }

@@ -1,8 +1,10 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -13,12 +15,14 @@ import java.util.function.Predicate;
 public interface IterableDsl extends LoadDsl {
 
   /**
-   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder} instance.
+   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
+   * instance.
    *
    * @param forEachBuilder Iterable builder.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
+  <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey,
+      ForEachBuilder<E, R> forEachBuilder);
 
   /**
    * Runs the {@link Spec} till the {@link Predicate} holds.

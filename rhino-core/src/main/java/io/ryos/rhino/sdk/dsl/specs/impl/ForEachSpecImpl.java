@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 
 /**
  * For-each loop representation.
@@ -34,25 +35,32 @@ public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec impl
    */
   private final ForEachBuilder<E, R> forEachBuilder;
 
+  private final String contextKey;
+
   /**
    * Constructs a new {@link ForEachSpec} instance.
    * <p>
    *
    * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
    */
-  public ForEachSpecImpl(ForEachBuilder<E, R> forEachBuilder) {
+  public ForEachSpecImpl(String contextKey, ForEachBuilder<E, R> forEachBuilder) {
     super("N/A");
 
+    this.contextKey = contextKey;
     this.forEachBuilder = forEachBuilder;
   }
 
   /**
-   * Getter for {@link ForEachBuilder}.
+   * Getter for {@link ForEachBuilderImpl}.
    * <p>
    *
-   * @return {@link ForEachBuilder} instance.
+   * @return {@link ForEachBuilderImpl} instance.
    */
   public ForEachBuilder<E, R> getForEachBuilder() {
     return forEachBuilder;
+  }
+
+  public String getContextKey() {
+    return contextKey;
   }
 }

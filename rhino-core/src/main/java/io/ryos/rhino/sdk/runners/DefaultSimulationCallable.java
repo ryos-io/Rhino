@@ -37,7 +37,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
    * <p>
    *
    * @param simulationMetadata Simulation metadata.
-   * @param userSession Current user session which is active.
+   * @param userSession Current user in which is active.
    * @param scenario Scenario is to be run.
    * @param eventDispatcher Event dispatcher is responsible from delivering metric events to
    * corresponding receivers.

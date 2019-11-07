@@ -19,9 +19,11 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.before;
+import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.global;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
+import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
@@ -31,9 +33,11 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
+import java.util.List;
 
 @Simulation(name = "Reactive Multi-User Test")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -47,20 +51,39 @@ public class ReactiveMultiUserCollabSimulation {
   @UserProvider
   private OAuthUserProvider userProvider;
 
+  static List<String> getFiles() {
+    return ImmutableList.of("file1", "file2");
+  }
+
   @Before
   public LoadDsl setUp() {
-    return Start.dsl().run(
-        http("Prepare by PUT text.txt")
+
+    return Start.dsl()
+        .run(http("Prepare by PUT text.txt")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
             .upload(() -> file("classpath:///test.txt"))
-            .put());
+            .put())
+        .session("files", ReactiveMultiUserCollabSimulation::getFiles)
+        .forEach("test for each", in(session("files")).doRun(file -> http("PUT in Loop")
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(session -> FILES_ENDPOINT + "/" + file)
+            .upload(() -> file("classpath:///test.txt"))
+            .put()).saveTo("uploads", Scope.SIMULATION));
   }
 
   @Dsl(name = "Upload and Get")
   public LoadDsl loadTestPutAndGetFile() {
+
     return Start.dsl()
+        .forEach("get all files", in(global("test for each")).doRun(file -> http("GET in Loop")
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(session -> FILES_ENDPOINT)
+            .get()))
         .session("userB", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
@@ -73,7 +96,7 @@ public class ReactiveMultiUserCollabSimulation {
             .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth(session("userB"))
-            .endpoint(before("Prepare by PUT text.txt", "endpoint"))
+            .endpoint(global("Prepare by PUT text.txt", "endpoint"))
             .get());
   }
 }

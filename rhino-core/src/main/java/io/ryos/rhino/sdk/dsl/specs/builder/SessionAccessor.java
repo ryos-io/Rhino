@@ -49,21 +49,28 @@ public class SessionAccessor {
         + "key: " + key + " not found in session."));
   }
 
-  public static <T> BiFunction<UserSession, HttpSpec, T> before(String key, String expression) {
-    return (session, spec) -> session.findSimulationSession(getActiveUser(spec, session))
+  public static <T> Function<UserSession, T> global(String key) {
+    return (session) -> session.getSimulationSession()
+        .<T>get(key)
+        .orElseThrow(
+            () -> new RuntimeException(
+                "Object with key: " + key + " not found in simulation in."));
+  }
+
+  public static <T> Function<UserSession, T> global(String key, String expression) {
+    return (session) -> session.getSimulationSession()
         .<T>get(key)
         .map(o -> readObject(expression, o))
         .orElseThrow(
             () -> new RuntimeException(
-                "Object with key: " + getActiveUser(spec, session).getUsername()
-                    + " not found in simulation session."));
+                "Object with key: " + key + " not found in simulation in."));
   }
 
   public static <T> Function<UserSession, T> session(String key, String expression) {
     return (session) -> session.<T>get(key)
         .map(o -> readObject(expression, o))
         .orElseThrow(
-            () -> new RuntimeException("Object with key: " + key + " not found in session."));
+            () -> new RuntimeException("Object with key: " + key + " not found in in."));
   }
 
   private static <T> T readObject(String expressionString, T object) {

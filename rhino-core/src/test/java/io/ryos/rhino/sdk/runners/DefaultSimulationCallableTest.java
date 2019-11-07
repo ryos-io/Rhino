@@ -46,7 +46,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
 
     assertThat(call, notNullValue());
@@ -66,7 +66,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -87,7 +87,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
 
     assertThat(call, notNullValue());
@@ -107,7 +107,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -128,7 +128,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -149,7 +149,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("global","called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -161,7 +161,7 @@ public class DefaultSimulationCallableTest {
 
     @io.ryos.rhino.sdk.annotations.Before
     public void before(UserSession session) {
-      session.add("before", "called");
+      session.add("global", "called");
     }
 
     @io.ryos.rhino.sdk.annotations.After
@@ -181,7 +181,7 @@ public class DefaultSimulationCallableTest {
 
     @io.ryos.rhino.sdk.annotations.Before
     public void before(UserSession session) {
-      session.add("before", "called");
+      session.add("global", "called");
       throw new RuntimeException("Expected Exception, must be discarded");
     }
 
@@ -201,7 +201,7 @@ public class DefaultSimulationCallableTest {
 
     @io.ryos.rhino.sdk.annotations.Before
     public void before(UserSession session) {
-      session.add("before", "called");
+      session.add("global", "called");
     }
 
     @io.ryos.rhino.sdk.annotations.After
@@ -220,7 +220,7 @@ public class DefaultSimulationCallableTest {
 
     @io.ryos.rhino.sdk.annotations.Before
     public void before(UserSession session) {
-      session.add("before", "called");
+      session.add("global", "called");
     }
 
     @io.ryos.rhino.sdk.annotations.After

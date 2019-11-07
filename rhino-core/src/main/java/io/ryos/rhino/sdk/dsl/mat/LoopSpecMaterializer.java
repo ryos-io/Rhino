@@ -18,14 +18,19 @@ package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Function;
 import org.asynchttpclient.AsyncHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -46,34 +51,22 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
   }
 
   @Override
-  public Mono<UserSession> materialize(ForEachSpec<E, R> spec, UserSession session) {
-    var key = spec.getForEachBuilder().getKey();
-    var iterable = session.get(key)
+  public Mono<UserSession> materialize(final ForEachSpec<E, R> spec, final UserSession session) {
+    var forEachBuilder = (ForEachBuilderImpl<E, R>) spec.getForEachBuilder();
+    var iterable =
+        Optional.ofNullable(spec.getForEachBuilder().getSessionExtractor().apply(session))
         .filter(obj -> obj instanceof Iterable)
         .map(obj -> (Iterable<E>) obj)
         .orElseThrow(() -> new IllegalArgumentException("forEach() failed. The instance with key: "
-            + "\"" + spec.getForEachBuilder().getKey() + "\" must be iterable, but was " + session
-            .get(key)));
+            + "\"" + forEachBuilder.getKey() + "\" must be iterable"));
     var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
-    var loopFunction = spec.getForEachBuilder().getForEachFunction();
-    var inputIt = iterable.iterator();
-    var acc = materializerFactory.monoFrom(loopFunction.apply(inputIt.next()), session);
+    var loopFunction = forEachBuilder.getForEachFunction();
+    var saveToKey = forEachBuilder.getSaveTo();
 
-    while (inputIt.hasNext()) {
-      // Never move the following statement into lambda body. next() call is required to be eager.
-      var next = inputIt.next();
-      acc = acc.flatMap(s -> {
-        if (next instanceof ConditionalSpecWrapper) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
-          if (!predicate.test(s)) {
-            return Mono.just(s);
-          }
-        }
-        return materializerFactory.monoFrom(loopFunction.apply(next), session);
-      });
-    }
-    acc = acc.doOnError(e -> LOG.error("Unexpected error: ", e));
-
-    return acc;
+    return Flux.fromIterable(iterable)
+        .flatMap(s -> materializerFactory.monoFrom(loopFunction.apply(s), session,
+            new ChildrenResultHandler(session, (HttpSpec) loopFunction.apply(s), spec.getContextKey())))
+        .reduce((s1, s2) -> s1)
+        .doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 }

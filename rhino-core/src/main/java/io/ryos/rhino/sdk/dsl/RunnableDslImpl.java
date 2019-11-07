@@ -1,8 +1,10 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
@@ -14,6 +16,7 @@ import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -75,8 +78,8 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   }
 
   @Override
-  public <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder) {
-    executableFunctions.add(new ForEachSpecImpl<>(forEachBuilder));
+  public <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey, ForEachBuilder<E, R> forEachBuilder) {
+    executableFunctions.add(new ForEachSpecImpl<>(contextKey, forEachBuilder));
     return this;
   }
 

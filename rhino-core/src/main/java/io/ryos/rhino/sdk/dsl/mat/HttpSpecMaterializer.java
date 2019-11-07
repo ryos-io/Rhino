@@ -39,7 +39,6 @@ import io.ryos.rhino.sdk.users.data.UserImpl;
 import io.ryos.rhino.sdk.users.oauth.OAuthService;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,15 +64,15 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
 
   private final AsyncHttpClient client;
   private final EventDispatcher eventDispatcher;
-  private final Predicate<UserSession> conditionalSpec;
+  private final ResultHandler<HttpResponse> resultHandler;
 
   HttpSpecMaterializer(
       final AsyncHttpClient client,
       final EventDispatcher eventDispatcher,
-      final Predicate<UserSession> predicate) {
+      final ResultHandler<HttpResponse> resultHandler) {
     this.client = client;
     this.eventDispatcher = eventDispatcher;
-    this.conditionalSpec = predicate;
+    this.resultHandler = resultHandler;
   }
 
   /**
@@ -88,10 +87,6 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
   }
 
   public Mono<UserSession> materialize(final HttpSpec spec, final UserSession userSession) {
-
-    if (conditionalSpec != null && !conditionalSpec.test(userSession)) {
-      return Mono.just(userSession);
-    }
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, spec, eventDispatcher);
     var responseMono = Mono.just(userSession)
@@ -110,7 +105,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
                       }
                 }))).orElse(responseMono);
 
-    return retriableMono.map(handleHttpResponse(spec, userSession))
+    return retriableMono
+        .map(result -> resultHandler.handle(new HttpResponse(result)))
         .onErrorResume(handleOnErrorResume(spec, httpSpecAsyncHandler))
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
@@ -122,29 +118,9 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
       if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
         httpSpecAsyncHandler.completeMeasurement();
       } else {
-        LOG.error(error.getMessage());
+        LOG.error(error.getMessage(), error);
       }
       return Mono.empty();
-    };
-  }
-
-  private Function<Response, UserSession> handleHttpResponse(
-      final HttpSpec httpSpec,
-      final UserSession userSession) {
-
-    return response -> {
-      var key = Optional.ofNullable(httpSpec.getResponseKey()).orElse(DEFAULT_RESULT);
-      var activatedUser = getActiveUser(httpSpec, userSession);
-      if (httpSpec.getSessionScope().equals(Scope.USER)) {
-        userSession.add(key, response);
-      } else {
-        var specData = userSession.findSimulationSession(activatedUser).<HttpSpecData>get(
-            httpSpec.getMeasurementPoint()).orElse(new HttpSpecData());
-        specData.setResponse(new HttpResponse(response));
-        userSession.findSimulationSession(activatedUser)
-            .add(httpSpec.getMeasurementPoint(), specData);
-      }
-      return userSession;
     };
   }
 

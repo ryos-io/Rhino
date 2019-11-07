@@ -26,8 +26,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * User session repository provides the user sessions limited by maxNumberOfUsers. The take() method returns the next
- * user session in the backing collection. Once all elements in the collection are returned, the cyclic iterator starts
+ * User in repository provides the user sessions limited by maxNumberOfUsers. The take() method returns the next
+ * user in in the backing collection. Once all elements in the collection are returned, the cyclic iterator starts
  * from the beginning.
  * <p>
  *

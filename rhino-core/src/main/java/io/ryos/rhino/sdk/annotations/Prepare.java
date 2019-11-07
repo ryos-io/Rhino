@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation is used to mark static method which are run before the simulation is started
- * for each user. It allows test developers to prepare the simulation before the simulation run
+ * The annotation is used to mark static method which are run global the simulation is started
+ * for each user. It allows test developers to prepare the simulation global the simulation run
  * e.g create some resources on server.
  * <p>
  *
@@ -37,13 +37,13 @@ import java.lang.annotation.Target;
  *
  * <code>
  * @Prepare
- * public static void prepare(SimulationSession session) {
+ * public static void prepare(SimulationSession in) {
  * // your code here.
  * }
  * </code>
  *
  * Prepare method might take an argument which is {@link io.ryos.rhino.sdk.data.SimulationSession}
- * a global context, that might be accessed by scenarios. The simulation session will not be
+ * a global context, that might be accessed by scenarios. The simulation in will not be
  * cleaned up after every scenario execution, but in clean-up method after the simulation completes.
  * <p>
  *
