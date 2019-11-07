@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.data;
 import io.ryos.rhino.sdk.users.data.User;
 
 /**
- * Simulation in is a context instance of which life cycle is spanning from the beginning of
+ * Simulation session is a context instance of which life cycle is spanning from the beginning of
  * simulations till they complete. In contrary to {@link UserSession} which life cycle ends after
  * every test execution, the simulation session retain its state until the end of the simulation
  * which makes the simulation sessions handy for simulation preparation.

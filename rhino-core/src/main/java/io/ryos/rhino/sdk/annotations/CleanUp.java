@@ -37,11 +37,10 @@ import java.lang.annotation.Target;
  * Clean-up method must be public and static:
  *
  * <code>
- *
- * @author Erhan Bagdemir
- * @CleanUp public static void prepare(SimulationSession in) {
- * // your code here.
- * }
+ *  @CleanUp
+ *  public static void prepare(SimulationSession session) {
+ *  // your code here.
+ *  }
  * </code>
  *
  * Cleanup method might take an argument which is {@link io.ryos.rhino.sdk.data.SimulationSession}

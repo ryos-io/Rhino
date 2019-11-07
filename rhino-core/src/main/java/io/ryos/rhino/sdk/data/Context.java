@@ -20,7 +20,7 @@ import java.util.Optional;
 
 
 /**
- * ContextImpl type for storing values throughout a testing in. Each in - and thread
+ * ContextImpl type for storing values throughout a testing session. Each session - and thread
  * respectfully, must have a single context instance bound.
  *
  * @author Erhan Bagdemir

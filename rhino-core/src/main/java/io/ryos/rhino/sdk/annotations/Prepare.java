@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation is used to mark static method which are run global the simulation is started
- * for each user. It allows test developers to prepare the simulation global the simulation run
+ * The annotation is used to mark static method which are run before the simulation is started
+ * for each user. It allows test developers to prepare the simulation before the simulation run
  * e.g create some resources on server.
  * <p>
  *
@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  *
  * <code>
  * @Prepare
- * public static void prepare(SimulationSession in) {
+ * public static void prepare(SimulationSession session) {
  * // your code here.
  * }
  * </code>

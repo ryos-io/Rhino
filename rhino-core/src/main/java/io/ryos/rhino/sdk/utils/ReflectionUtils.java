@@ -53,7 +53,7 @@ public class ReflectionUtils {
     enhancer.setSuperclass(field.getType());
     enhancer.setCallback((FixedValue) () -> {
       throw new BadInjectionException("RH40 - Injection point is not ready. This happens when "
-          + "your code tries to access the providers global they are initialized.\n"
+          + "your code tries to access the providers before they are initialized.\n"
           + field.toString() + "\n"
           + "In Job DSL access to providers at injection points must be within the lambdas so "
           + "that the access occurs lazy. \nPlease refer to documentation regarding this: \n"
