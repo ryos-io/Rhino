@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.dsl.mat;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import java.util.ArrayList;

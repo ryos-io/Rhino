@@ -1,4 +1,4 @@
-package io.ryos.rhino.sdk.dsl.mat;
+package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 

@@ -24,6 +24,7 @@ import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpecAsyncHandler;
