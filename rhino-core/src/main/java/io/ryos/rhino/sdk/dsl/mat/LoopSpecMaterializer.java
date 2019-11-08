@@ -19,14 +19,8 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
-import java.util.Iterator;
 import java.util.Optional;
-import java.util.function.Function;
 import org.asynchttpclient.AsyncHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,16 +46,12 @@ public class LoopSpecMaterializer<E, R extends Iterable<E>> implements
 
   @Override
   public Mono<UserSession> materialize(final ForEachSpec<E, R> spec, final UserSession session) {
-    var forEachBuilder = (ForEachBuilderImpl<E, R>) spec.getForEachBuilder();
-    var iterable =
-        Optional.ofNullable(spec.getForEachBuilder().getSessionExtractor().apply(session))
-        .filter(obj -> obj instanceof Iterable)
-        .map(obj -> (Iterable<E>) obj)
-        .orElseThrow(() -> new IllegalArgumentException("forEach() failed. The instance with key: "
-            + "\"" + forEachBuilder.getKey() + "\" must be iterable"));
+    var forEachBuilder = spec.getForEachBuilder();
+    var iterable = Optional.ofNullable(forEachBuilder.getSessionExtractor().apply(session))
+        .orElseThrow(() -> new IllegalArgumentException(String.format("forEach() failed. The "
+            + "instance with key: %s", forEachBuilder.getKey())));
     var materializerFactory = new MaterializerFactory(asyncHttpClient, eventDispatcher);
     var loopFunction = forEachBuilder.getForEachFunction();
-    var saveToKey = forEachBuilder.getSaveTo();
 
     return Flux.fromIterable(iterable)
         .flatMap(s -> materializerFactory.monoFrom(loopFunction.apply(s), session,

@@ -34,13 +34,13 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   private String saveTo;
   private Scope scope;
   private Function<E, Spec> forEachFunction;
-  private Function<UserSession, E> sessionExtractor;
+  private Function<UserSession, R> sessionExtractor;
 
   public ForEachBuilderImpl(final String key) {
     this.key = key;
   }
 
-  public ForEachBuilderImpl(final Function<UserSession, E> sessionExtractor) {
+  public ForEachBuilderImpl(final Function<UserSession, R> sessionExtractor) {
     this.sessionExtractor = sessionExtractor;
   }
 
@@ -49,7 +49,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(
-      Function<UserSession, E> sessionFunction) {
+      Function<UserSession, R> sessionFunction) {
     return new ForEachBuilderImpl<>(sessionFunction);
   }
 
@@ -76,6 +76,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     return scope;
   }
 
+  @Override
   public String getKey() {
     return key;
   }
@@ -84,11 +85,13 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     return saveTo;
   }
 
+  @Override
   public Function<E, Spec> getForEachFunction() {
     return forEachFunction;
   }
 
-  public Function<UserSession, E> getSessionExtractor() {
+  @Override
+  public Function<UserSession, R> getSessionExtractor() {
     return sessionExtractor;
   }
 }

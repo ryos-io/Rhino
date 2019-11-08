@@ -29,5 +29,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   ForEachBuilder<E, R> saveTo(String saveTo, Scope scope);
 
-  Function<UserSession, E> getSessionExtractor();
+  Function<UserSession, R> getSessionExtractor();
+
+  Function<E, Spec> getForEachFunction();
+
+  String getKey();
 }
