@@ -47,10 +47,13 @@ import java.lang.annotation.Target;
  * a global context, that might be accessed by scenarios. The simulation session will not be
  * cleaned up after every scenario execution, but in clean-up method after the simulation completes.
  * <p>
+ *
+ * @deprecated use {@link After} instead.
  * @see Prepare
  * @see io.ryos.rhino.sdk.data.SimulationSession
  * @since 1.1.0
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface CleanUp {
