@@ -20,8 +20,6 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * <p>
- *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */

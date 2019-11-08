@@ -20,7 +20,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.HashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import ognl.DefaultClassResolver;
 import ognl.DefaultMemberAccess;
@@ -29,19 +28,24 @@ import ognl.Ognl;
 import ognl.OgnlContext;
 import ognl.OgnlException;
 
+/**
+ * Provides accessor methods for session objects.
+ *
+ * @author Erhan Bagdemir
+ * @since 1.7.0
+ */
 public class SessionAccessor {
 
   public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
     var userAccessor = httpSpec.getUserAccessor();
-    User specOwner;
     if (userAccessor != null) {
-      specOwner = userAccessor.apply(userSession);
-    } else if (httpSpec.getAuthUser() != null) {
-      specOwner = httpSpec.getAuthUser();
-    } else {
-      specOwner = userSession.getUser();
+      return userAccessor.apply(userSession);
     }
-    return specOwner;
+
+    if (httpSpec.getAuthUser() != null) {
+      return httpSpec.getAuthUser();
+    }
+    return userSession.getUser();
   }
 
   public static <T> Function<UserSession, T> session(String key) {
@@ -54,7 +58,7 @@ public class SessionAccessor {
         .<T>get(key)
         .orElseThrow(
             () -> new RuntimeException(
-                "Object with key: " + key + " not found in simulation in."));
+                "Object with key: " + key + " not found in simulation session."));
   }
 
   public static <T> Function<UserSession, T> global(String key, String expression) {
@@ -63,14 +67,14 @@ public class SessionAccessor {
         .map(o -> readObject(expression, o))
         .orElseThrow(
             () -> new RuntimeException(
-                "Object with key: " + key + " not found in simulation in."));
+                "Object with key: " + key + " not found in simulation session."));
   }
 
   public static <T> Function<UserSession, T> session(String key, String expression) {
     return (session) -> session.<T>get(key)
         .map(o -> readObject(expression, o))
         .orElseThrow(
-            () -> new RuntimeException("Object with key: " + key + " not found in in."));
+            () -> new RuntimeException("Object with key: " + key + " not found in session."));
   }
 
   private static <T> T readObject(String expressionString, T object) {
