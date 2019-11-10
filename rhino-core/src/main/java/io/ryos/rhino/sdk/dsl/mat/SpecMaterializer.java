@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface SpecMaterializer<T extends Spec, E> {
+public interface SpecMaterializer<T extends Spec> {
 
   /**
    * Materializer takes the spec and convert it into a {@link Mono}.
@@ -37,5 +37,5 @@ public interface SpecMaterializer<T extends Spec, E> {
    * @param spec List of DSL Spec.
    * @return Mono instance.
    */
-  Mono<E> materialize(T spec, final UserSession userSession);
+  Mono<UserSession> materialize(T spec, final UserSession userSession);
 }

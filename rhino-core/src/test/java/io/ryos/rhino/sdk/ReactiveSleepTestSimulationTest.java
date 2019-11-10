@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk;
 
+import io.ryos.rhino.sdk.simulations.ReactiveSleepTestSimulation;
 import org.junit.Test;
 
 public class ReactiveSleepTestSimulationTest {
@@ -25,6 +26,6 @@ public class ReactiveSleepTestSimulationTest {
 
   @Test
   public void testReactiveSleepTestSimulation() {
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveSleepTestSimulation.class).start();
   }
 }

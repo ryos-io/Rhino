@@ -35,6 +35,6 @@ public class UploadLoadTest {
         .willReturn(aResponse()
             .withStatus(200).withFixedDelay(200)));
 
-    Simulation.create(PROPERTIES_FILE, UploadLoadSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, UploadLoadSimulation.class).start();
   }
 }

@@ -21,7 +21,7 @@ import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
-public class SessionSpecMaterializer implements SpecMaterializer<SessionSpec, UserSession> {
+public class SessionSpecMaterializer implements SpecMaterializer<SessionSpec> {
 
   @Override
   public Mono<UserSession> materialize(SessionSpec spec, UserSession userSession) {

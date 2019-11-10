@@ -45,7 +45,6 @@ import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.exceptions.ScenarioNotFoundException;
-import io.ryos.rhino.sdk.exceptions.SimulationNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
 import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
@@ -59,15 +58,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,112 +68,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
   private static final String DOT = ".";
-
-  @Override
-  public List<SimulationMetadata> scan(String forSimulation, String... inPackages) {
-    Objects.requireNonNull(inPackages, "inPackages must not be null.");
-    Objects.requireNonNull(forSimulation, "forSimulation must not be null.");
-
-    return Arrays.stream(inPackages)
-        .map(p -> p.replace(DOT, File.separator))
-        .flatMap(p -> scanBenchmarkClassesIn(p).stream()
-            .filter(a -> forSimulation.equals(getSimulationName(a))))
-        .map(this::createBenchmarkJob)
-        .collect(toList());
-  }
-
-  private List<Class> scanBenchmarkClassesIn(String path) {
-
-    try {
-      final URL resource = getClass().getClassLoader().getResource(path);
-      if (resource == null) {
-        return Collections.emptyList();
-      }
-
-      if (isJarFile(resource)) {
-        return getBenchmarkClassesFromJar(resource, path);
-      }
-
-      // Search for classes in development environment. The IDE runs the project in an exploded
-      // directory, so no need to scan the JAR file.
-      var resourceURL = Optional.ofNullable(getClass().getClassLoader().getResource(path))
-          .orElseThrow();
-      var files = new File(resourceURL.toURI()).listFiles();
-      if (files != null) {
-        return Arrays.stream(files).
-            filter(File::isFile).
-            map(File::getName).
-            map(f -> buildClassNameFrom(path, f)).
-            map(this::getClassFor)
-            .filter(this::isBenchmarkClass)
-            .collect(toList());
-      }
-    } catch (URISyntaxException e) {
-      LOG.error("URL syntax not valid.", e);
-    }
-    return Collections.emptyList();
-  }
-
-  // Search for benchmark classes within the JAR. The benchmark project will be packaged as JAR, so
-  // the JarURLConnection is used to traverse within the artifact.
-  private List<Class> getBenchmarkClassesFromJar(final URL resource, final String inPath) {
-    var result = new ArrayList<Class>();
-
-    JarURLConnection urlConnection;
-
-    try {
-      urlConnection = (JarURLConnection) new URL(resource.toExternalForm()).openConnection();
-      var entries = urlConnection.getJarFile().entries();
-
-      while (entries.hasMoreElements()) {
-        var jarEntry = entries.nextElement();
-        var jarEntryName = jarEntry.getRealName();
-        // only use class entries.
-        if (jarEntryName.contains(inPath) && jarEntryName.endsWith(".class")) {
-          var className = jarEntryName.substring(0, jarEntryName.lastIndexOf(DOT))
-              .replace(File.separator, DOT);
-          final Class classFor = getClassFor(className);
-          if (isBenchmarkClass(classFor)) {
-            result.add(classFor);
-          }
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Cannot scan the JAR file.", e);
-    }
-    return result;
-  }
-
-  private boolean isJarFile(final URL resource) {
-    final String resourceURL = resource.toExternalForm();
-    return resourceURL != null && (resourceURL.contains(".jar!"));
-  }
-
-  // transform the path into package format, to be able to build the fully qualified class name.
-  private String buildClassNameFrom(String path, String className) {
-    return path.replace(File.separator, DOT) + DOT + className.substring(0, className.indexOf(DOT));
-  }
-
-  private boolean isBenchmarkClass(Class clazz) {
-    return Arrays.stream(clazz.getDeclaredAnnotations())
-        .anyMatch(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation);
-  }
-
-  private String getSimulationName(Class clazz) {
-    return Arrays.stream(clazz.getDeclaredAnnotations())
-        .filter(f -> f instanceof io.ryos.rhino.sdk.annotations.Simulation)
-        .findFirst()
-        .map(s -> ((io.ryos.rhino.sdk.annotations.Simulation) s).name())
-        .orElse(null);
-  }
-
-  private Class getClassFor(String name) {
-    try {
-      return Class.forName(name);
-    } catch (ClassNotFoundException e) {
-      throw new SimulationNotFoundException("Class with name: " + name + " not found.");
-    }
-  }
 
   public SimulationMetadata createBenchmarkJob(final Class clazz) {
 
@@ -253,7 +139,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
         .withRunner(
-            runnerAnnotation != null ? runnerAnnotation.clazz() : DefaultSimulationRunner.class)
+            runnerAnnotation != null ? runnerAnnotation.clazz()
+                : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())

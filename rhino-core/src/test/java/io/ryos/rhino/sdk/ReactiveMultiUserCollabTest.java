@@ -61,6 +61,6 @@ public class ReactiveMultiUserCollabTest {
             .withStatus(200)
             .withFixedDelay(400)));
 
-    Simulation.create(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
   }
 }

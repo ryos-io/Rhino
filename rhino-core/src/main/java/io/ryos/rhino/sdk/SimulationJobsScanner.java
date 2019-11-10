@@ -16,8 +16,6 @@
 
 package io.ryos.rhino.sdk;
 
-import java.util.List;
-
 /**
  * Scanner, used to search for annotated benchmark entities within the package provided. The with
  * {@link io.ryos.rhino.sdk.annotations.Simulation} annotated entities will be packaged along
@@ -30,16 +28,6 @@ import java.util.List;
  * @since 1.0
  */
 public interface SimulationJobsScanner {
-
-    /**
-     * Scanner method which takes a list of paths to be scanned for benchmark entities and
-     * returns a list of {@link SimulationMetadata} instances.
-     *
-     * @param inPackages The path to scan for entities.
-     * @param forSimulation Simulation name.
-     * @return A list of benchmark job instances.
-     */
-    List<SimulationMetadata> scan(String forSimulation, String... inPackages);
 
     /**
      * Creates a {@link SimulationMetadata} instance from a simulation class.

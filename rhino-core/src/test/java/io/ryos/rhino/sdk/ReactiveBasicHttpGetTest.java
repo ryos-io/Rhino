@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.ReactiveBasicHttpGetSimulation;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +15,6 @@ import org.junit.Test;
 @Ignore
 public class ReactiveBasicHttpGetTest {
 
-  private static final String SIM_NAME = "Reactive Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
   @Rule
@@ -41,6 +41,6 @@ public class ReactiveBasicHttpGetTest {
             .withFixedDelay(800)
             .withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveBasicHttpGetSimulation.class).start();
   }
 }

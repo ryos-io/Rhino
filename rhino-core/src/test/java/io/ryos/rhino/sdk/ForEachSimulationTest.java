@@ -39,7 +39,7 @@ public class ForEachSimulationTest {
       .containerThreads(100));
 
   @Test
-  public void testForEachSimulation() throws InterruptedException {
+  public void testForEachSimulation() {
 
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse().withStatus(200)
@@ -51,6 +51,6 @@ public class ForEachSimulationTest {
     stubFor(WireMock.get(urlMatching("/api/files/.*"))
         .willReturn(aResponse().withFixedDelay(800).withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, ForEachSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, ForEachSimulation.class).start();
   }
 }

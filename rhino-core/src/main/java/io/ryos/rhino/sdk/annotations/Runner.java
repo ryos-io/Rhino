@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * The number of threads which will be employed, can be configured in rhino.properties file with
  * the property, "runner.parallelisation".
  * <p>
- *
+ * @deprecated Runner is deprecated. There is only one Runner impl. It is the reactive one.
  * @author Erhan Bagdemir
  * @see SimulationRunner
  * @since 1.1.0
@@ -42,6 +42,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
+@Deprecated
 public @interface Runner {
 
   Class<? extends SimulationRunner> clazz() default DefaultSimulationRunner.class;

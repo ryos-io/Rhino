@@ -28,14 +28,13 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final RetryInfo retryInfo;
 
   public HttpSpecAsyncHandler(final UserSession session,
-      final HttpSpec spec,
-      final EventDispatcher eventDispatcher) {
+      final HttpSpec spec) {
 
     this.measurement = new MeasurementImpl(spec.getTestName(), session.getUser().getId());
     this.specName = spec.getTestName();
     this.userId = session.getUser().getId();
     this.stepName = spec.getMeasurementPoint();
-    this.eventDispatcher = eventDispatcher;
+    this.eventDispatcher = EventDispatcher.getInstance();
     this.measurementEnabled = spec.isMeasurementEnabled();
     this.retryInfo = spec.getRetryInfo();
     this.cumulativeMeasurement = spec.isCumulativeMeasurement();

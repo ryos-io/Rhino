@@ -17,7 +17,10 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.EnsureSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Predicate;
 
 /**
@@ -55,5 +58,10 @@ public class EnsureSpecImpl extends AbstractSpec implements EnsureSpec {
   @Override
   public String getCause() {
     return cause;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new EnsureSpecMaterializer();
   }
 }

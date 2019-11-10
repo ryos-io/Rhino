@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec, UserSession> {
+public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec> {
 
   @Override
   public Mono<UserSession> materialize(WaitSpec spec, UserSession userSession) {

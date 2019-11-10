@@ -31,7 +31,7 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<UserSession, R> getSessionExtractor();
 
-  Function<E, Spec> getForEachFunction();
+  Function<E, ? extends Spec> getForEachFunction();
 
   String getKey();
 }

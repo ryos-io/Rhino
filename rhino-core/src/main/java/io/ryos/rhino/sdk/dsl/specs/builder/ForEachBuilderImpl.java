@@ -33,7 +33,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   private String key;
   private String saveTo;
   private Scope scope;
-  private Function<E, Spec> forEachFunction;
+  private Function<E, ? extends Spec> forEachFunction;
   private Function<UserSession, R> sessionExtractor;
 
   public ForEachBuilderImpl(final String key) {
@@ -86,7 +86,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, Spec> getForEachFunction() {
+  public Function<E, ? extends Spec> getForEachFunction() {
     return forEachFunction;
   }
 

@@ -17,6 +17,8 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SomeSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.Objects;
@@ -46,5 +48,10 @@ public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
   @Override
   public Function<UserSession, String> getFunction() {
     return function;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new SomeSpecMaterializer(null);
   }
 }

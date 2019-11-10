@@ -84,5 +84,4 @@ public abstract class AbstractSpec implements MeasurableSpec {
   public boolean isMeasurementEnabled() {
     return measurementEnabled;
   }
-
 }

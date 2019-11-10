@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.ReactiveMonitorWaitSimulation;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,6 +79,6 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
   }
 }

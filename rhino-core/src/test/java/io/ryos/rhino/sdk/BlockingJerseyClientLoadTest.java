@@ -13,8 +13,6 @@ import org.junit.Test;
 
 @Ignore
 public class BlockingJerseyClientLoadTest {
-
-  private static final String SIM_NAME = "Server-Status Simulation";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
   @Rule
@@ -31,6 +29,6 @@ public class BlockingJerseyClientLoadTest {
         .willReturn(aResponse()
             .withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, BlockingJerseyClientLoadTestSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, BlockingJerseyClientLoadTestSimulation.class).start();
   }
 }

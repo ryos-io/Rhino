@@ -16,6 +16,10 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.WaitSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.WaitSpec;
 import java.time.Duration;
 import java.util.Objects;
@@ -44,5 +48,10 @@ public class WaitSpecImpl extends AbstractSpec implements WaitSpec {
   @Override
   public Duration getWaitTime() {
     return waitTime;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new WaitSpecMaterializer();
   }
 }

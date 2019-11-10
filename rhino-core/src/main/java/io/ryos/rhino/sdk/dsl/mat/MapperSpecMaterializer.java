@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec, UserSession> {
+public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec> {
 
   private static final Logger LOG = LogManager.getLogger(MapperSpecMaterializer.class);
 

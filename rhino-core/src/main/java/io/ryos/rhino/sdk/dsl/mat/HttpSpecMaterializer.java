@@ -23,8 +23,8 @@ import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
 import static org.asynchttpclient.Dsl.put;
 
+import io.ryos.rhino.sdk.HttpClient;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpecAsyncHandler;
@@ -32,7 +32,6 @@ import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
@@ -43,7 +42,6 @@ import java.util.function.Function;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
 import reactor.core.Exceptions;
@@ -58,42 +56,17 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSession> {
-
+public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
   private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
-  private static final String DEFAULT_RESULT = "result";
 
-  private final AsyncHttpClient client;
-  private final EventDispatcher eventDispatcher;
-  private final ResultHandler<HttpResponse> resultHandler;
+  public Mono<UserSession> materialize(final HttpSpec httpSpec, final UserSession userSession) {
 
-  HttpSpecMaterializer(
-      final AsyncHttpClient client,
-      final EventDispatcher eventDispatcher,
-      final ResultHandler<HttpResponse> resultHandler) {
-    this.client = client;
-    this.eventDispatcher = eventDispatcher;
-    this.resultHandler = resultHandler;
-  }
-
-  /**
-   * Specification materializer translates the specifications into reactor implementations.
-   * <p>
-   *
-   * @param client Async HTTP client instance.
-   * @param eventDispatcher Event dispatcher instance.
-   */
-  public HttpSpecMaterializer(final AsyncHttpClient client, final EventDispatcher eventDispatcher) {
-    this(client, eventDispatcher, null);
-  }
-
-  public Mono<UserSession> materialize(final HttpSpec spec, final UserSession userSession) {
-
-    var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, spec, eventDispatcher);
+    var httpSpecAsyncHandler =
+        new HttpSpecAsyncHandler(userSession, httpSpec);
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono.fromCompletionStage(client.executeRequest(
-            buildHttpRequest(spec, session), httpSpecAsyncHandler).toCompletableFuture()));
-    var retriableMono = Optional.ofNullable(spec.getRetryInfo()).map(retryInfo ->
+        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(
+            buildHttpRequest(httpSpec, session), httpSpecAsyncHandler).toCompletableFuture()));
+    var retriableMono = Optional.ofNullable(httpSpec.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
             .map(hr -> isRequestRetriable(retryInfo, hr))
             .retryWhen(companion -> companion.zipWith(
@@ -107,8 +80,8 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec, UserSess
                 }))).orElse(responseMono);
 
     return retriableMono
-        .map(result -> resultHandler.handle(new HttpResponse(result)))
-        .onErrorResume(handleOnErrorResume(spec, httpSpecAsyncHandler))
+        .map(result -> httpSpec.handleResult(userSession, new HttpResponse(result)))
+        .onErrorResume(handleOnErrorResume(httpSpec, httpSpecAsyncHandler))
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 

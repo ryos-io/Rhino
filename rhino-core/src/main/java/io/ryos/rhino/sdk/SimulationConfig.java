@@ -35,12 +35,12 @@ import java.util.stream.Collectors;
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
  * SimulationConfig} instances are passed the configuration parameters to construct the {@link
- * SimulationImpl} objects. Once the {@link SimulationImpl} is fully configured, the
+ * Simulation} objects. Once the {@link Simulation} is fully configured, the
  * instances thereof are ready to run which starts off the benchmark test.
  * <p>
  *
  * @author Erhan Bagdemir
- * @see SimulationImpl
+ * @see Simulation
  * @since 1.0.0
  */
 public class SimulationConfig {

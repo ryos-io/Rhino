@@ -1,5 +1,7 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.SomeSpecImpl;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
@@ -77,4 +79,14 @@ public interface Spec {
    * @param testName The test name from annotation.
    */
   void setTestName(String testName);
+
+  /**
+   * Create materializer instance for this spec instance.
+   * <p>
+   *
+   * @param userSession User session of current load cycle.
+   * @param <T> Result object type.
+   * @return {@link SpecMaterializer} instance.
+   */
+  <T extends Spec> SpecMaterializer<T> createMaterializer(UserSession userSession);
 }

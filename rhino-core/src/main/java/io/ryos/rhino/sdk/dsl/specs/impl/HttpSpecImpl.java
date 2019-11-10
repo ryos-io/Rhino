@@ -1,6 +1,10 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.ResultHandler;
+import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
+import io.ryos.rhino.sdk.dsl.mat.HttpSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.HttpConfigSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
@@ -44,6 +48,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private String saveTo = "result";
   private Scope storageScope = Scope.USER;
   private HttpResponse response;
+  private ResultHandler<HttpResponse> resultHandler;
 
   /**
    * Creates a new {@link HttpSpecImpl}.
@@ -277,12 +282,30 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
     this.response = response;
   }
 
+  @Override
   public Function<UserSession, User> getUserAccessor() {
     return oauthUserAccessor;
   }
 
+  @Override
   public RetryInfo getRetryInfo() {
     return retryInfo;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(final UserSession session) {
+    return new HttpSpecMaterializer();
+  }
+
+  @Override
+  public UserSession handleResult(UserSession userSession, HttpResponse response) {
+    return new CollectingHttpResultHandler(userSession, this).handle(response);
+  }
+
+  @Override
+  public HttpSpec withResultHandler(ResultHandler<HttpResponse> resultHandler) {
+    this.resultHandler = resultHandler;
+    return this;
   }
 
   public static class RetryInfo {

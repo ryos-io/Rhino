@@ -16,7 +16,11 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SessionSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Supplier;
 
 public class SessionSpecImpl extends AbstractSpec implements SessionSpec {
@@ -38,5 +42,10 @@ public class SessionSpecImpl extends AbstractSpec implements SessionSpec {
 
   public Supplier<Object> getObjectFunction() {
     return objectSupplier;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new SessionSpecMaterializer();
   }
 }

@@ -16,7 +16,11 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.LoopSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 
@@ -27,13 +31,13 @@ import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements ForEachSpec {
+public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSpec implements ForEachSpec {
 
   /**
    * Builder implementation for {@link ForEachSpec}.
    * <p>
    */
-  private final ForEachBuilder<E, R> forEachBuilder;
+  private final ForEachBuilder<S, R> forEachBuilder;
 
   private final String contextKey;
 
@@ -43,7 +47,7 @@ public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec impl
    *
    * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
    */
-  public ForEachSpecImpl(String contextKey, ForEachBuilder<E, R> forEachBuilder) {
+  public ForEachSpecImpl(String contextKey, ForEachBuilder<S, R> forEachBuilder) {
     super("N/A");
 
     this.contextKey = contextKey;
@@ -56,11 +60,16 @@ public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec impl
    *
    * @return {@link ForEachBuilderImpl} instance.
    */
-  public ForEachBuilder<E, R> getForEachBuilder() {
+  public ForEachBuilder<S, R> getForEachBuilder() {
     return forEachBuilder;
   }
 
   public String getContextKey() {
     return contextKey;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new LoopSpecMaterializer();
   }
 }

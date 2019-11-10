@@ -20,12 +20,11 @@ import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
-import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChildrenResultHandler implements ResultHandler<HttpResponse> {
+public class ChildrenResultHandler<E> implements ResultHandler<E> {
 
   private final String contextKey;
   private final UserSession userSession;
@@ -47,15 +46,15 @@ public class ChildrenResultHandler implements ResultHandler<HttpResponse> {
   }
 
   @Override
-  public UserSession handle(final HttpResponse resultObject) {
+  public UserSession handle(final E resultObject) {
     if (contextKey == null || resultObject == null) {
       return userSession;
     }
 
     var activatedUser = getActiveUser(httpSpec, userSession);
     var simulationSession = userSession.findSimulationSession(activatedUser);
-    var resultList =
-        simulationSession.<List<Object>>get(containerKey).orElse(new ArrayList<>());
+    var resultList = simulationSession.<List<Object>>get(containerKey).orElse(new ArrayList<>());
+
     resultList.add(resultObject);
     simulationSession.add(containerKey, resultList);
 

@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSession> {
+public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
 
   private final EventDispatcher dispatcher;
 

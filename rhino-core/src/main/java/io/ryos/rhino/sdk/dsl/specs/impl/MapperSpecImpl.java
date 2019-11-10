@@ -16,7 +16,11 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.MapperSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
+import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 
 /**
@@ -39,5 +43,10 @@ public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
 
   public MapperBuilder<R, T> getMapper() {
     return mapper;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return new MapperSpecMaterializer();
   }
 }

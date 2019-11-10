@@ -1,13 +1,16 @@
 package io.ryos.rhino.sdk;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.DSLRunUntilSimulation;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class DSLRunUntilSimulationTest {
 
@@ -55,6 +58,6 @@ public class DSLRunUntilSimulationTest {
                         .withStatus(200)
                         .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-        Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+      Simulation.getInstance(PROPERTIES_FILE, DSLRunUntilSimulation.class).start();
     }
 }

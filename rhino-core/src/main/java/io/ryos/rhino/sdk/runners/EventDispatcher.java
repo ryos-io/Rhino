@@ -7,6 +7,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Terminated;
 import akka.dispatch.OnComplete;
 import akka.pattern.Patterns;
+import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.SimulationLogWriter;
@@ -35,6 +36,37 @@ public class EventDispatcher {
   private static final long TERMINATION_REQUEST_TIMEOUT = 5000L;
   private static final String ACTOR_SYS_NAME = "rhino-dispatcher";
 
+  private static EventDispatcher INSTANCE;
+
+  private EventDispatcher(final SimulationMetadata simulationMetadata) {
+
+    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
+    this.stdOutReptorter = system
+        .actorOf(StdoutReporter.props(simulationMetadata.getNumberOfUsers(),
+            Instant.now(),
+            simulationMetadata.getDuration()),
+            StdoutReporter.class.getName());
+    this.loggerActor = system
+        .actorOf(SimulationLogWriter.props(simulationMetadata.getReportingURI(),
+            simulationMetadata.getLogFormatter()),
+            SimulationLogWriter.class.getName());
+
+    if (simulationMetadata.isEnableInflux()) {
+      influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
+    }
+
+    if (simulationMetadata.getLogFormatter() instanceof GatlingSimulationLogFormatter) {
+      loggerActor.tell(
+          String.format(
+              GATLING_HEADLINE_TEMPLATE,
+              simulationMetadata.getSimulationClass().getName(),
+              simulationMetadata.getSimulationName(),
+              System.currentTimeMillis(),
+              GatlingSimulationLogFormatter.GATLING_VERSION),
+          ActorRef.noSender());
+    }
+  }
+
   /**
    * Simulation metadata.
    * <p>
@@ -62,33 +94,12 @@ public class EventDispatcher {
 
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
-  public EventDispatcher(final SimulationMetadata simulationMetadata) {
-
-    this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.stdOutReptorter = system
-        .actorOf(StdoutReporter.props(simulationMetadata.getNumberOfUsers(),
-            Instant.now(),
-            simulationMetadata.getDuration()),
-            StdoutReporter.class.getName());
-    this.loggerActor = system
-        .actorOf(SimulationLogWriter.props(simulationMetadata.getReportingURI(),
-            simulationMetadata.getLogFormatter()),
-            SimulationLogWriter.class.getName());
-
-    if (simulationMetadata.isEnableInflux()) {
-      influxActor = system.actorOf(InfluxDBWriter.props(), InfluxDBWriter.class.getName());
+  public static EventDispatcher getInstance() {
+    if (INSTANCE == null) {
+      INSTANCE = new EventDispatcher(Simulation.getData().orElseThrow());
     }
 
-    if (simulationMetadata.getLogFormatter() instanceof GatlingSimulationLogFormatter) {
-      loggerActor.tell(
-          String.format(
-              GATLING_HEADLINE_TEMPLATE,
-              simulationMetadata.getSimulationClass().getName(),
-              simulationMetadata.getSimulationName(),
-              System.currentTimeMillis(),
-              GatlingSimulationLogFormatter.GATLING_VERSION),
-          ActorRef.noSender());
-    }
+    return INSTANCE;
   }
 
   public void dispatchEvents(MeasurementImpl measurement) {

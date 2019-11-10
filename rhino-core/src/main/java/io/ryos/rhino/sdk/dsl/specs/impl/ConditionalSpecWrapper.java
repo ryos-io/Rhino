@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Predicate;
 
@@ -46,5 +47,10 @@ public class ConditionalSpecWrapper extends AbstractSpec {
 
   public Spec getSpec() {
     return spec;
+  }
+
+  @Override
+  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+    return spec.createMaterializer(session);
   }
 }

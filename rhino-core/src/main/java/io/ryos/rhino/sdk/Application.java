@@ -38,13 +38,6 @@ public class Application {
   private static final String SIMULATION = "Server-Status Simulation";
   private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
 
-  public static void main(String... arg) {
-
-    var simulation = new SimulationImpl(CLASSPATH_RHINO_PROPERTIES, SIMULATION);
-
-    simulation.start();
-  }
-
   // Shows up the Rhino branding.
   static void showBranding() {
 
