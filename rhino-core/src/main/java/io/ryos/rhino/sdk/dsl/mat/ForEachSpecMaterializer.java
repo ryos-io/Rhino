@@ -28,9 +28,10 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class LoopSpecMaterializer<S, R extends Iterable<S>> implements
+public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
     SpecMaterializer<ForEachSpec<S, R>> {
-  private static final Logger LOG = LoggerFactory.getLogger(LoopSpecMaterializer.class);
+
+  private static final Logger LOG = LoggerFactory.getLogger(ForEachSpecMaterializer.class);
 
   @Override
   public Mono<UserSession> materialize(final ForEachSpec<S, R> forEachSpec,

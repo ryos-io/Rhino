@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.LoopSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.ForEachSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec;
@@ -70,6 +70,6 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSpec impl
 
   @Override
   public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
-    return new LoopSpecMaterializer();
+    return new ForEachSpecMaterializer();
   }
 }
