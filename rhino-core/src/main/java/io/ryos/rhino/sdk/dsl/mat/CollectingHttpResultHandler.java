@@ -20,9 +20,12 @@ import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
+import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> {
 
@@ -47,9 +50,13 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
     if (contextKey == null) {
       return userSession;
     }
+
     var activatedUser = getActiveUser(httpSpec, userSession);
-    if (httpSpec.getSessionScope().equals(Scope.USER)) {
-      userSession.add(contextKey, resultObject);
+    var key = getKey();
+    var result = getResult(resultObject, key);
+
+    if (isInUserSession()) {
+      userSession.add(key, result);
     } else {
       var measurementPoint = httpSpec.getMeasurementPoint();
       var specData = userSession.findSimulationSession(activatedUser).<HttpSpecData>get(
@@ -58,5 +65,30 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       userSession.findSimulationSession(activatedUser).add(measurementPoint, specData);
     }
     return userSession;
+  }
+
+  private boolean isInUserSession() {
+    return httpSpec.getSessionScope().equals(Scope.USER);
+  }
+
+  private Object getResult(HttpResponse resultObject, String key) {
+    var parentSpec = httpSpec.getParentSpec();
+    Object result;
+    if (parentSpec instanceof ForEachSpec) {
+      var resultObjs = userSession.<List<HttpResponse>>get(key).orElse(new ArrayList<>());
+      resultObjs.add(resultObject);
+      result = resultObjs;
+    } else {
+      result = resultObject;
+    }
+    return result;
+  }
+
+  private String getKey() {
+    var parentSpec = httpSpec.getParentSpec();
+    if (parentSpec instanceof ForEachSpec) {
+      return ((ForEachSpec) parentSpec).getContextKey();
+    }
+    return contextKey;
   }
 }

@@ -42,6 +42,7 @@ public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
             String.format("forEach() failed. The instance with key: %s", forEachBuilder.getKey())));
     return Flux.fromIterable(iterable)
         .map(forEachBuilder.getForEachFunction())
+        .map(spec -> spec.withParentSpec(forEachSpec))
         .flatMap(spec -> spec.createMaterializer(session).materialize(spec, session))
         //new ChildrenResultHandler(session, (HttpSpec) loopFunction.apply(s),spec.getContextKey())))
         .reduce((s1, s2) -> s1)

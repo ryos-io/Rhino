@@ -89,4 +89,10 @@ public interface Spec {
    * @return {@link SpecMaterializer} instance.
    */
   <T extends Spec> SpecMaterializer<T> createMaterializer(UserSession userSession);
+
+  Spec getParentSpec();
+
+  void setParentSpec(Spec spec);
+
+  Spec withParentSpec(Spec spec);
 }

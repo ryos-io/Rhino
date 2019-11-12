@@ -33,6 +33,7 @@ public abstract class AbstractSpec implements MeasurableSpec {
   private boolean measurementEnabled = true;
   private boolean cumulativeMeasurement = false;
   private Scope sessionScope = Scope.USER;
+  private Spec parentSpec;
 
   public AbstractSpec(String measurement) {
     this.measurementPoint = measurement;
@@ -83,5 +84,21 @@ public abstract class AbstractSpec implements MeasurableSpec {
   @Override
   public boolean isMeasurementEnabled() {
     return measurementEnabled;
+  }
+
+  @Override
+  public Spec getParentSpec() {
+    return parentSpec;
+  }
+
+  @Override
+  public void setParentSpec(Spec parentSpec) {
+    this.parentSpec = parentSpec;
+  }
+
+  @Override
+  public Spec withParentSpec(Spec parentSpec) {
+    this.parentSpec = parentSpec;
+    return this;
   }
 }

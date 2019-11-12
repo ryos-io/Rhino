@@ -19,10 +19,10 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
-import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -51,28 +51,16 @@ public class ForEachSimulation {
     return ImmutableList.of("file1", "file2");
   }
 
-  @Before
-  public LoadDsl setUp() {
-    return Start.dsl()
-        .session("files", ReactiveMultiUserCollabSimulation::getFiles)
-        .forEach("forEach",
-            in("files").doRun(file -> http("Prepare by PUT text.txt")
-                .header(X_API_KEY, SimulationConfig.getApiKey())
-                .auth()
-                .endpoint(session -> FILES_ENDPOINT + "/" + file)
-                .upload(() -> file("classpath:///test.txt"))
-                .put()).saveTo("uploads"));
-  }
-
   @Dsl(name = "Upload and Get")
   public LoadDsl loadTestPutAndGetFile() {
     return Start.dsl()
+        .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("upload loop",
-            in("files").doRun(file ->
+            in(session("index")).doRun(index ->
                 http("Prepare by PUT text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
-                    .endpoint(session -> FILES_ENDPOINT + "/" + file)
+                    .endpoint(session -> FILES_ENDPOINT + "/" + index)
                     .upload(() -> file("classpath:///test.txt"))
                     .get()).saveTo("uploads"));
   }

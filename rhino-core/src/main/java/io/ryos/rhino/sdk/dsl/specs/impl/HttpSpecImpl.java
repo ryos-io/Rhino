@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -299,7 +300,9 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
 
   @Override
   public UserSession handleResult(UserSession userSession, HttpResponse response) {
-    return new CollectingHttpResultHandler(userSession, this).handle(response);
+    return Optional.ofNullable(resultHandler)
+        .orElse(new CollectingHttpResultHandler(userSession, this))
+        .handle(response);
   }
 
   @Override
