@@ -52,7 +52,7 @@ public class ChildrenResultHandler<E> implements ResultHandler<E> {
     }
 
     var activatedUser = getActiveUser(httpSpec, userSession);
-    var simulationSession = userSession.findSimulationSession(activatedUser);
+    var simulationSession = userSession.getSimulationSessionFor(activatedUser);
     var resultList = simulationSession.<List<Object>>get(containerKey).orElse(new ArrayList<>());
 
     resultList.add(resultObject);

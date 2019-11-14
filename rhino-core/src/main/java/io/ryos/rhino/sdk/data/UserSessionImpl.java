@@ -75,9 +75,12 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
     return simulationSession;
   }
 
-  public SimulationSession findSimulationSession(User user) {
-    return this.tokens.stream().filter(t -> t.getUser().getUsername().equals(user.getUsername()))
-        .findFirst().map(
-            LoadToken::getSimulationSession).orElse(new SimulationSession(user));
+  public SimulationSession getSimulationSessionFor(User user) {
+    return tokens
+        .stream()
+        .filter(t -> t.getUser().getUsername().equals(user.getUsername()))
+        .findFirst()
+        .map(LoadToken::getSimulationSession)
+        .orElse(new SimulationSession(user));
   }
 }

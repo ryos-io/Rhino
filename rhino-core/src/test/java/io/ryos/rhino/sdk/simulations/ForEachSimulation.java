@@ -19,10 +19,12 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.global;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
 
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -30,6 +32,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -41,7 +44,6 @@ import java.util.List;
 public class ForEachSimulation {
 
   private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
-  private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
   @UserProvider
@@ -51,18 +53,28 @@ public class ForEachSimulation {
     return ImmutableList.of("file1", "file2");
   }
 
-  @Dsl(name = "Upload and Get")
-  public LoadDsl loadTestPutAndGetFile() {
+  @Before
+  public LoadDsl setUp() {
     return Start.dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("upload loop",
-            in(session("index")).doRun(index ->
-                http("Prepare by PUT text.txt")
+            in(session("index")).doRun(index -> http("Prepare by PUT text.txt")
+                .header(X_API_KEY, SimulationConfig.getApiKey())
+                .auth()
+                .endpoint(session -> FILES_ENDPOINT + "/" + index)
+                .upload(() -> file("classpath:///test.txt"))
+                .get()).saveTo("uploads", Scope.SIMULATION));
+  }
+
+  @Dsl(name = "Get")
+  public LoadDsl loadTestPutAndGetFile() {
+    return Start.dsl()
+        .forEach("get files",
+            in(global("upload loop", "#this['Prepare by PUT text.txt']")).doRun(index ->
+                http("GET text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .upload(() -> file("classpath:///test.txt"))
                     .get()).saveTo("uploads"));
   }
-
 }

@@ -48,7 +48,7 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSpec impl
    * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
    */
   public ForEachSpecImpl(String contextKey, ForEachBuilder<S, R> forEachBuilder) {
-    super("N/A");
+    super(contextKey);
 
     this.contextKey = contextKey;
     this.forEachBuilder = forEachBuilder;

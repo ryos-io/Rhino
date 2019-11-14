@@ -25,7 +25,9 @@ import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> {
 
@@ -52,43 +54,98 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
     }
 
     var activatedUser = getActiveUser(httpSpec, userSession);
-    var key = getKey();
-    var result = getResult(resultObject, key);
 
-    if (isInUserSession()) {
-      userSession.add(key, result);
+    if (!isChildSpec()) {
+      if (isInUserSession()) {
+        var httpSpecData = new HttpSpecData();
+        httpSpecData.setResponse(resultObject);
+        userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
+      } else {
+        var globalSession = userSession.getSimulationSessionFor(activatedUser);
+        var specData = globalSession.<HttpSpecData>get(httpSpec.getMeasurementPoint())
+            .orElse(new HttpSpecData());
+        specData.setResponse(resultObject);
+        globalSession.add(httpSpec.getMeasurementPoint(), specData);
+      }
     } else {
-      var measurementPoint = httpSpec.getMeasurementPoint();
-      var specData = userSession.findSimulationSession(activatedUser).<HttpSpecData>get(
-          measurementPoint).orElse(new HttpSpecData());
-      specData.setResponse(resultObject);
-      userSession.findSimulationSession(activatedUser).add(measurementPoint, specData);
+      if (isInUserSession()) {
+        if (httpSpec.getParentSpec() instanceof ForEachSpec) {
+          var stringMap = userSession.<Map<String, List<Object>>>get(
+              httpSpec.getParentSpec().getMeasurementPoint())
+              .orElse(getMapSupplier());
+
+          var httpSpecData = new HttpSpecData();
+          httpSpecData.setResponse(resultObject);
+          stringMap.get(httpSpec.getMeasurementPoint()).add(httpSpecData);
+          userSession.add(httpSpec.getMeasurementPoint(), stringMap);
+        } else {
+          var httpSpecData = new HttpSpecData();
+          httpSpecData.setResponse(resultObject);
+          userSession.add(httpSpec.getParentSpec().getMeasurementPoint(), httpSpecData);
+        }
+      } else {
+
+        if (httpSpec.getParentSpec() instanceof ForEachSpec) {
+          var globalSession = userSession.getSimulationSessionFor(activatedUser);
+          var stringMap = globalSession.<Map<String, List<Object>>>get(
+              httpSpec.getParentSpec().getMeasurementPoint()).orElse(getMapSupplier());
+          var httpSpecData = new HttpSpecData();
+          httpSpecData.setResponse(resultObject);
+          stringMap.get(httpSpec.getMeasurementPoint()).add(httpSpecData);
+          globalSession.add(httpSpec.getParentSpec().getMeasurementPoint(), stringMap);
+        } else {
+          var globalSession = userSession.getSimulationSessionFor(activatedUser);
+          var specData = globalSession.<HttpSpecData>get(
+              httpSpec.getParentSpec().getMeasurementPoint()).orElse(new HttpSpecData());
+          specData.setResponse(resultObject);
+          globalSession.add(httpSpec.getMeasurementPoint(), specData);
+        }
+      }
     }
+
     return userSession;
   }
 
+  private Map<String, List<Object>> getMapSupplier() {
+
+    var map = new HashMap<String, List<Object>>();
+    map.put(httpSpec.getMeasurementPoint(), new ArrayList<>());
+    return map;
+
+  }
+
+  private boolean isChildSpec() {
+    return httpSpec.getParentSpec() != null;
+  }
+
   private boolean isInUserSession() {
+    if (httpSpec.getParentSpec() != null) {
+      return httpSpec.getParentSpec().getSessionScope().equals(Scope.USER);
+    }
     return httpSpec.getSessionScope().equals(Scope.USER);
   }
 
   private Object getResult(HttpResponse resultObject, String key) {
     var parentSpec = httpSpec.getParentSpec();
-    Object result;
-    if (parentSpec instanceof ForEachSpec) {
-      var resultObjs = userSession.<List<HttpResponse>>get(key).orElse(new ArrayList<>());
-      resultObjs.add(resultObject);
-      result = resultObjs;
-    } else {
-      result = resultObject;
+    if (parentSpec != null) {
+      var map = new HashMap<>();
+      if (parentSpec instanceof ForEachSpec) {
+        var b = userSession.<List<HttpResponse>>get(key).orElse(new ArrayList<>());
+        b.add(resultObject);
+        map.put(key, b);
+      } else {
+        map.put(key, resultObject);
+      }
+      return map;
     }
-    return result;
+    return resultObject;
   }
 
-  private String getKey() {
+  private String getContainerKey() {
     var parentSpec = httpSpec.getParentSpec();
     if (parentSpec instanceof ForEachSpec) {
       return ((ForEachSpec) parentSpec).getContextKey();
     }
-    return contextKey;
+    return null;
   }
 }

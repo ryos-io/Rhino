@@ -111,7 +111,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
 
     httpSpecData.setEndpoint(httpSpec.getEndpoint().apply(userSession));
     if (httpSpec.getSessionScope().equals(Scope.SIMULATION)) {
-      userSession.findSimulationSession(getActiveUser(httpSpec, userSession))
+      userSession.getSimulationSessionFor(getActiveUser(httpSpec, userSession))
           .add(httpSpec.getMeasurementPoint(), httpSpecData);
     } else {
       userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
