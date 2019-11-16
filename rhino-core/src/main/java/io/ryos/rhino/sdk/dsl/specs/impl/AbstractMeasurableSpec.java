@@ -16,8 +16,8 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.MeasurableSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 
 /**
  * Common specification type implementation.
@@ -26,54 +26,30 @@ import io.ryos.rhino.sdk.dsl.specs.Spec;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public abstract class AbstractSpec implements MeasurableSpec {
+public abstract class AbstractMeasurableSpec extends AbstractDSLItem implements MeasurableSpec {
 
-  private String enclosingSpec = "";
-  private String measurementPoint = "";
   private boolean measurementEnabled = true;
   private boolean cumulativeMeasurement = false;
-  private Scope sessionScope = Scope.USER;
-  private Spec parentSpec;
 
-  public AbstractSpec(String measurement) {
-    this.measurementPoint = measurement;
+  public AbstractMeasurableSpec(String name) {
+    super(name);
   }
 
   @Override
-  public Scope getSessionScope() {
-    return sessionScope;
-  }
-
-  @Override
-  public void setSessionScope(Scope sessionScope) {
-    this.sessionScope = sessionScope;
-  }
-
-  @Override
-  public Spec noMeasurement() {
+  public DSLSpec noMeasurement() {
     this.measurementEnabled = false;
     return this;
   }
 
   @Override
-  public Spec cumulativeMeasurement() {
+  public DSLSpec cumulativeMeasurement() {
     this.cumulativeMeasurement = true;
     return this;
   }
 
   @Override
   public String getMeasurementPoint() {
-    return measurementPoint;
-  }
-
-  @Override
-  public String getTestName() {
-    return enclosingSpec;
-  }
-
-  @Override
-  public void setTestName(String testName) {
-    this.enclosingSpec = testName;
+    return super.getName();
   }
 
   @Override
@@ -84,21 +60,5 @@ public abstract class AbstractSpec implements MeasurableSpec {
   @Override
   public boolean isMeasurementEnabled() {
     return measurementEnabled;
-  }
-
-  @Override
-  public Spec getParentSpec() {
-    return parentSpec;
-  }
-
-  @Override
-  public void setParentSpec(Spec parentSpec) {
-    this.parentSpec = parentSpec;
-  }
-
-  @Override
-  public Spec withParentSpec(Spec parentSpec) {
-    this.parentSpec = parentSpec;
-    return this;
   }
 }

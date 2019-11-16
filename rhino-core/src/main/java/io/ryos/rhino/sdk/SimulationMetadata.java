@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -330,7 +330,7 @@ public class SimulationMetadata {
     private List<Scenario> scenarios;
 
     /**
-     * List of {@link Spec} instances.
+     * List of {@link DSLSpec} instances.
      * <p>
      */
     private List<LoadDsl> loadDsls;

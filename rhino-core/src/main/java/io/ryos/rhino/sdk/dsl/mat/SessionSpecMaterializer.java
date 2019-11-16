@@ -17,14 +17,14 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
-public class SessionSpecMaterializer implements SpecMaterializer<SessionSpec> {
+public class SessionSpecMaterializer implements SpecMaterializer<SessionDSLItem> {
 
   @Override
-  public Mono<UserSession> materialize(SessionSpec spec, UserSession userSession) {
+  public Mono<UserSession> materialize(SessionDSLItem spec, UserSession userSession) {
     Supplier<Object> objectSupplier = spec.getObjectFunction();
     Object apply = objectSupplier.get();
     userSession.add(spec.getKey(), apply);

@@ -45,12 +45,12 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
           var userId = userSession.getUser().getId();
-          var measurement = new MeasurementImpl(spec.getTestName(), userId);
+          var measurement = new MeasurementImpl(spec.getParentName(), userId);
           var start = System.currentTimeMillis();
           var userEventStart = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getTestName(),
+              spec.getParentName(),
               start,
               start,
               0,
@@ -63,12 +63,12 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
 
           var status = spec.getFunction().apply(session);
 
-          measurement.measure(spec.getMeasurementPoint(), status);
+          measurement.measure(spec.getName(), status);
           var elapsed = System.currentTimeMillis() - start;
           var userEventEnd = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getTestName(),
+              spec.getParentName(),
               start,
               start + elapsed,
               elapsed,

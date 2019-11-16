@@ -39,10 +39,6 @@ public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, M
 
   User getAuthUser();
 
-  String getResponseKey();
-
-  Scope getStorageScope();
-
   HttpResponse getResponse();
 
   void setResponse(HttpResponse response);

@@ -42,7 +42,7 @@ public class ChildrenResultHandler<E> implements ResultHandler<E> {
 
   public ChildrenResultHandler(final UserSession userSession, final HttpSpec httpSpec,
       final String containerKey) {
-    this(httpSpec.getResponseKey(), userSession, httpSpec, containerKey);
+    this(httpSpec.getSaveTo(), userSession, httpSpec, containerKey);
   }
 
   @Override

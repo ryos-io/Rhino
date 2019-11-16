@@ -14,28 +14,12 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.mat;
-
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import reactor.core.publisher.Mono;
+package io.ryos.rhino.sdk.dsl.specs;
 
 /**
- * DSLSpec materializer takes the spec instances and convert them into reactive components, that are to
- * be executed by reactive framework in runtime.
- * <p>
- *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface SpecMaterializer<T extends DSLSpec> {
+public interface DSLMethod extends DSLItem {
 
-  /**
-   * Materializer takes the spec and convert it into a {@link Mono}.
-   * <p>
-   *
-   * @param spec List of DSL DSLSpec.
-   * @return Mono instance.
-   */
-  Mono<UserSession> materialize(T spec, final UserSession userSession);
 }

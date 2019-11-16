@@ -16,14 +16,18 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
+import static io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope.USER;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.specs.ResultingSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
+import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableSpec;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,18 +37,18 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
   private final String contextKey;
   private final UserSession userSession;
-  private final HttpSpec httpSpec;
+  private final ResultingSpec resultingSpec;
 
   public CollectingHttpResultHandler(final String contextKey,
       final UserSession userSession,
-      final HttpSpec httpSpec) {
+      final ResultingSpec resultingSpec) {
     this.contextKey = contextKey;
     this.userSession = userSession;
-    this.httpSpec = httpSpec;
+    this.resultingSpec = resultingSpec;
   }
 
-  public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec httpSpec) {
-    this(httpSpec.getResponseKey(), userSession, httpSpec);
+  public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec resultingSpec) {
+    this(resultingSpec.getSaveTo(), userSession, resultingSpec);
   }
 
   @Override
@@ -53,52 +57,51 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return userSession;
     }
 
-    var activatedUser = getActiveUser(httpSpec, userSession);
+    var activatedUser = getActiveUser((HttpSpec) resultingSpec, userSession);
 
-    if (!isChildSpec()) {
+    if (!resultingSpec.hasParent()) {
       if (isInUserSession()) {
         var httpSpecData = new HttpSpecData();
         httpSpecData.setResponse(resultObject);
-        userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
+        userSession.add(getSessionKey(resultingSpec), httpSpecData);
       } else {
         var globalSession = userSession.getSimulationSessionFor(activatedUser);
-        var specData = globalSession.<HttpSpecData>get(httpSpec.getMeasurementPoint())
+        var specData = globalSession.<HttpSpecData>get(getSessionKey(resultingSpec))
             .orElse(new HttpSpecData());
         specData.setResponse(resultObject);
-        globalSession.add(httpSpec.getMeasurementPoint(), specData);
+        globalSession.add(getSessionKey(resultingSpec), specData);
       }
     } else {
       if (isInUserSession()) {
-        if (httpSpec.getParentSpec() instanceof ForEachSpec) {
+        if (resultingSpec.getParent() instanceof ForEachSpec) {
           var stringMap = userSession.<Map<String, List<Object>>>get(
-              httpSpec.getParentSpec().getMeasurementPoint())
+              getSessionKey(resultingSpec.getParent()))
               .orElse(getMapSupplier());
-
           var httpSpecData = new HttpSpecData();
           httpSpecData.setResponse(resultObject);
-          stringMap.get(httpSpec.getMeasurementPoint()).add(httpSpecData);
-          userSession.add(httpSpec.getMeasurementPoint(), stringMap);
+          stringMap.get(getSessionKey(resultingSpec)).add(httpSpecData);
+          userSession.add(getSessionKey(resultingSpec), stringMap);
         } else {
           var httpSpecData = new HttpSpecData();
           httpSpecData.setResponse(resultObject);
-          userSession.add(httpSpec.getParentSpec().getMeasurementPoint(), httpSpecData);
+          userSession.add(getSessionKey(resultingSpec.getParent()), httpSpecData);
         }
       } else {
 
-        if (httpSpec.getParentSpec() instanceof ForEachSpec) {
+        if (resultingSpec.getParent() instanceof ForEachSpec) {
           var globalSession = userSession.getSimulationSessionFor(activatedUser);
           var stringMap = globalSession.<Map<String, List<Object>>>get(
-              httpSpec.getParentSpec().getMeasurementPoint()).orElse(getMapSupplier());
+              getSessionKey(resultingSpec.getParent())).orElse(getMapSupplier());
           var httpSpecData = new HttpSpecData();
           httpSpecData.setResponse(resultObject);
-          stringMap.get(httpSpec.getMeasurementPoint()).add(httpSpecData);
-          globalSession.add(httpSpec.getParentSpec().getMeasurementPoint(), stringMap);
+          stringMap.get(getSessionKey(resultingSpec)).add(httpSpecData);
+          globalSession.add(getSessionKey(resultingSpec.getParent()), stringMap);
         } else {
           var globalSession = userSession.getSimulationSessionFor(activatedUser);
-          var specData = globalSession.<HttpSpecData>get(
-              httpSpec.getParentSpec().getMeasurementPoint()).orElse(new HttpSpecData());
+          var specData = globalSession.<HttpSpecData>get(getSessionKey(resultingSpec.getParent()))
+              .orElse(new HttpSpecData());
           specData.setResponse(resultObject);
-          globalSession.add(httpSpec.getMeasurementPoint(), specData);
+          globalSession.add(getSessionKey(resultingSpec), specData);
         }
       }
     }
@@ -106,46 +109,36 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
     return userSession;
   }
 
+  private String getSessionKey(final DSLItem spec) {
+    if (spec instanceof ResultingSpec) {
+      ((ResultingSpec) spec).getSaveTo();
+    }
+
+    if (spec instanceof AbstractMeasurableSpec) {
+      return ((AbstractMeasurableSpec) spec).getMeasurementPoint();
+    }
+
+    throw new RuntimeException("Cannot determine session key.");
+  }
+
   private Map<String, List<Object>> getMapSupplier() {
 
     var map = new HashMap<String, List<Object>>();
-    map.put(httpSpec.getMeasurementPoint(), new ArrayList<>());
+    map.put(getSessionKey(resultingSpec), new ArrayList<>());
     return map;
 
   }
 
-  private boolean isChildSpec() {
-    return httpSpec.getParentSpec() != null;
-  }
-
   private boolean isInUserSession() {
-    if (httpSpec.getParentSpec() != null) {
-      return httpSpec.getParentSpec().getSessionScope().equals(Scope.USER);
-    }
-    return httpSpec.getSessionScope().equals(Scope.USER);
-  }
 
-  private Object getResult(HttpResponse resultObject, String key) {
-    var parentSpec = httpSpec.getParentSpec();
-    if (parentSpec != null) {
-      var map = new HashMap<>();
-      if (parentSpec instanceof ForEachSpec) {
-        var b = userSession.<List<HttpResponse>>get(key).orElse(new ArrayList<>());
-        b.add(resultObject);
-        map.put(key, b);
-      } else {
-        map.put(key, resultObject);
-      }
-      return map;
+    if (resultingSpec.hasParent() && resultingSpec.getParent() instanceof SessionDSLItem) {
+      return ((SessionDSLItem) resultingSpec.getParent()).getSessionScope().equals(USER);
     }
-    return resultObject;
-  }
 
-  private String getContainerKey() {
-    var parentSpec = httpSpec.getParentSpec();
-    if (parentSpec instanceof ForEachSpec) {
-      return ((ForEachSpec) parentSpec).getContextKey();
+    if (resultingSpec instanceof SessionDSLItem) {
+      return ((SessionDSLItem) resultingSpec).getSessionScope().equals(USER);
     }
-    return null;
+
+    throw new RuntimeException("Cannot determine session scope.");
   }
 }

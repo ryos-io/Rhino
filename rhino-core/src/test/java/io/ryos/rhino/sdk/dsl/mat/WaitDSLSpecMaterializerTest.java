@@ -9,7 +9,7 @@ import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.time.Duration;
 import org.junit.Test;
 
-public class WaitSpecMaterializerTest {
+public class WaitDSLSpecMaterializerTest {
   private static final int WAIT_TIME = 100;
   private static final double OVERHEAD_RATIO = 1.2;
 

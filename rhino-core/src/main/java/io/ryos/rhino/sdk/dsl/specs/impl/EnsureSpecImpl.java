@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.EnsureSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Predicate;
 
 /**
@@ -30,7 +30,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureSpecImpl extends AbstractSpec implements EnsureSpec {
+public class EnsureSpecImpl extends AbstractMeasurableSpec implements EnsureSpec {
 
   private Predicate<UserSession> predicate;
   private String cause = "Ensure failed.";
@@ -61,7 +61,7 @@ public class EnsureSpecImpl extends AbstractSpec implements EnsureSpec {
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new EnsureSpecMaterializer();
   }
 }

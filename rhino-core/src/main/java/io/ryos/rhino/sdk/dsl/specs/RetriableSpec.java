@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface RetriableSpec<R extends MeasurableSpec, T> extends Spec {
+public interface RetriableSpec<R extends MeasurableSpec, T> extends DSLSpec {
 
   /**
    * Retries, if the predicate is true and the current attempt less then numOfRetries.

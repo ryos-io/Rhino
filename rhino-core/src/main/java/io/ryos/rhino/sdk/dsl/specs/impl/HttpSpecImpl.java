@@ -5,12 +5,12 @@ import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpConfigSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.MeasurableSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,15 +25,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * HTTP spec implementation of {@link Spec}.
+ * HTTP spec implementation of {@link DSLSpec}.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSpec,
+public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, HttpConfigSpec,
     HttpRetriableSpec {
-
 
   private Supplier<InputStream> toUpload;
 
@@ -47,7 +46,6 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   private Function<UserSession, User> oauthUserAccessor;
   private RetryInfo retryInfo;
   private String saveTo = "result";
-  private Scope storageScope = Scope.USER;
   private HttpResponse response;
   private ResultHandler<HttpResponse> resultHandler;
 
@@ -212,14 +210,14 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   @Override
   public HttpSpec saveTo(String keyName, Scope scope) {
     this.saveTo = keyName;
-    this.storageScope = scope;
+    setSessionScope(Scope.USER);
     return this;
   }
 
   @Override
   public HttpSpec saveTo(String keyName) {
     this.saveTo = keyName;
-    this.storageScope = Scope.USER;
+    setSessionScope(Scope.USER);
     return this;
   }
 
@@ -264,13 +262,8 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public String getResponseKey() {
+  public String getSaveTo() {
     return saveTo;
-  }
-
-  @Override
-  public Scope getStorageScope() {
-    return storageScope;
   }
 
   @Override
@@ -294,7 +287,7 @@ public class HttpSpecImpl extends AbstractSpec implements HttpSpec, HttpConfigSp
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(final UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(final UserSession session) {
     return new HttpSpecMaterializer();
   }
 

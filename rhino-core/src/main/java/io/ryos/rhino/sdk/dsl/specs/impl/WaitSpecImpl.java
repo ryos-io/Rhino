@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.WaitSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.WaitSpec;
 import java.time.Duration;
 import java.util.Objects;
@@ -31,7 +31,7 @@ import java.util.Objects;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class WaitSpecImpl extends AbstractSpec implements WaitSpec {
+public class WaitSpecImpl extends AbstractMeasurableSpec implements WaitSpec {
 
   private final Duration waitTime;
 
@@ -51,7 +51,7 @@ public class WaitSpecImpl extends AbstractSpec implements WaitSpec {
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new WaitSpecMaterializer();
   }
 }

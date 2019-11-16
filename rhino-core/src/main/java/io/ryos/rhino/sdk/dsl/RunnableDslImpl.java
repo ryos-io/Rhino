@@ -1,10 +1,8 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.HttpRetriableSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
@@ -16,7 +14,6 @@ import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -30,16 +27,15 @@ import java.util.function.Supplier;
 public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
 
   /**
-   * Test name, that is the name of the load DSL or scenario.
-   * <p>
-   */
-  private String testName;
-
-  /**
    * Executable functions.
    * <p>
    */
-  private final List<Spec> executableFunctions = new ArrayList<>();
+  private final List<DSLSpec> executableFunctions = new ArrayList<>();
+  /**
+   * Enclosing type name for nested load testing entities is the name of parent entity.
+   * <p>
+   */
+  private String enclosingTypeName;
 
   @Override
   public RunnableDslImpl wait(Duration duration) {
@@ -48,7 +44,7 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   }
 
   @Override
-  public RunnableDsl run(Spec spec) {
+  public RunnableDsl run(DSLSpec spec) {
     executableFunctions.add(spec);
     return this;
   }
@@ -84,40 +80,39 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   }
 
   @Override
-  public RunnableDsl repeat(Spec spec) {
+  public RunnableDsl repeat(DSLSpec spec) {
     executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> true));
     return this;
   }
 
   @Override
-  public RunnableDsl runUntil(Predicate<UserSession> predicate, Spec spec) {
+  public RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec) {
     executableFunctions.add(new RunUntilSpecImpl(spec, predicate));
     return this;
   }
 
   @Override
-  public RunnableDsl runAsLongAs(Predicate<UserSession> predicate, Spec spec) {
+  public RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec) {
     executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));
     return this;
   }
 
   @Override
-  public RunnableDsl runIf(Predicate<UserSession> predicate, Spec spec) {
+  public RunnableDsl runIf(Predicate<UserSession> predicate, DSLSpec spec) {
     executableFunctions.add(new ConditionalSpecWrapper(spec, predicate));
     return this;
   }
 
-  public LoadDsl withName(final String testName) {
-    executableFunctions.forEach(s -> s.setTestName(testName));
-    this.testName = testName;
+  public LoadDsl withName(final String enclosingTypeName) {
+    this.enclosingTypeName = enclosingTypeName;
     return this;
   }
 
   public String getName() {
-    return testName;
+    return enclosingTypeName;
   }
 
-  public List<Spec> getSpecs() {
+  public List<DSLSpec> getSpecs() {
     return executableFunctions;
   }
 }

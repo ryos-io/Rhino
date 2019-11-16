@@ -10,13 +10,13 @@ import java.util.function.Function;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface SomeSpec extends Spec {
+public interface SomeSpec extends DSLSpec {
 
   /**
    * Function contains the code snippet to be applied.
    * <p>
    *
-   * @return Spec function.
+   * @return DSLSpec function.
    */
   Function<UserSession, String> getFunction();
 
@@ -24,5 +24,5 @@ public interface SomeSpec extends Spec {
    * Method to add a spec function into the DSL.
    * <p>
    */
-  Spec as(Function<UserSession, String> function);
+  DSLSpec as(Function<UserSession, String> function);
 }

@@ -11,5 +11,5 @@ import java.util.function.Predicate;
  */
 public interface HttpRetriableSpec extends HttpResponseSpec {
 
-  Spec retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
+  DSLSpec retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
 }

@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.ForEachSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
 
@@ -31,7 +31,8 @@ import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSpec implements ForEachSpec {
+public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractMeasurableSpec implements
+    ForEachSpec {
 
   /**
    * Builder implementation for {@link ForEachSpec}.
@@ -69,7 +70,7 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSpec impl
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new ForEachSpecMaterializer();
   }
 }

@@ -2,16 +2,16 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.RunUntilSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.RunUntilSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.function.Predicate;
 
-public class RunUntilSpecImpl extends AbstractSpec implements RunUntilSpec {
+public class RunUntilSpecImpl extends AbstractMeasurableSpec implements RunUntilSpec {
 
   private final Predicate<UserSession> predicate;
-  private final Spec spec;
+  private final DSLSpec spec;
 
-  public RunUntilSpecImpl(Spec spec, Predicate<UserSession> predicate) {
+  public RunUntilSpecImpl(DSLSpec spec, Predicate<UserSession> predicate) {
     super("");
 
     this.predicate = predicate;
@@ -24,7 +24,7 @@ public class RunUntilSpecImpl extends AbstractSpec implements RunUntilSpec {
   }
 
   @Override
-  public Spec getSpec() {
+  public DSLSpec getSpec() {
     return spec;
   }
 

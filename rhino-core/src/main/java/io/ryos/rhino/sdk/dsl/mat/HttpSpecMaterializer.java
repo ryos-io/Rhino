@@ -28,7 +28,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpecAsyncHandler;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
@@ -49,7 +48,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Spec materializer takes the spec instances and convert them into reactor components, that are to
+ * DSLSpec materializer takes the spec instances and convert them into reactor components, that are to
  * be executed by reactor runtime.
  * <p>
  *
@@ -61,8 +60,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
 
   public Mono<UserSession> materialize(final HttpSpec httpSpec, final UserSession userSession) {
 
-    var httpSpecAsyncHandler =
-        new HttpSpecAsyncHandler(userSession, httpSpec);
+    var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, httpSpec);
     var responseMono = Mono.just(userSession)
         .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(
             buildHttpRequest(httpSpec, session), httpSpecAsyncHandler).toCompletableFuture()));
@@ -85,8 +83,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
-  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(
-      final HttpSpec spec,
+  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(final HttpSpec spec,
       final HttpSpecAsyncHandler httpSpecAsyncHandler) {
     return error -> {
       if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
@@ -106,37 +103,28 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
   }
 
   private RequestBuilder buildHttpRequest(HttpSpec httpSpec, UserSession userSession) {
-
-    var httpSpecData = new HttpSpecData();
-
-    httpSpecData.setEndpoint(httpSpec.getEndpoint().apply(userSession));
-    if (httpSpec.getSessionScope().equals(Scope.SIMULATION)) {
-      userSession.getSimulationSessionFor(getActiveUser(httpSpec, userSession))
-          .add(httpSpec.getMeasurementPoint(), httpSpecData);
-    } else {
-      userSession.add(httpSpec.getMeasurementPoint(), httpSpecData);
-    }
+    var endpoint = httpSpec.getEndpoint().apply(userSession);
 
     RequestBuilder builder = null;
     switch (httpSpec.getMethod()) {
       case GET:
-        builder = get(httpSpecData.getEndpoint());
+        builder = get(endpoint);
         break;
       case HEAD:
-        builder = head(httpSpecData.getEndpoint());
+        builder = head(endpoint);
         break;
       case OPTIONS:
-        builder = options(httpSpecData.getEndpoint());
+        builder = options(endpoint);
         break;
       case DELETE:
-        builder = delete(httpSpecData.getEndpoint());
+        builder = delete(endpoint);
         break;
       case PUT:
-        builder = put(httpSpecData.getEndpoint())
+        builder = put(endpoint)
             .setBody(httpSpec.getUploadContent().get());
         break;
       case POST:
-        builder = put(httpSpecData.getEndpoint())
+        builder = put(endpoint)
             .setBody(httpSpec.getUploadContent().get());
         break;
       // case X : rest of methods, we support...

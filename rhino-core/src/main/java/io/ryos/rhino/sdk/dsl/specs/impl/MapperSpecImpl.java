@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.MapperSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 
 /**
@@ -30,7 +30,7 @@ import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public class MapperSpecImpl<R, T> extends AbstractMeasurableSpec implements MapperSpec {
 
   private final MapperBuilder<R, T> mapper;
 
@@ -46,7 +46,7 @@ public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new MapperSpecMaterializer();
   }
 }

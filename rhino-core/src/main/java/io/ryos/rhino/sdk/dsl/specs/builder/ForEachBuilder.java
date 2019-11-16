@@ -17,13 +17,13 @@
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import java.util.function.Function;
 
 public interface ForEachBuilder<E, R extends Iterable<E>> {
 
-  ForEachBuilder<E, R> doRun(Function<E, Spec> forEachFunction);
+  ForEachBuilder<E, R> doRun(Function<E, DSLSpec> forEachFunction);
 
   ForEachBuilder<E, R> saveTo(String saveTo);
 
@@ -31,7 +31,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<UserSession, R> getSessionExtractor();
 
-  Function<E, ? extends Spec> getForEachFunction();
+  Function<E, ? extends DSLSpec> getForEachFunction();
 
   String getKey();
+
+  Scope getScope();
 }

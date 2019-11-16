@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import java.util.function.Function;
 
 /**
@@ -32,8 +32,8 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   private String key;
   private String saveTo;
-  private Scope scope;
-  private Function<E, ? extends Spec> forEachFunction;
+  private Scope scope = Scope.EPHEMERAL;
+  private Function<E, ? extends DSLSpec> forEachFunction;
   private Function<UserSession, R> sessionExtractor;
 
   public ForEachBuilderImpl(final String key) {
@@ -54,7 +54,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> doRun(final Function<E, Spec> forEachFunction) {
+  public ForEachBuilder<E, R> doRun(final Function<E, DSLSpec> forEachFunction) {
     this.forEachFunction = forEachFunction;
     return this;
   }
@@ -86,7 +86,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, ? extends Spec> getForEachFunction() {
+  public Function<E, ? extends DSLSpec> getForEachFunction() {
     return forEachFunction;
   }
 

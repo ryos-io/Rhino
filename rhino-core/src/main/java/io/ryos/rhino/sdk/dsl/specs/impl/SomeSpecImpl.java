@@ -19,19 +19,19 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.SomeSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
 import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Spec implementation for arbitrary code execution.
+ * DSLSpec implementation for arbitrary code execution.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
+public class SomeSpecImpl extends AbstractMeasurableSpec implements SomeSpec {
 
   private Function<UserSession, String> function;
 
@@ -40,7 +40,7 @@ public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
   }
 
   @Override
-  public Spec as(final Function<UserSession, String> function) {
+  public DSLSpec as(final Function<UserSession, String> function) {
     this.function = Objects.requireNonNull(function);
     return this;
   }
@@ -51,7 +51,7 @@ public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
   }
 
   @Override
-  public SpecMaterializer<? extends Spec> createMaterializer(UserSession session) {
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new SomeSpecMaterializer(null);
   }
 }

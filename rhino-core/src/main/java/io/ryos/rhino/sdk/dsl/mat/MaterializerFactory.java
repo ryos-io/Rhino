@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 
@@ -25,14 +25,12 @@ import io.ryos.rhino.sdk.runners.EventDispatcher;
  * @since 1.7.0
  */
 public class MaterializerFactory {
-  private final EventDispatcher eventDispatcher;
 
   public MaterializerFactory(EventDispatcher dispatcher) {
-    this.eventDispatcher = dispatcher;
   }
 
 
-  private boolean isConditionalSpec(Spec next) {
+  private boolean isConditionalSpec(DSLSpec next) {
     return next instanceof ConditionalSpecWrapper;
   }
 }

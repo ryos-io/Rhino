@@ -34,7 +34,7 @@ import org.junit.Test;
  * First upload the content, the service returns 201 Created.
  * First attempt to monitor, and monitor API returns 404 Not Found.
  * Second attempt to monitor, and monitor API returns 200 OK.
- * At this point the cumulativeMeasurement on Spec makes the elapsed time be aggregated.
+ * At this point the cumulativeMeasurement on DSLSpec makes the elapsed time be aggregated.
  */
 @Ignore
 public class ReactiveMonitorWaitTest {

@@ -24,8 +24,7 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
@@ -158,7 +157,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       throw new NoSpecDefinedException(dsl.getName());
     }
 
-    Spec next1 = specIt.next();
+    DSLSpec next1 = specIt.next();
     var acc = next1.createMaterializer(session).materialize(next1, session);
     while (specIt.hasNext()) {
       // Never move the following statement into lambda body. next() call is required to be eager.
@@ -183,7 +182,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     });
   }
 
-  private boolean isConditionalSpec(Spec next) {
+  private boolean isConditionalSpec(DSLSpec next) {
     return next instanceof ConditionalSpecWrapper;
   }
 
@@ -245,9 +244,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
           .flatMap(session -> {
             RunnableDslImpl runnable = executeMethod(method,
                 getSimulationMetadata().getTestInstance());
-            runnable.getSpecs().forEach(spec -> {
-              spec.setSessionScope(Scope.SIMULATION);
-            });
             return getPublisher(session, runnable);
           })
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))

@@ -23,7 +23,31 @@ package io.ryos.rhino.sdk.dsl.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface MeasurableSpec extends Spec {
+public interface MeasurableSpec extends DSLSpec {
+
+  /**
+   * Whether the measurement is enabled.
+   * <p>
+   *
+   * @return True if measurement is enabled.
+   */
+  boolean isMeasurementEnabled();
+
+  /**
+   * Whether the measurement is cumulative.
+   * <p>
+   *
+   * @return True if cumulative measurement is enabled.
+   */
+  boolean isCumulativeMeasurement();
+
+  /**
+   * The name of the spec. It is the step name in scenario counterpart.
+   * <p>
+   *
+   * @return The name of the spec.
+   */
+  String getMeasurementPoint();
 
   /**
    * Disables the measurement recording.
@@ -31,7 +55,7 @@ public interface MeasurableSpec extends Spec {
    *
    * @return {@link HttpConfigSpec} instance.
    */
-  Spec noMeasurement();
+  DSLSpec noMeasurement();
 
   /**
    * Cumulative measurement.
@@ -39,5 +63,5 @@ public interface MeasurableSpec extends Spec {
    *
    * @return {@link HttpConfigSpec} instance.
    */
-  Spec cumulativeMeasurement();
+  DSLSpec cumulativeMeasurement();
 }

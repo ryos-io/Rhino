@@ -36,13 +36,14 @@ public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
   @Override
   public Mono<UserSession> materialize(final ForEachSpec<S, R> forEachSpec,
       final UserSession session) {
+
     var forEachBuilder = forEachSpec.getForEachBuilder();
+    ;
     var iterable = Optional.ofNullable(forEachBuilder.getSessionExtractor().apply(session))
         .orElseThrow(() -> new IllegalArgumentException(
             String.format("forEach() failed. The instance with key: %s", forEachBuilder.getKey())));
     return Flux.fromIterable(iterable)
         .map(forEachBuilder.getForEachFunction())
-        .map(spec -> spec.withParentSpec(forEachSpec))
         .flatMap(spec -> spec.createMaterializer(session).materialize(spec, session))
         //new ChildrenResultHandler(session, (HttpSpec) loopFunction.apply(s),spec.getContextKey())))
         .reduce((s1, s2) -> s1)

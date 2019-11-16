@@ -1,5 +1,7 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+
 /**
  * Terminating specification used to store the response object.
  * <p>
@@ -7,7 +9,7 @@ package io.ryos.rhino.sdk.dsl.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface HttpResponseSpec extends Spec {
+public interface HttpResponseSpec extends DSLSpec {
 
   HttpSpec saveTo(String keyName);
 

@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.dsl.specs;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableSpec;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
@@ -15,6 +16,7 @@ import org.asynchttpclient.netty.request.NettyRequest;
 
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
+  private static final String BLANK = "";
   private final String stepName;
   private final String specName;
   private final String userId;
@@ -29,15 +31,23 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public HttpSpecAsyncHandler(final UserSession session,
       final HttpSpec spec) {
-
-    this.measurement = new MeasurementImpl(spec.getTestName(), session.getUser().getId());
-    this.specName = spec.getTestName();
+    this.measurement = new MeasurementImpl(getTestName(spec), session.getUser().getId());
+    this.specName = spec.getParentName();
     this.userId = session.getUser().getId();
     this.stepName = spec.getMeasurementPoint();
     this.eventDispatcher = EventDispatcher.getInstance();
     this.measurementEnabled = spec.isMeasurementEnabled();
     this.retryInfo = spec.getRetryInfo();
     this.cumulativeMeasurement = spec.isCumulativeMeasurement();
+  }
+
+  private String getTestName(final HttpSpec spec) {
+    if (spec.hasParent()) {
+      if (spec.getParent() instanceof AbstractMeasurableSpec) {
+        return ((AbstractMeasurableSpec) spec.getParent()).getMeasurementPoint();
+      }
+    }
+    return spec.getName();
   }
 
   @Override
@@ -76,14 +86,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     if (!measurementEnabled) {
       this.start = System.currentTimeMillis();
       var userEventStart = new UserEvent(
-          "",
+          BLANK,
           userId,
           specName,
           start,
           start,
           0L,
           EventType.START,
-          "",
+          BLANK,
           userId
       );
 
@@ -94,14 +104,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     measurement.measure(t.getMessage(), "N/A");
 
     var userEventEnd = new UserEvent(
-        "",
+        BLANK,
         userId,
         specName,
         start,
         0,
         0L,
         EventType.END,
-        "",
+        BLANK,
         userId
     );
 
@@ -129,14 +139,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     measurement.measure(stepName, String.valueOf(status));
     var userEventEnd = new UserEvent(
-        "",
+        BLANK,
         userId,
         specName,
         start,
         start + elapsed,
         elapsed,
         EventType.END,
-        "",
+        BLANK,
         userId
     );
 
@@ -176,7 +186,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
           start,
           0L,
           EventType.START,
-          "",
+          BLANK,
           userId
       );
 

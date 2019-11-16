@@ -24,7 +24,7 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class RetrySpecTest {
+public class RetryDSLSpecTest {
 
   @Test
   public void testRetryHttpRequest() {

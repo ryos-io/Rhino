@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.simulations;
 
+import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
-import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 
 import io.ryos.rhino.sdk.SimulationConfig;

@@ -16,28 +16,37 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SessionSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
 import java.util.function.Supplier;
 
-public class SessionSpecImpl extends AbstractSessionDSLItem {
+/**
+ * @author Erhan Bagdemir
+ * @since 2.0.0
+ */
+public abstract class AbstractSessionDSLItem extends AbstractMeasurableSpec implements
+    SessionDSLItem {
 
-  private final String key;
-  private final Supplier<Object> objectSupplier;
+  private Scope sessionScope = Scope.USER;
+  private String sessionKey = "result";
+  private Supplier<Object> objectSupplier;
 
-  public SessionSpecImpl(String key,
-      Supplier<Object> objectSupplier) {
-    super("");
+  public AbstractSessionDSLItem(String name) {
+    super(name);
+  }
 
-    this.key = key;
-    this.objectSupplier = objectSupplier;
+  @Override
+  public Scope getSessionScope() {
+    return sessionScope;
+  }
+
+  @Override
+  public void setSessionScope(Scope sessionScope) {
+    this.sessionScope = sessionScope;
   }
 
   @Override
   public String getKey() {
-    return key;
+    return sessionKey;
   }
 
   @Override
@@ -45,8 +54,11 @@ public class SessionSpecImpl extends AbstractSessionDSLItem {
     return objectSupplier;
   }
 
-  @Override
-  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
-    return new SessionSpecMaterializer();
+  public void setSessionKey(String sessionKey) {
+    this.sessionKey = sessionKey;
+  }
+
+  public void setObjectSupplier(Supplier<Object> objectSupplier) {
+    this.objectSupplier = objectSupplier;
   }
 }
