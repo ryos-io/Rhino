@@ -19,7 +19,10 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.SessionSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class SessionSpecImpl extends AbstractSessionDSLItem {
@@ -48,5 +51,10 @@ public class SessionSpecImpl extends AbstractSessionDSLItem {
   @Override
   public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new SessionSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

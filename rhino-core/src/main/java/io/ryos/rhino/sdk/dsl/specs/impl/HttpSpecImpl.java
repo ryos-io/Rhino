@@ -5,6 +5,7 @@ import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.HttpSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpConfigSpec;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
@@ -302,6 +303,11 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   public HttpSpec withResultHandler(ResultHandler<HttpResponse> resultHandler) {
     this.resultHandler = resultHandler;
     return this;
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 
   public static class RetryInfo {

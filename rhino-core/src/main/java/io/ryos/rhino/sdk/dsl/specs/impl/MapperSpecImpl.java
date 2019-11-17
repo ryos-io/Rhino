@@ -19,9 +19,12 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.MapperSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Mapper spec implementation.
@@ -48,5 +51,10 @@ public class MapperSpecImpl<R, T> extends AbstractMeasurableSpec implements Mapp
   @Override
   public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new MapperSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

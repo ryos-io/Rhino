@@ -19,10 +19,13 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.ForEachSpecMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * For-each loop representation.
@@ -72,5 +75,10 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractMeasurabl
   @Override
   public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return new ForEachSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

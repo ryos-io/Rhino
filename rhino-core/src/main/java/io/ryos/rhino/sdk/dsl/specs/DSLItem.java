@@ -16,13 +16,21 @@
 
 package io.ryos.rhino.sdk.dsl.specs;
 
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import java.util.List;
 
-/**
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public interface DSLMethod extends DSLItem {
+public interface DSLItem {
 
-  LoadDsl getDsl();
+  String getName();
+
+  void setName(String name);
+
+  DSLItem getParent();
+
+  void setParent(DSLItem parent);
+
+  boolean hasParent();
+
+  String getParentName();
+
+  List<DSLItem> getChildren();
 }

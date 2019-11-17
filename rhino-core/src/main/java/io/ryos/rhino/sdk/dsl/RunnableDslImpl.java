@@ -1,9 +1,11 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.specs.impl.AbstractDSLItem;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
@@ -19,23 +21,20 @@ import java.util.function.Supplier;
 
 /**
  * Connectable DSL, is the DSL instance to bind chaining specs.
- * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
+public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, RunnableDsl, IterableDsl {
 
   /**
    * Executable functions.
-   * <p>
    */
-  private final List<DSLSpec> executableFunctions = new ArrayList<>();
-  /**
-   * Enclosing type name for nested load testing entities is the name of parent entity.
-   * <p>
-   */
-  private String enclosingTypeName;
+  private final List<DSLItem> executableFunctions = new ArrayList<>();
+
+  public RunnableDslImpl(String name) {
+    super(name);
+  }
 
   @Override
   public RunnableDslImpl wait(Duration duration) {
@@ -74,7 +73,8 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
   }
 
   @Override
-  public <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey, ForEachBuilder<E, R> forEachBuilder) {
+  public <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey,
+      ForEachBuilder<E, R> forEachBuilder) {
     executableFunctions.add(new ForEachSpecImpl<>(contextKey, forEachBuilder));
     return this;
   }
@@ -103,16 +103,12 @@ public class RunnableDslImpl implements LoadDsl, RunnableDsl, IterableDsl {
     return this;
   }
 
-  public LoadDsl withName(final String enclosingTypeName) {
-    this.enclosingTypeName = enclosingTypeName;
+  public LoadDsl withName(final String dslName) {
+    super.setName(dslName);
     return this;
   }
 
-  public String getName() {
-    return enclosingTypeName;
-  }
-
-  public List<DSLSpec> getSpecs() {
+  public List<DSLItem> getChildren() {
     return executableFunctions;
   }
 }

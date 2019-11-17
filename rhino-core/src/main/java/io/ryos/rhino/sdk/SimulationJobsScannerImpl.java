@@ -24,29 +24,25 @@ import static java.util.stream.Collectors.toList;
 
 import io.ryos.rhino.sdk.annotations.After;
 import io.ryos.rhino.sdk.annotations.Before;
-import io.ryos.rhino.sdk.annotations.CleanUp;
 import io.ryos.rhino.sdk.annotations.Disabled;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Grafana;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
-import io.ryos.rhino.sdk.annotations.Prepare;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.data.Scenario;
-import io.ryos.rhino.sdk.data.SimulationSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
+import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
+import io.ryos.rhino.sdk.dsl.specs.impl.DSLMethodImpl;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
-import io.ryos.rhino.sdk.exceptions.ScenarioNotFoundException;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
-import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.DefaultUserRepositoryFactoryImpl;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -65,41 +61,29 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SimulationJobsScannerImpl implements SimulationJobsScanner {
-
   private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
-  private static final String DOT = ".";
 
   public SimulationMetadata createBenchmarkJob(final Class clazz) {
-
-    // Simulation class.
+    var testInstance = instanceOf(clazz).orElseThrow();
     var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
-
-    // User repository annotation.
     var repoAnnotation = Optional.ofNullable((io.ryos.rhino.sdk.annotations.UserRepository) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
-
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
-
     var rampupInfo = getRampupInfo(clazz, simAnnotation);
     var throttlingInfo = getThrottlingInfo(clazz, simAnnotation);
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
     var grafanaInfo = getGrafanaInfo(clazz);
 
-    // Read scenario methods.
-    var scenarioMethods = Arrays.stream(clazz.getDeclaredMethods())
-        .filter(this::hasScenarioAnnotation)
-        .filter(this::isEnabled)
-        .map(method -> new Scenario(getScenarioName(method), method))
-        .collect(toList());
-
     // Create test instance.
-    var testInstance = instanceOf(clazz).orElseThrow();
-    if (isReactiveSimulation(runnerAnnotation)) {
-      enhanceInjectionPoints(clazz, testInstance);
-    }
+    enhanceInjectionPoints(clazz, testInstance);
 
+    var dslMethods = Arrays.stream(clazz.getDeclaredMethods())
+        .filter(this::hasDslAnnotation)
+        .filter(this::isEnabled)
+        .map(method -> createDslMethod(testInstance, method))
+        .collect(toList());
     var dsls = Arrays.stream(clazz.getDeclaredMethods())
         .filter(this::hasDslAnnotation)
         .filter(this::isEnabled)
@@ -108,11 +92,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .map(this::getLoadDsl)
         .collect(toList());
 
-    if (scenarioMethods.isEmpty() && isBlockingSimulation(runnerAnnotation)) {
-      throw new ScenarioNotFoundException(clazz.getName());
-    }
-
-    if (dsls.isEmpty() && isReactiveSimulation(runnerAnnotation)) {
+    if (dsls.isEmpty()) {
       throw new SpecificationNotFoundException(clazz.getName());
     }
 
@@ -122,42 +102,37 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var userRepo = repoAnnotation.map(this::createUserRepository)
         .orElse(new DefaultUserRepositoryFactoryImpl().create());
 
-    Method prepareMethod = null;
-    Method cleanupMethod = null;
-
-    if (isReactiveSimulation(runnerAnnotation)) {
-      prepareMethod = findStaticMethodWith(clazz, Prepare.class).orElse(null);
-      cleanupMethod = findStaticMethodWith(clazz, CleanUp.class).orElse(null);
-    } else if (isBlockingSimulation(runnerAnnotation)) {
-      prepareMethod = findStaticMethodWith(clazz, Prepare.class, SimulationSession.class)
-          .orElse(null);
-      cleanupMethod = findStaticMethodWith(clazz, CleanUp.class, SimulationSession.class)
-          .orElse(null);
-    }
-
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(
-            runnerAnnotation != null ? runnerAnnotation.clazz()
-                : ReactiveHttpSimulationRunner.class)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz()
+            : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())
         .withInjectUser(simAnnotation.maxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
-        .withPrepare(prepareMethod)
-        .withCleanUp(cleanupMethod)
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
         .withAfter(findMethodWith(clazz, After.class).orElse(null))
-        .withScenarios(scenarioMethods)
+        .withScenarios(null)
         .withDsls(dsls)
+        .withDSLMethods(dslMethods)
         .withTestInstance(testInstance)
         .withThrottling(throttlingInfo)
         .withRampUp(rampupInfo)
         .withGrafana(grafanaInfo)
         .build();
+  }
+
+  private DSLMethod createDslMethod(Object testInstance, Method method) {
+    return new DSLMethodImpl(getName(method), ReflectionUtils.executeMethod(method, testInstance));
+  }
+
+  private String getName(Method method) {
+    var name = method.getDeclaredAnnotation(Dsl.class).name();
+    Start.dslMethodName.set(name);
+    return name;
   }
 
   private LoadDsl getLoadDsl(Pair<String, LoadDsl> pair) {
@@ -169,7 +144,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   }
 
   private GrafanaInfo getGrafanaInfo(Class clazz) {
-    Grafana grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
+    var grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
     if (grafanaAnnotation != null) {
       return new GrafanaInfo(grafanaAnnotation.dashboard(), grafanaAnnotation.name());
     }
@@ -217,27 +192,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return Arrays.stream(method.getDeclaredAnnotations()).anyMatch(a -> a instanceof Dsl);
   }
 
-  private boolean hasScenarioAnnotation(Method method) {
-    return Arrays.stream(method.getDeclaredAnnotations())
-        .anyMatch(annotation -> annotation instanceof io.ryos.rhino.sdk.annotations.Scenario);
-  }
-
   private boolean isEnabled(Method method) {
     return method.getDeclaredAnnotation(Disabled.class) == null;
-  }
-
-  private String getScenarioName(Method method) {
-    return method.getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Scenario.class).name();
-  }
-
-  private boolean isBlockingSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation == null || runnerAnnotation.clazz()
-        .equals(DefaultSimulationRunner.class);
-  }
-
-  private boolean isReactiveSimulation(final Runner runnerAnnotation) {
-    return runnerAnnotation != null && runnerAnnotation.clazz()
-        .equals(ReactiveHttpSimulationRunner.class);
   }
 
   private String validateLogFile(final String logFile) {

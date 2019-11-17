@@ -5,17 +5,14 @@ import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.BasicUserRepositoryFactoryImpl;
 import java.util.UUID;
 
-@Simulation(name = "Reactive Test", durationInMins = 1)
-@Runner(clazz = ReactiveHttpSimulationRunner.class)
+@Simulation(name = "Reactive Test")
 @UserRepository(factory = BasicUserRepositoryFactoryImpl.class)
 public class ReactiveBasicHttpGetSimulation {
 

@@ -18,7 +18,10 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -52,5 +55,10 @@ public class ConditionalSpecWrapper extends AbstractMeasurableSpec {
   @Override
   public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
     return spec.createMaterializer(session);
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

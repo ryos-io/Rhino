@@ -1,5 +1,6 @@
 package io.ryos.rhino.sdk.dsl;
 
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import java.time.Duration;
@@ -14,7 +15,7 @@ import java.time.Duration;
  * @see DSLSpec
  * @since 1.1.0
  */
-public interface LoadDsl {
+public interface LoadDsl extends DSLItem {
 
   /**
    * Wait for {@link Duration}.

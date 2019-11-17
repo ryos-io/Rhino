@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 
 public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, MeasurableSpec,
     ResultingSpec<HttpSpec, HttpResponse> {
-
   enum Method {GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH}
 
   static Map.Entry<String, List<String>> from(String key, String value) {
