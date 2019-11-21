@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import java.util.function.Function;
 
@@ -36,4 +37,8 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
   String getKey();
 
   Scope getScope();
+
+  ForEachSpec<E, R> getSpec();
+
+  void setSpec(ForEachSpec<E, R> spec);
 }

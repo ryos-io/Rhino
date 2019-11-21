@@ -56,6 +56,8 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractMeasurabl
 
     this.contextKey = contextKey;
     this.forEachBuilder = forEachBuilder;
+
+    forEachBuilder.setSpec(this);
   }
 
   /**

@@ -18,10 +18,6 @@ package io.ryos.rhino.sdk.dsl.specs;
 
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 
-/**
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
 public interface DSLMethod extends DSLItem {
 
   LoadDsl getDsl();
