@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.impl.AbstractSessionDSLItem;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,13 +55,13 @@ public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
 
   private DSLSpec inheritFrom(ForEachBuilder<S, R> forEachBuilder, DSLSpec spec) {
     if (isSessionDSLItem(spec)) {
-      ((AbstractSessionDSLItem) spec).setSessionScope(forEachBuilder.getScope());
+      ((SessionDSLItem) spec).setSessionScope(forEachBuilder.getScope());
     }
     spec.setParent(forEachBuilder.getSpec());
     return spec;
   }
 
   private boolean isSessionDSLItem(DSLSpec spec) {
-    return spec instanceof AbstractSessionDSLItem;
+    return spec instanceof SessionDSLItem;
   }
 }
