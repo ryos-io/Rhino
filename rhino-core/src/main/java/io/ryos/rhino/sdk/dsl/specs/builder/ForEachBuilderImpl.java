@@ -60,14 +60,14 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> saveTo(final String saveTo) {
-    this.sessionKey = saveTo;
+  public ForEachBuilder<E, R> saveTo(final String sessionKey) {
+    this.sessionKey = sessionKey;
     return this;
   }
 
   @Override
-  public ForEachBuilder<E, R> saveTo(String saveTo, Scope scope) {
-    this.sessionKey = saveTo;
+  public ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope) {
+    this.sessionKey = sessionKey;
     this.scope = scope;
     return this;
   }

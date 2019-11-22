@@ -26,9 +26,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   ForEachBuilder<E, R> doRun(Function<E, DSLSpec> forEachFunction);
 
-  ForEachBuilder<E, R> saveTo(String saveTo);
+  ForEachBuilder<E, R> saveTo(String sessionKey);
 
-  ForEachBuilder<E, R> saveTo(String saveTo, Scope scope);
+  ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope);
 
   Function<UserSession, R> getSessionExtractor();
 

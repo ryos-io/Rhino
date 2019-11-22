@@ -18,6 +18,8 @@ package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.exceptions.SessionKeyNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -49,31 +51,26 @@ public class SessionAccessor {
   }
 
   public static <T> Function<UserSession, T> session(String key) {
-    return (session) -> session.<T>get(key).orElseThrow(() -> new RuntimeException("Object with "
-        + "key: " + key + " not found in session."));
+    return (session) -> session.<T>get(key).orElseThrow(() -> new SessionKeyNotFoundException(key
+        , Scope.USER));
   }
 
   public static <T> Function<UserSession, T> global(String key) {
     return session -> session.getSimulationSession()
         .<T>get(key)
-        .orElseThrow(
-            () -> new RuntimeException(
-                "Object with key: " + key + " not found in simulation session."));
+        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.SIMULATION));
   }
 
   public static <T> Function<UserSession, T> global(String key, String expression) {
     return session -> session.getSimulationSession().<T>get(key)
         .map(o -> readObject(expression, o))
-        .orElseThrow(
-            () -> new RuntimeException(
-                "Object with key: " + key + " not found in simulation session."));
+        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.SIMULATION));
   }
 
   public static <T> Function<UserSession, T> session(String key, String expression) {
     return (session) -> session.<T>get(key)
         .map(o -> readObject(expression, o))
-        .orElseThrow(
-            () -> new RuntimeException("Object with key: " + key + " not found in session."));
+        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.USER));
   }
 
   private static <T> T readObject(String expressionString, T object) {
