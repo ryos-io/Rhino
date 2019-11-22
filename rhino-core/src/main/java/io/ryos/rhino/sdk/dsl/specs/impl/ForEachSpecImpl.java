@@ -29,40 +29,36 @@ import java.util.List;
 
 /**
  * For-each loop representation.
- * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractMeasurableSpec implements
+public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDSLItem implements
     ForEachSpec {
 
   /**
    * Builder implementation for {@link ForEachSpec}.
-   * <p>
    */
   private final ForEachBuilder<S, R> forEachBuilder;
 
-  private final String contextKey;
-
   /**
    * Constructs a new {@link ForEachSpec} instance.
-   * <p>
    *
    * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
    */
-  public ForEachSpecImpl(String contextKey, ForEachBuilder<S, R> forEachBuilder) {
-    super(contextKey);
+  public ForEachSpecImpl(String name, ForEachBuilder<S, R> forEachBuilder) {
+    super(name);
 
-    this.contextKey = contextKey;
     this.forEachBuilder = forEachBuilder;
 
     forEachBuilder.setSpec(this);
+
+    setSessionKey(forEachBuilder.getKey() != null ? forEachBuilder.getKey() : name);
+    setSessionScope(forEachBuilder.getScope());
   }
 
   /**
    * Getter for {@link ForEachBuilderImpl}.
-   * <p>
    *
    * @return {@link ForEachBuilderImpl} instance.
    */
@@ -71,7 +67,7 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractMeasurabl
   }
 
   public String getContextKey() {
-    return contextKey;
+    return getKey();
   }
 
   @Override

@@ -73,9 +73,9 @@ public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, Runnabl
   }
 
   @Override
-  public <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey,
+  public <E, R extends Iterable<E>> RunnableDsl forEach(String name,
       ForEachBuilder<E, R> forEachBuilder) {
-    executableFunctions.add(new ForEachSpecImpl<>(contextKey, forEachBuilder));
+    executableFunctions.add(new ForEachSpecImpl<>(name, forEachBuilder));
     return this;
   }
 

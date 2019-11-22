@@ -8,6 +8,8 @@ public interface SessionDSLItem extends DSLSpec {
 
   String getKey();
 
+  void setSessionKey(String key);
+
   Supplier<Object> getObjectFunction();
 
   void setSessionScope(Scope scope);

@@ -46,7 +46,6 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   private Function<UserSession, String> endpoint;
   private Function<UserSession, User> oauthUserAccessor;
   private RetryInfo retryInfo;
-  private String saveTo = "result";
   private HttpResponse response;
   private ResultHandler<HttpResponse> resultHandler;
 
@@ -58,6 +57,8 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
    */
   public HttpSpecImpl(String measurement) {
     super(measurement);
+
+    setSessionKey(measurement);
   }
 
   @Override
@@ -210,14 +211,14 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpSpec saveTo(String keyName, Scope scope) {
-    this.saveTo = keyName;
-    setSessionScope(Scope.USER);
+    setSessionKey(keyName);
+    setSessionScope(scope);
     return this;
   }
 
   @Override
   public HttpSpec saveTo(String keyName) {
-    this.saveTo = keyName;
+    setSessionKey(keyName);
     setSessionScope(Scope.USER);
     return this;
   }
@@ -264,7 +265,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public String getSaveTo() {
-    return saveTo;
+    return getKey();
   }
 
   @Override

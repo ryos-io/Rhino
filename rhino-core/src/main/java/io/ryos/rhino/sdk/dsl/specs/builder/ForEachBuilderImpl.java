@@ -24,22 +24,20 @@ import java.util.function.Function;
 
 /**
  * Loop builder is a builder providing the spec with looping information to be executed.
- * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
 public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuilder<E, R> {
 
-  private String key;
-  private String saveTo;
+  private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
   private Function<E, ? extends DSLSpec> forEachFunction;
   private Function<UserSession, R> sessionExtractor;
   private ForEachSpec<E, R> forEachSpec;
 
-  public ForEachBuilderImpl(final String key) {
-    this.key = key;
+  public ForEachBuilderImpl(final String sessionKey) {
+    this.sessionKey = sessionKey;
   }
 
   public ForEachBuilderImpl(final Function<UserSession, R> sessionExtractor) {
@@ -63,13 +61,13 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   @Override
   public ForEachBuilder<E, R> saveTo(final String saveTo) {
-    this.saveTo = saveTo;
+    this.sessionKey = saveTo;
     return this;
   }
 
   @Override
   public ForEachBuilder<E, R> saveTo(String saveTo, Scope scope) {
-    this.saveTo = saveTo;
+    this.sessionKey = saveTo;
     this.scope = scope;
     return this;
   }
@@ -90,11 +88,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   @Override
   public String getKey() {
-    return key;
-  }
-
-  public String getSaveTo() {
-    return saveTo;
+    return sessionKey;
   }
 
   @Override

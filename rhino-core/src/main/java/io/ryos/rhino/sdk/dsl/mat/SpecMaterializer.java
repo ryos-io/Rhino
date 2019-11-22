@@ -21,9 +21,8 @@ import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import reactor.core.publisher.Mono;
 
 /**
- * DSLSpec materializer takes the spec instances and convert them into reactive components, that are to
- * be executed by reactive framework in runtime.
- * <p>
+ * DSLSpec materializer takes the spec instances and convert them into reactive components, that are
+ * to be executed by reactive framework in runtime.
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
@@ -32,7 +31,6 @@ public interface SpecMaterializer<T extends DSLSpec> {
 
   /**
    * Materializer takes the spec and convert it into a {@link Mono}.
-   * <p>
    *
    * @param spec List of DSL DSLSpec.
    * @return Mono instance.

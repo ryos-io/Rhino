@@ -27,10 +27,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * @author Erhan Bagdemir
- * @since 1.7.0
- */
 public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
     SpecMaterializer<ForEachSpec<S, R>> {
 

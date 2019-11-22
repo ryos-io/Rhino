@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.data;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,7 +47,7 @@ public class ContextImpl implements Context {
   }
 
   public <T> Optional<T> get(String key) {
-    if (storage.containsKey(key)) {
+    if (storage.containsKey(Objects.requireNonNull(key, "session key may not be null."))) {
       return Optional.of((T) storage.get(key));
     }
     return Optional.empty();

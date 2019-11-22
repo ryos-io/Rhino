@@ -37,18 +37,18 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
   private final String contextKey;
   private final UserSession userSession;
-  private final ResultingSpec resultingSpec;
+  private final ResultingSpec currentSpec;
 
   public CollectingHttpResultHandler(final String contextKey,
       final UserSession userSession,
       final ResultingSpec resultingSpec) {
     this.contextKey = contextKey;
     this.userSession = userSession;
-    this.resultingSpec = resultingSpec;
+    this.currentSpec = resultingSpec;
   }
 
-  public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec resultingSpec) {
-    this(resultingSpec.getSaveTo(), userSession, resultingSpec);
+  public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec httpSpec) {
+    this(httpSpec.getKey(), userSession, httpSpec);
   }
 
   @Override
@@ -57,51 +57,52 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return userSession;
     }
 
-    var activatedUser = getActiveUser((HttpSpec) resultingSpec, userSession);
+    var activatedUser = getActiveUser((HttpSpec) currentSpec, userSession);
+    var globalSession = userSession.getSimulationSessionFor(activatedUser);
+    var parentKey = currentSpec.getParent() != null ? getSessionKey(currentSpec.getParent()) : "";
+    var currentKey = getSessionKey(currentSpec);
+    var httpSpecData = new HttpSpecData();
+    httpSpecData.setEndpoint(((HttpSpec) currentSpec).getEndpoint().apply(userSession));
 
-    if (!resultingSpec.hasParent()) {
+    if (!currentSpec.hasParent()) {
       if (isInUserSession()) {
-        var httpSpecData = new HttpSpecData();
         httpSpecData.setResponse(resultObject);
-        userSession.add(getSessionKey(resultingSpec), httpSpecData);
+        userSession.add(currentKey, httpSpecData);
       } else {
-        var globalSession = userSession.getSimulationSessionFor(activatedUser);
-        var specData = globalSession.<HttpSpecData>get(getSessionKey(resultingSpec))
-            .orElse(new HttpSpecData());
+        var specData = globalSession.<HttpSpecData>get(currentKey).orElse(httpSpecData);
         specData.setResponse(resultObject);
-        globalSession.add(getSessionKey(resultingSpec), specData);
+        globalSession.add(currentKey, specData);
       }
     } else {
       if (isInUserSession()) {
-        if (resultingSpec.getParent() instanceof ForEachSpec) {
-          var stringMap = userSession.<Map<String, List<Object>>>get(
-              getSessionKey(resultingSpec.getParent()))
-              .orElse(getMapSupplier());
-          var httpSpecData = new HttpSpecData();
+        if (isForEachSpec()) {
+          var stringMap = userSession.<Map<String, List<Object>>>get(parentKey)
+              .orElse(getMapSupplier(currentSpec));
           httpSpecData.setResponse(resultObject);
-          stringMap.get(getSessionKey(resultingSpec)).add(httpSpecData);
-          userSession.add(getSessionKey(resultingSpec), stringMap);
+          stringMap.get(currentKey).add(httpSpecData);
+          userSession.add(currentKey, stringMap);
         } else {
-          var httpSpecData = new HttpSpecData();
           httpSpecData.setResponse(resultObject);
-          userSession.add(getSessionKey(resultingSpec.getParent()), httpSpecData);
+          userSession.add(parentKey, httpSpecData);
         }
       } else {
-
-        if (resultingSpec.getParent() instanceof ForEachSpec) {
-          var globalSession = userSession.getSimulationSessionFor(activatedUser);
-          var stringMap = globalSession.<Map<String, List<Object>>>get(
-              getSessionKey(resultingSpec.getParent())).orElse(getMapSupplier());
-          var httpSpecData = new HttpSpecData();
+        if (isForEachSpec()) {
+          var stringMap = globalSession.<Map<String, List<Object>>>get(parentKey)
+              .orElse(getMapSupplier(currentSpec));
           httpSpecData.setResponse(resultObject);
-          stringMap.get(getSessionKey(resultingSpec)).add(httpSpecData);
-          globalSession.add(getSessionKey(resultingSpec.getParent()), stringMap);
+          if (stringMap.containsKey(currentKey)) {
+            stringMap.get(currentKey).add(httpSpecData);
+          } else {
+            var list = new ArrayList<>();
+            list.add(httpSpecData);
+            stringMap.put(currentKey, list);
+          }
+
+          globalSession.add(parentKey, stringMap);
         } else {
-          var globalSession = userSession.getSimulationSessionFor(activatedUser);
-          var specData = globalSession.<HttpSpecData>get(getSessionKey(resultingSpec.getParent()))
-              .orElse(new HttpSpecData());
+          var specData = globalSession.<HttpSpecData>get(parentKey).orElse(httpSpecData);
           specData.setResponse(resultObject);
-          globalSession.add(getSessionKey(resultingSpec), specData);
+          globalSession.add(currentKey, specData);
         }
       }
     }
@@ -109,34 +110,37 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
     return userSession;
   }
 
-  private String getSessionKey(final DSLItem spec) {
-    if (spec instanceof ResultingSpec) {
-      ((ResultingSpec) spec).getSaveTo();
+  private boolean isForEachSpec() {
+    return currentSpec.getParent() instanceof ForEachSpec;
+  }
+
+  private String getSessionKey(final DSLItem dslItem) {
+
+    if (dslItem instanceof SessionDSLItem) {
+      return ((SessionDSLItem) dslItem).getKey();
     }
 
-    if (spec instanceof AbstractMeasurableSpec) {
-      return ((AbstractMeasurableSpec) spec).getMeasurementPoint();
+    if (dslItem instanceof AbstractMeasurableSpec) {
+      return ((AbstractMeasurableSpec) dslItem).getMeasurementPoint();
     }
 
     throw new RuntimeException("Cannot determine session key.");
   }
 
-  private Map<String, List<Object>> getMapSupplier() {
-
+  private Map<String, List<Object>> getMapSupplier(DSLItem spec) {
     var map = new HashMap<String, List<Object>>();
-    map.put(getSessionKey(resultingSpec), new ArrayList<>());
+    map.put(getSessionKey(spec), new ArrayList<>());
     return map;
-
   }
 
   private boolean isInUserSession() {
 
-    if (resultingSpec.hasParent() && resultingSpec.getParent() instanceof SessionDSLItem) {
-      return ((SessionDSLItem) resultingSpec.getParent()).getSessionScope().equals(USER);
+    if (currentSpec.hasParent() && currentSpec.getParent() instanceof SessionDSLItem) {
+      return ((SessionDSLItem) currentSpec.getParent()).getSessionScope().equals(USER);
     }
 
-    if (resultingSpec instanceof SessionDSLItem) {
-      return ((SessionDSLItem) resultingSpec).getSessionScope().equals(USER);
+    if (currentSpec instanceof SessionDSLItem) {
+      return ((SessionDSLItem) currentSpec).getSessionScope().equals(USER);
     }
 
     throw new RuntimeException("Cannot determine session scope.");

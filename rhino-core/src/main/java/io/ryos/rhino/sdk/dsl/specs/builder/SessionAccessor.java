@@ -62,8 +62,7 @@ public class SessionAccessor {
   }
 
   public static <T> Function<UserSession, T> global(String key, String expression) {
-    return session -> session.getSimulationSession()
-        .<T>get(key)
+    return session -> session.getSimulationSession().<T>get(key)
         .map(o -> readObject(expression, o))
         .orElseThrow(
             () -> new RuntimeException(

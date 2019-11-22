@@ -11,7 +11,8 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, MeasurableSpec,
+public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, SessionDSLItem,
+    MeasurableSpec,
     ResultingSpec<HttpSpec, HttpResponse> {
   enum Method {GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH}
 

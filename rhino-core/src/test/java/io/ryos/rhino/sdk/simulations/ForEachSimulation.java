@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
@@ -34,12 +33,10 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
-import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
 
 @Simulation(name = "Reactive Multi-User Test")
-@Runner(clazz = ReactiveHttpSimulationRunner.class)
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class ForEachSimulation {
 
@@ -70,7 +67,7 @@ public class ForEachSimulation {
   public LoadDsl loadTestPutAndGetFile() {
     return Start.dsl()
         .forEach("get files",
-            in(global("upload loop", "#this['Prepare by PUT text.txt']")).doRun(index ->
+            in(global("uploads", "#this['Prepare by PUT text.txt']")).doRun(index ->
                 http("GET text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
