@@ -51,8 +51,8 @@ public class SessionAccessor {
   }
 
   public static <T> Function<UserSession, T> session(String key) {
-    return (session) -> session.<T>get(key).orElseThrow(() -> new SessionKeyNotFoundException(key
-        , Scope.USER));
+    return session -> session.<T>get(key)
+        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.USER));
   }
 
   public static <T> Function<UserSession, T> global(String key) {
@@ -68,7 +68,7 @@ public class SessionAccessor {
   }
 
   public static <T> Function<UserSession, T> session(String key, String expression) {
-    return (session) -> session.<T>get(key)
+    return session -> session.<T>get(key)
         .map(o -> readObject(expression, o))
         .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.USER));
   }

@@ -50,10 +50,14 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDS
     super(name);
 
     this.forEachBuilder = forEachBuilder;
+    this.forEachBuilder.setSpec(this);
 
-    forEachBuilder.setSpec(this);
+    if (forEachBuilder.getKey() != null) {
+      setSessionKey(forEachBuilder.getKey());
+    } else {
+      setSessionKey(name);
+    }
 
-    setSessionKey(forEachBuilder.getKey() != null ? forEachBuilder.getKey() : name);
     setSessionScope(forEachBuilder.getScope());
   }
 
@@ -64,10 +68,6 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDS
    */
   public ForEachBuilder<S, R> getForEachBuilder() {
     return forEachBuilder;
-  }
-
-  public String getContextKey() {
-    return getKey();
   }
 
   @Override

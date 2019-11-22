@@ -9,6 +9,4 @@ import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 public interface ForEachSpec<E, R extends Iterable<E>> extends DSLSpec, SessionDSLItem {
 
   ForEachBuilder<E, R> getForEachBuilder();
-
-  String getContextKey();
 }

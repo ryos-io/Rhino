@@ -6,7 +6,6 @@ import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 
 /**
  * Load testing specification for reactive runner.
- * <p>
  *
  * @author Erhan Bagdemir
  * @see ReactiveHttpSimulationRunner
@@ -16,7 +15,6 @@ public interface DSLSpec extends DSLItem, Materializable {
 
   /**
    * Static factory method to create a new {@link HttpSpec} instance.
-   * <p>
    *
    * @param measurementPoint Measurement point name.
    * @return A new instance of {@link DSLSpec}.

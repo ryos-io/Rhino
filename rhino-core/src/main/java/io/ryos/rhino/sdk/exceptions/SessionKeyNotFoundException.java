@@ -20,9 +20,7 @@ import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 
 public class SessionKeyNotFoundException extends RuntimeException {
 
-  public SessionKeyNotFoundException(String key,
-      Scope scope) {
-
+  public SessionKeyNotFoundException(String key, Scope scope) {
     super(String.format("Session key '%s' not found in '%s' scope.", key, scope));
   }
 }

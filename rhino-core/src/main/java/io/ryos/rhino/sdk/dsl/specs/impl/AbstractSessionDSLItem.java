@@ -19,10 +19,6 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
 import java.util.function.Supplier;
 
-/**
- * @author Erhan Bagdemir
- * @since 2.0.0
- */
 public abstract class AbstractSessionDSLItem extends AbstractMeasurableSpec implements
     SessionDSLItem {
 

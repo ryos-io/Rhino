@@ -11,10 +11,14 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>, SessionDSLItem,
+public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>,
+    SessionDSLItem,
     MeasurableSpec,
     ResultingSpec<HttpSpec, HttpResponse> {
-  enum Method {GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH}
+
+  public enum Method {
+    GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH
+  }
 
   static Map.Entry<String, List<String>> from(String key, String value) {
     return Map.entry(key, Collections.singletonList(value));

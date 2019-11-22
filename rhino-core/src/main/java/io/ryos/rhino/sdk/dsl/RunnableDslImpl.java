@@ -30,7 +30,7 @@ public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, Runnabl
   /**
    * Executable functions.
    */
-  private final List<DSLItem> executableFunctions = new ArrayList<>();
+  private final List<DSLItem> children = new ArrayList<>();
 
   public RunnableDslImpl(String name) {
     super(name);
@@ -38,68 +38,68 @@ public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, Runnabl
 
   @Override
   public RunnableDslImpl wait(Duration duration) {
-    executableFunctions.add(new WaitSpecImpl(duration));
+    children.add(new WaitSpecImpl(duration));
     return this;
   }
 
   @Override
   public RunnableDsl run(DSLSpec spec) {
-    executableFunctions.add(spec);
+    children.add(spec);
     return this;
   }
 
   @Override
   public RunnableDsl ensure(Predicate<UserSession> predicate) {
-    executableFunctions.add(new EnsureSpecImpl(predicate));
+    children.add(new EnsureSpecImpl(predicate));
     return this;
   }
 
   @Override
   public RunnableDsl ensure(Predicate<UserSession> predicate, String reason) {
-    executableFunctions.add(new EnsureSpecImpl(predicate, reason));
+    children.add(new EnsureSpecImpl(predicate, reason));
     return this;
   }
 
   @Override
   public RunnableDsl session(String key, Supplier<Object> objectSupplier) {
-    executableFunctions.add(new SessionSpecImpl(key, objectSupplier));
+    children.add(new SessionSpecImpl(key, objectSupplier));
     return this;
   }
 
   @Override
   public <R, T> RunnableDsl map(MapperBuilder<R, T> mapper) {
-    executableFunctions.add(new MapperSpecImpl<>(mapper));
+    children.add(new MapperSpecImpl<>(mapper));
     return this;
   }
 
   @Override
   public <E, R extends Iterable<E>> RunnableDsl forEach(String name,
       ForEachBuilder<E, R> forEachBuilder) {
-    executableFunctions.add(new ForEachSpecImpl<>(name, forEachBuilder));
+    children.add(new ForEachSpecImpl<>(name, forEachBuilder));
     return this;
   }
 
   @Override
   public RunnableDsl repeat(DSLSpec spec) {
-    executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> true));
+    children.add(new RunUntilSpecImpl(spec, (s) -> true));
     return this;
   }
 
   @Override
   public RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec) {
-    executableFunctions.add(new RunUntilSpecImpl(spec, predicate));
+    children.add(new RunUntilSpecImpl(spec, predicate));
     return this;
   }
 
   @Override
   public RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec) {
-    executableFunctions.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));
+    children.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));
     return this;
   }
 
   @Override
   public RunnableDsl runIf(Predicate<UserSession> predicate, DSLSpec spec) {
-    executableFunctions.add(new ConditionalSpecWrapper(spec, predicate));
+    children.add(new ConditionalSpecWrapper(spec, predicate));
     return this;
   }
 
@@ -109,6 +109,6 @@ public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, Runnabl
   }
 
   public List<DSLItem> getChildren() {
-    return executableFunctions;
+    return children;
   }
 }

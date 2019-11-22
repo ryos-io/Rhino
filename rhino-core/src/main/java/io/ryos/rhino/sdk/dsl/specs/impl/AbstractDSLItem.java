@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import org.apache.commons.lang3.Validate;
 
 /**
  * @author Erhan Bagdemir
@@ -29,6 +30,7 @@ public abstract class AbstractDSLItem implements DSLItem {
   private DSLItem parent;
 
   public AbstractDSLItem(String name) {
+    Validate.notNull(name, "keyName must not be null.");
     this.name = name;
   }
 

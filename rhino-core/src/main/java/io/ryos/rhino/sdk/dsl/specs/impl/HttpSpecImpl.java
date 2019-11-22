@@ -24,6 +24,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.Validate;
 
 /**
  * HTTP spec implementation of {@link DSLSpec}.
@@ -53,12 +54,11 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
    * Creates a new {@link HttpSpecImpl}.
    * <p>
    *
-   * @param measurement The name of the measurement.
+   * @param name The name of the measurement.
    */
-  public HttpSpecImpl(String measurement) {
-    super(measurement);
-
-    setSessionKey(measurement);
+  public HttpSpecImpl(String name) {
+    super(name);
+    setSessionKey(name);
   }
 
   @Override
@@ -205,12 +205,16 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public MeasurableSpec retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
+    Validate.isTrue(numOfRetries >= 0, "numberOfRetries must be bigger than zero.");
+    Validate.notNull(predicate, "predicate must not be null.");
     this.retryInfo = new RetryInfo(predicate, numOfRetries);
     return this;
   }
 
   @Override
   public HttpSpec saveTo(String keyName, Scope scope) {
+    Validate.notNull(keyName, "keyName must not be null.");
+    Validate.notNull(scope, "scope must not be null.");
     setSessionKey(keyName);
     setSessionScope(scope);
     return this;
@@ -218,6 +222,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpSpec saveTo(String keyName) {
+    Validate.notNull(keyName, "keyName must not be null.");
     setSessionKey(keyName);
     setSessionScope(Scope.USER);
     return this;
