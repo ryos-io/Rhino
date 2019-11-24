@@ -15,6 +15,7 @@ import io.ryos.rhino.sdk.dsl.specs.impl.SessionSpecImpl;
 import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -75,7 +76,11 @@ public class RunnableDslImpl extends AbstractDSLItem implements LoadDsl, Runnabl
   @Override
   public <E, R extends Iterable<E>> RunnableDsl forEach(String name,
       ForEachBuilder<E, R> forEachBuilder) {
-    children.add(new ForEachSpecImpl<>(name, forEachBuilder));
+    children.add(new ForEachSpecImpl<>(name, Collections.emptyList(),
+        forEachBuilder.getKey() != null ? forEachBuilder.getKey() : name,
+        forEachBuilder.getScope(),
+        forEachBuilder.getIterableSupplier(),
+        forEachBuilder.getForEachFunction()));
     return this;
   }
 

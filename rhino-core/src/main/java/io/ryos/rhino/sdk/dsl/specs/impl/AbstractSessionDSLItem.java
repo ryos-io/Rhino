@@ -30,6 +30,13 @@ public abstract class AbstractSessionDSLItem extends AbstractMeasurableSpec impl
     super(name);
   }
 
+  public AbstractSessionDSLItem(String name, String sessionKey, Scope sessionScope) {
+    super(name);
+
+    this.sessionKey = sessionKey;
+    this.sessionScope = sessionScope;
+  }
+
   @Override
   public Scope getSessionScope() {
     return sessionScope;
@@ -52,9 +59,5 @@ public abstract class AbstractSessionDSLItem extends AbstractMeasurableSpec impl
 
   public void setSessionKey(String sessionKey) {
     this.sessionKey = sessionKey;
-  }
-
-  public void setObjectSupplier(Supplier<Object> objectSupplier) {
-    this.objectSupplier = objectSupplier;
   }
 }

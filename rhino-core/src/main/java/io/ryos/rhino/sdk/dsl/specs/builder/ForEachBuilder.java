@@ -30,7 +30,7 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope);
 
-  Function<UserSession, R> getSessionExtractor();
+  Function<UserSession, R> getIterableSupplier();
 
   Function<E, ? extends DSLSpec> getForEachFunction();
 

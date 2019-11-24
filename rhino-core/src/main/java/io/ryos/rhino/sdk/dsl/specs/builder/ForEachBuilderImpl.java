@@ -33,15 +33,15 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
   private Function<E, ? extends DSLSpec> forEachFunction;
-  private Function<UserSession, R> sessionExtractor;
+  private Function<UserSession, R> iterableSupplier;
   private ForEachSpec<E, R> forEachSpec;
 
   public ForEachBuilderImpl(final String sessionKey) {
     this.sessionKey = sessionKey;
   }
 
-  public ForEachBuilderImpl(final Function<UserSession, R> sessionExtractor) {
-    this.sessionExtractor = sessionExtractor;
+  public ForEachBuilderImpl(final Function<UserSession, R> iterableSupplier) {
+    this.iterableSupplier = iterableSupplier;
   }
 
   public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(final String key) {
@@ -49,8 +49,8 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(
-      Function<UserSession, R> sessionFunction) {
-    return new ForEachBuilderImpl<>(sessionFunction);
+      Function<UserSession, R> iterableSupplier) {
+    return new ForEachBuilderImpl<>(iterableSupplier);
   }
 
   @Override
@@ -97,7 +97,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<UserSession, R> getSessionExtractor() {
-    return sessionExtractor;
+  public Function<UserSession, R> getIterableSupplier() {
+    return iterableSupplier;
   }
 }

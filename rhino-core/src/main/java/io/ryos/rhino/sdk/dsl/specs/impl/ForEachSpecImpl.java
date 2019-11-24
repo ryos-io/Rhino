@@ -22,10 +22,8 @@ import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
 import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * For-each loop representation.
@@ -37,37 +35,41 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDS
     ForEachSpec {
 
   /**
-   * Builder implementation for {@link ForEachSpec}.
+   * Child DSL items.
    */
-  private final ForEachBuilder<S, R> forEachBuilder;
+  private List<DSLItem> children;
+
+  /**
+   * Function is a provider of iterable object instances.
+   */
+  private Function<UserSession, R> iterableSupplier;
+
+  /**
+   *
+   */
+  private Function<S, ? extends DSLSpec> forEachFunction;
 
   /**
    * Constructs a new {@link ForEachSpec} instance.
    *
-   * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
+   * @param name             Spec name.
+   * @param children         Child DSL items.
+   * @param sessionKey       Session key.
+   * @param scope            Session scope.
+   * @param iterableSupplier Supplier for iterable.
    */
-  public ForEachSpecImpl(String name, ForEachBuilder<S, R> forEachBuilder) {
-    super(name);
+  public ForEachSpecImpl(final String name,
+      final List<DSLItem> children,
+      final String sessionKey,
+      final Scope scope,
+      final Function<UserSession, R> iterableSupplier,
+      final Function<S, ? extends DSLSpec> forEachFunction) {
 
-    this.forEachBuilder = forEachBuilder;
-    this.forEachBuilder.setSpec(this);
+    super(name, sessionKey, scope);
 
-    if (forEachBuilder.getKey() != null) {
-      setSessionKey(forEachBuilder.getKey());
-    } else {
-      setSessionKey(name);
-    }
-
-    setSessionScope(forEachBuilder.getScope());
-  }
-
-  /**
-   * Getter for {@link ForEachBuilderImpl}.
-   *
-   * @return {@link ForEachBuilderImpl} instance.
-   */
-  public ForEachBuilder<S, R> getForEachBuilder() {
-    return forEachBuilder;
+    this.children = children;
+    this.iterableSupplier = iterableSupplier;
+    this.forEachFunction = forEachFunction;
   }
 
   @Override
@@ -77,6 +79,16 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDS
 
   @Override
   public List<DSLItem> getChildren() {
-    return Collections.emptyList();
+    return children;
+  }
+
+  @Override
+  public Function<UserSession, R> getIterableSupplier() {
+    return iterableSupplier;
+  }
+
+  @Override
+  public Function<S, ? extends DSLSpec> getForEachFunction() {
+    return forEachFunction;
   }
 }

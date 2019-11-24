@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.data.UserSession;
+import java.util.function.Function;
 
 /**
  * @author Erhan Bagdemir
@@ -8,5 +9,7 @@ import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
  */
 public interface ForEachSpec<E, R extends Iterable<E>> extends DSLSpec, SessionDSLItem {
 
-  ForEachBuilder<E, R> getForEachBuilder();
+  Function<UserSession, R> getIterableSupplier();
+
+  Function<E, DSLSpec> getForEachFunction();
 }

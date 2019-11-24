@@ -20,7 +20,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,24 +35,23 @@ public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
   public Mono<UserSession> materialize(final ForEachSpec<S, R> forEachSpec,
       final UserSession session) {
 
-    var forEachBuilder = forEachSpec.getForEachBuilder();
-    var iterable = Optional.ofNullable(forEachBuilder.getSessionExtractor().apply(session))
+    var iterable = Optional.ofNullable(forEachSpec.getIterableSupplier().apply(session))
         .orElseThrow(() -> new IllegalArgumentException(
-            String.format("forEach() failed. The instance with key: %s", forEachBuilder.getKey())));
+            String.format("forEach() failed. The instance with key: %s")));
 
     return Flux.fromIterable(iterable)
-        .map(forEachBuilder.getForEachFunction())
-        .map(childSpec -> inheritFrom(forEachBuilder, childSpec))
+        .map(forEachSpec.getForEachFunction())
+        .map(childSpec -> inheritFrom(forEachSpec, childSpec))
         .flatMap(spec -> spec.createMaterializer(session).materialize(spec, session))
         .reduce((s1, s2) -> s1)
         .doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 
-  private DSLSpec inheritFrom(ForEachBuilder<S, R> forEachBuilder, DSLSpec spec) {
+  private DSLSpec inheritFrom(ForEachSpec<S, R> forEachSpec, DSLSpec spec) {
     if (isSessionDSLItem(spec)) {
-      ((SessionDSLItem) spec).setSessionScope(forEachBuilder.getScope());
+      ((SessionDSLItem) spec).setSessionScope(forEachSpec.getSessionScope());
     }
-    spec.setParent(forEachBuilder.getSpec());
+    spec.setParent(forEachSpec);
     return spec;
   }
 
