@@ -11,7 +11,8 @@ public class RunUntilSpecMaterializer implements SpecMaterializer<RunUntilSpec> 
     return Mono.just(userSession).map(session -> {
       while (!spec.getPredicate().test(userSession)) {
         var targetSpec = spec.getSpec();
-        targetSpec.createMaterializer(userSession).materialize(spec, userSession).block();
+        var materializer = targetSpec.createMaterializer(userSession);
+        materializer.materialize(targetSpec, userSession).block();
       }
       return session;
     });
