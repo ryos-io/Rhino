@@ -11,10 +11,10 @@ import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.dsl.mat.HttpSpecData;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import java.util.UUID;
-import org.asynchttpclient.Response;
 
 @Simulation(name = "DSLRunUntilSimulation")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
@@ -31,7 +31,9 @@ public class DSLRunUntilSimulation {
     public LoadDsl singleTestDsl() {
         return Start
                 .dsl()
-            .runUntil(s -> s.<Response>get("result").map(Response::getStatusCode).orElse(-1) == 200,
+            .runUntil(s ->
+                    s.<HttpSpecData>get("result").map(d -> d.getResponse().getStatusCode()).orElse(-1)
+                        == 200,
                         http("PUT Request")
                         .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
                         .header(X_API_KEY, SimulationConfig.getApiKey())
