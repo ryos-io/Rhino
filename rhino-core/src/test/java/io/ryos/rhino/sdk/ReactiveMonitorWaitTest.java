@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -39,17 +39,18 @@ import org.junit.Test;
 @Ignore
 public class ReactiveMonitorWaitTest {
 
-  private static final String SIM_NAME = "Reactive Monitor Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
+  private static final String WIREMOCK_PORT = "wiremock.port";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(options().port(8089)
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
       .jettyAcceptors(2)
       .jettyAcceptQueueSize(100)
       .containerThreads(100));
 
   @Test
-  public void testReactiveMonitorWait() {
+  public void testReactiveMonitorWait() throws InterruptedException {
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
@@ -79,6 +80,10 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(200)));
 
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+
     Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
+    Thread.sleep(1000L);
   }
 }

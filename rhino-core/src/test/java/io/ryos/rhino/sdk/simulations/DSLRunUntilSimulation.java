@@ -19,8 +19,11 @@ import java.util.UUID;
 @Simulation(name = "DSLRunUntilSimulation")
 @Runner(clazz = ReactiveHttpSimulationRunner.class)
 public class DSLRunUntilSimulation {
-    private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
-    private static final String MONITOR_ENDPOINT = "http://localhost:8089/api/monitor";
+
+    private static final String FILES_ENDPOINT =
+        "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
+    private static final String MONITOR_ENDPOINT = "http://localhost:" + System.getProperty(
+        "wiremock.port") + "/api/monitor";
     private static final String X_REQUEST_ID = "X-Request-Id";
     private static final String X_API_KEY = "X-Api-Key";
 

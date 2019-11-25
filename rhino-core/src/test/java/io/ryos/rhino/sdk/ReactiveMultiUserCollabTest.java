@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -29,12 +30,14 @@ import org.junit.Test;
 public class ReactiveMultiUserCollabTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
+  private static final String WIREMOCK_PORT = "wiremock.port";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(8089);
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Test
-  public void testMultiUser() {
+  public void testMultiUser() throws InterruptedException {
 
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
@@ -61,6 +64,12 @@ public class ReactiveMultiUserCollabTest {
             .withStatus(200)
             .withFixedDelay(400)));
 
-    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+
+    var simulation = Simulation
+        .getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class);
+    simulation.start();
+    Thread.sleep(1000L);
   }
 }

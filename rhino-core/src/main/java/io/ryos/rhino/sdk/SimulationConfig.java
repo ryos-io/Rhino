@@ -367,6 +367,10 @@ public class SimulationConfig {
   }
 
   public static String getAuthServer() {
+    String authServerOverride = System.getProperty("test.oauth2.endpoint");
+    if (authServerOverride != null) {
+      return authServerOverride;
+    }
     return instance.getAuthEndpoint();
   }
 

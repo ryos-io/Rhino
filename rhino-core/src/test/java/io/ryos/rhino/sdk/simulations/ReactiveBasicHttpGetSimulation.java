@@ -16,7 +16,8 @@ import java.util.UUID;
 @UserRepository(factory = BasicUserRepositoryFactoryImpl.class)
 public class ReactiveBasicHttpGetSimulation {
 
-  private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
+  private static final String FILES_ENDPOINT =
+      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 

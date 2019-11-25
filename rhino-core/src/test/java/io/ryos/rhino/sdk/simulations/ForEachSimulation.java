@@ -40,7 +40,8 @@ import java.util.List;
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class ForEachSimulation {
 
-  private static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
+  private static final String FILES_ENDPOINT =
+      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
   private static final String X_API_KEY = "X-Api-Key";
 
   @UserProvider

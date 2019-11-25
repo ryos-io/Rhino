@@ -21,7 +21,6 @@ import org.junit.Test;
 
 public class ReactiveSleepTestSimulationTest {
 
-  private static final String SIM_NAME = "Reactive Sleep Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
   @Test
