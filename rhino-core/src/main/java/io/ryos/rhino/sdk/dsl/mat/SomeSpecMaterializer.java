@@ -33,12 +33,6 @@ import reactor.core.publisher.Mono;
  */
 public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
 
-  private final EventDispatcher dispatcher;
-
-  public SomeSpecMaterializer(final EventDispatcher dispatcher) {
-    this.dispatcher = dispatcher;
-  }
-
   @Override
   public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
 
@@ -79,7 +73,7 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
 
           measurement.record(userEventEnd);
 
-          dispatcher.dispatchEvents(measurement);
+          EventDispatcher.getInstance().dispatchEvents(measurement);
 
           return session;
         }));

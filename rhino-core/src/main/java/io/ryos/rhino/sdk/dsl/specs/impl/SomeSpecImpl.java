@@ -55,7 +55,7 @@ public class SomeSpecImpl extends AbstractMeasurableSpec implements SomeSpec {
 
   @Override
   public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
-    return new SomeSpecMaterializer(null);
+    return new SomeSpecMaterializer();
   }
 
   @Override

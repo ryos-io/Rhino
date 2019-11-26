@@ -16,15 +16,27 @@
 
 package io.ryos.rhino.sdk;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveSleepTestSimulation;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class ReactiveSleepTestSimulationTest {
 
+  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
+  private static final String WIREMOCK_PORT = "wiremock.port";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  
   @Test
   public void testReactiveSleepTestSimulation() {
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+
     Simulation.getInstance(PROPERTIES_FILE, ReactiveSleepTestSimulation.class).start();
   }
 }
