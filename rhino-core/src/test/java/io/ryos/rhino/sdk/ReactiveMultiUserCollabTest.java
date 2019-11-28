@@ -23,9 +23,11 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveMultiUserCollabSimulation;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+@Ignore
 public class ReactiveMultiUserCollabTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
