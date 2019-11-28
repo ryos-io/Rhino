@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
@@ -51,12 +50,12 @@ public class ReactiveMonitorWaitTest {
 
   @Test
   public void testReactiveMonitorWait() throws InterruptedException {
-    stubFor(WireMock.post(urlEqualTo("/token"))
+    wireMockRule.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wireMockRule.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .inScenario("retriable")
         .whenScenarioStateIs(STARTED)
         .willSetStateTo("monitor")
@@ -64,7 +63,7 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(201)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor")
         .willSetStateTo("monitor-2")
@@ -72,7 +71,7 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(404)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor-2")
         .willSetStateTo("ended")

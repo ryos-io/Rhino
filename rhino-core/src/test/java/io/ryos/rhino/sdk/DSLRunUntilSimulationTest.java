@@ -1,7 +1,6 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
@@ -20,25 +19,26 @@ public class DSLRunUntilSimulationTest {
   private static final String WIREMOCK_PORT = "wiremock.port";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
+  public WireMockRule wmServer = new WireMockRule(wireMockConfig().port(8088)
       .jettyAcceptors(2)
       .jettyAcceptQueueSize(100)
       .containerThreads(100));
 
   @Test
   public void testFirstAttemptFailingAndRetryUntil() throws InterruptedException {
+    WireMock.configureFor("localhost", 8088);
 
-    stubFor(WireMock.post(urlEqualTo("/token"))
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.get(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withFixedDelay(1000)
             .withStatus(200)));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .inScenario("1st POST failing")
         .whenScenarioStateIs(STARTED)
         .willSetStateTo(FAILED)
@@ -46,7 +46,7 @@ public class DSLRunUntilSimulationTest {
             .withFixedDelay(1000)
             .withStatus(409)));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .inScenario("1st POST failing")
         .whenScenarioStateIs(FAILED)
         .willSetStateTo(STARTED)
@@ -54,16 +54,17 @@ public class DSLRunUntilSimulationTest {
             .withFixedDelay(1000)
             .withStatus(200)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/notreachable"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/notreachable"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + 8088 + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(8088));
 
+    System.out.println(wmServer.isRunning());
     Simulation.getInstance(PROPERTIES_FILE, DSLRunUntilSimulation.class).start();
 
-    Thread.sleep(1000L);
+    Thread.sleep(5000L);
   }
 }

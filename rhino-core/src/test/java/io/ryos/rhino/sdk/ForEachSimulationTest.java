@@ -17,17 +17,17 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ForEachSimulation;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+@Ignore
 public class ForEachSimulationTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
@@ -35,28 +35,27 @@ public class ForEachSimulationTest {
   private static final String WIREMOCK_PORT = "wiremock.port";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  public WireMockRule wireMockRule = new WireMockRule(8092);
 
   @Test
   public void testForEachSimulation() throws InterruptedException {
+    System.out.println(">>> " + wireMockRule.isRunning());
+    WireMock.configureFor("localhost", 8092);
 
-    stubFor(WireMock.post(urlEqualTo("/token"))
+    wireMockRule.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse().withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.put(urlMatching("/api/files/.*"))
+    wireMockRule.stubFor(WireMock.put(urlMatching("/api/files/.*"))
         .willReturn(aResponse().withStatus(201).withFixedDelay(800)));
 
-    stubFor(WireMock.get(urlMatching("/api/files/.*"))
+    wireMockRule.stubFor(WireMock.get(urlMatching("/api/files/.*"))
         .willReturn(aResponse().withFixedDelay(800).withStatus(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + 8092 + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(8092));
 
     Simulation.getInstance(PROPERTIES_FILE, ForEachSimulation.class).start();
-    Thread.sleep(1000L);
+    Thread.sleep(10000L);
   }
 }

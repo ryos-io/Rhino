@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
@@ -34,42 +33,46 @@ public class ReactiveMultiUserCollabTest {
   private static final String WIREMOCK_PORT = "wiremock.port";
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  public WireMockRule wmServer = new WireMockRule(wireMockConfig().port(8090)
+      .jettyAcceptors(2)
+      .jettyAcceptQueueSize(100)
+      .containerThreads(100));
 
   @Test
   public void testMultiUser() throws InterruptedException {
+    WireMock.configureFor("localhost", 8090);
 
-    stubFor(WireMock.post(urlEqualTo("/token"))
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withStatus(200)
             .withFixedDelay(400)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + 8090 + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(8090));
 
     var simulation = Simulation
         .getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class);
     simulation.start();
-    Thread.sleep(1000L);
+    Thread.sleep(5000L);
   }
 }
