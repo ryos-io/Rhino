@@ -16,8 +16,12 @@
 
 package io.ryos.rhino.sdk;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveSleepTestSimulation;
 import org.junit.Rule;
@@ -31,9 +35,14 @@ public class ReactiveSleepTestSimulationTest {
 
   @Rule
   public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
-  
+
   @Test
   public void testReactiveSleepTestSimulation() {
+    stubFor(WireMock.post(urlEqualTo("/token"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
+
     System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
     System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
 
