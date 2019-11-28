@@ -4,11 +4,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveBasicHttpGetSimulation;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 @Ignore
@@ -17,16 +18,27 @@ public class ReactiveBasicHttpGetTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
   private static final String WIREMOCK_PORT = "wiremock.port";
+  private static final int PORT = 8089;
 
-  @Rule
-  public WireMockRule wmServer = new WireMockRule(wireMockConfig().port(8089)
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
   public void testReactiveBasicHttpGet() throws InterruptedException {
-    WireMock.configureFor("localhost", 8089);
+    WireMock.configureFor("localhost", PORT);
 
     wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
@@ -43,8 +55,8 @@ public class ReactiveBasicHttpGetTest {
             .withFixedDelay(800)
             .withStatus(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + 8089 + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(8089));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveBasicHttpGetSimulation.class).start();
     Thread.sleep(5000L);

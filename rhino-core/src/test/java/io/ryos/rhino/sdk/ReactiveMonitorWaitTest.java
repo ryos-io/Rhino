@@ -21,11 +21,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveMonitorWaitSimulation;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 /*
@@ -41,21 +42,34 @@ public class ReactiveMonitorWaitTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
   private static final String WIREMOCK_PORT = "wiremock.port";
+  private static final int PORT = 8086;
 
-  @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
   public void testReactiveMonitorWait() throws InterruptedException {
-    wireMockRule.stubFor(WireMock.post(urlEqualTo("/token"))
+    WireMock.configureFor("localhost", PORT);
+
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    wireMockRule.stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .inScenario("retriable")
         .whenScenarioStateIs(STARTED)
         .willSetStateTo("monitor")
@@ -63,7 +77,7 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(201)));
 
-    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor")
         .willSetStateTo("monitor-2")
@@ -71,7 +85,7 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(404)));
 
-    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor-2")
         .willSetStateTo("ended")
@@ -79,8 +93,8 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
     Thread.sleep(1000L);

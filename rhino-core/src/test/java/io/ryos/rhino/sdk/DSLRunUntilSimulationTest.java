@@ -5,10 +5,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.DSLRunUntilSimulation;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DSLRunUntilSimulationTest {
@@ -17,16 +18,27 @@ public class DSLRunUntilSimulationTest {
   private static final String FAILED = "Failed";
   private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
   private static final String WIREMOCK_PORT = "wiremock.port";
+  private static final int PORT = 8088;
 
-  @Rule
-  public WireMockRule wmServer = new WireMockRule(wireMockConfig().port(8088)
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
   public void testFirstAttemptFailingAndRetryUntil() throws InterruptedException {
-    WireMock.configureFor("localhost", 8088);
+    WireMock.configureFor("localhost", PORT);
 
     wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
@@ -59,8 +71,8 @@ public class DSLRunUntilSimulationTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + 8088 + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(8088));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
 
     System.out.println(wmServer.isRunning());
     Simulation.getInstance(PROPERTIES_FILE, DSLRunUntilSimulation.class).start();

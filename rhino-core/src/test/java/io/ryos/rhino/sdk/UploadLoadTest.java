@@ -5,11 +5,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.UploadLoadSimulation;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 @Ignore
@@ -18,12 +19,27 @@ public class UploadLoadTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
   private static final String WIREMOCK_PORT = "wiremock.port";
+  private static final int PORT = 8087;
 
-  @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
   public void testUploadLoad() throws InterruptedException {
+    WireMock.configureFor("localhost", PORT);
 
     stubFor(WireMock.post(urlEqualTo("/token"))
             .willReturn(aResponse()
@@ -38,8 +54,8 @@ public class UploadLoadTest {
         .willReturn(aResponse()
             .withStatus(200).withFixedDelay(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + wireMockRule.port() + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(wireMockRule.port()));
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
 
     Simulation.getInstance(PROPERTIES_FILE, UploadLoadSimulation.class).start();
 
