@@ -31,9 +31,6 @@ import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
-/**
- *
- */
 @Simulation(name = "Reactive Monitor Test")
 public class ReactiveMonitorWaitSimulation {
 
