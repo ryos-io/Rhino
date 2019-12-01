@@ -25,7 +25,7 @@ public class ReactiveBasicHttpGetSimulation {
   public LoadDsl singleTestDsl() {
     return Start.dsl()
         .run(http("Files Request")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(FILES_ENDPOINT)

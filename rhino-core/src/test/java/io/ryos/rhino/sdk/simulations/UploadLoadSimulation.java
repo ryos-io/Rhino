@@ -38,18 +38,18 @@ public class UploadLoadSimulation {
         .dsl()
         .session("2. User", () -> userProvider.take())
         .run(http("PUT text.txt")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint(s -> FILES_ENDPOINT)
+            .endpoint(session -> FILES_ENDPOINT)
             .upload(() -> file("classpath:///test.txt"))
             .put()
             .saveTo("result"))
         .run(http("GET text.txt")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth((session("2. User")))
-            .endpoint(s -> FILES_ENDPOINT)
+            .endpoint(session -> FILES_ENDPOINT)
             .get());
   }
 }

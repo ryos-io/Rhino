@@ -92,7 +92,7 @@ public class ReactiveMultiUserCollabSimulation {
             .upload(() -> file("classpath:///test.txt"))
             .put())
         .run(http("GET text.txt")
-            .header(c -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth(session("userB"))
             .endpoint(global("Prepare by PUT text.txt", "endpoint"))
