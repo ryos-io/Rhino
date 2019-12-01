@@ -20,5 +20,5 @@ import java.util.function.Supplier;
 
 public interface SessionDSL {
 
-  RunnableDsl session(String key, Supplier<Object> objectFunction);
+  RunnableDsl session(String sessionKey, Supplier<Object> objectFunction);
 }
