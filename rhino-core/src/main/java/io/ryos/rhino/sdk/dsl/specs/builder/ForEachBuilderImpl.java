@@ -21,6 +21,7 @@ import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
 import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import java.util.function.Function;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Loop builder is a builder providing the spec with looping information to be executed.
@@ -44,29 +45,35 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     this.iterableSupplier = iterableSupplier;
   }
 
-  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(final String key) {
-    return new ForEachBuilderImpl<>(key);
+  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(final String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    return new ForEachBuilderImpl<>(sessionKey);
   }
 
   public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(
       Function<UserSession, R> iterableSupplier) {
+    Validate.notNull(iterableSupplier, "Iterable supplier must not be null.");
     return new ForEachBuilderImpl<>(iterableSupplier);
   }
 
   @Override
   public ForEachBuilder<E, R> doRun(final Function<E, DSLSpec> forEachFunction) {
+    Validate.notNull(forEachFunction, "forEachFunction must not be null.");
     this.forEachFunction = forEachFunction;
     return this;
   }
 
   @Override
   public ForEachBuilder<E, R> saveTo(final String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
     this.sessionKey = sessionKey;
     return this;
   }
 
   @Override
   public ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    Validate.notNull(scope, "Scope must not be null.");
     this.sessionKey = sessionKey;
     this.scope = scope;
     return this;

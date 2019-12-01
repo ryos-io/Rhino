@@ -38,7 +38,7 @@ public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec> {
   public Mono<UserSession> materialize(MapperSpec spec, UserSession userSession) {
     return Mono.just(userSession).map(session -> {
       try {
-        var mapper = spec.getMapper();
+        var mapper = spec.getMapperBuilder();
         var value = userSession
             .get(mapper.getKey())
             .map((Function<Object, Object>) mapper.getMappingFunction())

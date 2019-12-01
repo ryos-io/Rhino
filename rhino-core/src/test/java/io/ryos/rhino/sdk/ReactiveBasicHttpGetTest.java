@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.ReactiveBasicHttpGetSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -55,9 +56,7 @@ public class ReactiveBasicHttpGetTest {
             .withFixedDelay(800)
             .withStatus(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
-
+    TestUtils.overridePorts(PORT);
     Simulation.getInstance(PROPERTIES_FILE, ReactiveBasicHttpGetSimulation.class).start();
     Thread.sleep(5000L);
   }

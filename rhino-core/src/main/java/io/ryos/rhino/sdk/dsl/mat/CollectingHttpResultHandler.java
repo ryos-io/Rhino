@@ -48,7 +48,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
   }
 
   public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec httpSpec) {
-    this(httpSpec.getKey(), userSession, httpSpec);
+    this(httpSpec.getSessionKey(), userSession, httpSpec);
   }
 
   @Override
@@ -117,7 +117,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
   private String getSessionKey(final DSLItem dslItem) {
 
     if (dslItem instanceof SessionDSLItem) {
-      return ((SessionDSLItem) dslItem).getKey();
+      return ((SessionDSLItem) dslItem).getSessionKey();
     }
 
     if (dslItem instanceof AbstractMeasurableSpec) {

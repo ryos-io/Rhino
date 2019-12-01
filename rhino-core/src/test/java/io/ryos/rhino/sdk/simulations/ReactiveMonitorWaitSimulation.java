@@ -23,24 +23,20 @@ import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 
 /**
  */
 @Simulation(name = "Reactive Monitor Test")
-@Runner(clazz = ReactiveHttpSimulationRunner.class)
 public class ReactiveMonitorWaitSimulation {
 
   private static final String FILES_ENDPOINT =
       "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
-  ;
   private static final String MONITOR_ENDPOINT =
       "http://localhost:" + System.getProperty("wiremock.port") + "/api/monitor";
   private static final String X_REQUEST_ID = "X-Request-Id";
@@ -53,24 +49,24 @@ public class ReactiveMonitorWaitSimulation {
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
-  public LoadDsl singleTestDsl() {
-    return Start
-        .dsl()
+  public LoadDsl uploadAndWaitLoadTest() {
+    return Start.dsl()
         .run(http("Upload")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .upload(() -> file("classpath:///test.txt"))
-            .endpoint((c) -> FILES_ENDPOINT)
+            .endpoint(c -> FILES_ENDPOINT)
             .put()
             .saveTo("result"))
         .run(http("Monitor")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint((c) -> MONITOR_ENDPOINT)
+            .endpoint(c -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-            .retryIf((httpResponse) -> httpResponse.getStatusCode() != 200, 2));
+            .retryIf((httpResponse) -> httpResponse.getStatusCode() != 200, 2)
+            .cumulative());
   }
 }

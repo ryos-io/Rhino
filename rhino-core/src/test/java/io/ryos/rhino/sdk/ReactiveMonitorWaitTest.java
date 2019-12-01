@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.ReactiveMonitorWaitSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -34,15 +35,13 @@ import org.junit.Test;
  * First upload the content, the service returns 201 Created.
  * First attempt to monitor, and monitor API returns 404 Not Found.
  * Second attempt to monitor, and monitor API returns 200 OK.
- * At this point the cumulativeMeasurement on DSLSpec makes the elapsed time be aggregated.
+ * At this point the cumulative on DSLSpec makes the elapsed time be aggregated.
  */
 @Ignore
 public class ReactiveMonitorWaitTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
-  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
-  private static final String WIREMOCK_PORT = "wiremock.port";
-  private static final int PORT = 8086;
+  private static final int PORT = 8096;
 
   private WireMockServer wmServer;
 
@@ -77,6 +76,14 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(201)));
 
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
+        .inScenario("retriable")
+        .whenScenarioStateIs("monitor")
+        .willSetStateTo("monitor")
+        .willReturn(aResponse()
+            .withFixedDelay(100)
+            .withStatus(201)));
+
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor")
@@ -93,10 +100,9 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
+    TestUtils.overridePorts(PORT);
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
-    Thread.sleep(1000L);
+    Thread.sleep(2000L);
   }
 }

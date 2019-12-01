@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.mat;
+package io.ryos.rhino.sdk.utils;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
-import java.util.function.Supplier;
-import reactor.core.publisher.Mono;
+public class TestUtils {
 
-public class SessionSpecMaterializer implements SpecMaterializer<SessionDSLItem> {
+  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
+  private static final String WIREMOCK_PORT = "wiremock.port";
 
-  @Override
-  public Mono<UserSession> materialize(SessionDSLItem spec, UserSession userSession) {
-    Supplier<Object> objectSupplier = spec.getObjectFunction();
-    Object apply = objectSupplier.get();
-    userSession.add(spec.getSessionKey(), apply);
-    return Mono.just(userSession);
+  public static void overridePorts(int port) {
+    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + port + "/token");
+    System.setProperty(WIREMOCK_PORT, Integer.toString(port));
   }
 }

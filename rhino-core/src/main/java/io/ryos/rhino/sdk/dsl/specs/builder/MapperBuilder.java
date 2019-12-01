@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import java.util.Objects;
 import java.util.function.Function;
+import org.apache.commons.lang3.Validate;
 
 /**
  * @author Erhan Bagdemir
@@ -34,17 +35,20 @@ public class MapperBuilder<R, T> {
     this.saveTo = key; // Default
   }
 
-  public static <R, T> MapperBuilder<R, T> from(String key) {
-    return new MapperBuilder<>(Objects.requireNonNull(key));
+  public static <R, T> MapperBuilder<R, T> from(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    return new MapperBuilder<>(Objects.requireNonNull(sessionKey));
   }
 
   public MapperBuilder<R, T> doMap(Function<R, T> mappingFunction) {
+    Validate.notNull(mappingFunction, "Mapping function must not be null.");
     this.mappingFunction = mappingFunction;
     return this;
   }
 
-  public MapperBuilder<R, T> saveTo(String saveTo) {
-    this.saveTo = saveTo;
+  public MapperBuilder<R, T> saveTo(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    this.saveTo = sessionKey;
     return this;
   }
 

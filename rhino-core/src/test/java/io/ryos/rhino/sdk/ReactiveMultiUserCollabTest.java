@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.ReactiveMultiUserCollabSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -81,12 +82,10 @@ public class ReactiveMultiUserCollabTest {
             .withStatus(200)
             .withFixedDelay(400)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
+    TestUtils.overridePorts(PORT);
 
-    var simulation = Simulation
-        .getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class);
-    simulation.start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+
     Thread.sleep(5000L);
   }
 }

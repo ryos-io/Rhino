@@ -42,7 +42,7 @@ public abstract class AbstractMeasurableSpec extends AbstractDSLItem implements 
   }
 
   @Override
-  public DSLSpec cumulativeMeasurement() {
+  public DSLSpec cumulative() {
     this.cumulativeMeasurement = true;
     return this;
   }

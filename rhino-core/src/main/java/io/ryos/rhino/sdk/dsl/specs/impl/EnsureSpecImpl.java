@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Ensure spec implementation.
@@ -35,22 +36,24 @@ import java.util.function.Predicate;
  */
 public class EnsureSpecImpl extends AbstractMeasurableSpec implements EnsureSpec {
 
+  private static final String BLANK = "";
+
   private Predicate<UserSession> predicate;
   private String cause = "Ensure failed.";
 
   public EnsureSpecImpl(Predicate<UserSession> predicate) {
-    this("", predicate);
+    this(BLANK, Validate.notNull(predicate, "Predicate must not be null."));
   }
 
   public EnsureSpecImpl(Predicate<UserSession> predicate, String cause) {
-    this("", predicate);
-    this.cause = cause;
+    this(BLANK, Validate.notNull(predicate, "Predicate must not be null."));
+    this.cause = Validate.notNull(cause, "Cause must not be null.");
   }
 
   public EnsureSpecImpl(String measurement, Predicate<UserSession> predicate) {
     super(measurement);
 
-    this.predicate = predicate;
+    this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
   }
 
   @Override

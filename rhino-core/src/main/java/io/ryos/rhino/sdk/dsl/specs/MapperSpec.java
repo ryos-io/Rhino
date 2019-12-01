@@ -26,5 +26,5 @@ import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
  */
 public interface MapperSpec<R, T> extends DSLSpec {
 
-  MapperBuilder<R, T> getMapper();
+  MapperBuilder<R, T> getMapperBuilder();
 }

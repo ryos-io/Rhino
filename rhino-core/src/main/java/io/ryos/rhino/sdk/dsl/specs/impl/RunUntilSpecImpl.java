@@ -8,17 +8,19 @@ import io.ryos.rhino.sdk.dsl.specs.RunUntilSpec;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 
 public class RunUntilSpecImpl extends AbstractMeasurableSpec implements RunUntilSpec {
 
+  private static final String BLANK = "";
   private final Predicate<UserSession> predicate;
   private final DSLSpec spec;
 
   public RunUntilSpecImpl(DSLSpec spec, Predicate<UserSession> predicate) {
-    super("");
+    super(BLANK);
 
-    this.predicate = predicate;
-    this.spec = spec;
+    this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
+    this.spec = Validate.notNull(spec, "Spec must not be null.");
   }
 
   @Override

@@ -48,7 +48,7 @@ public abstract class AbstractSessionDSLItem extends AbstractMeasurableSpec impl
   }
 
   @Override
-  public String getKey() {
+  public String getSessionKey() {
     return sessionKey;
   }
 

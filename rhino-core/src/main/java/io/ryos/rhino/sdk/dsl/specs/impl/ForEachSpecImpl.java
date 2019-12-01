@@ -45,7 +45,7 @@ public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDS
   private Function<UserSession, R> iterableSupplier;
 
   /**
-   *
+   * For each function.
    */
   private Function<S, ? extends DSLSpec> forEachFunction;
 

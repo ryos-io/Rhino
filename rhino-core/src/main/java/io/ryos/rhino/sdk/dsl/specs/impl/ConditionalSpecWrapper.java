@@ -23,6 +23,7 @@ import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * DSLSpec wrapper including a predicate to define the conditional statement whether a spec is to be
@@ -40,8 +41,8 @@ public class ConditionalSpecWrapper extends AbstractMeasurableSpec {
   public ConditionalSpecWrapper(DSLSpec spec, Predicate<UserSession> predicate) {
     super(spec.getName());
 
-    this.spec = spec;
-    this.predicate = predicate;
+    this.spec = Validate.notNull(spec, "Spec must not be null.");
+    this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
   }
 
   public Predicate<UserSession> getPredicate() {

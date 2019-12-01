@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.DSLRunUntilSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,10 +72,7 @@ public class DSLRunUntilSimulationTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
-
-    System.out.println(wmServer.isRunning());
+    TestUtils.overridePorts(PORT);
     Simulation.getInstance(PROPERTIES_FILE, DSLRunUntilSimulation.class).start();
 
     Thread.sleep(5000L);

@@ -16,14 +16,14 @@ public interface DSLSpec extends DSLItem, Materializable {
   /**
    * Static factory method to create a new {@link HttpSpec} instance.
    *
-   * @param measurementPoint Measurement point name.
+   * @param name Measurement point name.
    * @return A new instance of {@link DSLSpec}.
    */
-  static HttpConfigSpec http(String measurementPoint) {
-    return new HttpSpecImpl(measurementPoint);
+  static HttpConfigSpec http(String name) {
+    return new HttpSpecImpl(name);
   }
 
-  static SomeSpec some(String measurementPoint) {
-    return new SomeSpecImpl(measurementPoint);
+  static SomeSpec some(String name) {
+    return new SomeSpecImpl(name);
   }
 }

@@ -24,8 +24,8 @@ import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
+import org.apache.commons.lang3.Validate;
 
 /**
  * DSLSpec implementation for arbitrary code execution.
@@ -38,13 +38,14 @@ public class SomeSpecImpl extends AbstractMeasurableSpec implements SomeSpec {
 
   private Function<UserSession, String> function;
 
-  public SomeSpecImpl(final String measurement) {
-    super(Objects.requireNonNull(measurement));
+  public SomeSpecImpl(final String name) {
+    super(Validate.notNull(name));
   }
 
   @Override
   public DSLSpec as(final Function<UserSession, String> function) {
-    this.function = Objects.requireNonNull(function);
+    Validate.notNull(function, "function must not bu null.");
+    this.function = function;
     return this;
   }
 

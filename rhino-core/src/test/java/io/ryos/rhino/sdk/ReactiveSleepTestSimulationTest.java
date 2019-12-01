@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.ReactiveSleepTestSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +60,7 @@ public class ReactiveSleepTestSimulationTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
+    TestUtils.overridePorts(PORT);
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveSleepTestSimulation.class).start();
   }

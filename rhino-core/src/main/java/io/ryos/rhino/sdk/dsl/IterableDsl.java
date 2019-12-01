@@ -16,17 +16,18 @@ public interface IterableDsl extends LoadDsl {
    * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
    * instance.
    *
+   * @param name           Name of the runner DSL.
    * @param forEachBuilder Iterable builder.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> RunnableDsl forEach(String contextKey,
+  <E, R extends Iterable<E>> RunnableDsl forEach(String name,
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
    * Runs the {@link DSLSpec} till the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec {@link DSLSpec} to run.
+   * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
   RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec);
@@ -35,7 +36,7 @@ public interface IterableDsl extends LoadDsl {
    * Runs the {@link DSLSpec} as long as the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec {@link DSLSpec} to run.
+   * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
   RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec);

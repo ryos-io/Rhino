@@ -6,7 +6,7 @@ public interface SessionDSLItem extends DSLSpec {
 
   Scope getSessionScope();
 
-  String getKey();
+  String getSessionKey();
 
   void setSessionKey(String key);
 

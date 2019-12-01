@@ -3,7 +3,6 @@ package io.ryos.rhino.sdk.dsl;
 import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
-import java.time.Duration;
 
 /**
  * Load DSL to describe load tests. The reactive runner materializes the DSL provided and run the
@@ -17,15 +16,5 @@ import java.time.Duration;
  */
 public interface LoadDsl extends DSLItem {
 
-  /**
-   * Wait for {@link Duration}.
-   * <p>
-   *
-   * @param duration {@link Duration} to wait.
-   * @return {@link RunnableDslImpl} instance.
-   */
-  RunnableDsl wait(Duration duration);
-
   <R, T> RunnableDsl map(MapperBuilder<R, T> mapper);
-
 }

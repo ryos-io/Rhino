@@ -54,7 +54,7 @@ public class RetryDSLSpecTest {
                     throw Exceptions.propagate(error);
                   }
                 }))
-        .doOnNext(r -> System.out.println(r))
+        .doOnNext(System.out::println)
         .doOnError(t -> System.out.println(t.getMessage()))
         .subscribe();
   }

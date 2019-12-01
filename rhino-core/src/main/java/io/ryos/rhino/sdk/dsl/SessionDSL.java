@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl.mat;
+package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
 import java.util.function.Supplier;
-import reactor.core.publisher.Mono;
 
-public class SessionSpecMaterializer implements SpecMaterializer<SessionDSLItem> {
+public interface SessionDSL {
 
-  @Override
-  public Mono<UserSession> materialize(SessionDSLItem spec, UserSession userSession) {
-    Supplier<Object> objectSupplier = spec.getObjectFunction();
-    Object apply = objectSupplier.get();
-    userSession.add(spec.getSessionKey(), apply);
-    return Mono.just(userSession);
-  }
+  RunnableDsl session(String key, Supplier<Object> objectFunction);
 }

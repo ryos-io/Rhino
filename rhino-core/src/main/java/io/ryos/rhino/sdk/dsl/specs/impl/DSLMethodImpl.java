@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
 import java.util.List;
+import org.apache.commons.lang3.Validate;
 
 public class DSLMethodImpl implements DSLItem, DSLMethod {
 
@@ -27,8 +28,8 @@ public class DSLMethodImpl implements DSLItem, DSLMethod {
   private final LoadDsl dsl;
 
   public DSLMethodImpl(String name, LoadDsl dsl) {
-    this.name = name;
-    this.dsl = dsl;
+    this.name = Validate.notNull(name, "Name must not be null.");
+    this.dsl = Validate.notNull(dsl, "DSL must not be null.");
   }
 
   @Override

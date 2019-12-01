@@ -25,6 +25,7 @@ import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Mapper spec implementation.
@@ -35,17 +36,17 @@ import java.util.List;
  */
 public class MapperSpecImpl<R, T> extends AbstractMeasurableSpec implements MapperSpec {
 
-  private final MapperBuilder<R, T> mapper;
+  private final MapperBuilder<R, T> mapperBuilder;
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
+  public MapperSpecImpl(MapperBuilder<R, T> mapperBuilder) {
 
     super("N/A");
 
-    this.mapper = mapper;
+    this.mapperBuilder = Validate.notNull(mapperBuilder, "Map builder must not be null.");
   }
 
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
+  public MapperBuilder<R, T> getMapperBuilder() {
+    return mapperBuilder;
   }
 
   @Override

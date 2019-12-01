@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.rhino.sdk.simulations.UploadLoadSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -54,8 +55,7 @@ public class UploadLoadTest {
         .willReturn(aResponse()
             .withStatus(200).withFixedDelay(200)));
 
-    System.setProperty(AUTH_ENDPOINT, "http://localhost:" + PORT + "/token");
-    System.setProperty(WIREMOCK_PORT, Integer.toString(PORT));
+    TestUtils.overridePorts(PORT);
 
     Simulation.getInstance(PROPERTIES_FILE, UploadLoadSimulation.class).start();
 

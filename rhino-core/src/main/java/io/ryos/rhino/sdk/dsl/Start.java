@@ -14,6 +14,6 @@ public class Start {
   }
 
   public static RunnableDsl dsl() {
-    return new RunnableDslImpl(dslMethodName.get());
+    return new LoadDslImpl(dslMethodName.get());
   }
 }

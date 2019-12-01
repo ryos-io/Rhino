@@ -57,7 +57,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
    * @param name The name of the measurement.
    */
   public HttpSpecImpl(String name) {
-    super(name);
+    super(Validate.notEmpty(name, "Measurement must not be null."));
     setSessionKey(name);
   }
 
@@ -105,55 +105,64 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpConfigSpec endpoint(final String endpoint) {
+    Validate.notEmpty(endpoint, "endpoint must not be empty.");
     this.endpoint = r -> endpoint;
     return this;
   }
 
   @Override
   public HttpConfigSpec endpoint(Function<UserSession, String> endpoint) {
+    Validate.notNull(endpoint, "Endpoint must not be null.");
     this.endpoint = endpoint;
     return this;
   }
 
   @Override
   public HttpConfigSpec endpoint(BiFunction<UserSession, HttpSpec, String> endpoint) {
+    Validate.notNull(endpoint, "Endpoint must not be null.");
     this.endpoint = (session) -> endpoint.apply(session, this);
     return this;
   }
 
   @Override
-  public HttpConfigSpec header(String key, List<String> values) {
-    this.headers.add(e -> Map.entry(key, values));
+  public HttpConfigSpec header(String name, List<String> values) {
+    Validate.notEmpty(name, "Header name must not be null.");
+    this.headers.add(e -> Map.entry(name, values));
     return this;
   }
 
   @Override
-  public HttpConfigSpec header(String key, String value) {
-    this.headers.add(e -> Map.entry(key, Collections.singletonList(value)));
+  public HttpConfigSpec header(String name, String value) {
+    Validate.notEmpty(name, "Header name must not be null.");
+    this.headers.add(e -> Map.entry(name, Collections.singletonList(value)));
     return this;
   }
 
   @Override
   public HttpConfigSpec header(Function<UserSession, Entry<String, List<String>>> headerFunction) {
+    Validate.notNull(headerFunction, "Header function must not be null.");
     this.headers.add(headerFunction);
     return this;
   }
 
   @Override
-  public HttpConfigSpec formParam(String key, List<String> values) {
-    this.formParams.add(e -> Map.entry(key, values));
+  public HttpConfigSpec formParam(String paramName, List<String> values) {
+    Validate.notEmpty("Parameter name must not be empty.", paramName);
+    this.formParams.add(e -> Map.entry(paramName, values));
     return this;
   }
 
   @Override
-  public HttpConfigSpec formParam(String key, String value) {
-    this.formParams.add(e -> Map.entry(key, Collections.singletonList(value)));
+  public HttpConfigSpec formParam(String paramName, String value) {
+    Validate.notEmpty("Parameter name must not be empty.", paramName);
+    this.formParams.add(e -> Map.entry(paramName, Collections.singletonList(value)));
     return this;
   }
 
   @Override
   public HttpConfigSpec formParam(
       Function<UserSession, Entry<String, List<String>>> formParamFunction) {
+    Validate.notNull(formParamFunction, "Form parameter function must not be null.");
     this.formParams.add(formParamFunction);
     return this;
   }
@@ -166,6 +175,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpConfigSpec auth(User user) {
+    Validate.notNull(user, "User must not be null.");
     this.authEnabled = true;
     this.authUser = user;
     return this;
@@ -173,32 +183,37 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpConfigSpec auth(Function<UserSession, User> sessionAccessor) {
+    Validate.notNull(sessionAccessor, "Session accessor must not be null.");
     this.oauthUserAccessor = sessionAccessor;
     this.authEnabled = true;
     return this;
   }
 
   @Override
-  public HttpConfigSpec queryParam(String key, List<String> values) {
-    this.queryParams.add(e -> Map.entry(key, values));
+  public HttpConfigSpec queryParam(String queryParamName, List<String> values) {
+    Validate.notEmpty(queryParamName, "Query param name must not be null.");
+    this.queryParams.add(e -> Map.entry(queryParamName, values));
     return this;
   }
 
   @Override
-  public HttpConfigSpec queryParam(String key, String value) {
-    this.queryParams.add(e -> Map.entry(key, Collections.singletonList(value)));
+  public HttpConfigSpec queryParam(String queryParamName, String value) {
+    Validate.notEmpty(queryParamName, "Query param name must not be null.");
+    this.queryParams.add(e -> Map.entry(queryParamName, Collections.singletonList(value)));
     return this;
   }
 
   @Override
   public HttpConfigSpec queryParam(
       Function<UserSession, Entry<String, List<String>>> queryParamFunction) {
+    Validate.notNull(queryParamFunction, "Query param function must not be null.");
     this.queryParams.add(queryParamFunction);
     return this;
   }
 
   @Override
   public HttpConfigSpec upload(final Supplier<InputStream> inputStream) {
+    Validate.notNull(inputStream, "Input stream must not be null.");
     this.toUpload = inputStream;
     return this;
   }
@@ -212,18 +227,18 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   }
 
   @Override
-  public HttpSpec saveTo(String keyName, Scope scope) {
-    Validate.notNull(keyName, "keyName must not be null.");
+  public HttpSpec saveTo(String sessionKey, Scope scope) {
+    Validate.notNull(sessionKey, "Session key must not be null.");
     Validate.notNull(scope, "scope must not be null.");
-    setSessionKey(keyName);
+    setSessionKey(sessionKey);
     setSessionScope(scope);
     return this;
   }
 
   @Override
-  public HttpSpec saveTo(String keyName) {
-    Validate.notNull(keyName, "keyName must not be null.");
-    setSessionKey(keyName);
+  public HttpSpec saveTo(String sessionKey) {
+    Validate.notNull(sessionKey, "Session key must not be null.");
+    setSessionKey(sessionKey);
     setSessionScope(Scope.USER);
     return this;
   }
@@ -270,7 +285,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public String getSaveTo() {
-    return getKey();
+    return getSessionKey();
   }
 
   @Override
@@ -307,6 +322,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
 
   @Override
   public HttpSpec withResultHandler(ResultHandler<HttpResponse> resultHandler) {
+    Validate.notNull(resultHandler, "Result handler must not be null.");
     this.resultHandler = resultHandler;
     return this;
   }

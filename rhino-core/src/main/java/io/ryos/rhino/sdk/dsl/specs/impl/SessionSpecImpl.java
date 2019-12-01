@@ -24,23 +24,23 @@ import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.Validate;
 
 public class SessionSpecImpl extends AbstractSessionDSLItem {
 
-  private final String key;
+  private final String sessionKey;
   private final Supplier<Object> objectSupplier;
 
-  public SessionSpecImpl(String key,
-      Supplier<Object> objectSupplier) {
+  public SessionSpecImpl(String sessionKey, Supplier<Object> objectSupplier) {
     super("");
 
-    this.key = key;
-    this.objectSupplier = objectSupplier;
+    this.sessionKey = Validate.notEmpty(sessionKey, "Session key must not be null.");
+    this.objectSupplier = Validate.notNull(objectSupplier, "Object supplier must not null.");
   }
 
   @Override
-  public String getKey() {
-    return key;
+  public String getSessionKey() {
+    return sessionKey;
   }
 
   @Override

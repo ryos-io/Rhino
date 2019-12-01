@@ -29,6 +29,7 @@ import ognl.DefaultTypeConverter;
 import ognl.Ognl;
 import ognl.OgnlContext;
 import ognl.OgnlException;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Provides accessor methods for session objects.
@@ -39,6 +40,8 @@ import ognl.OgnlException;
 public class SessionAccessor {
 
   public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
+    Validate.notNull(httpSpec, "Http spec must not be null.");
+    Validate.notNull(userSession, "User session must not be null.");
     var userAccessor = httpSpec.getUserAccessor();
     if (userAccessor != null) {
       return userAccessor.apply(userSession);
@@ -50,27 +53,33 @@ public class SessionAccessor {
     return userSession.getUser();
   }
 
-  public static <T> Function<UserSession, T> session(String key) {
-    return session -> session.<T>get(key)
-        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.USER));
+  public static <T> Function<UserSession, T> session(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    return session -> session.<T>get(sessionKey)
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
   }
 
-  public static <T> Function<UserSession, T> global(String key) {
+  public static <T> Function<UserSession, T> global(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return session -> session.getSimulationSession()
-        .<T>get(key)
-        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.SIMULATION));
+        .<T>get(sessionKey)
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
   }
 
-  public static <T> Function<UserSession, T> global(String key, String expression) {
-    return session -> session.getSimulationSession().<T>get(key)
+  public static <T> Function<UserSession, T> global(String sessionKey, String expression) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    Validate.notEmpty(expression, "Expression must not be empty.");
+    return session -> session.getSimulationSession().<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.SIMULATION));
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
   }
 
-  public static <T> Function<UserSession, T> session(String key, String expression) {
-    return session -> session.<T>get(key)
+  public static <T> Function<UserSession, T> session(String sessionKey, String expression) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    Validate.notEmpty(expression, "Expression must not be empty.");
+    return session -> session.<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(() -> new SessionKeyNotFoundException(key, Scope.USER));
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
   }
 
   private static <T> T readObject(String expressionString, T object) {

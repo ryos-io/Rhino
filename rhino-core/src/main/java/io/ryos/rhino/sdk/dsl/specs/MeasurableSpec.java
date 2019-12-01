@@ -63,5 +63,5 @@ public interface MeasurableSpec extends DSLSpec {
    *
    * @return {@link HttpConfigSpec} instance.
    */
-  DSLSpec cumulativeMeasurement();
+  DSLSpec cumulative();
 }

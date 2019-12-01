@@ -35,7 +35,7 @@ import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
+import io.ryos.rhino.sdk.dsl.LoadDslImpl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
 import io.ryos.rhino.sdk.dsl.specs.impl.DSLMethodImpl;
@@ -137,8 +137,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private LoadDsl getLoadDsl(Pair<String, LoadDsl> pair) {
     var loadDsl = pair.getSecond();
-    if (loadDsl instanceof RunnableDslImpl) {
-      return ((RunnableDslImpl) loadDsl).withName(pair.getFirst());
+    if (loadDsl instanceof LoadDslImpl) {
+      return ((LoadDslImpl) loadDsl).withName(pair.getFirst());
     }
     return loadDsl;
   }

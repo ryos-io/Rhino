@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Wait spec implementation that halts the execution for {@link Duration} given.
@@ -36,16 +37,17 @@ import java.util.Objects;
  */
 public class WaitSpecImpl extends AbstractMeasurableSpec implements WaitSpec {
 
+  private static final String BLANK = "";
   private final Duration waitTime;
 
   public WaitSpecImpl(final Duration duration) {
-    this("",duration);
+    this(BLANK, Validate.notNull(duration, "Duration must not be null."));
   }
 
-  public WaitSpecImpl(final String measurement, final Duration duration) {
-    super(Objects.requireNonNull(measurement));
+  public WaitSpecImpl(final String name, final Duration duration) {
+    super(Objects.requireNonNull(name));
 
-    this.waitTime = Objects.requireNonNull(duration);
+    this.waitTime = Validate.notNull(duration, "Duration must not be null.");
   }
 
   @Override
