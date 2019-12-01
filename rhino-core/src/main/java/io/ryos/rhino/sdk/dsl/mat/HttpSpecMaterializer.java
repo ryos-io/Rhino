@@ -86,7 +86,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
   private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(final HttpSpec spec,
       final HttpSpecAsyncHandler httpSpecAsyncHandler) {
     return error -> {
-      if (error instanceof RetryFailedException && spec.isCumulativeMeasurement()) {
+      if (error instanceof RetryFailedException && spec.isCumulative()) {
         httpSpecAsyncHandler.completeMeasurement();
       } else {
         LOG.error(error.getMessage(), error);

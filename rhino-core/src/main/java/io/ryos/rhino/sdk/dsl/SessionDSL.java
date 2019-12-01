@@ -20,5 +20,12 @@ import java.util.function.Supplier;
 
 public interface SessionDSL {
 
+  /**
+   * Session DSL is used to save objects to the current session.
+   *
+   * @param sessionKey     Session key.
+   * @param objectFunction Object provider.
+   * @return Runnable DSL instance.
+   */
   RunnableDsl session(String sessionKey, Supplier<Object> objectFunction);
 }

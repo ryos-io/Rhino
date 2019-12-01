@@ -53,7 +53,7 @@ public abstract class AbstractMeasurableSpec extends AbstractDSLItem implements 
   }
 
   @Override
-  public boolean isCumulativeMeasurement() {
+  public boolean isCumulative() {
     return cumulativeMeasurement;
   }
 

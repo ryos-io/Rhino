@@ -11,7 +11,7 @@ import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
  */
 public interface HttpResponseSpec extends DSLSpec {
 
-  HttpSpec saveTo(String keyName);
+  HttpSpec saveTo(String sessionKey);
 
-  HttpSpec saveTo(String keyName, Scope scope);
+  HttpSpec saveTo(String sessionKey, Scope scope);
 }

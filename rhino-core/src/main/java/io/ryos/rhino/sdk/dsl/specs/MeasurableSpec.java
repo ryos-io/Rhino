@@ -39,7 +39,7 @@ public interface MeasurableSpec extends DSLSpec {
    *
    * @return True if cumulative measurement is enabled.
    */
-  boolean isCumulativeMeasurement();
+  boolean isCumulative();
 
   /**
    * The name of the spec. It is the step name in scenario counterpart.

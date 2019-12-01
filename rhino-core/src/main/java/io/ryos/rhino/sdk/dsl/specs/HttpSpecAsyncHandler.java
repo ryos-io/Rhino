@@ -38,7 +38,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     this.eventDispatcher = EventDispatcher.getInstance();
     this.measurementEnabled = spec.isMeasurementEnabled();
     this.retryInfo = spec.getRetryInfo();
-    this.cumulativeMeasurement = spec.isCumulativeMeasurement();
+    this.cumulativeMeasurement = spec.isCumulative();
   }
 
   private String getTestName(final HttpSpec spec) {
