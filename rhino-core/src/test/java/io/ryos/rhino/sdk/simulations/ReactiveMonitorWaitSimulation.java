@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
@@ -31,14 +32,13 @@ import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
 /**
+ *
  */
 @Simulation(name = "Reactive Monitor Test")
 public class ReactiveMonitorWaitSimulation {
 
-  private static final String FILES_ENDPOINT =
-      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
-  private static final String MONITOR_ENDPOINT =
-      "http://localhost:" + System.getProperty("wiremock.port") + "/api/monitor";
+  private static final String FILES_ENDPOINT = getEndpoint("files");
+  private static final String MONITOR_ENDPOINT = getEndpoint("monitor");
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
@@ -66,7 +66,7 @@ public class ReactiveMonitorWaitSimulation {
             .endpoint(c -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-            .retryIf((httpResponse) -> httpResponse.getStatusCode() != 200, 2)
+            .retryIf(response -> response.getStatusCode() != 200, 2)
             .cumulative());
   }
 }

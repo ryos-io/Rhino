@@ -21,6 +21,7 @@ import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.global;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
+import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -40,8 +41,7 @@ import java.util.List;
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class ForEachSimulation {
 
-  private static final String FILES_ENDPOINT =
-      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
+  private static final String FILES_ENDPOINT = getEndpoint("files");
   private static final String X_API_KEY = "X-Api-Key";
 
   @UserProvider

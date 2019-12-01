@@ -25,4 +25,9 @@ public class TestUtils {
     System.setProperty(AUTH_ENDPOINT, "http://localhost:" + port + "/token");
     System.setProperty(WIREMOCK_PORT, Integer.toString(port));
   }
+
+  public static String getEndpoint(String api) {
+    return String
+        .format("http://localhost:%s/api/%s", System.getProperty(TestUtils.WIREMOCK_PORT), api);
+  }
 }

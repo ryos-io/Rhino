@@ -22,6 +22,7 @@ import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.global;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
+import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -43,9 +44,7 @@ public class ReactiveMultiUserCollabSimulation {
 
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
-
-  private final String FILES_ENDPOINT =
-      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
+  private static final String FILES_ENDPOINT = getEndpoint("files");
 
   @UserProvider
   private OAuthUserProvider userProvider;

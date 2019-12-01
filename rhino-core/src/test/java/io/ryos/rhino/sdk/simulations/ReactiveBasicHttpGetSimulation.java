@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
+import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
@@ -16,8 +17,7 @@ import java.util.UUID;
 @UserRepository(factory = BasicUserRepositoryFactoryImpl.class)
 public class ReactiveBasicHttpGetSimulation {
 
-  private static final String FILES_ENDPOINT =
-      "http://localhost:" + System.getProperty("wiremock.port") + "/api/files";
+  private static final String FILES_ENDPOINT = getEndpoint("files");
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
