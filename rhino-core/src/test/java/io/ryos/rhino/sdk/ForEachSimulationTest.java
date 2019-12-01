@@ -32,10 +32,7 @@ import org.junit.Test;
 
 @Ignore
 public class ForEachSimulationTest {
-
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
-  private static final String AUTH_ENDPOINT = "test.oauth2.endpoint";
-  private static final String WIREMOCK_PORT = "wiremock.port";
   private static final int PORT = 8085;
 
   private WireMockServer wmServer;

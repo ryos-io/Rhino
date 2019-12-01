@@ -39,7 +39,6 @@ import org.junit.Test;
  */
 @Ignore
 public class ReactiveMonitorWaitTest {
-
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final int PORT = 8096;
 
