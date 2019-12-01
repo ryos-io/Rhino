@@ -18,9 +18,10 @@ package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.exceptions.SessionKeyNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.HashMap;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import ognl.DefaultClassResolver;
 import ognl.DefaultMemberAccess;
@@ -28,42 +29,57 @@ import ognl.DefaultTypeConverter;
 import ognl.Ognl;
 import ognl.OgnlContext;
 import ognl.OgnlException;
+import org.apache.commons.lang3.Validate;
 
+/**
+ * Provides accessor methods for session objects.
+ *
+ * @author Erhan Bagdemir
+ * @since 1.7.0
+ */
 public class SessionAccessor {
 
   public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
+    Validate.notNull(httpSpec, "Http spec must not be null.");
+    Validate.notNull(userSession, "User session must not be null.");
     var userAccessor = httpSpec.getUserAccessor();
-    User specOwner;
     if (userAccessor != null) {
-      specOwner = userAccessor.apply(userSession);
-    } else if (httpSpec.getAuthUser() != null) {
-      specOwner = httpSpec.getAuthUser();
-    } else {
-      specOwner = userSession.getUser();
+      return userAccessor.apply(userSession);
     }
-    return specOwner;
+
+    if (httpSpec.getAuthUser() != null) {
+      return httpSpec.getAuthUser();
+    }
+    return userSession.getUser();
   }
 
-  public static <T> Function<UserSession, T> session(String key) {
-    return (session) -> session.<T>get(key).orElseThrow(() -> new RuntimeException("Object with "
-        + "key: " + key + " not found in session."));
+  public static <T> Function<UserSession, T> session(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    return session -> session.<T>get(sessionKey)
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
   }
 
-  public static <T> BiFunction<UserSession, HttpSpec, T> before(String key, String expression) {
-    return (session, spec) -> session.findSimulationSession(getActiveUser(spec, session))
-        .<T>get(key)
+  public static <T> Function<UserSession, T> global(String sessionKey) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    return session -> session.getSimulationSession()
+        .<T>get(sessionKey)
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
+  }
+
+  public static <T> Function<UserSession, T> global(String sessionKey, String expression) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    Validate.notEmpty(expression, "Expression must not be empty.");
+    return session -> session.getSimulationSession().<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(
-            () -> new RuntimeException(
-                "Object with key: " + getActiveUser(spec, session).getUsername()
-                    + " not found in simulation session."));
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
   }
 
-  public static <T> Function<UserSession, T> session(String key, String expression) {
-    return (session) -> session.<T>get(key)
+  public static <T> Function<UserSession, T> session(String sessionKey, String expression) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    Validate.notEmpty(expression, "Expression must not be empty.");
+    return session -> session.<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(
-            () -> new RuntimeException("Object with key: " + key + " not found in session."));
+        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
   }
 
   private static <T> T readObject(String expressionString, T object) {

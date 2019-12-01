@@ -16,8 +16,16 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.MapperSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.MapperSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import java.util.Collections;
+import java.util.List;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Mapper spec implementation.
@@ -26,18 +34,28 @@ import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperSpecImpl<R, T> extends AbstractSpec implements MapperSpec {
+public class MapperSpecImpl<R, T> extends AbstractMeasurableSpec implements MapperSpec {
 
-  private final MapperBuilder<R, T> mapper;
+  private final MapperBuilder<R, T> mapperBuilder;
 
-  public MapperSpecImpl(MapperBuilder<R, T> mapper) {
+  public MapperSpecImpl(MapperBuilder<R, T> mapperBuilder) {
 
     super("N/A");
 
-    this.mapper = mapper;
+    this.mapperBuilder = Validate.notNull(mapperBuilder, "Map builder must not be null.");
   }
 
-  public MapperBuilder<R, T> getMapper() {
-    return mapper;
+  public MapperBuilder<R, T> getMapperBuilder() {
+    return mapperBuilder;
+  }
+
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return new MapperSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

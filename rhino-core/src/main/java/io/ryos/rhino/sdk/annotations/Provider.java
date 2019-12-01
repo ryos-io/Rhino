@@ -48,5 +48,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Provider {
 
-  Class<? extends io.ryos.rhino.sdk.providers.Provider> factory();
+  Class<? extends io.ryos.rhino.sdk.providers.Provider> clazz();
 }

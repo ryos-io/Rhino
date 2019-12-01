@@ -16,43 +16,79 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.ForEachSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * For-each loop representation.
- * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class ForEachSpecImpl<E, R extends Iterable<E>> extends AbstractSpec implements ForEachSpec {
+public class ForEachSpecImpl<S, R extends Iterable<S>> extends AbstractSessionDSLItem implements
+    ForEachSpec {
 
   /**
-   * Builder implementation for {@link ForEachSpec}.
-   * <p>
+   * Child DSL items.
    */
-  private final ForEachBuilder<E, R> forEachBuilder;
+  private List<DSLItem> children;
+
+  /**
+   * Function is a provider of iterable object instances.
+   */
+  private Function<UserSession, R> iterableSupplier;
+
+  /**
+   * For each function.
+   */
+  private Function<S, ? extends DSLSpec> forEachFunction;
 
   /**
    * Constructs a new {@link ForEachSpec} instance.
-   * <p>
    *
-   * @param forEachBuilder Builder implementation for {@link ForEachSpec}.
+   * @param name             Spec name.
+   * @param children         Child DSL items.
+   * @param sessionKey       Session key.
+   * @param scope            Session scope.
+   * @param iterableSupplier Supplier for iterable.
    */
-  public ForEachSpecImpl(ForEachBuilder<E, R> forEachBuilder) {
-    super("N/A");
+  public ForEachSpecImpl(final String name,
+      final List<DSLItem> children,
+      final String sessionKey,
+      final Scope scope,
+      final Function<UserSession, R> iterableSupplier,
+      final Function<S, ? extends DSLSpec> forEachFunction) {
 
-    this.forEachBuilder = forEachBuilder;
+    super(name, sessionKey, scope);
+
+    this.children = children;
+    this.iterableSupplier = iterableSupplier;
+    this.forEachFunction = forEachFunction;
   }
 
-  /**
-   * Getter for {@link ForEachBuilder}.
-   * <p>
-   *
-   * @return {@link ForEachBuilder} instance.
-   */
-  public ForEachBuilder<E, R> getForEachBuilder() {
-    return forEachBuilder;
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return new ForEachSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return children;
+  }
+
+  @Override
+  public Function<UserSession, R> getIterableSupplier() {
+    return iterableSupplier;
+  }
+
+  @Override
+  public Function<S, ? extends DSLSpec> getForEachFunction() {
+    return forEachFunction;
   }
 }

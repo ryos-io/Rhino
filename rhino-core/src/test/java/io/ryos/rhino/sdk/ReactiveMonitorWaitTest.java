@@ -17,15 +17,17 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.ryos.rhino.sdk.simulations.ReactiveMonitorWaitSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 /*
@@ -33,28 +35,39 @@ import org.junit.Test;
  * First upload the content, the service returns 201 Created.
  * First attempt to monitor, and monitor API returns 404 Not Found.
  * Second attempt to monitor, and monitor API returns 200 OK.
- * At this point the cumulativeMeasurement on Spec makes the elapsed time be aggregated.
+ * At this point the cumulative on DSLSpec makes the elapsed time be aggregated.
  */
 @Ignore
 public class ReactiveMonitorWaitTest {
-
-  private static final String SIM_NAME = "Reactive Monitor Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+  private static final int PORT = 8096;
 
-  @Rule
-  public WireMockRule wireMockRule = new WireMockRule(options().port(8089)
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
-  public void testReactiveMonitorWait() {
-    stubFor(WireMock.post(urlEqualTo("/token"))
+  public void testReactiveMonitorWait() throws InterruptedException {
+    WireMock.configureFor("localhost", PORT);
+
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .inScenario("retriable")
         .whenScenarioStateIs(STARTED)
         .willSetStateTo("monitor")
@@ -62,7 +75,15 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(201)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
+        .inScenario("retriable")
+        .whenScenarioStateIs("monitor")
+        .willSetStateTo("monitor")
+        .willReturn(aResponse()
+            .withFixedDelay(100)
+            .withStatus(201)));
+
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor")
         .willSetStateTo("monitor-2")
@@ -70,7 +91,7 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(404)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor-2")
         .willSetStateTo("ended")
@@ -78,6 +99,9 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(200)));
 
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    TestUtils.overridePorts(PORT);
+
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
+    Thread.sleep(2000L);
   }
 }

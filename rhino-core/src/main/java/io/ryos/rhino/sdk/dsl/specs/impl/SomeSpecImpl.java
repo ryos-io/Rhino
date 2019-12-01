@@ -17,34 +17,50 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SomeSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import java.util.Objects;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
+import org.apache.commons.lang3.Validate;
 
 /**
- * Spec implementation for arbitrary code execution.
+ * DSLSpec implementation for arbitrary code execution.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecImpl extends AbstractSpec implements SomeSpec {
+public class SomeSpecImpl extends AbstractMeasurableSpec implements SomeSpec {
 
   private Function<UserSession, String> function;
 
-  public SomeSpecImpl(final String measurement) {
-    super(Objects.requireNonNull(measurement));
+  public SomeSpecImpl(final String name) {
+    super(Validate.notNull(name));
   }
 
   @Override
-  public Spec as(final Function<UserSession, String> function) {
-    this.function = Objects.requireNonNull(function);
+  public DSLSpec as(final Function<UserSession, String> function) {
+    Validate.notNull(function, "function must not bu null.");
+    this.function = function;
     return this;
   }
 
   @Override
   public Function<UserSession, String> getFunction() {
     return function;
+  }
+
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return new SomeSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

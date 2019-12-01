@@ -16,18 +16,16 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
+import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.RampUp;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.specs.impl.SomeSpecImpl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 
 /**
  * Reactive test spec for arbitrary code execution with {@link SomeSpecImpl}.
@@ -37,17 +35,17 @@ import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
  * @since 1.1.0
  */
 @Simulation(name = "Reactive Sleep Test")
-@Runner(clazz = ReactiveHttpSimulationRunner.class)
 @RampUp(startRps = 1, targetRps = 10)
 public class ReactiveSleepTestSimulation {
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider provider;
 
   @Dsl(name = "Sleep Test")
   public LoadDsl testSleep() {
-    return Start
-        .dsl()
-        .run(some("Sleeping 1 sec.").as(session -> "OK"));
+    return Start.dsl().run(some("Sleeping 1 sec.").as(session -> {
+      System.out.println(provider.take());
+      return "OK";
+    }));
   }
 }

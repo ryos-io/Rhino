@@ -82,7 +82,7 @@ public abstract class AbstractSimulationInjector implements SimulationInjector {
   // Provider the feeder value into the field.
   protected void feed(final Object instance, final InjectionPoint<Provider> injectionPoint) {
     Objects.requireNonNull(instance, "Object instance is null.");
-    var factoryInstance = instanceOf(injectionPoint.getAnnotation().factory()).orElseThrow();
+    var factoryInstance = instanceOf(injectionPoint.getAnnotation().clazz()).orElseThrow();
     try {
       var field = injectionPoint.getField();
       field.setAccessible(true);

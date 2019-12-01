@@ -47,12 +47,14 @@ import java.lang.annotation.Target;
  * cleaned up after every scenario execution, but in clean-up method after the simulation completes.
  * <p>
  *
+ * @deprecated use {@link Before} instead.
  * @author Erhan Bagdemir
  * @see CleanUp
  * @see io.ryos.rhino.sdk.data.SimulationSession
  * @see UserSession
  * @since 1.1.0
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Prepare {

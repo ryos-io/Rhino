@@ -25,4 +25,8 @@ public class UserLoginException extends RuntimeException {
   public UserLoginException(String message) {
     super(message);
   }
+
+  public UserLoginException(Throwable cause, String message) {
+    super(message, cause);
+  }
 }

@@ -20,14 +20,14 @@ import static com.google.common.collect.Streams.stream;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
-import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.RunnableDslImpl;
-import io.ryos.rhino.sdk.dsl.mat.MaterializerFactory;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
-import io.ryos.rhino.sdk.dsl.specs.Spec.Scope;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.Materializable;
 import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
@@ -42,9 +42,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.Dsl;
-import org.asynchttpclient.filter.ThrottleRequestFilter;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +55,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
   private static final String ALL_REGIONS = "all";
-  private CyclicIterator<RunnableDslImpl> dslIterator;
+  private CyclicIterator<DSLMethod> dslIterator;
   private Disposable subscribe;
 
   private volatile boolean shutdownInitiated;
@@ -69,17 +66,13 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   private final Condition continueCondition;
   private final Lock masterLock;
 
-  private final EventDispatcher eventDispatcher;
-
   public ReactiveHttpSimulationRunner(final Context context) {
     super(context.<SimulationMetadata>get(JOB).orElseThrow());
 
-    this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDsls()
+    this.dslIterator = new CyclicIterator<>(getSimulationMetadata().getDslMethods()
         .stream()
         .filter(Objects::nonNull)
-        .map(spec -> (RunnableDslImpl) spec)
         .collect(Collectors.toList()));
-    this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
     this.masterLock = new ReentrantLock();
     this.continueCondition = masterLock.newCondition();
   }
@@ -98,23 +91,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     var userRepository = simulationMetadata.getUserRepository();
     var userSessionProvider = new CyclicUserSessionRepositoryImpl(userRepository, ALL_REGIONS);
-    var httpClientConfig = Dsl.config()
-        .setKeepAlive(true)
-        .setMaxConnections(SimulationConfig.getMaxConnections())
-        .setConnectTimeout(SimulationConfig.getHttpConnectTimeout())
-        .setHandshakeTimeout(SimulationConfig.getHttpHandshakeTimeout())
-        .setReadTimeout(SimulationConfig.getHttpReadTimeout())
-        .setRequestTimeout(SimulationConfig.getHttpRequestTimeout())
-        .addRequestFilter(new ThrottleRequestFilter(SimulationConfig.getMaxConnections()))
-        .build();
-
-    var client = Dsl.asyncHttpClient(httpClientConfig);
     var injector = new ReactiveRunnerSimulationInjector(simulationMetadata);
     var userList = userSessionProvider.getUserList();
 
     injector.injectOn(simulationMetadata.getTestInstance());
 
-    prepare(client, userList);
+    prepare(userList);
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
@@ -122,7 +104,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
-        .flatMap(tuple -> getPublisher(client, tuple.getT1(), tuple.getT2()))
+        .flatMap(tuple -> materializeDSLMethod(tuple.getT1(), tuple.getT2()))
         .onErrorResume(this::handleThrowable)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
@@ -132,23 +114,23 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     awaitIf(() -> !isPipelineCompleted);
 
-    cleanup(client, userList);
+    cleanup(userList);
 
     shutdown();
   }
 
-  private void cleanup(AsyncHttpClient client, List<UserSession> userList) {
+  private void cleanup(List<UserSession> userList) {
     if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
-      cleanUpUserSessions(userList, client);
+      cleanUpUserSessions(userList);
       awaitIf(() -> !isCleanupCompleted);
     }
   }
 
-  private void prepare(AsyncHttpClient client, List<UserSession> userList) {
+  private void prepare(List<UserSession> userList) {
     if (getSimulationMetadata().getBeforeMethod() != null) {
       LOG.info("Preparation started.");
-      prepareUserSessions(userList, client);
+      prepareUserSessions(userList);
       awaitIf(() -> !isPrepareCompleted);
     }
   }
@@ -167,29 +149,28 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private Publisher<UserSession> getPublisher(final AsyncHttpClient client,
-      final UserSession session,
-      final RunnableDslImpl dsl) {
-
-    var specIt = dsl.getSpecs().iterator();
-    var materializerFactory = new MaterializerFactory(client, eventDispatcher);
-
-    if (!specIt.hasNext()) {
+  private Publisher<UserSession> materializeDSLMethod(final UserSession session,
+      final DSLItem dsl) {
+    var childrenIterator = dsl.getChildren().iterator();
+    if (!childrenIterator.hasNext()) {
       throw new NoSpecDefinedException(dsl.getName());
     }
 
-    var acc = materializerFactory.monoFrom(specIt.next(), session);
-    while (specIt.hasNext()) {
-      // Never move the following statement into lambda body. next() call is required to be eager.
-      var next = specIt.next();
+    DSLItem nextItem = childrenIterator.next();
+    SpecMaterializer<DSLSpec> materializer = createDSLSpecMaterializer(session, nextItem);
+
+    var acc = materializer.materialize((DSLSpec) nextItem, session);
+
+    while (childrenIterator.hasNext()) {
+      var next = childrenIterator.next();
       acc = acc.flatMap(s -> {
-        if (isConditionalSpec(next)) {
+        if (isConditionalSpec((DSLSpec) next)) {
           var predicate = ((ConditionalSpecWrapper) next).getPredicate();
           if (!predicate.test(s)) {
             return Mono.just(s);
           }
         }
-        return materializerFactory.monoFrom(next, session);
+        return createDSLSpecMaterializer(session, next).materialize((DSLSpec) next, session);
       });
     }
 
@@ -202,7 +183,18 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     });
   }
 
-  private boolean isConditionalSpec(Spec next) {
+  private SpecMaterializer<DSLSpec> createDSLSpecMaterializer(UserSession session,
+      DSLItem nextItem) {
+    SpecMaterializer<DSLSpec> materializer;
+    if (nextItem instanceof Materializable) {
+      materializer = ((Materializable) nextItem).createMaterializer(session);
+    } else {
+      throw new RuntimeException("DSLItem is not materializable.");
+    }
+    return materializer;
+  }
+
+  private boolean isConditionalSpec(DSLSpec next) {
     return next instanceof ConditionalSpecWrapper;
   }
 
@@ -226,16 +218,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     LOG.info("Stopping the simulation...");
     subscribe.dispose();
     dslIterator.stop();
-    eventDispatcher.stop();
 
     LOG.info("Shutting down completed ...");
     LOG.info("Bye!");
   }
 
-  private void prepareUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
+  private void prepareUserSessions(List<UserSession> userSessionList) {
     if (getSimulationMetadata().getBeforeMethod() != null) {
       materializeMethod(getSimulationMetadata().getBeforeMethod(),
-          userSessionList, client,
+          userSessionList,
           () -> {
             isPrepareCompleted = true;
             LOG.info("Preparation completed.");
@@ -243,34 +234,25 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     }
   }
 
-  private void cleanUpUserSessions(List<UserSession> userSessionList, AsyncHttpClient client) {
+  private void cleanUpUserSessions(List<UserSession> userSessionList) {
     if (getSimulationMetadata().getAfterMethod() != null) {
       materializeMethod(getSimulationMetadata().getAfterMethod(),
-          userSessionList, client,
+          userSessionList,
           () -> {
             LOG.info("Clean-up completed.");
             isCleanupCompleted = true;
-            eventDispatcher.stop();
           });
     }
   }
 
-  private void materializeMethod(
-      final Method method,
-      final List<UserSession> userSessionList,
-      final AsyncHttpClient client,
+  private void materializeMethod(final Method method, final List<UserSession> userSessionList,
       final Action action) {
-
     if (method != null) {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
           .flatMap(session -> {
-            RunnableDslImpl runnable = executeMethod(method,
-                getSimulationMetadata().getTestInstance());
-            runnable.getSpecs().forEach(spec -> {
-              spec.setSessionScope(Scope.SIMULATION);
-            });
-            return getPublisher(client, session, runnable);
+            DSLItem runnable = executeMethod(method, getSimulationMetadata().getTestInstance());
+            return materializeDSLMethod(session, runnable);
           })
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))

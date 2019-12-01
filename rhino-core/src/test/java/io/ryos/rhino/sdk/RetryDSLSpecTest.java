@@ -24,7 +24,7 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class RetrySpecTest {
+public class RetryDSLSpecTest {
 
   @Test
   public void testRetryHttpRequest() {
@@ -54,7 +54,7 @@ public class RetrySpecTest {
                     throw Exceptions.propagate(error);
                   }
                 }))
-        .doOnNext(r -> System.out.println(r))
+        .doOnNext(System.out::println)
         .doOnError(t -> System.out.println(t.getMessage()))
         .subscribe();
   }

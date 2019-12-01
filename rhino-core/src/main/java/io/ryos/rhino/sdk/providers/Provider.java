@@ -34,4 +34,6 @@ public interface Provider<T> {
    * @return Instance to be injected.
    */
   T take();
+
+  String name();
 }

@@ -9,7 +9,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface EnsureSpec extends Spec {
+public interface EnsureSpec extends DSLSpec {
 
   Predicate<UserSession> getPredicate();
 

@@ -8,7 +8,7 @@ import java.time.Duration;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface WaitSpec extends Spec {
+public interface WaitSpec extends DSLSpec {
 
   Duration getWaitTime();
 }

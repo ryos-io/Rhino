@@ -17,40 +17,72 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveMultiUserCollabSimulation;
-import org.junit.Rule;
+import io.ryos.rhino.sdk.utils.TestUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class ReactiveMultiUserCollabTest {
-
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+  private static final int PORT = 8099;
 
-  @Rule
-  public WireMockRule wireMockRule = new WireMockRule(8089);
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
-  public void testMultiUser() {
+  public void testMultiUser() throws InterruptedException {
+    WireMock.configureFor("localhost", PORT);
 
-    stubFor(WireMock.post(urlEqualTo("/token"))
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    stubFor(WireMock.get(urlEqualTo("/api/files"))
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
+        .willReturn(aResponse()
+            .withStatus(201)
+            .withFixedDelay(400)));
+
+    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
+        .willReturn(aResponse()
+            .withStatus(201)
+            .withFixedDelay(400)));
+
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withStatus(200)
             .withFixedDelay(400)));
 
-    Simulation.create(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+    TestUtils.overridePorts(PORT);
+
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+
+    Thread.sleep(5000L);
   }
 }

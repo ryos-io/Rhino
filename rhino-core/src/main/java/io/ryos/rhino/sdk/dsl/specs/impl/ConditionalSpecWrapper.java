@@ -17,34 +17,49 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 
 /**
- * Spec wrapper including a predicate to define the conditional statement whether a spec is to be
+ * DSLSpec wrapper including a predicate to define the conditional statement whether a spec is to be
  * run, or not.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class ConditionalSpecWrapper extends AbstractSpec {
+public class ConditionalSpecWrapper extends AbstractMeasurableSpec {
 
   private final Predicate<UserSession> predicate;
-  private final Spec spec;
+  private final DSLSpec spec;
 
-  public ConditionalSpecWrapper(Spec spec, Predicate<UserSession> predicate) {
-    super(spec.getMeasurementPoint());
+  public ConditionalSpecWrapper(DSLSpec spec, Predicate<UserSession> predicate) {
+    super(spec.getName());
 
-    this.spec = spec;
-    this.predicate = predicate;
+    this.spec = Validate.notNull(spec, "Spec must not be null.");
+    this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
   }
 
   public Predicate<UserSession> getPredicate() {
     return predicate;
   }
 
-  public Spec getSpec() {
+  public DSLSpec getSpec() {
     return spec;
+  }
+
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return spec.createMaterializer(session);
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

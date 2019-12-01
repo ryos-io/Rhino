@@ -16,10 +16,8 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.reporting.Measurement;
 
 @Simulation(name = "Simple Blocking Simulation Not Unique Test")

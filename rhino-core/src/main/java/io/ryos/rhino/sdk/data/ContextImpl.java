@@ -16,34 +16,49 @@
 
 package io.ryos.rhino.sdk.data;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ContextImpl implements Context {
 
-    // Data structure to store key value objects. The implementation employs the thread-safe
-    // instance of HashMap.
-    private final Map<String, Object> storage = new ConcurrentHashMap<>();
+  // Data structure to store key value objects. The implementation employs the thread-safe
+  // instance of HashMap.
+  private final Map<String, Object> storage = new ConcurrentHashMap<>();
 
-    public Context add(String key, Object value) {
-        storage.put(key, value);
-        return this;
+  public Context add(String key, Object value) {
+    storage.put(key, value);
+    return this;
+  }
+
+  public <T> Context addAll(String key, T... objects) {
+    if (!storage.containsKey(key)) {
+      storage.put(key, Arrays.asList(objects));
+      return this;
+    }
+    if (storage.containsKey(key) && storage.get(key) instanceof Collection) {
+      ((Collection<T>) storage.get(key)).addAll(Arrays.asList(objects));
     }
 
-    public <T> Optional<T> get(String key) {
-        if (storage.containsKey(key)) {
-            return Optional.of((T) storage.get(key));
-        }
-        return Optional.empty();
-    }
+    return this;
+  }
 
-    public void empty() {
-        storage.clear();
+  public <T> Optional<T> get(String key) {
+    if (storage.containsKey(Objects.requireNonNull(key, "session key may not be null."))) {
+      return Optional.of((T) storage.get(key));
     }
+    return Optional.empty();
+  }
 
-    @Override
-    public boolean isEmpty() {
-        return storage.isEmpty();
-    }
+  public void empty() {
+    storage.clear();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return storage.isEmpty();
+  }
 }

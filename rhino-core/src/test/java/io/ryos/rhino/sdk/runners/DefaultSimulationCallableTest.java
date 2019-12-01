@@ -1,6 +1,11 @@
 package io.ryos.rhino.sdk.runners;
 
 
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.data.Scenario;
@@ -12,11 +17,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class DefaultSimulationCallableTest {
 
@@ -46,7 +46,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
 
     assertThat(call, notNullValue());
@@ -66,7 +66,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -87,7 +87,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
 
     assertThat(call, notNullValue());
@@ -107,7 +107,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -128,7 +128,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 
@@ -149,7 +149,7 @@ public class DefaultSimulationCallableTest {
     when(userSession.getUser()).thenReturn(new UserImpl("username", "pw", "id", "openid"));
     final Measurement call = defaultSimulationCallable.call();
 
-    verify(userSession).add("before","called");
+    verify(userSession).add("before", "called");
     verify(userSession).add("after","called");
     verify(userSession).add("scenario","called");
 

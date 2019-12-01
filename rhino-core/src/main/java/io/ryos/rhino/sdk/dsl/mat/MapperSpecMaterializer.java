@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec, UserSession> {
+public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec> {
 
   private static final Logger LOG = LogManager.getLogger(MapperSpecMaterializer.class);
 
@@ -38,7 +38,7 @@ public class MapperSpecMaterializer implements SpecMaterializer<MapperSpec, User
   public Mono<UserSession> materialize(MapperSpec spec, UserSession userSession) {
     return Mono.just(userSession).map(session -> {
       try {
-        var mapper = spec.getMapper();
+        var mapper = spec.getMapperBuilder();
         var value = userSession
             .get(mapper.getKey())
             .map((Function<Object, Object>) mapper.getMappingFunction())

@@ -25,10 +25,15 @@ import java.util.UUID;
  * @author Erhan Bagdemir
  * @version 1.0.0
  */
-public class UUIDProvider implements Provider<String> {
+public class UUIDProvider extends AbstractProvider<String> {
 
   @Override
   public String take() {
     return UUID.randomUUID().toString();
+  }
+
+  @Override
+  public String name() {
+    return null;
   }
 }

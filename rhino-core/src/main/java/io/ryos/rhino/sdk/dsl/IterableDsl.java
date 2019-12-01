@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import java.util.function.Predicate;
 
@@ -13,36 +13,39 @@ import java.util.function.Predicate;
 public interface IterableDsl extends LoadDsl {
 
   /**
-   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder} instance.
+   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
+   * instance.
    *
+   * @param name           Name of the runner DSL.
    * @param forEachBuilder Iterable builder.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> RunnableDsl forEach(ForEachBuilder<E, R> forEachBuilder);
+  <E, R extends Iterable<E>> RunnableDsl forEach(String name,
+      ForEachBuilder<E, R> forEachBuilder);
 
   /**
-   * Runs the {@link Spec} till the {@link Predicate} holds.
+   * Runs the {@link DSLSpec} till the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec {@link Spec} to run.
+   * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl runUntil(Predicate<UserSession> predicate, Spec spec);
+  RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec);
 
   /**
-   * Runs the {@link Spec} as long as the {@link Predicate} holds.
+   * Runs the {@link DSLSpec} as long as the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec {@link Spec} to run.
+   * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl runAsLongAs(Predicate<UserSession> predicate, Spec spec);
+  RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec);
 
   /**
-   * Runs the {@link Spec} repeatedly.
+   * Runs the {@link DSLSpec} repeatedly.
    *
-   * @param spec {@link Spec} to run.
+   * @param spec {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl repeat(Spec spec);
+  RunnableDsl repeat(DSLSpec spec);
 }

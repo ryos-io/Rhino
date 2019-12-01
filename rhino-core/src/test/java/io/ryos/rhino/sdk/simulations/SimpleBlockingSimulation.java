@@ -25,7 +25,7 @@ import io.ryos.rhino.sdk.reporting.Measurement;
 @Simulation(name = "Simple Blocking Simulation")
 public class SimpleBlockingSimulation {
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private String uuid;
 
   @Scenario(name = "scenario2")

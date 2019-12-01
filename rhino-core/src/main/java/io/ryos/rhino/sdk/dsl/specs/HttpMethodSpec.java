@@ -7,7 +7,7 @@ package io.ryos.rhino.sdk.dsl.specs;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface HttpMethodSpec extends Spec {
+public interface HttpMethodSpec extends DSLSpec {
 
   HttpRetriableSpec get();
   HttpRetriableSpec head();

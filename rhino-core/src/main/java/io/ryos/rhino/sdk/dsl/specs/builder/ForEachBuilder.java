@@ -16,49 +16,29 @@
 
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
-import io.ryos.rhino.sdk.dsl.specs.Spec;
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
 import java.util.function.Function;
 
-/**
- * Loop builder is a builder providing the spec with looping information to be executed.
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.7.0
- */
-public class ForEachBuilder<E, R extends Iterable<E>> {
+public interface ForEachBuilder<E, R extends Iterable<E>> {
 
-  private String key;
-  private String saveTo;
-  private Function<E, Spec> forEachFunction;
+  ForEachBuilder<E, R> doRun(Function<E, DSLSpec> forEachFunction);
 
-  public ForEachBuilder(final String key) {
-    this.key = key;
-  }
+  ForEachBuilder<E, R> saveTo(String sessionKey);
 
-  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(String key) {
-    return new ForEachBuilder<>(key);
-  }
+  ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope);
 
-  public ForEachBuilder<E, R> apply(Function<E, Spec> forEachFunction) {
-    this.forEachFunction = forEachFunction;
-    return this;
-  }
+  Function<UserSession, R> getIterableSupplier();
 
-  public ForEachBuilder<E, R> saveTo(String saveTo) {
-    this.saveTo = saveTo;
-    return this;
-  }
+  Function<E, ? extends DSLSpec> getForEachFunction();
 
-  public String getKey() {
-    return key;
-  }
+  String getKey();
 
-  public String getSaveTo() {
-    return saveTo;
-  }
+  Scope getScope();
 
-  public Function<E, Spec> getForEachFunction() {
-    return forEachFunction;
-  }
+  ForEachSpec<E, R> getSpec();
+
+  void setSpec(ForEachSpec<E, R> spec);
 }

@@ -16,27 +16,45 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.dsl.specs.SessionSpec;
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.SessionSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.Validate;
 
-public class SessionSpecImpl extends AbstractSpec implements SessionSpec {
+public class SessionSpecImpl extends AbstractSessionDSLItem {
 
-  private final String key;
+  private final String sessionKey;
   private final Supplier<Object> objectSupplier;
 
-  public SessionSpecImpl(String key,
-      Supplier<Object> objectSupplier) {
+  public SessionSpecImpl(String sessionKey, Supplier<Object> objectSupplier) {
     super("");
 
-    this.key = key;
-    this.objectSupplier = objectSupplier;
+    this.sessionKey = Validate.notEmpty(sessionKey, "Session key must not be null.");
+    this.objectSupplier = Validate.notNull(objectSupplier, "Object supplier must not null.");
   }
 
-  public String getKey() {
-    return key;
+  @Override
+  public String getSessionKey() {
+    return sessionKey;
   }
 
+  @Override
   public Supplier<Object> getObjectFunction() {
     return objectSupplier;
+  }
+
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return new SessionSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }

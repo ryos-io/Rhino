@@ -38,7 +38,7 @@ public class BlockingJerseyClientLoadTestSimulation {
 
   private Client client = ClientBuilder.newClient();
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider provider;
 
   @Prepare

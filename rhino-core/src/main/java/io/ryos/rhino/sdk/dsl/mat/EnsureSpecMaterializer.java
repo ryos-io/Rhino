@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureSpecMaterializer implements SpecMaterializer<EnsureSpec, UserSession> {
+public class EnsureSpecMaterializer implements SpecMaterializer<EnsureSpec> {
 
   @Override
   public Mono<UserSession> materialize(EnsureSpec spec, UserSession userSession) {

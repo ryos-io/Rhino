@@ -56,5 +56,5 @@ public interface UserSession extends Context {
 
   SimulationSession getSimulationSession();
 
-  SimulationSession findSimulationSession(User user);
+  SimulationSession getSimulationSessionFor(User user);
 }

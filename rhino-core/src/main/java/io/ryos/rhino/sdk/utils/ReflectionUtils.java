@@ -17,9 +17,9 @@
 package io.ryos.rhino.sdk.utils;
 
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.exceptions.BadInjectionException;
 import io.ryos.rhino.sdk.exceptions.ExceptionUtils;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
+import io.ryos.rhino.sdk.exceptions.NotReadyException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -52,7 +52,7 @@ public class ReflectionUtils {
     var enhancer = new Enhancer();
     enhancer.setSuperclass(field.getType());
     enhancer.setCallback((FixedValue) () -> {
-      throw new BadInjectionException("RH40 - Injection point is not ready. This happens when "
+      throw new NotReadyException("RH40 - Injection point is not ready. This happens when "
           + "your code tries to access the providers before they are initialized.\n"
           + field.toString() + "\n"
           + "In Job DSL access to providers at injection points must be within the lambdas so "

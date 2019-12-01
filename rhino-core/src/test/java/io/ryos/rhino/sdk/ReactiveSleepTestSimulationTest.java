@@ -16,15 +16,49 @@
 
 package io.ryos.rhino.sdk;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import io.ryos.rhino.sdk.simulations.ReactiveSleepTestSimulation;
+import io.ryos.rhino.sdk.utils.TestUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ReactiveSleepTestSimulationTest {
-
-  private static final String SIM_NAME = "Reactive Sleep Test";
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
+  private static final int PORT = 8091;
+
+  private WireMockServer wmServer;
+
+  @Before
+  public void setUp() {
+    wmServer = new WireMockServer(wireMockConfig().port(PORT)
+        .jettyAcceptors(2)
+        .jettyAcceptQueueSize(100)
+        .containerThreads(100));
+    wmServer.start();
+  }
+
+  @After
+  public void tearDown() {
+    wmServer.stop();
+  }
 
   @Test
   public void testReactiveSleepTestSimulation() {
-    Simulation.create(PROPERTIES_FILE, SIM_NAME).start();
+    WireMock.configureFor("localhost", PORT);
+
+    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
+
+    TestUtils.overridePorts(PORT);
+
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveSleepTestSimulation.class).start();
   }
 }

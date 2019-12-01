@@ -56,11 +56,13 @@ import reactor.core.scheduler.Schedulers;
  * fashion.
  * <p>
  *
+ * @deprecated Use {@link ReactiveHttpSimulationRunner}.
  * @author Erhan Bagdemir
  * @see CyclicIterator
  * @see ReactiveHttpSimulationRunner
  * @since 1.0.0
  */
+@Deprecated
 public class DefaultSimulationRunner extends AbstractSimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultSimulationRunner.class);
@@ -86,7 +88,7 @@ public class DefaultSimulationRunner extends AbstractSimulationRunner {
   public DefaultSimulationRunner(Context context) {
     super(context.<SimulationMetadata>get(JOB).orElseThrow());
     this.scheduler = Executors.newSingleThreadScheduledExecutor();
-    this.eventDispatcher = new EventDispatcher(getSimulationMetadata());
+    this.eventDispatcher = EventDispatcher.getInstance();
     this.masterLock = new ReentrantLock();
     this.continueCondition = masterLock.newCondition();
   }

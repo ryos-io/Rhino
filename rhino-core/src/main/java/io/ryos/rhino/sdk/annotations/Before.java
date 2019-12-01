@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Method annotation to mark clean up methods, that is run after every scenario (The annotation is
  * scenario mode only). Use methods, for instance, to release resources and clean up the testing
  * environment. If simulation contains multiple scenarios, then before and after methods will be
- * run before and after every scenarios in the simulation.
+ * run global and after every scenarios in the simulation.
  * <p>
  *
  * If the simulation is need to be set up you might prefer to use {@link Prepare} static method -

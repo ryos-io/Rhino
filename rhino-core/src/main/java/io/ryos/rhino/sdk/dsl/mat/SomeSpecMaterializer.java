@@ -31,13 +31,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSession> {
-
-  private final EventDispatcher dispatcher;
-
-  public SomeSpecMaterializer(final EventDispatcher dispatcher) {
-    this.dispatcher = dispatcher;
-  }
+public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
 
   @Override
   public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
@@ -45,12 +39,12 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
           var userId = userSession.getUser().getId();
-          var measurement = new MeasurementImpl(spec.getTestName(), userId);
+          var measurement = new MeasurementImpl(spec.getParentName(), userId);
           var start = System.currentTimeMillis();
           var userEventStart = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getTestName(),
+              spec.getParentName(),
               start,
               start,
               0,
@@ -63,12 +57,12 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
 
           var status = spec.getFunction().apply(session);
 
-          measurement.measure(spec.getMeasurementPoint(), status);
+          measurement.measure(spec.getName(), status);
           var elapsed = System.currentTimeMillis() - start;
           var userEventEnd = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getTestName(),
+              spec.getParentName(),
               start,
               start + elapsed,
               elapsed,
@@ -79,7 +73,7 @@ public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec, UserSess
 
           measurement.record(userEventEnd);
 
-          dispatcher.dispatchEvents(measurement);
+          EventDispatcher.getInstance().dispatchEvents(measurement);
 
           return session;
         }));

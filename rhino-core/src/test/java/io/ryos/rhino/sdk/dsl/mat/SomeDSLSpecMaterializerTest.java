@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.Spec.some;
+import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.some;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-public class SomeSpecMaterializerTest {
+public class SomeDSLSpecMaterializerTest {
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -35,9 +35,7 @@ public class SomeSpecMaterializerTest {
       return "OK";
     });
 
-    var materialize = new SomeSpecMaterializer(eventDispatcher)
-        .materialize(spec, user);
-
+    var materialize = new SomeSpecMaterializer().materialize(spec, user);
     var session = materialize.block();
 
     assertThat(session, notNullValue());

@@ -17,8 +17,15 @@
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.mat.EnsureSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
 import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Ensure spec implementation.
@@ -27,24 +34,26 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureSpecImpl extends AbstractSpec implements EnsureSpec {
+public class EnsureSpecImpl extends AbstractMeasurableSpec implements EnsureSpec {
+
+  private static final String BLANK = "";
 
   private Predicate<UserSession> predicate;
   private String cause = "Ensure failed.";
 
   public EnsureSpecImpl(Predicate<UserSession> predicate) {
-    this("", predicate);
+    this(BLANK, Validate.notNull(predicate, "Predicate must not be null."));
   }
 
   public EnsureSpecImpl(Predicate<UserSession> predicate, String cause) {
-    this("", predicate);
-    this.cause = cause;
+    this(BLANK, Validate.notNull(predicate, "Predicate must not be null."));
+    this.cause = Validate.notNull(cause, "Cause must not be null.");
   }
 
   public EnsureSpecImpl(String measurement, Predicate<UserSession> predicate) {
     super(measurement);
 
-    this.predicate = predicate;
+    this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
   }
 
   @Override
@@ -55,5 +64,15 @@ public class EnsureSpecImpl extends AbstractSpec implements EnsureSpec {
   @Override
   public String getCause() {
     return cause;
+  }
+
+  @Override
+  public SpecMaterializer<? extends DSLSpec> createMaterializer(UserSession session) {
+    return new EnsureSpecMaterializer();
+  }
+
+  @Override
+  public List<DSLItem> getChildren() {
+    return Collections.emptyList();
   }
 }
