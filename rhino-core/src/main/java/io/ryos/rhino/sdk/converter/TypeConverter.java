@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.simulations;
+package io.ryos.rhino.sdk.converter;
 
-import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Scenario;
-import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.Measurement;
+public interface TypeConverter<T> {
 
-@Simulation(name = "Simple Blocking Simulation")
-public class SimpleBlockingSimulation {
-
-  @Provider(clazz = UUIDProvider.class)
-  private String uuid;
-
-  @Scenario(name = "scenario2")
-  public void scenario2(Measurement measurement) {
+  static IntTypeConverter asInt() {
+    return new IntTypeConverter();
   }
+
+  static StringTypeConverter asStr() {
+    return new StringTypeConverter();
+  }
+
+  static <E> ListTypeConverter<E> asList(TypeConverter<E> typeConverter) {
+    return new ListTypeConverter<E>(typeConverter);
+  }
+
+  static ListTypeConverter<String> asList() {
+    return new ListTypeConverter<>(new StringTypeConverter());
+  }
+
+  T convert(String input);
 }

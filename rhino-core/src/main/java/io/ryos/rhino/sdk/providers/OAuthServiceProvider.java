@@ -5,21 +5,27 @@ import io.ryos.rhino.sdk.users.oauth.OAuthService;
 import io.ryos.rhino.sdk.users.oauth.OAuthServiceAuthenticatorImpl;
 import io.ryos.rhino.sdk.users.oauth.OAuthServiceTokenResponseDeserializer;
 
-public class OAuthServiceProvider implements Provider<OAuthService> {
+public class OAuthServiceProvider extends AbstractProvider<OAuthService> {
 
-    private OAuthService oAuthService;
+  private OAuthService oAuthService;
 
-    public OAuthServiceProvider() {
-        var serviceData = new OAuthService();
-        serviceData.setGrantType(SimulationConfig.getServiceGrantType());
-        serviceData.setClientCode(SimulationConfig.getServiceClientCode());
-        serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
-        serviceData.setClientId(SimulationConfig.getServiceClientId());
-        this.oAuthService = new OAuthServiceAuthenticatorImpl(new OAuthServiceTokenResponseDeserializer()).authenticate(serviceData);
-    }
+  public OAuthServiceProvider() {
+    var serviceData = new OAuthService();
+    serviceData.setGrantType(SimulationConfig.getServiceGrantType());
+    serviceData.setClientCode(SimulationConfig.getServiceClientCode());
+    serviceData.setClientSecret(SimulationConfig.getServiceClientSecret());
+    serviceData.setClientId(SimulationConfig.getServiceClientId());
+    this.oAuthService = new OAuthServiceAuthenticatorImpl(
+        new OAuthServiceTokenResponseDeserializer()).authenticate(serviceData);
+  }
 
-    @Override
-    public OAuthService take() {
-        return oAuthService;
-    }
+  @Override
+  public OAuthService take() {
+    return oAuthService;
+  }
+
+  @Override
+  public String name() {
+    return "oauth2";
+  }
 }

@@ -16,19 +16,27 @@
 
 package io.ryos.rhino.sdk.simulations;
 
+
+import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.some;
+
+import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Scenario;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.Measurement;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.Start;
+import io.ryos.rhino.sdk.providers.RandomInMemoryFileProvider;
 
-@Simulation(name = "Simple Blocking Simulation")
-public class SimpleBlockingSimulation {
+@Simulation(name = "Random File Test")
+public class RandomInMemoryFileProviderSimulation {
 
-  @Provider(clazz = UUIDProvider.class)
-  private String uuid;
+  @Provider(clazz = RandomInMemoryFileProvider.class)
+  private RandomInMemoryFileProvider fileProvider;
 
-  @Scenario(name = "scenario2")
-  public void scenario2(Measurement measurement) {
+  @Dsl(name = "Random in memory file")
+  public LoadDsl testRandomFiles() {
+    return Start.dsl()
+        .run(some("test").as(s -> {
+          return "OK";
+        }));
   }
 }

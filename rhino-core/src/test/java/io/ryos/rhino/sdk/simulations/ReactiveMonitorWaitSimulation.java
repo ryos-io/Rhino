@@ -42,7 +42,7 @@ public class ReactiveMonitorWaitSimulation {
   @UserProvider(region = "US")
   private OAuthUserProvider userProvider;
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")

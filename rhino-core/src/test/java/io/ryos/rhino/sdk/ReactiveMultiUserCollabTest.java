@@ -32,7 +32,7 @@ import org.junit.Test;
 @Ignore
 public class ReactiveMultiUserCollabTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
-  private static final int PORT = 8090;
+  private static final int PORT = 8099;
 
   private WireMockServer wmServer;
 

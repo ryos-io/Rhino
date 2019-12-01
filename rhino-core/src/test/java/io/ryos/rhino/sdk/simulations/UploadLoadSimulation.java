@@ -29,7 +29,7 @@ public class UploadLoadSimulation {
   @UserProvider
   private OAuthUserProvider userProvider;
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")

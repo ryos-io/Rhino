@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class TempDirectoryProvider implements Provider<File> {
+public class TempDirectoryProvider extends AbstractProvider<File> {
 
   private final File tempFile;
 
@@ -36,5 +36,10 @@ public class TempDirectoryProvider implements Provider<File> {
   @Override
   public File take() {
     return this.tempFile;
+  }
+
+  @Override
+  public String name() {
+    return null;
   }
 }

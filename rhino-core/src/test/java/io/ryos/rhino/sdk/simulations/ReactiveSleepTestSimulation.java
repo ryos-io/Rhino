@@ -38,11 +38,14 @@ import io.ryos.rhino.sdk.providers.UUIDProvider;
 @RampUp(startRps = 1, targetRps = 10)
 public class ReactiveSleepTestSimulation {
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider provider;
 
   @Dsl(name = "Sleep Test")
   public LoadDsl testSleep() {
-    return Start.dsl().run(some("Sleeping 1 sec.").as(session -> "OK"));
+    return Start.dsl().run(some("Sleeping 1 sec.").as(session -> {
+      System.out.println(provider.take());
+      return "OK";
+    }));
   }
 }

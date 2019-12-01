@@ -22,7 +22,7 @@ public class DSLRunUntilSimulation {
     private static final String X_REQUEST_ID = "X-Request-Id";
     private static final String X_API_KEY = "X-Api-Key";
 
-    @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
     private UUIDProvider uuidProvider;
 
     @Dsl(name = "Upload File")

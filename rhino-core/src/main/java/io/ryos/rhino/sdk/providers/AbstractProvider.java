@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.exceptions;
+package io.ryos.rhino.sdk.providers;
 
-/**
- * The exception is to be thrown if the injection is not a valid one.
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public class BadInjectionException extends RuntimeException {
+import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.converter.TypeConverter;
 
-  public BadInjectionException(String message) {
-    super(message);
+public abstract class AbstractProvider<T> implements Provider<T> {
+
+  public abstract String name();
+
+  protected <E> E getEnvConfig(String property, TypeConverter<E> converter) {
+    return converter.convert(SimulationConfig.getEnvConfig(name(), property));
+  }
+
+  protected <E> E getConfig(String property, TypeConverter<E> converter) {
+    return converter.convert(SimulationConfig.getConfig(name(), property));
   }
 }

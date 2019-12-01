@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.simulations;
+package io.ryos.rhino.sdk;
 
-import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Scenario;
-import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.Measurement;
+import io.ryos.rhino.sdk.simulations.RandomInMemoryFileProviderSimulation;
+import org.junit.Test;
 
-@Simulation(name = "Simple Blocking Simulation")
-public class SimpleBlockingSimulation {
+public class RandomInMemoryFileProviderSimulationTest {
 
-  @Provider(clazz = UUIDProvider.class)
-  private String uuid;
+  private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
-  @Scenario(name = "scenario2")
-  public void scenario2(Measurement measurement) {
+  @Test
+  public void testReactiveBasicHttpGet() throws InterruptedException {
+    Simulation.getInstance(PROPERTIES_FILE, RandomInMemoryFileProviderSimulation.class).start();
+    Thread.sleep(5000L);
   }
 }

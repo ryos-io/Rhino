@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.simulations;
+package io.ryos.rhino.sdk.exceptions;
 
-import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Scenario;
-import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.reporting.Measurement;
+/**
+ * The exception is to be thrown if the injection is not a valid one.
+ * <p>
+ *
+ * @author Erhan Bagdemir
+ * @since 1.1.0
+ */
+public class NotReadyException extends RuntimeException {
 
-@Simulation(name = "Simple Blocking Simulation")
-public class SimpleBlockingSimulation {
-
-  @Provider(clazz = UUIDProvider.class)
-  private String uuid;
-
-  @Scenario(name = "scenario2")
-  public void scenario2(Measurement measurement) {
+  public NotReadyException(String message) {
+    super(message);
   }
 }

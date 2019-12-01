@@ -24,19 +24,15 @@ import io.ryos.rhino.sdk.users.source.UserSource.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
 import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Simulation configuration instances are used to configure benchmark tests. The {@link
  * SimulationConfig} instances are passed the configuration parameters to construct the {@link
- * Simulation} objects. Once the {@link Simulation} is fully configured, the
- * instances thereof are ready to run which starts off the benchmark test.
+ * Simulation} objects. Once the {@link Simulation} is fully configured, the instances thereof are
+ * ready to run which starts off the benchmark test.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -128,6 +124,22 @@ public class SimulationConfig {
 
   private String getDBSupportInfluxPassword() {
     return properties.getProperty("db.influx.password");
+  }
+
+  public static String getEnvConfig(String component, String property) {
+    return instance.getEnvProp(component, property);
+  }
+
+  public static String getConfig(String component, String property) {
+    return instance.getProp(component, property);
+  }
+
+  private String getEnvProp(String component, String property) {
+    return properties.getProperty(String.format("%s.%s.%s", environment, component, property));
+  }
+
+  private String getProp(String component, String property) {
+    return properties.getProperty(String.format("%s.%s", component, property));
   }
 
   public static int getInfluxBatchActions() {
@@ -259,18 +271,6 @@ public class SimulationConfig {
     return properties.getProperty(environment + ".endpoint");
   }
 
-  private String _getInMemoryFileProviderMaxSize() {
-    return properties.getProperty("provider.RandomInMemoryFile.maxSize");
-  }
-
-  private String _getInMemoryFileProviderNumberOfFiles() {
-    return properties.getProperty("provider.RandomInMemoryFile.numberOfFiles");
-  }
-
-  private String _getInMemoryFileProviderMimeTypes() {
-    return properties.getProperty("provider.RandomInMemoryFile.mimeTypes");
-  }
-
   private String getDBSupportInfluxBatchActions() {
     return properties.getProperty("db.influx.batch.actions");
   }
@@ -289,22 +289,6 @@ public class SimulationConfig {
 
   String getPackageToScan() {
     return instance.getProperty(PACKAGE_TO_SCAN);
-  }
-
-  public static int getInMemoryFileProviderMaxSize() {
-    return Integer.valueOf(instance._getInMemoryFileProviderMaxSize());
-  }
-
-  public static int getInMemoryFileProviderNumberOfFiles() {
-    return Integer.valueOf(instance._getInMemoryFileProviderNumberOfFiles());
-  }
-
-  public static List<String> getInMemoryFileProviderMimeTypes() {
-    String mimeTypes = instance._getInMemoryFileProviderMimeTypes();
-    if (mimeTypes != null) {
-      return Arrays.stream(mimeTypes.split(",")).map(String::trim).collect(Collectors.toList());
-    }
-    return Collections.emptyList();
   }
 
   public static int getMaxConnections() {

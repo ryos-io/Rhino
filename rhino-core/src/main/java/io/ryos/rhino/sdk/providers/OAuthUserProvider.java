@@ -13,7 +13,7 @@ import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepository;
  *
  * @author Erhan Bagdemir
  */
-public class OAuthUserProvider implements Provider<OAuthUser> {
+public class OAuthUserProvider extends AbstractProvider<OAuthUser> {
 
   private static final int MAX_ATTEMPT = 4;
 
@@ -69,5 +69,10 @@ public class OAuthUserProvider implements Provider<OAuthUser> {
 
     throw new NoUserFoundException("No OAuth users found in the repository or after 3 attempts "
         + "no other user found except the provided one.");
+  }
+
+  @Override
+  public String name() {
+    return "oauth2";
   }
 }
