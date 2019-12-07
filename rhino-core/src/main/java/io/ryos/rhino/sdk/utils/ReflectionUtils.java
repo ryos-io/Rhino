@@ -48,7 +48,7 @@ public class ReflectionUtils {
   private ReflectionUtils() {
   }
 
-  public static Object enhanceInstanceAt(Field field) {
+  public static Object enhanceWithStubAt(Field field) {
     var enhancer = new Enhancer();
     enhancer.setSuperclass(field.getType());
     enhancer.setCallback((FixedValue) () -> {
@@ -73,21 +73,6 @@ public class ReflectionUtils {
     }
   }
 
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  public static <T extends Annotation> Pair<Optional<Field>, T> findFieldByAnnotation(
-      final Class clazz,
-      final Class<T> clazzA) {
-
-    var field = Arrays.stream(clazz.getDeclaredFields())
-        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(clazzA::isInstance))
-        .findFirst();
-
-    return new Pair<>(field,
-        field.map(f -> f.getDeclaredAnnotationsByType(clazzA)[0])
-            .orElseThrow());
-  }
-
   /**
    * get the list of annotations along with {@link Field} instances.
    */
@@ -109,7 +94,7 @@ public class ReflectionUtils {
     return Optional.ofNullable((T) clazz.getDeclaredAnnotation(annotation));
   }
 
-  static Optional<Constructor> getDefaultConstructor(final Class clazz) {
+  private static Optional<Constructor> getDefaultConstructor(final Class clazz) {
     try {
       return Optional.of(clazz.getConstructor());
     } catch (NoSuchMethodException e) {
