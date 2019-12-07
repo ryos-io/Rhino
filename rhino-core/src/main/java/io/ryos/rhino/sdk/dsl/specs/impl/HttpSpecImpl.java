@@ -212,9 +212,9 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   }
 
   @Override
-  public HttpConfigSpec upload(final Supplier<InputStream> inputStream) {
-    Validate.notNull(inputStream, "Input stream must not be null.");
-    this.toUpload = inputStream;
+  public HttpConfigSpec upload(final Supplier<InputStream> inputStreamSupplier) {
+    Validate.notNull(inputStreamSupplier, "InputStream supplier must not be null.");
+    this.toUpload = inputStreamSupplier;
     return this;
   }
 
