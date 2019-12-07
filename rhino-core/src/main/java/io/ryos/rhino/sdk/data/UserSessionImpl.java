@@ -33,8 +33,8 @@ import java.util.Optional;
  */
 public class UserSessionImpl extends ContextImpl implements UserSession {
 
+  private final SimulationSession simulationSession;
   private final User user;
-  private SimulationSession simulationSession;
   private final List<LoadToken> tokens;
 
   public UserSessionImpl(
