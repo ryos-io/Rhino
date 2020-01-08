@@ -46,6 +46,7 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   private Method httpMethod;
   private Function<UserSession, String> endpoint;
   private Function<UserSession, User> oauthUserAccessor;
+  private Supplier<User> userSupplier;
   private RetryInfo retryInfo;
   private HttpResponse response;
   private ResultHandler<HttpResponse> resultHandler;
@@ -190,6 +191,14 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   }
 
   @Override
+  public HttpConfigSpec auth(Supplier<User> userSupplier) {
+    Validate.notNull(userSupplier, "userSupplier must not be null.");
+    this.userSupplier = userSupplier;
+    this.authEnabled = true;
+    return this;
+  }
+
+  @Override
   public HttpConfigSpec queryParam(String queryParamName, List<String> values) {
     Validate.notEmpty(queryParamName, "Query param name must not be null.");
     this.queryParams.add(e -> Map.entry(queryParamName, values));
@@ -301,6 +310,11 @@ public class HttpSpecImpl extends AbstractSessionDSLItem implements HttpSpec, Ht
   @Override
   public Function<UserSession, User> getUserAccessor() {
     return oauthUserAccessor;
+  }
+
+  @Override
+  public Supplier<User> getUserSupplier() {
+    return userSupplier;
   }
 
   @Override

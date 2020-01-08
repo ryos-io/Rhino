@@ -105,7 +105,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   }
 
   @Override
-  public RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec) {
+  public RunnableDsl until(Predicate<UserSession> predicate, DSLSpec spec) {
     Validate.notNull(spec, "Spec must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
     children.add(new RunUntilSpecImpl(spec, predicate));
@@ -113,7 +113,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   }
 
   @Override
-  public RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec) {
+  public RunnableDsl asLongAs(Predicate<UserSession> predicate, DSLSpec spec) {
     Validate.notNull(spec, "Spec must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
     children.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));

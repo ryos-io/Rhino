@@ -30,7 +30,7 @@ public interface IterableDsl extends LoadDsl {
    * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl runUntil(Predicate<UserSession> predicate, DSLSpec spec);
+  RunnableDsl until(Predicate<UserSession> predicate, DSLSpec spec);
 
   /**
    * Runs the {@link DSLSpec} as long as the {@link Predicate} holds.
@@ -39,7 +39,7 @@ public interface IterableDsl extends LoadDsl {
    * @param spec      {@link DSLSpec} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl runAsLongAs(Predicate<UserSession> predicate, DSLSpec spec);
+  RunnableDsl asLongAs(Predicate<UserSession> predicate, DSLSpec spec);
 
   /**
    * Runs the {@link DSLSpec} repeatedly.
