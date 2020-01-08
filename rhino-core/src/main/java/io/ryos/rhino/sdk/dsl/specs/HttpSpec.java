@@ -48,4 +48,6 @@ public interface HttpSpec extends RetriableSpec<MeasurableSpec, HttpResponse>,
   void setResponse(HttpResponse response);
 
   Function<UserSession, User> getUserAccessor();
+
+  Supplier<User> getUserSupplier();
 }

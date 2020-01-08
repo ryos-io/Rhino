@@ -55,7 +55,17 @@ public interface HttpConfigSpec extends HttpMethodSpec {
 
   HttpConfigSpec auth(Function<UserSession, User> sessionAccessor);
 
+  /**
+   * Requires an authorized user in HTTP requests.
+   *
+   * @param userSupplier User supplier.
+   * @return Instance of {@link HttpConfigSpec}.
+   */
+  HttpConfigSpec auth(Supplier<User> userSupplier);
+
   HttpConfigSpec upload(final Supplier<InputStream> inputStream);
 
   Function<UserSession, User> getUserAccessor();
+
+  Supplier<User> getUserSupplier();
 }

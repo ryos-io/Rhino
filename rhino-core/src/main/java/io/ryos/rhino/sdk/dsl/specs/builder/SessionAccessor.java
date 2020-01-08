@@ -42,6 +42,12 @@ public class SessionAccessor {
   public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
     Validate.notNull(httpSpec, "Http spec must not be null.");
     Validate.notNull(userSession, "User session must not be null.");
+
+    var userSupplier = httpSpec.getUserSupplier();
+    if (userSupplier != null) {
+      return userSupplier.get();
+    }
+
     var userAccessor = httpSpec.getUserAccessor();
     if (userAccessor != null) {
       return userAccessor.apply(userSession);
