@@ -79,7 +79,7 @@ annotated with `@Dsl` annotation which contain encompass DSL method calls and re
 might have multiple DSL methods defined which will be materialized into reactive components to build a load generation pipeline:
 
 ```java
-@Simulation(name = "Server-Status Simulation") ❶
+@Simulation(name = "Server-Status Simulation")
 public class RhinoEntity {
 
   private static final String TARGET = "http://localhost:8089/api/status";
@@ -90,10 +90,10 @@ public class RhinoEntity {
   @Provider(factory = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
-  @Dsl(name = "Health") ❷
+  @Dsl(name = "Health")
   public LoadDsl performHealth() {
-    return Start.dsl() ❸
-        .run(http("Health API Call") ❹
+    return Start.dsl()
+        .run(http("Health API Call")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .endpoint(TARGET)
             .get()
