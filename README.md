@@ -74,30 +74,30 @@ public class PerformanceTestingExample {
 }
 ```
 
-The simulation above does nothing unless we add some scenarios to it. A scenario is a method 
-annotated with `@Scenario` annotation and contains the implementation of the load generation. A simulation
-might have multiple scenarios defined which are run during testing, independently and parallel:
+The simulation above does nothing unless we add DSL methods into it. DSL methods are  
+annotated with `@Dsl` annotation which contain encompass DSL method calls and returns a LoadDsl instance. A simulation
+might have multiple DSL methods defined which will be materialized into reactive components to build a load generation pipeline:
 
 ```java
-@Simulation(name = "Server-Status Simulation")
-@UserRepository(factory = OAuthUserRepositoryFactory.class)
+@Simulation(name = "Server-Status Simulation") ❶
 public class RhinoEntity {
-  
-  // Some http client
+
+  private static final String TARGET = "http://localhost:8089/api/status";
+  private static final String X_REQUEST_ID = "X-Request-Id";
+
   private Client client = ClientBuilder.newClient();
 
   @Provider(factory = UUIDProvider.class)
-  private String uuid;
+  private UUIDProvider uuidProvider;
 
-  @Scenario(name = "Health")
-  public void performHealth(final Measurement measurement) {
-    var response = client
-            .target(TARGET)
-            .request()
-            .header(X_REQUEST_ID, "Rhino-" + uuid)
-            .get();
-
-    measurement.measure("Health API Call", response.getStatus());
+  @Dsl(name = "Health") ❷
+  public LoadDsl performHealth() {
+    return Start.dsl() ❸
+        .run(http("Health API Call") ❹
+            .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .endpoint(TARGET)
+            .get()
+            .saveTo("result"));
   }
 }
 ```
