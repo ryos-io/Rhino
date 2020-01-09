@@ -121,8 +121,6 @@ public class Rhino {
 }
 ```
 
-[Simulations and Scenarios](https://github.com/bagdemir/Rhino/wiki/Simulations-and-Scenarios)
-
 ## How to run? 
 
 If you choose to use the Rhino archetype, the maven project is configured to create a Docker container:
