@@ -19,8 +19,8 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.global;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.global;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import com.google.common.collect.ImmutableList;

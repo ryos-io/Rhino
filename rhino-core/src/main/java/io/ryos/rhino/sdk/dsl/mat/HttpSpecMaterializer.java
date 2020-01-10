@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
 import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;

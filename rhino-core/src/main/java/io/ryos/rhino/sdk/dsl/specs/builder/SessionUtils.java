@@ -37,7 +37,7 @@ import org.apache.commons.lang3.Validate;
  * @author Erhan Bagdemir
  * @since 1.7.0
  */
-public class SessionAccessor {
+public class SessionUtils {
 
   public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
     Validate.notNull(httpSpec, "Http spec must not be null.");

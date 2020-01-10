@@ -21,33 +21,32 @@ import java.util.function.Predicate;
 public class DSLRunUntilSimulation {
 
   private static final String FILES_ENDPOINT = getEndpoint("files");
-    private static final String X_REQUEST_ID = "X-Request-Id";
-    private static final String X_API_KEY = "X-Api-Key";
+  private static final String X_REQUEST_ID = "X-Request-Id";
+  private static final String X_API_KEY = "X-Api-Key";
 
   @Provider(clazz = UUIDProvider.class)
-    private UUIDProvider uuidProvider;
+  private UUIDProvider uuidProvider;
 
-    @Dsl(name = "Upload File")
-    public LoadDsl singleTestDsl() {
-        return Start
-                .dsl()
-            .until(ifStatusCode(200),
-                        http("PUT Request")
-                            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
-                        .header(X_API_KEY, SimulationConfig.getApiKey())
-                        .auth()
-                        .upload(() -> file("classpath:///test.txt"))
-                            .endpoint(session -> FILES_ENDPOINT)
-                        .put()
-                        .saveTo("result"))
-                .run(http("GET on Files")
-                    .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
-                        .header(X_API_KEY, SimulationConfig.getApiKey())
-                        .auth()
-                        .endpoint(FILES_ENDPOINT)
-                        .get()
-                        .saveTo("result2"));
-    }
+  @Dsl(name = "Upload File")
+  public LoadDsl singleTestDsl() {
+    return Start
+        .dsl()
+        .until(ifStatusCode(200), http("PUT Request")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .upload(() -> file("classpath:///test.txt"))
+            .endpoint(session -> FILES_ENDPOINT)
+            .put()
+            .saveTo("result"))
+        .run(http("GET on Files")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(FILES_ENDPOINT)
+            .get()
+            .saveTo("result2"));
+  }
 
   private Predicate<UserSession> ifStatusCode(int statusCode) {
     return s -> s.<HttpSpecData>get("result").map(d -> d.getResponse().getStatusCode()).orElse(-1)

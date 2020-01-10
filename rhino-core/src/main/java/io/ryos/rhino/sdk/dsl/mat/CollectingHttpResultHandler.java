@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import static io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope.USER;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.getActiveUser;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;

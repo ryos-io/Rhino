@@ -3,7 +3,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionAccessor.session;
+import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
