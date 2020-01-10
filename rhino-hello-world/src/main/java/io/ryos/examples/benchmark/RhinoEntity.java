@@ -34,7 +34,7 @@ public class RhinoEntity {
   private static final String TARGET = "http://localhost:8089/api/status";
   private static final String X_REQUEST_ID = "X-Request-Id";
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
   @Scenario(name = "Health")

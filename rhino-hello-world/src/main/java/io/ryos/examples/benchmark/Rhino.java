@@ -31,7 +31,7 @@ public class Rhino {
                         .withStatus(200)
                         .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-        Simulation.create(PROPS, RhinoDSL.class).start();
+        Simulation.getInstance(PROPS, RhinoDSL.class).start();
 
         wireMockServer.stop();
     }

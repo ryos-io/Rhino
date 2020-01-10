@@ -19,8 +19,8 @@ package io.ryos.examples.benchmark;
 import static io.ryos.examples.benchmark.Constants.DISCOVERY_ENDPOINT;
 import static io.ryos.examples.benchmark.Constants.X_API_KEY;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
+import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
-import static io.ryos.rhino.sdk.dsl.specs.Spec.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -45,7 +45,7 @@ public class RhinoDSL {
   @UserProvider
   private OAuthUserProvider userProvider;
 
-  @Provider(factory = UUIDProvider.class)
+  @Provider(clazz = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
