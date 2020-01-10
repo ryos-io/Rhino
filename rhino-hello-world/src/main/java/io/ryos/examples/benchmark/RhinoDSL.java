@@ -26,7 +26,6 @@ import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Runner;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
@@ -34,11 +33,9 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
-import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
 @Simulation(name = "Server-Status Simulation")
-@Runner(clazz = ReactiveHttpSimulationRunner.class)
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class RhinoDSL {
 
