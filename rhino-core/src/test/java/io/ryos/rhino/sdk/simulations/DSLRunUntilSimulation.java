@@ -3,19 +3,17 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
 import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.specs.builder.DSLUtils.ifStatusCode;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.mat.HttpSpecData;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 @Simulation(name = "DSLRunUntilSimulation")
 public class DSLRunUntilSimulation {
@@ -46,10 +44,5 @@ public class DSLRunUntilSimulation {
             .endpoint(FILES_ENDPOINT)
             .get()
             .saveTo("result2"));
-  }
-
-  private Predicate<UserSession> ifStatusCode(int statusCode) {
-    return s -> s.<HttpSpecData>get("result").map(d -> d.getResponse().getStatusCode()).orElse(-1)
-        == statusCode;
   }
 }
