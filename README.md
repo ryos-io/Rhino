@@ -84,9 +84,7 @@ public class RhinoEntity {
 
   private static final String TARGET = "http://localhost:8089/api/status";
   private static final String X_REQUEST_ID = "X-Request-Id";
-
-  private Client client = ClientBuilder.newClient();
-
+  
   @Provider(factory = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
