@@ -16,10 +16,13 @@
 
 package io.ryos.rhino.sdk.converter;
 
+import java.util.Objects;
+
 public class IntTypeConverter implements TypeConverter<Integer> {
 
   @Override
   public Integer convert(String input) {
-    return Integer.valueOf(input);
+    final String s = Objects.requireNonNull(input, "Cannot convert value to int");
+    return Integer.valueOf(s);
   }
 }
