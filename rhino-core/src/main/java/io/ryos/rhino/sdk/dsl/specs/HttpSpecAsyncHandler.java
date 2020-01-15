@@ -1,6 +1,9 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
+import static java.lang.System.out;
+
 import io.netty.handler.codec.http.HttpHeaders;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableSpec;
 import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
@@ -128,6 +131,12 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     if (measurementEnabled && isReadyToMeasure(httpResponse)) {
       completeMeasurement();
+    }
+
+    if (SimulationConfig.debugHttp()) {
+      //TODO Should we use logger for debug outputs?
+      out.println("[debug.http=true] [statusCode=" + response.getStatusCode() + "][" + response
+          .getResponseBody() + "]");
     }
 
     return response;
