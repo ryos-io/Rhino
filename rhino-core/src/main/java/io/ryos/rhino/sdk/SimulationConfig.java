@@ -291,6 +291,10 @@ public class SimulationConfig {
     return instance.getProperty(PACKAGE_TO_SCAN);
   }
 
+  String getDebugHttp() {
+    return instance.getProperty("debug.http");
+  }
+
   public static int getMaxConnections() {
     var maxConnection = instance.getConfigHttpMaxConnections();
     return Integer.min(Integer.parseInt(maxConnection), MAX_CONN);
@@ -316,6 +320,10 @@ public class SimulationConfig {
     var runnerParallelisation = instance.getRunnerParallelisation();
     var par = Integer.parseInt(runnerParallelisation);
     return Integer.min(par, MAX_PAR);
+  }
+
+  public static boolean debugHttp() {
+    return Boolean.valueOf(instance.getDebugHttp());
   }
 
   public static SourceType getUserSource() {
