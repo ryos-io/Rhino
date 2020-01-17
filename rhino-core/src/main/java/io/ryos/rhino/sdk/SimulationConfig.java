@@ -29,10 +29,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 /**
- * Simulation configuration instances are used to configure benchmark tests. The {@link
- * SimulationConfig} instances are passed the configuration parameters to construct the {@link
- * Simulation} objects. Once the {@link Simulation} is fully configured, the instances thereof are
- * ready to run which starts off the benchmark test.
+ * Simulation configuration instances are used to configure Rhino tests.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -53,12 +50,14 @@ public class SimulationConfig {
   private static final String DEFAULT_READ_TIMEOUT = "15000";
   private static SimulationConfig instance;
 
+  private final String pathToConfig;
   private final Properties properties;
   private final String environment;
   private final String simulationId;
 
   private SimulationConfig(final String path, final Environment environment) {
     this.properties = new Properties();
+    this.pathToConfig = path;
     this.environment = environment.toString();
     this.simulationId = Optional
         .ofNullable(System.getenv().get(SIM_ID))
@@ -66,8 +65,20 @@ public class SimulationConfig {
     loadConfig(path);
   }
 
-  static SimulationConfig newInstance(final String path, final Environment environment) {
-    if (instance != null) {
+  /**
+   * Factory method which creates a new singleton {@link SimulationConfig} instance.
+   * {@link SimulationConfig} instances are bound to their configuration paths. If the
+   * configuration path does differ from the existing singleton instance, a new object will be
+   * created with the configuration path given, and the existing one will be discarded.
+   *
+   * @param path Path to the configuration properties.
+   * @param environment Environment of {@link Environment}.
+   * @return A new {@link SimulationConfig}.
+   */
+  public static synchronized SimulationConfig newInstance(final String path,
+      final Environment environment) {
+
+    if (instance != null && instance.pathToConfig.equals(path)) {
       return instance;
     }
 
