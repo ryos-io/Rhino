@@ -20,8 +20,8 @@ import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
-import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,9 +48,9 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
     LOG.info("Grafana is enabled. Creating dashboard: {}", SimulationConfig.getSimulationId());
     new GrafanaGateway(simulationMetadata.getGrafanaInfo())
         .setUpDashboard(SimulationConfig.getSimulationId(),
-            simulationMetadata.getScenarios()
+            simulationMetadata.getDslMethods()
                 .stream()
-                .map(Scenario::getDescription)
+                .map(DSLItem::getName)
                 .toArray(String[]::new));
   }
 
