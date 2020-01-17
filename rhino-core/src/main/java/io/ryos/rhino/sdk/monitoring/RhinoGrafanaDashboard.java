@@ -29,13 +29,13 @@ public class RhinoGrafanaDashboard implements GrafanaDashboard {
   @Override
   public String getDashboard(final String simulationName,
       final String dashboardTemplate,
-      final String[] scenarios) {
+      final String[] dsls) {
 
     String dbTemplate = dashboardTemplate;
 
     dbTemplate = dbTemplate.replace("${SIMULATION_NAME}", simulationName);
-    if (scenarios != null && scenarios.length > 0) {
-      dbTemplate = dbTemplate.replace("${SCENARIO_1}", scenarios[0]);
+    if (dsls != null && dsls.length > 0) {
+      dbTemplate = dbTemplate.replace("${SCENARIO_1}", dsls[0]);
       // handle more than one scenario.
     }
 
