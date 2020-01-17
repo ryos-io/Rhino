@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk.converter;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
@@ -32,13 +31,11 @@ public class ListTypeConverter<T> implements TypeConverter<List<T>> {
 
   @Override
   public List<T> convert(String input) {
-
-    if (input != null) {
-      return Arrays.stream(input.split(","))
-          .map(String::trim)
-          .map(typeConverter::convert)
-          .collect(Collectors.toList());
-    }
-    return Collections.emptyList();
+    Validate.notEmpty(input);
+    final String normalizedInput = input.replaceAll("\"", "");
+    return Arrays.stream(normalizedInput.split(","))
+        .map(String::trim)
+        .map(typeConverter::convert)
+        .collect(Collectors.toList());
   }
 }
