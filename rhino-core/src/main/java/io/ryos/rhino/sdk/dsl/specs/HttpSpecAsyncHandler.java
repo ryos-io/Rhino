@@ -1,7 +1,5 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
-import static java.lang.System.out;
-
 import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -11,6 +9,8 @@ import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.HttpResponseStatus;
@@ -19,7 +19,9 @@ import org.asynchttpclient.netty.request.NettyRequest;
 
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
+  public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
   private static final String BLANK = "";
+
   private final String stepName;
   private final String specName;
   private final String userId;
@@ -134,8 +136,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     }
 
     if (SimulationConfig.debugHttp()) {
-      //TODO Should we use logger for debug outputs?
-      out.println("[debug.http=true] [statusCode=" + response.getStatusCode() + "][" + response
+      LOG.info("[debug.http=true] [statusCode=" + response.getStatusCode() + "][" + response
           .getResponseBody() + "]");
     }
 
