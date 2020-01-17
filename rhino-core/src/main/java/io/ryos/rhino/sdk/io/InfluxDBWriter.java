@@ -27,6 +27,7 @@ import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDB.ConsistencyLevel;
 import org.influxdb.InfluxDBFactory;
@@ -60,14 +61,23 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
         .writeTimeout(1, TimeUnit.MINUTES)
         .retryOnConnectionFailure(true);
 
-    this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(),
-        SimulationConfig.getInfluxUsername(),
-        SimulationConfig.getInfluxPassword(), client)
-        .setRetentionPolicy(SimulationConfig.getInfluxRetentionPolicy())
-        .setConsistency(ConsistencyLevel.ONE)
-        .enableBatch(SimulationConfig.getInfluxBatchActions(),
-            SimulationConfig.getInfluxBatchDuration(),
-            TimeUnit.MICROSECONDS);
+    if (StringUtils.isEmpty(SimulationConfig.getInfluxUsername())) {
+      this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(), client)
+          .setRetentionPolicy(SimulationConfig.getInfluxRetentionPolicy())
+          .setConsistency(ConsistencyLevel.ONE)
+          .enableBatch(SimulationConfig.getInfluxBatchActions(),
+              SimulationConfig.getInfluxBatchDuration(),
+              TimeUnit.MICROSECONDS);
+    } else {
+      this.influxDB = InfluxDBFactory.connect(SimulationConfig.getInfluxURL(),
+          SimulationConfig.getInfluxUsername(),
+          SimulationConfig.getInfluxPassword(), client)
+          .setRetentionPolicy(SimulationConfig.getInfluxRetentionPolicy())
+          .setConsistency(ConsistencyLevel.ONE)
+          .enableBatch(SimulationConfig.getInfluxBatchActions(),
+              SimulationConfig.getInfluxBatchDuration(),
+              TimeUnit.MICROSECONDS);
+    }
 
     influxDB.createDatabase(dbName);
   }
