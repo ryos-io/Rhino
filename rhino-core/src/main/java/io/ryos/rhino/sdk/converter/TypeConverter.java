@@ -16,23 +16,56 @@
 
 package io.ryos.rhino.sdk.converter;
 
+/**
+ * Type converters are used to convert an object of source type to the destination type.
+ *
+ * @param <T> Target object type.
+ * @author Erhan Bagdemir
+ */
 public interface TypeConverter<T> {
 
+  /**
+   * Returns a new {@link IntTypeConverter} instance.
+   *
+   * @return {@link IntTypeConverter} instance
+   */
   static IntTypeConverter asInt() {
     return new IntTypeConverter();
   }
 
+  /**
+   * Returns a new {@link StringTypeConverter} instance.
+   *
+   * @return {@link StringTypeConverter} instance
+   */
   static StringTypeConverter asStr() {
     return new StringTypeConverter();
   }
 
+  /**
+   * Returns a new {@link ListTypeConverter} instance.
+   *
+   * @param typeConverter Nested type converter to convert list items.
+   * @return {@link ListTypeConverter} instance
+   */
   static <E> ListTypeConverter<E> asList(TypeConverter<E> typeConverter) {
-    return new ListTypeConverter<E>(typeConverter);
+    return new ListTypeConverter<>(typeConverter);
   }
 
+  /**
+   * Returns a new {@link ListTypeConverter} instance.
+   *
+   * @return {@link ListTypeConverter} instance
+   */
   static ListTypeConverter<String> asList() {
     return new ListTypeConverter<>(new StringTypeConverter());
   }
 
+  /**
+   * Convert {@link String} value to the target type.
+   *
+   * @param input Input string.
+   * @return The value of input in target type.
+   */
   T convert(String input);
 }
