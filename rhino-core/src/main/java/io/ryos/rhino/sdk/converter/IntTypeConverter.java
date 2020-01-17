@@ -16,13 +16,17 @@
 
 package io.ryos.rhino.sdk.converter;
 
-import java.util.Objects;
+import org.apache.commons.lang3.Validate;
 
+/**
+ * {@link String} to {@link Integer} converter.
+ *
+ * @author Erhan Bagdemir
+ */
 public class IntTypeConverter implements TypeConverter<Integer> {
 
   @Override
   public Integer convert(String input) {
-    final String s = Objects.requireNonNull(input, "Cannot convert value to int");
-    return Integer.valueOf(s);
+    return Integer.valueOf(Validate.notEmpty(input, "Cannot convert value to int."));
   }
 }
