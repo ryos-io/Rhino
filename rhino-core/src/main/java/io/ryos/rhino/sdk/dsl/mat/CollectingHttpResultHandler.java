@@ -59,7 +59,10 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
     var activatedUser = getActiveUser((HttpSpec) currentSpec, userSession);
     var globalSession = userSession.getSimulationSessionFor(activatedUser);
-    var parentKey = currentSpec.getParent() != null ? getSessionKey(currentSpec.getParent()) : "";
+    var parentKey = currentSpec.getParent() != null
+        && currentSpec.getParent() instanceof SessionDSLItem
+        && currentSpec.getParent() instanceof AbstractMeasurableSpec ?
+        getSessionKey(currentSpec.getParent()) : "";
     var currentKey = getSessionKey(currentSpec);
     var httpSpecData = new HttpSpecData();
     httpSpecData.setEndpoint(((HttpSpec) currentSpec).getEndpoint().apply(userSession));
