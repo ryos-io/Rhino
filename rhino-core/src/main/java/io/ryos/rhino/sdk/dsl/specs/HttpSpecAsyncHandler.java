@@ -36,7 +36,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public HttpSpecAsyncHandler(final UserSession session,
       final HttpSpec spec) {
-    this.measurement = new MeasurementImpl(getTestName(spec), session.getUser().getId());
+    this.measurement = new MeasurementImpl(getMeasurementName(spec), session.getUser().getId());
     this.specName = spec.getParentName();
     this.userId = session.getUser().getId();
     this.stepName = spec.getMeasurementPoint();
@@ -46,10 +46,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     this.cumulativeMeasurement = spec.isCumulative();
   }
 
-  private String getTestName(final HttpSpec spec) {
+  private String getMeasurementName(final HttpSpec spec) {
     if (spec.hasParent()) {
-      if (spec.getParent() instanceof AbstractMeasurableSpec) {
-        return ((AbstractMeasurableSpec) spec.getParent()).getMeasurementPoint();
+      var parent = spec.getParent();
+      if (parent instanceof AbstractMeasurableSpec) {
+        return ((AbstractMeasurableSpec) parent).getMeasurementPoint();
+      }
+      if (parent instanceof DSLMethod) {
+        return parent.getName();
       }
     }
     return spec.getName();
@@ -57,10 +61,9 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public State onStatusReceived(final HttpResponseStatus responseStatus) {
-
     builder.reset();
     builder.accumulate(responseStatus);
-    this.status = responseStatus.getStatusCode();
+    status = responseStatus.getStatusCode();
 
     return State.CONTINUE;
   }
@@ -127,19 +130,16 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public Response onCompleted() {
-
-    Response response = builder.build();
+    var response = builder.build();
     var httpResponse = new HttpResponse(response);
-
     if (measurementEnabled && isReadyToMeasure(httpResponse)) {
       completeMeasurement();
     }
-
     if (SimulationConfig.debugHttp()) {
-      LOG.info("[debug.http=true] [statusCode=" + response.getStatusCode() + "][" + response
-          .getResponseBody() + "]");
+      LOG.info("[debug.http=true][statusCode={}][body={}]",
+          response.getStatusCode(),
+          response.getResponseBody());
     }
-
     return response;
   }
 
