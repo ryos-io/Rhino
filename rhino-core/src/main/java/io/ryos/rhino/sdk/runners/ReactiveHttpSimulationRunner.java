@@ -156,9 +156,9 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       throw new NoSpecDefinedException(dsl.getName());
     }
 
-    DSLItem nextItem = childrenIterator.next();
-    SpecMaterializer<DSLSpec> materializer = createDSLSpecMaterializer(session, nextItem);
-
+    var nextItem = childrenIterator.next();
+    nextItem.setParent(dsl);
+    var materializer = createDSLSpecMaterializer(session, nextItem);
     var acc = materializer.materialize((DSLSpec) nextItem, session);
 
     while (childrenIterator.hasNext()) {
