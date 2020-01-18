@@ -19,14 +19,9 @@ package io.ryos.rhino.sdk.dsl.specs.impl;
 import io.ryos.rhino.sdk.dsl.specs.DSLItem;
 import org.apache.commons.lang3.Validate;
 
-/**
- * @author Erhan Bagdemir
- * @since 2.0.0
- */
 public abstract class AbstractDSLItem implements DSLItem {
 
   private String name;
-
   private DSLItem parent;
 
   public AbstractDSLItem(String name) {
