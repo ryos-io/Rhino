@@ -21,14 +21,10 @@ import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,16 +39,9 @@ import org.slf4j.LoggerFactory;
 public class StdoutReporter extends AbstractActor {
 
   private static final Logger LOG = LoggerFactory.getLogger(StdoutReporter.class);
-
   private static final long DELAY = 1000L;
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
-  private static final String BORDER_LINE_BOLD =
-      "==========================================================================";
-  private static final String DATETIME_PATTERN = "HH:mm:ss";
-  private static final String NOT_AVAILABLE = "N/A";
   private static final int MSG_OK = 200;
-  private static final String COUNT = "Count/";
-  private static final String RESPONSE_TIME = "ResponseTime/";
 
   private Instant startTime;
   private Duration duration;
@@ -73,7 +62,7 @@ public class StdoutReporter extends AbstractActor {
   /**
    * Key format is scenario_step_$metric e.g
    * <p>
-   *
+   * <p>
    * moneyTransfer_checkDebit_responseTime = 15ms moneyTransfer_checkDebit_OK = 250
    * moneyTransfer_checkDebit_NOTFOUND = 2
    */
@@ -121,12 +110,12 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private void persist(final ScenarioEvent logEvent) {
-    String countKey = String.format("Count/%s/%s/%s",
+    var countKey = String.format("Count/%s/%s/%s",
         logEvent.getScenario(),
         logEvent.getStep(),
         logEvent.getStatus());
 
-    String responseTypeKey = String.format("ResponseTime/%s/%s/%s",
+    var responseTypeKey = String.format("ResponseTime/%s/%s/%s",
         logEvent.getScenario(),
         logEvent.getStep(),
         logEvent.getStatus());
@@ -139,10 +128,10 @@ public class StdoutReporter extends AbstractActor {
       metrics.put(responseTypeKey, 0L);
     }
 
-    Long currVal = metrics.get(countKey);
+    var currVal = metrics.get(countKey);
     metrics.put(countKey, ++currVal);
 
-    Long currElapsed = metrics.get(responseTypeKey);
+    var currElapsed = metrics.get(responseTypeKey);
     metrics.put(responseTypeKey, currElapsed + logEvent.getElapsed());
   }
 
@@ -152,98 +141,18 @@ public class StdoutReporter extends AbstractActor {
       return;
     }
 
-    var countMetrics = metrics.entrySet()
-        .stream()
-        .filter(e -> e.getKey().startsWith(COUNT))
-        .map(e -> formatKey(e.getKey()) + " " + e.getValue())
-        .collect(Collectors.toList());
-
-    var responseTypeMetrics = metrics.entrySet()
-        .stream()
-        .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
-        .map(
-            e -> formatKey(e.getKey()) + " " + getAvgResponseTime(e.getKey(), e.getValue()) + " ms")
-        .collect(Collectors.toList());
-
-    long overAllResponseTime = metrics.entrySet()
-        .stream()
-        .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
-        .map(Entry::getValue)
-        .reduce(Long::sum).orElse(0L);
-
-    long totalNumberOfRequests = metrics.entrySet()
-        .stream()
-        .filter(e -> e.getKey().startsWith(COUNT))
-        .map(Entry::getValue)
-        .reduce(Long::sum).orElse(0L);
-
-    long avgRT = -1;
-    if (totalNumberOfRequests > 0) {
-      avgRT = overAllResponseTime / totalNumberOfRequests;
-    }
-
-    StringBuilder output = new StringBuilder();
-    if (numberOfUsers > 0) {
-      output.append("Number of users logged in : ").append(numberOfUsers).append('\n');
-    }
-    output.append("Tests started : ").append(formatDate(startTime)).append('\n');
-    output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
-        .append(" secs ETA : ")
-        .append(formatDate(startTime.plus(duration)))
-        .append(" (duration ")
-        .append(duration.toMinutes())
-        .append(" mins)")
-        .append('\n');
-
-    if (event != null) {
-      output.append("Tests ended : ")
-          .append(formatDate(event.getEndTestTime()))
-          .append('\n');
-    }
-    output.append(BORDER_LINE_BOLD).append('\n');
-    output.append("-- Number of executions --------------------------------------------------")
-        .append('\n');
-    output.append(String.join("\n", countMetrics)).append('\n');
-    output.append("-- Response Time ---------------------------------------------------------")
-        .append('\n');
-    output.append(String.join("\n", responseTypeMetrics)).append('\n').append('\n');
-    output.append(BORDER_LINE_BOLD).append('\n');
-    output.append(String.format("%50s %9s ms", "Average Response Time", avgRT)).append('\n');
-    output.append(String.format("%50s %9s ", "Total Request", totalNumberOfRequests)).append('\n');
-    output.append(BORDER_LINE_BOLD).append('\n');
+    var consoleOutputView = new ConsoleOutputView(100,
+        20,
+        20,
+        numberOfUsers,
+        startTime,
+        event != null ? event.getEndTestTime() : null,
+        duration,
+        metrics);
 
     if (LOG.isInfoEnabled()) {
-      LOG.info(output.toString());
+      LOG.info(consoleOutputView.getView());
     }
-  }
-
-  private String formatDate(Instant dateTime) {
-    if (dateTime == null) {
-      return NOT_AVAILABLE;
-    }
-    return DateTimeFormatter.ofPattern(DATETIME_PATTERN).withZone(ZoneId.systemDefault())
-        .format(dateTime);
-  }
-
-  private long getAvgResponseTime(String key, long totalElapsed) {
-    final Long totalCount = metrics.get(key.replace(RESPONSE_TIME, COUNT));
-    if (totalCount > 0) {
-      return totalElapsed / totalCount;
-    }
-    return -1;
-  }
-
-  private String formatKey(String key) {
-    String normalizedStr = key
-        .replace(RESPONSE_TIME, "")
-        .replace(COUNT, "");
-
-    String[] sections = normalizedStr.split("/");
-    if (sections.length > 2) {
-      return String.format("> %-15.15s  %-15.15s %25s", sections[0], sections[1], sections[2]);
-    }
-
-    return "";
   }
 
   public static class EndTestEvent {
