@@ -142,8 +142,6 @@ public class StdoutReporter extends AbstractActor {
     }
 
     var consoleOutputView = new ConsoleOutputView(100,
-        20,
-        20,
         numberOfUsers,
         startTime,
         event != null ? event.getEndTestTime() : null,
