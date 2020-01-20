@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
 import java.time.Duration;
 import java.util.function.Predicate;
 
@@ -12,19 +12,19 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface RunnableDsl extends LoadDsl, SessionDSL, IterableDsl {
+public interface RunnableDsl extends LoadDsl, SessionDsl, IterableDsl {
 
   /**
    * Conditional runnable DSL is a {@link LoadDsl}if {@link Predicate} returns {@code true}, then
-   * the execution proceeds and it runs the {@link DSLSpec} passed as parameter.
+   * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
    * <p>
    *
-   * @param spec {@link DSLSpec} to materialize and run.
-   * @param predicate {@link Predicate} which is conditional for execution of {@link DSLSpec}
+   * @param spec {@link MaterializableDslItem} to materialize and run.
+   * @param predicate {@link Predicate} which is conditional for execution of {@link MaterializableDslItem}
    * provided.
    * @return {@link LoadDslImpl} instance.
    */
-  RunnableDsl runIf(Predicate<UserSession> predicate, DSLSpec spec);
+  RunnableDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Wait DSL is a DSL instance which makes execution halt for {@link Duration}.
@@ -36,11 +36,11 @@ public interface RunnableDsl extends LoadDsl, SessionDSL, IterableDsl {
   LoadDslImpl wait(Duration duration);
 
   /**
-   * Runner DSL is a {@link LoadDsl} instance to run the {@link DSLSpec} passed as parameter.
+   * Runner DSL is a {@link LoadDsl} instance to run the {@link MaterializableDslItem} passed as parameter.
    * <p>
    *
-   * @param spec {@link DSLSpec} to materialize and run.
+   * @param spec {@link MaterializableDslItem} to materialize and run.
    * @return {@link LoadDslImpl} instance.
    */
-  RunnableDsl run(DSLSpec spec);
+  RunnableDsl run(MaterializableDslItem spec);
 }

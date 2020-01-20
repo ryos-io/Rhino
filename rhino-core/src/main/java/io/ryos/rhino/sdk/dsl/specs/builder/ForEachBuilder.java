@@ -17,14 +17,14 @@
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.specs.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
 import java.util.function.Function;
 
 public interface ForEachBuilder<E, R extends Iterable<E>> {
 
-  ForEachBuilder<E, R> doRun(Function<E, DSLSpec> forEachFunction);
+  ForEachBuilder<E, R> doRun(Function<E, MaterializableDslItem> forEachFunction);
 
   ForEachBuilder<E, R> saveTo(String sessionKey);
 
@@ -32,13 +32,13 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<UserSession, R> getIterableSupplier();
 
-  Function<E, ? extends DSLSpec> getForEachFunction();
+  Function<E, ? extends MaterializableDslItem> getForEachFunction();
 
   String getKey();
 
   Scope getScope();
 
-  ForEachSpec<E, R> getSpec();
+  ForEachDsl<E, R> getSpec();
 
-  void setSpec(ForEachSpec<E, R> spec);
+  void setSpec(ForEachDsl<E, R> spec);
 }

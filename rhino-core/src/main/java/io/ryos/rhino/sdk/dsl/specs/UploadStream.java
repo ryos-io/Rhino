@@ -1,17 +1,17 @@
 package io.ryos.rhino.sdk.dsl.specs;
 
-import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.HttpDslImpl;
 import io.ryos.rhino.sdk.io.ConfigResource;
 import java.io.InputStream;
 import java.util.Objects;
 
 /**
- * Upload stream is used in {@link HttpSpec} implementations to upload files by POST or PUT
+ * Upload stream is used in {@link HttpDsl} implementations to upload files by POST or PUT
  * requests.
  * <p>
  *
  * @author Erhan Bagdemir
- * @see HttpSpecImpl
+ * @see HttpDslImpl
  * @see ConfigResource
  * @since 1.6.0
  */

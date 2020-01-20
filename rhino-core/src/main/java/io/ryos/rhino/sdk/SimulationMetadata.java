@@ -23,8 +23,8 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.DslMethod;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
 import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import io.ryos.rhino.sdk.users.repositories.UserRepository;
@@ -124,7 +124,7 @@ public class SimulationMetadata {
    */
   private List<LoadDsl> loadDsls;
 
-  private List<DSLMethod> dslMethods;
+  private List<DslMethod> dslMethods;
 
   /**
    * The {@link java.lang.reflect.Method} instance for preparing the scenario.
@@ -242,7 +242,7 @@ public class SimulationMetadata {
     return loadDsls;
   }
 
-  public List<DSLMethod> getDslMethods() {
+  public List<DslMethod> getDslMethods() {
     return dslMethods;
   }
 
@@ -337,10 +337,10 @@ public class SimulationMetadata {
      */
     private List<Scenario> scenarios;
 
-    private List<DSLMethod> dslMethods;
+    private List<DslMethod> dslMethods;
 
     /**
-     * List of {@link DSLSpec} instances.
+     * List of {@link MaterializableDslItem} instances.
      * <p>
      */
     private List<LoadDsl> loadDsls;
@@ -462,7 +462,7 @@ public class SimulationMetadata {
       return this;
     }
 
-    public Builder withDSLMethods(final List<DSLMethod> dslMethods) {
+    public Builder withDSLMethods(final List<DslMethod> dslMethods) {
       this.dslMethods = dslMethods;
       return this;
     }

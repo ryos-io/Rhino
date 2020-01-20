@@ -37,8 +37,8 @@ import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.LoadDslImpl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
-import io.ryos.rhino.sdk.dsl.specs.impl.DSLMethodImpl;
+import io.ryos.rhino.sdk.dsl.specs.DslMethod;
+import io.ryos.rhino.sdk.dsl.specs.impl.DslMethodImpl;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -125,8 +125,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .build();
   }
 
-  private DSLMethod createDslMethod(Object testInstance, Method method) {
-    return new DSLMethodImpl(getName(method), ReflectionUtils.executeMethod(method, testInstance));
+  private DslMethod createDslMethod(Object testInstance, Method method) {
+    return new DslMethodImpl(getName(method), ReflectionUtils.executeMethod(method, testInstance));
   }
 
   private String getName(Method method) {

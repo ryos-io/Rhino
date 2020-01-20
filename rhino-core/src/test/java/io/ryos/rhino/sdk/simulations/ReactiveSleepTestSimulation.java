@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.some;
+import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
@@ -24,11 +24,11 @@ import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.specs.impl.SomeSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
 /**
- * Reactive test spec for arbitrary code execution with {@link SomeSpecImpl}.
+ * Reactive test spec for arbitrary code execution with {@link SomeDslImpl}.
  * <p>
  *
  * @author Erhan Bagdemir

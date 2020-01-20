@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import java.util.function.Predicate;
 
@@ -24,28 +24,28 @@ public interface IterableDsl extends LoadDsl {
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
-   * Runs the {@link DSLSpec} till the {@link Predicate} holds.
+   * Runs the {@link MaterializableDslItem} till the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec      {@link DSLSpec} to run.
+   * @param spec      {@link MaterializableDslItem} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl until(Predicate<UserSession> predicate, DSLSpec spec);
+  RunnableDsl until(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
-   * Runs the {@link DSLSpec} as long as the {@link Predicate} holds.
+   * Runs the {@link MaterializableDslItem} as long as the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
-   * @param spec      {@link DSLSpec} to run.
+   * @param spec      {@link MaterializableDslItem} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl asLongAs(Predicate<UserSession> predicate, DSLSpec spec);
+  RunnableDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
-   * Runs the {@link DSLSpec} repeatedly.
+   * Runs the {@link MaterializableDslItem} repeatedly.
    *
-   * @param spec {@link DSLSpec} to run.
+   * @param spec {@link MaterializableDslItem} to run.
    * @return {@link RunnableDsl} runnable DSL instance.
    */
-  RunnableDsl repeat(DSLSpec spec);
+  RunnableDsl repeat(MaterializableDslItem spec);
 }

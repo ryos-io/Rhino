@@ -16,8 +16,8 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalDslWrapper;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 
 /**
@@ -30,7 +30,7 @@ public class MaterializerFactory {
   }
 
 
-  private boolean isConditionalSpec(DSLSpec next) {
-    return next instanceof ConditionalSpecWrapper;
+  private boolean isConditionalSpec(MaterializableDslItem next) {
+    return next instanceof ConditionalDslWrapper;
   }
 }

@@ -16,18 +16,18 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope.USER;
+import static io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope.USER;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
-import io.ryos.rhino.sdk.dsl.specs.DSLItem;
-import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
+import io.ryos.rhino.sdk.dsl.specs.DslItem;
+import io.ryos.rhino.sdk.dsl.specs.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
-import io.ryos.rhino.sdk.dsl.specs.ResultingSpec;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
-import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
+import io.ryos.rhino.sdk.dsl.specs.ResultingDsl;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableDsl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,17 +37,17 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
   private final String contextKey;
   private final UserSession userSession;
-  private final ResultingSpec currentSpec;
+  private final ResultingDsl currentSpec;
 
   public CollectingHttpResultHandler(final String contextKey,
       final UserSession userSession,
-      final ResultingSpec resultingSpec) {
+      final ResultingDsl resultingDsl) {
     this.contextKey = contextKey;
     this.userSession = userSession;
-    this.currentSpec = resultingSpec;
+    this.currentSpec = resultingDsl;
   }
 
-  public CollectingHttpResultHandler(final UserSession userSession, final HttpSpec httpSpec) {
+  public CollectingHttpResultHandler(final UserSession userSession, final HttpDsl httpSpec) {
     this(httpSpec.getSessionKey(), userSession, httpSpec);
   }
 
@@ -57,15 +57,15 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return userSession;
     }
 
-    var activatedUser = getActiveUser((HttpSpec) currentSpec, userSession);
+    var activatedUser = getActiveUser((HttpDsl) currentSpec, userSession);
     var globalSession = userSession.getSimulationSessionFor(activatedUser);
     var parentKey = currentSpec.getParent() != null
-        && currentSpec.getParent() instanceof SessionDSLItem
-        && currentSpec.getParent() instanceof AbstractMeasurableSpec ?
+        && currentSpec.getParent() instanceof SessionDslItem
+        && currentSpec.getParent() instanceof AbstractMeasurableDsl ?
         getSessionKey(currentSpec.getParent()) : "";
     var currentKey = getSessionKey(currentSpec);
     var httpSpecData = new HttpSpecData();
-    httpSpecData.setEndpoint(((HttpSpec) currentSpec).getEndpoint().apply(userSession));
+    httpSpecData.setEndpoint(((HttpDsl) currentSpec).getEndpoint().apply(userSession));
 
     if (!currentSpec.hasParent()) {
       if (isInUserSession()) {
@@ -114,23 +114,23 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
   }
 
   private boolean isForEachSpec() {
-    return currentSpec.getParent() instanceof ForEachSpec;
+    return currentSpec.getParent() instanceof ForEachDsl;
   }
 
-  private String getSessionKey(final DSLItem dslItem) {
+  private String getSessionKey(final DslItem dslItem) {
 
-    if (dslItem instanceof SessionDSLItem) {
-      return ((SessionDSLItem) dslItem).getSessionKey();
+    if (dslItem instanceof SessionDslItem) {
+      return ((SessionDslItem) dslItem).getSessionKey();
     }
 
-    if (dslItem instanceof AbstractMeasurableSpec) {
-      return ((AbstractMeasurableSpec) dslItem).getMeasurementPoint();
+    if (dslItem instanceof AbstractMeasurableDsl) {
+      return ((AbstractMeasurableDsl) dslItem).getMeasurementPoint();
     }
 
     throw new RuntimeException("Cannot determine session key.");
   }
 
-  private Map<String, List<Object>> getMapSupplier(DSLItem spec) {
+  private Map<String, List<Object>> getMapSupplier(DslItem spec) {
     var map = new HashMap<String, List<Object>>();
     map.put(getSessionKey(spec), new ArrayList<>());
     return map;
@@ -138,12 +138,12 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
   private boolean isInUserSession() {
 
-    if (currentSpec.hasParent() && currentSpec.getParent() instanceof SessionDSLItem) {
-      return ((SessionDSLItem) currentSpec.getParent()).getSessionScope().equals(USER);
+    if (currentSpec.hasParent() && currentSpec.getParent() instanceof SessionDslItem) {
+      return ((SessionDslItem) currentSpec.getParent()).getSessionScope().equals(USER);
     }
 
-    if (currentSpec instanceof SessionDSLItem) {
-      return ((SessionDSLItem) currentSpec).getSessionScope().equals(USER);
+    if (currentSpec instanceof SessionDslItem) {
+      return ((SessionDslItem) currentSpec).getSessionScope().equals(USER);
     }
 
     throw new RuntimeException("Cannot determine session scope.");

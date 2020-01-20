@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.exceptions.SessionKeyNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ import org.apache.commons.lang3.Validate;
  */
 public class SessionUtils {
 
-  public static User getActiveUser(final HttpSpec httpSpec, final UserSession userSession) {
+  public static User getActiveUser(final HttpDsl httpSpec, final UserSession userSession) {
     Validate.notNull(httpSpec, "Http spec must not be null.");
     Validate.notNull(userSession, "User session must not be null.");
 

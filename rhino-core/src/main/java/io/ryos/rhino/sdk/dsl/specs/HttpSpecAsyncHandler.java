@@ -3,8 +3,8 @@ package io.ryos.rhino.sdk.dsl.specs;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableSpec;
-import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
+import io.ryos.rhino.sdk.dsl.specs.impl.AbstractMeasurableDsl;
+import io.ryos.rhino.sdk.dsl.specs.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
@@ -35,7 +35,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final RetryInfo retryInfo;
 
   public HttpSpecAsyncHandler(final UserSession session,
-      final HttpSpec spec) {
+      final HttpDsl spec) {
     this.measurement = new MeasurementImpl(getMeasurementName(spec), session.getUser().getId());
     this.specName = spec.getParentName();
     this.userId = session.getUser().getId();
@@ -46,13 +46,13 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     this.cumulativeMeasurement = spec.isCumulative();
   }
 
-  private String getMeasurementName(final HttpSpec spec) {
+  private String getMeasurementName(final HttpDsl spec) {
     if (spec.hasParent()) {
       var parent = spec.getParent();
-      if (parent instanceof AbstractMeasurableSpec) {
-        return ((AbstractMeasurableSpec) parent).getMeasurementPoint();
+      if (parent instanceof AbstractMeasurableDsl) {
+        return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
       }
-      if (parent instanceof DSLMethod) {
+      if (parent instanceof DslMethod) {
         return parent.getName();
       }
     }

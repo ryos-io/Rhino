@@ -1,18 +1,18 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLItem;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.DslItem;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.specs.impl.AbstractDSLItem;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
-import io.ryos.rhino.sdk.dsl.specs.impl.EnsureSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.ForEachSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.MapperSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.RunUntilSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.SessionSpecImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.WaitSpecImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalDslWrapper;
+import io.ryos.rhino.sdk.dsl.specs.impl.EnsureDslImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.ForEachDslImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.MapperDslImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.RunUntilDslImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.SessionDslImpl;
+import io.ryos.rhino.sdk.dsl.specs.impl.WaitDslImpl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,13 +27,12 @@ import org.apache.commons.lang3.Validate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL, RunnableDsl,
-    IterableDsl, AssertionDSL {
+public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDsl, RunnableDsl, IterableDsl, AssertionDsl {
 
   /**
    * Executable functions.
    */
-  private final List<DSLItem> children = new ArrayList<>();
+  private final List<DslItem> children = new ArrayList<>();
 
   public LoadDslImpl(String name) {
     super(name);
@@ -42,12 +41,12 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   @Override
   public LoadDslImpl wait(Duration duration) {
     Validate.notNull(duration, "Duration must not be null.");
-    children.add(new WaitSpecImpl(duration));
+    children.add(new WaitDslImpl(duration));
     return this;
   }
 
   @Override
-  public RunnableDsl run(DSLSpec spec) {
+  public RunnableDsl run(MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
     children.add(spec);
     return this;
@@ -56,7 +55,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   @Override
   public RunnableDsl ensure(Predicate<UserSession> predicate) {
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new EnsureSpecImpl(predicate));
+    children.add(new EnsureDslImpl(predicate));
     return this;
   }
 
@@ -64,7 +63,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   public RunnableDsl ensure(Predicate<UserSession> predicate, String reason) {
     Validate.notNull(predicate, "Predicate must not be null.");
     Validate.notNull(reason, "Reason must not be null.");
-    children.add(new EnsureSpecImpl(predicate, reason));
+    children.add(new EnsureDslImpl(predicate, reason));
     return this;
   }
 
@@ -72,14 +71,14 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   public RunnableDsl session(String sessionKey, Supplier<Object> objectSupplier) {
     Validate.notNull(objectSupplier, "Object supplier must not be null.");
     Validate.notEmpty(sessionKey, "Session key must not be null.");
-    children.add(new SessionSpecImpl(sessionKey, objectSupplier));
+    children.add(new SessionDslImpl(sessionKey, objectSupplier));
     return this;
   }
 
   @Override
   public <R, T> RunnableDsl map(MapperBuilder<R, T> mapperBuilder) {
     Validate.notNull(mapperBuilder, "Mapper builder must not be null.");
-    children.add(new MapperSpecImpl<>(mapperBuilder));
+    children.add(new MapperDslImpl<>(mapperBuilder));
     return this;
   }
 
@@ -89,7 +88,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
     Validate.notNull(forEachBuilder, "For each builder must not be null.");
     Validate.notEmpty(name, "Name must not be null.");
 
-    children.add(new ForEachSpecImpl<>(name, Collections.emptyList(),
+    children.add(new ForEachDslImpl<>(name, Collections.emptyList(),
         forEachBuilder.getKey() != null ? forEachBuilder.getKey() : name,
         forEachBuilder.getScope(),
         forEachBuilder.getIterableSupplier(),
@@ -98,33 +97,33 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
   }
 
   @Override
-  public RunnableDsl repeat(DSLSpec spec) {
+  public RunnableDsl repeat(MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
-    children.add(new RunUntilSpecImpl(spec, (s) -> true));
+    children.add(new RunUntilDslImpl(spec, (s) -> true));
     return this;
   }
 
   @Override
-  public RunnableDsl until(Predicate<UserSession> predicate, DSLSpec spec) {
+  public RunnableDsl until(Predicate<UserSession> predicate, MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new RunUntilSpecImpl(spec, predicate));
+    children.add(new RunUntilDslImpl(spec, predicate));
     return this;
   }
 
   @Override
-  public RunnableDsl asLongAs(Predicate<UserSession> predicate, DSLSpec spec) {
+  public RunnableDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new RunUntilSpecImpl(spec, (s) -> !predicate.test(s)));
+    children.add(new RunUntilDslImpl(spec, (s) -> !predicate.test(s)));
     return this;
   }
 
   @Override
-  public RunnableDsl runIf(Predicate<UserSession> predicate, DSLSpec spec) {
+  public RunnableDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new ConditionalSpecWrapper(spec, predicate));
+    children.add(new ConditionalDslWrapper(spec, predicate));
     return this;
   }
 
@@ -134,7 +133,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDSL,
     return this;
   }
 
-  public List<DSLItem> getChildren() {
+  public List<DslItem> getChildren() {
     return children;
   }
 }

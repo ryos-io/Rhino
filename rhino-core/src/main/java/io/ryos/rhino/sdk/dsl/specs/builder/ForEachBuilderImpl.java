@@ -17,9 +17,9 @@
 package io.ryos.rhino.sdk.dsl.specs.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.specs.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
 import java.util.function.Function;
 import org.apache.commons.lang3.Validate;
 
@@ -33,9 +33,9 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
-  private Function<E, ? extends DSLSpec> forEachFunction;
+  private Function<E, ? extends MaterializableDslItem> forEachFunction;
   private Function<UserSession, R> iterableSupplier;
-  private ForEachSpec<E, R> forEachSpec;
+  private ForEachDsl<E, R> forEachDsl;
 
   public ForEachBuilderImpl(final String sessionKey) {
     this.sessionKey = sessionKey;
@@ -57,7 +57,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> doRun(final Function<E, DSLSpec> forEachFunction) {
+  public ForEachBuilder<E, R> doRun(final Function<E, MaterializableDslItem> forEachFunction) {
     Validate.notNull(forEachFunction, "forEachFunction must not be null.");
     this.forEachFunction = forEachFunction;
     return this;
@@ -84,13 +84,13 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachSpec<E, R> getSpec() {
-    return forEachSpec;
+  public ForEachDsl<E, R> getSpec() {
+    return forEachDsl;
   }
 
   @Override
-  public void setSpec(ForEachSpec<E, R> spec) {
-    this.forEachSpec = spec;
+  public void setSpec(ForEachDsl<E, R> spec) {
+    this.forEachDsl = spec;
   }
 
   @Override
@@ -99,7 +99,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, ? extends DSLSpec> getForEachFunction() {
+  public Function<E, ? extends MaterializableDslItem> getForEachFunction() {
     return forEachFunction;
   }
 

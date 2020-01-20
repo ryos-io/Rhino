@@ -16,13 +16,13 @@
 
 package io.ryos.rhino.sdk.dsl.specs.impl;
 
-import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DslItem;
 import org.apache.commons.lang3.Validate;
 
-public abstract class AbstractDSLItem implements DSLItem {
+public abstract class AbstractDSLItem implements DslItem {
 
   private String name;
-  private DSLItem parent;
+  private DslItem parent;
 
   public AbstractDSLItem(String name) {
     Validate.notNull(name, "keyName must not be null.");
@@ -40,12 +40,12 @@ public abstract class AbstractDSLItem implements DSLItem {
   }
 
   @Override
-  public DSLItem getParent() {
+  public DslItem getParent() {
     return parent;
   }
 
   @Override
-  public void setParent(DSLItem parent) {
+  public void setParent(DslItem parent) {
     this.parent = parent;
   }
 

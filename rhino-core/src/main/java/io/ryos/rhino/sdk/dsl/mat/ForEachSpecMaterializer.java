@@ -17,9 +17,9 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import io.ryos.rhino.sdk.dsl.specs.ForEachSpec;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.specs.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,35 +27,35 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
-    SpecMaterializer<ForEachSpec<S, R>> {
+    SpecMaterializer<ForEachDsl<S, R>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ForEachSpecMaterializer.class);
 
   @Override
-  public Mono<UserSession> materialize(final ForEachSpec<S, R> forEachSpec,
+  public Mono<UserSession> materialize(final ForEachDsl<S, R> forEachDsl,
       final UserSession session) {
 
-    var iterable = Optional.ofNullable(forEachSpec.getIterableSupplier().apply(session))
+    var iterable = Optional.ofNullable(forEachDsl.getIterableSupplier().apply(session))
         .orElseThrow(() -> new IllegalArgumentException(
             String.format("forEach() failed. The instance with key: %s")));
 
     return Flux.fromIterable(iterable)
-        .map(forEachSpec.getForEachFunction())
-        .map(childSpec -> inheritFrom(forEachSpec, childSpec))
-        .flatMap(spec -> spec.createMaterializer(session).materialize(spec, session))
+        .map(forEachDsl.getForEachFunction())
+        .map(childSpec -> inheritFrom(forEachDsl, childSpec))
+        .flatMap(spec -> spec.materializer(session).materialize(spec, session))
         .reduce((s1, s2) -> s1)
         .doOnError(e -> LOG.error("Unexpected error: ", e));
   }
 
-  private DSLSpec inheritFrom(ForEachSpec<S, R> forEachSpec, DSLSpec spec) {
+  private MaterializableDslItem inheritFrom(ForEachDsl<S, R> forEachDsl, MaterializableDslItem spec) {
     if (isSessionDSLItem(spec)) {
-      ((SessionDSLItem) spec).setSessionScope(forEachSpec.getSessionScope());
+      ((SessionDslItem) spec).setSessionScope(forEachDsl.getSessionScope());
     }
-    spec.setParent(forEachSpec);
+    spec.setParent(forEachDsl);
     return spec;
   }
 
-  private boolean isSessionDSLItem(DSLSpec spec) {
-    return spec instanceof SessionDSLItem;
+  private boolean isSessionDSLItem(MaterializableDslItem spec) {
+    return spec instanceof SessionDslItem;
   }
 }

@@ -26,9 +26,9 @@ import static org.asynchttpclient.Dsl.put;
 import io.ryos.rhino.sdk.HttpClient;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
 import io.ryos.rhino.sdk.dsl.specs.HttpSpecAsyncHandler;
-import io.ryos.rhino.sdk.dsl.specs.impl.HttpSpecImpl.RetryInfo;
+import io.ryos.rhino.sdk.dsl.specs.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
@@ -48,22 +48,21 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * DSLSpec materializer takes the spec instances and convert them into reactor components, that are to
+ * MaterializableDslItem materializer takes the spec instances and convert them into reactor components, that are to
  * be executed by reactor runtime.
  * <p>
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
+public class HttpSpecMaterializer implements SpecMaterializer<HttpDsl> {
   private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
 
-  public Mono<UserSession> materialize(final HttpSpec httpSpec, final UserSession userSession) {
+  public Mono<UserSession> materialize(final HttpDsl httpSpec, final UserSession userSession) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, httpSpec);
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(
-            buildHttpRequest(httpSpec, session), httpSpecAsyncHandler).toCompletableFuture()));
+        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(httpSpec, session), httpSpecAsyncHandler).toCompletableFuture()));
     var retriableMono = Optional.ofNullable(httpSpec.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
             .map(hr -> isRequestRetriable(retryInfo, hr))
@@ -83,7 +82,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
-  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(final HttpSpec spec,
+  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(final HttpDsl spec,
       final HttpSpecAsyncHandler httpSpecAsyncHandler) {
     return error -> {
       if (error instanceof RetryFailedException && spec.isCumulative()) {
@@ -102,7 +101,7 @@ public class HttpSpecMaterializer implements SpecMaterializer<HttpSpec> {
     return httpResponse.getResponse();
   }
 
-  private RequestBuilder buildHttpRequest(HttpSpec httpSpec, UserSession userSession) {
+  private RequestBuilder buildHttpRequest(HttpDsl httpSpec, UserSession userSession) {
     var endpoint = httpSpec.getEndpoint().apply(userSession);
 
     RequestBuilder builder = null;

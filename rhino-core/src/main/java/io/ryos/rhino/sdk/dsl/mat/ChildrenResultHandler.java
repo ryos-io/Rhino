@@ -20,7 +20,7 @@ import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpec;
+import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +28,11 @@ public class ChildrenResultHandler<E> implements ResultHandler<E> {
 
   private final String contextKey;
   private final UserSession userSession;
-  private final HttpSpec httpSpec;
+  private final HttpDsl httpSpec;
   private final String containerKey;
 
   public ChildrenResultHandler(String contextKey, UserSession userSession,
-      HttpSpec httpSpec,
+      HttpDsl httpSpec,
       String containerKey) {
     this.contextKey = contextKey;
     this.userSession = userSession;
@@ -40,7 +40,7 @@ public class ChildrenResultHandler<E> implements ResultHandler<E> {
     this.containerKey = containerKey;
   }
 
-  public ChildrenResultHandler(final UserSession userSession, final HttpSpec httpSpec,
+  public ChildrenResultHandler(final UserSession userSession, final HttpDsl httpSpec,
       final String containerKey) {
     this(httpSpec.getSaveTo(), userSession, httpSpec, containerKey);
   }

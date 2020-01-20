@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
+import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
 import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.global;
@@ -32,7 +32,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.specs.SessionDSLItem.Scope;
+import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
@@ -56,7 +56,8 @@ public class ForEachSimulation {
     return Start.dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("upload loop",
-            in(session("index")).doRun(index -> http("Prepare by PUT text.txt")
+            in(session("index")).doRun(index ->
+                http("Prepare by PUT text.txt")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
                 .auth()
                 .endpoint(session -> FILES_ENDPOINT + "/" + index)

@@ -17,22 +17,22 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
 import reactor.core.publisher.Mono;
 
 /**
- * DSLSpec materializer takes the spec instances and convert them into reactive components, that are
+ * MaterializableDslItem materializer takes the spec instances and convert them into reactive components, that are
  * to be executed by reactive framework in runtime.
  *
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface SpecMaterializer<T extends DSLSpec> {
+public interface SpecMaterializer<T extends MaterializableDslItem> {
 
   /**
    * Materializer takes the spec and convert it into a {@link Mono}.
    *
-   * @param spec List of DSL DSLSpec.
+   * @param spec List of DSL MaterializableDslItem.
    * @return Mono instance.
    */
   Mono<UserSession> materialize(T spec, final UserSession userSession);

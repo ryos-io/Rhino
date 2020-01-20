@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.WaitSpec;
+import io.ryos.rhino.sdk.dsl.specs.WaitDsl;
 import reactor.core.publisher.Mono;
 
 /**
@@ -27,10 +27,10 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class WaitSpecMaterializer implements SpecMaterializer<WaitSpec> {
+public class WaitSpecMaterializer implements SpecMaterializer<WaitDsl> {
 
   @Override
-  public Mono<UserSession> materialize(WaitSpec spec, UserSession userSession) {
+  public Mono<UserSession> materialize(WaitDsl spec, UserSession userSession) {
     return Mono
         .just(userSession)
         .flatMap(s -> Mono.fromCallable(() -> {

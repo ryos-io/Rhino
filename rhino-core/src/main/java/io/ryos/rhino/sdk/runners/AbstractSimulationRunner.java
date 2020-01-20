@@ -21,7 +21,7 @@ import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.DSLItem;
+import io.ryos.rhino.sdk.dsl.specs.DslItem;
 import io.ryos.rhino.sdk.monitoring.GrafanaGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
         .setUpDashboard(SimulationConfig.getSimulationId(),
             simulationMetadata.getDslMethods()
                 .stream()
-                .map(DSLItem::getName)
+                .map(DslItem::getName)
                 .toArray(String[]::new));
   }
 

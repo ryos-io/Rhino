@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.SomeSpec;
+import io.ryos.rhino.sdk.dsl.specs.SomeDsl;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
@@ -31,10 +31,10 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecMaterializer implements SpecMaterializer<SomeSpec> {
+public class SomeSpecMaterializer implements SpecMaterializer<SomeDsl> {
 
   @Override
-  public Mono<UserSession> materialize(SomeSpec spec, UserSession userSession) {
+  public Mono<UserSession> materialize(SomeDsl spec, UserSession userSession) {
 
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {

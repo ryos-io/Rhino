@@ -24,11 +24,11 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
-import io.ryos.rhino.sdk.dsl.specs.DSLItem;
-import io.ryos.rhino.sdk.dsl.specs.DSLMethod;
-import io.ryos.rhino.sdk.dsl.specs.DSLSpec;
-import io.ryos.rhino.sdk.dsl.specs.Materializable;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalSpecWrapper;
+import io.ryos.rhino.sdk.dsl.specs.DslItem;
+import io.ryos.rhino.sdk.dsl.specs.DslMethod;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.specs.MaterializableDsl;
+import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalDslWrapper;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
@@ -55,7 +55,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(ReactiveHttpSimulationRunner.class);
   private static final String JOB = "job";
   private static final String ALL_REGIONS = "all";
-  private CyclicIterator<DSLMethod> dslIterator;
+  private CyclicIterator<DslMethod> dslIterator;
   private Disposable subscribe;
 
   private volatile boolean shutdownInitiated;
@@ -150,7 +150,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private Publisher<UserSession> materializeDSLMethod(final UserSession session,
-      final DSLItem dsl) {
+      final DslItem dsl) {
     var childrenIterator = dsl.getChildren().iterator();
     if (!childrenIterator.hasNext()) {
       throw new NoSpecDefinedException(dsl.getName());
@@ -159,18 +159,18 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     var nextItem = childrenIterator.next();
     nextItem.setParent(dsl);
     var materializer = createDSLSpecMaterializer(session, nextItem);
-    var acc = materializer.materialize((DSLSpec) nextItem, session);
+    var acc = materializer.materialize((MaterializableDslItem) nextItem, session);
 
     while (childrenIterator.hasNext()) {
       var next = childrenIterator.next();
       acc = acc.flatMap(s -> {
-        if (isConditionalSpec((DSLSpec) next)) {
-          var predicate = ((ConditionalSpecWrapper) next).getPredicate();
+        if (isConditionalSpec((MaterializableDslItem) next)) {
+          var predicate = ((ConditionalDslWrapper) next).getPredicate();
           if (!predicate.test(s)) {
             return Mono.just(s);
           }
         }
-        return createDSLSpecMaterializer(session, next).materialize((DSLSpec) next, session);
+        return createDSLSpecMaterializer(session, next).materialize((MaterializableDslItem) next, session);
       });
     }
 
@@ -183,19 +183,19 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     });
   }
 
-  private SpecMaterializer<DSLSpec> createDSLSpecMaterializer(UserSession session,
-      DSLItem nextItem) {
-    SpecMaterializer<DSLSpec> materializer;
-    if (nextItem instanceof Materializable) {
-      materializer = ((Materializable) nextItem).createMaterializer(session);
+  private SpecMaterializer<MaterializableDslItem> createDSLSpecMaterializer(UserSession session,
+      DslItem nextItem) {
+    SpecMaterializer<MaterializableDslItem> materializer;
+    if (nextItem instanceof MaterializableDsl) {
+      materializer = ((MaterializableDsl) nextItem).materializer(session);
     } else {
-      throw new RuntimeException("DSLItem is not materializable.");
+      throw new RuntimeException("DslItem is not materializable.");
     }
     return materializer;
   }
 
-  private boolean isConditionalSpec(DSLSpec next) {
-    return next instanceof ConditionalSpecWrapper;
+  private boolean isConditionalSpec(MaterializableDslItem next) {
+    return next instanceof ConditionalDslWrapper;
   }
 
   @Override
@@ -251,7 +251,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
           .flatMap(session -> {
-            DSLItem runnable = executeMethod(method, getSimulationMetadata().getTestInstance());
+            DslItem runnable = executeMethod(method, getSimulationMetadata().getTestInstance());
             return materializeDSLMethod(session, runnable);
           })
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))

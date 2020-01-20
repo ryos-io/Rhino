@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.EnsureSpec;
+import io.ryos.rhino.sdk.dsl.specs.EnsureDsl;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import reactor.core.publisher.Mono;
 
@@ -28,10 +28,10 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureSpecMaterializer implements SpecMaterializer<EnsureSpec> {
+public class EnsureSpecMaterializer implements SpecMaterializer<EnsureDsl> {
 
   @Override
-  public Mono<UserSession> materialize(EnsureSpec spec, UserSession userSession) {
+  public Mono<UserSession> materialize(EnsureDsl spec, UserSession userSession) {
     return Mono
         .just(userSession)
         .flatMap(s -> Mono.fromCallable(() -> {
