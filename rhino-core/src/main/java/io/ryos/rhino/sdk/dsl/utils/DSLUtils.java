@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.HttpSpecData;
+import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import java.util.function.Predicate;
 
 /**
@@ -44,8 +44,8 @@ public class DSLUtils {
    */
   public static Predicate<UserSession> ifStatusCode(int statusCode) {
     return session ->
-        session.<HttpSpecData>get(DEFAULT_RESULT_OBJ)
-            .map(httpSpecData -> httpSpecData.getResponse().getStatusCode())
+        session.<HttpDslData>get(DEFAULT_RESULT_OBJ)
+            .map(httpDslData -> httpDslData.getResponse().getStatusCode())
             .orElse(-1) == statusCode;
   }
 }

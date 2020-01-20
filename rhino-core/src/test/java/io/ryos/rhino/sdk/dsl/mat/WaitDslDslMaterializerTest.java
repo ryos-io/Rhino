@@ -9,14 +9,14 @@ import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.time.Duration;
 import org.junit.Test;
 
-public class WaitDslSpecMaterializerTest {
+public class WaitDslDslMaterializerTest {
   private static final int WAIT_TIME = 100;
   private static final double OVERHEAD_RATIO = 1.2;
 
   @Test
   public void testMaterialize() throws InterruptedException {
 
-    var waitSpecMaterializer = new WaitSpecMaterializer();
+    var waitSpecMaterializer = new WaitDslMaterializer();
 
     var user = new UserImpl("username", "pw", "id", "scope");
     var userSession = new UserSessionImpl(user);

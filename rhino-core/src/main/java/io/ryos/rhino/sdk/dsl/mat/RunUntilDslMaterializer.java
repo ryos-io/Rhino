@@ -4,7 +4,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.RunUntilDsl;
 import reactor.core.publisher.Mono;
 
-public class RunUntilSpecMaterializer implements SpecMaterializer<RunUntilDsl> {
+public class RunUntilDslMaterializer implements DslMaterializer<RunUntilDsl> {
 
   @Override
   public Mono<UserSession> materialize(RunUntilDsl spec, UserSession userSession) {

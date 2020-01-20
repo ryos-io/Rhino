@@ -55,8 +55,8 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpSpecMaterializer implements SpecMaterializer<HttpDsl> {
-  private static final Logger LOG = LogManager.getLogger(HttpSpecMaterializer.class);
+public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
+  private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
 
   public Mono<UserSession> materialize(final HttpDsl httpSpec, final UserSession userSession) {
 

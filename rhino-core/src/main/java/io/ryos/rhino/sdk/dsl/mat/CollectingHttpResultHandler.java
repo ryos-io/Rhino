@@ -64,7 +64,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
         && currentSpec.getParent() instanceof AbstractMeasurableDsl ?
         getSessionKey(currentSpec.getParent()) : "";
     var currentKey = getSessionKey(currentSpec);
-    var httpSpecData = new HttpSpecData();
+    var httpSpecData = new HttpDslData();
     httpSpecData.setEndpoint(((HttpDsl) currentSpec).getEndpoint().apply(userSession));
 
     if (!currentSpec.hasParent()) {
@@ -72,7 +72,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
         httpSpecData.setResponse(resultObject);
         userSession.add(currentKey, httpSpecData);
       } else {
-        var specData = globalSession.<HttpSpecData>get(currentKey).orElse(httpSpecData);
+        var specData = globalSession.<HttpDslData>get(currentKey).orElse(httpSpecData);
         specData.setResponse(resultObject);
         globalSession.add(currentKey, specData);
       }
@@ -103,7 +103,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
           globalSession.add(parentKey, stringMap);
         } else {
-          var specData = globalSession.<HttpSpecData>get(parentKey).orElse(httpSpecData);
+          var specData = globalSession.<HttpDslData>get(parentKey).orElse(httpSpecData);
           specData.setResponse(resultObject);
           globalSession.add(currentKey, specData);
         }

@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SomeSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SomeDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
@@ -55,8 +55,8 @@ public class SomeDslImpl extends AbstractMeasurableDsl implements SomeDsl {
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new SomeSpecMaterializer();
+  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
+    return new SomeDslMaterializer();
   }
 
   @Override

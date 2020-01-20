@@ -9,7 +9,7 @@ import java.util.function.Predicate;
  *
  * @author Erhan Bagdemir
  */
-public interface IterableDsl extends LoadDsl {
+public interface IterableDsl extends DslItem {
 
   /**
    * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}

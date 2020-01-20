@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class ForEachSpecMaterializer<S, R extends Iterable<S>> implements
-    SpecMaterializer<ForEachDsl<S, R>> {
+public class ForEachDslMaterializer<S, R extends Iterable<S>> implements
+    DslMaterializer<ForEachDsl<S, R>> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ForEachSpecMaterializer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ForEachDslMaterializer.class);
 
   @Override
   public Mono<UserSession> materialize(final ForEachDsl<S, R> forEachDsl,

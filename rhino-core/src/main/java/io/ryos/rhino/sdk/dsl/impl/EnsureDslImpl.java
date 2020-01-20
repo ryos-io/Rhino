@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.EnsureSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.EnsureDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.EnsureDsl;
@@ -67,8 +67,8 @@ public class EnsureDslImpl extends AbstractMeasurableDsl implements EnsureDsl {
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new EnsureSpecMaterializer();
+  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
+    return new EnsureDslMaterializer();
   }
 
   @Override

@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
@@ -183,9 +183,9 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     });
   }
 
-  private SpecMaterializer<MaterializableDslItem> createDSLSpecMaterializer(UserSession session,
+  private DslMaterializer<MaterializableDslItem> createDSLSpecMaterializer(UserSession session,
       DslItem nextItem) {
-    SpecMaterializer<MaterializableDslItem> materializer;
+    DslMaterializer<MaterializableDslItem> materializer;
     if (nextItem instanceof MaterializableDsl) {
       materializer = ((MaterializableDsl) nextItem).materializer(session);
     } else {

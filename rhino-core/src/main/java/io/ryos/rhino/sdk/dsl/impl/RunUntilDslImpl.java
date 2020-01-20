@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.RunUntilSpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.RunUntilDslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.RunUntilDsl;
@@ -34,8 +34,8 @@ public class RunUntilDslImpl extends AbstractMeasurableDsl implements RunUntilDs
   }
 
   @Override
-  public RunUntilSpecMaterializer materializer(UserSession session) {
-    return new RunUntilSpecMaterializer();
+  public RunUntilDslMaterializer materializer(UserSession session) {
+    return new RunUntilDslMaterializer();
   }
 
   @Override

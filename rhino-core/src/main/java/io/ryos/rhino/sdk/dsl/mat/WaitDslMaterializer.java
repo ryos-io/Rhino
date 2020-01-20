@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class WaitSpecMaterializer implements SpecMaterializer<WaitDsl> {
+public class WaitDslMaterializer implements DslMaterializer<WaitDsl> {
 
   @Override
   public Mono<UserSession> materialize(WaitDsl spec, UserSession userSession) {

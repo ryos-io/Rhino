@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class ConditionalDslWrapper extends AbstractMeasurableDsl {
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
+  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
     return spec.materializer(session);
   }
 

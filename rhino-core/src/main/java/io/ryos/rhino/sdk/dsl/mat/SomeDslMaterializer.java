@@ -31,7 +31,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class SomeSpecMaterializer implements SpecMaterializer<SomeDsl> {
+public class SomeDslMaterializer implements DslMaterializer<SomeDsl> {
 
   @Override
   public Mono<UserSession> materialize(SomeDsl spec, UserSession userSession) {

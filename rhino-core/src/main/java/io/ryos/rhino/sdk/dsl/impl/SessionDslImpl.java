@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SessionSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SessionDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import java.util.Collections;
@@ -49,8 +49,8 @@ public class SessionDslImpl extends AbstractSessionDslItem {
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new SessionSpecMaterializer();
+  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
+    return new SessionDslMaterializer();
   }
 
   @Override

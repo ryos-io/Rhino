@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureSpecMaterializer implements SpecMaterializer<EnsureDsl> {
+public class EnsureDslMaterializer implements DslMaterializer<EnsureDsl> {
 
   @Override
   public Mono<UserSession> materialize(EnsureDsl spec, UserSession userSession) {

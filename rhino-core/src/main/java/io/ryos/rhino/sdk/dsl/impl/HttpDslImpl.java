@@ -3,8 +3,8 @@ package io.ryos.rhino.sdk.dsl.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
-import io.ryos.rhino.sdk.dsl.mat.HttpSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
@@ -323,8 +323,8 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(final UserSession session) {
-    return new HttpSpecMaterializer();
+  public DslMaterializer<? extends MaterializableDslItem> materializer(final UserSession session) {
+    return new HttpDslMaterializer();
   }
 
   @Override

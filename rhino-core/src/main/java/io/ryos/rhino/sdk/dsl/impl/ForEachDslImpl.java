@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.ForEachSpecMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.ForEachDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
@@ -73,8 +73,8 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   }
 
   @Override
-  public SpecMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new ForEachSpecMaterializer();
+  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
+    return new ForEachDslMaterializer();
   }
 
   @Override

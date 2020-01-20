@@ -30,9 +30,9 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperSpecMaterializer implements SpecMaterializer<MapperDsl> {
+public class MapperDslMaterializer implements DslMaterializer<MapperDsl> {
 
-  private static final Logger LOG = LogManager.getLogger(MapperSpecMaterializer.class);
+  private static final Logger LOG = LogManager.getLogger(MapperDslMaterializer.class);
 
   @Override
   public Mono<UserSession> materialize(MapperDsl spec, UserSession userSession) {

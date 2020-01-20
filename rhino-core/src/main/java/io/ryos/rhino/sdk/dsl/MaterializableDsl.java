@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SpecMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 
 public interface MaterializableDsl {
 
@@ -11,7 +11,7 @@ public interface MaterializableDsl {
    *
    * @param userSession User session of current load cycle.
    * @param <T> Result object type.
-   * @return {@link SpecMaterializer} instance.
+   * @return {@link DslMaterializer} instance.
    */
-  <T extends MaterializableDslItem> SpecMaterializer<T> materializer(UserSession userSession);
+  <T extends MaterializableDslItem> DslMaterializer<T> materializer(UserSession userSession);
 }

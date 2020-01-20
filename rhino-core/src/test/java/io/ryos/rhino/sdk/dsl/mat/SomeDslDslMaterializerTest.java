@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-public class SomeDslSpecMaterializerTest {
+public class SomeDslDslMaterializerTest {
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -35,7 +35,7 @@ public class SomeDslSpecMaterializerTest {
       return "OK";
     });
 
-    var materialize = new SomeSpecMaterializer().materialize(spec, user);
+    var materialize = new SomeDslMaterializer().materialize(spec, user);
     var session = materialize.block();
 
     assertThat(session, notNullValue());
