@@ -1,6 +1,3 @@
-<p align="right">
-  <img src="https://github.com/ryos-io/Rhino/blob/master/jetbrains.png"  width="90"/>
-</p>
 <p align="center">
   <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
 </p>
