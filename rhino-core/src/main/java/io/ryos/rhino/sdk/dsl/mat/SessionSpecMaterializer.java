@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 

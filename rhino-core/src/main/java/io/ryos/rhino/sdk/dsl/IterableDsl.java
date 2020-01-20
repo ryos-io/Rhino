@@ -1,8 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilder;
+import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import java.util.function.Predicate;
 
 /**

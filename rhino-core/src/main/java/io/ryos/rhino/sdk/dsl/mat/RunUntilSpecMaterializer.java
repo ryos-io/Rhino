@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.RunUntilDsl;
+import io.ryos.rhino.sdk.dsl.RunUntilDsl;
 import reactor.core.publisher.Mono;
 
 public class RunUntilSpecMaterializer implements SpecMaterializer<RunUntilDsl> {

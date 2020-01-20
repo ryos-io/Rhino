@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
 import java.util.function.Predicate;
 
 public interface AssertionDsl {

@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.some;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
@@ -24,7 +24,7 @@ import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.specs.impl.SomeDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
 /**

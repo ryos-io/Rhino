@@ -17,9 +17,9 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.specs.ForEachDsl;
-import io.ryos.rhino.sdk.dsl.specs.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

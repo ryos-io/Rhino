@@ -16,11 +16,11 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ResultHandler;
-import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import java.util.ArrayList;
 import java.util.List;
 

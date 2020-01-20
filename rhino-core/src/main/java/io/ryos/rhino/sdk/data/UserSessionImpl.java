@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.data;
 
-import io.ryos.rhino.sdk.dsl.LoadToken;
+import io.ryos.rhino.sdk.dsl.data.LoadToken;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import java.util.List;

@@ -1,9 +1,9 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.http;
-import static io.ryos.rhino.sdk.dsl.specs.HttpDsl.from;
-import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.session;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;

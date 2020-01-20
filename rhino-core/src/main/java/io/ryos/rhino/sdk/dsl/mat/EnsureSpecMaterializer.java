@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.EnsureDsl;
+import io.ryos.rhino.sdk.dsl.EnsureDsl;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import reactor.core.publisher.Mono;
 

@@ -4,7 +4,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import io.ryos.rhino.sdk.data.UserSessionImpl;
-import io.ryos.rhino.sdk.dsl.specs.impl.WaitDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.WaitDslImpl;
 import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.time.Duration;
 import org.junit.Test;

@@ -16,8 +16,8 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.specs.impl.ConditionalDslWrapper;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 
 /**

@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 
 public class HttpSpecData {
 

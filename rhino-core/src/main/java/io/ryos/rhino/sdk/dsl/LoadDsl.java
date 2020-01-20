@@ -1,8 +1,6 @@
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.dsl.specs.DslItem;
-import io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.specs.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 
 /**
  * Load DSL to describe load tests. The reactive runner materializes the DSL provided and run the

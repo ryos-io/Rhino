@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.getActiveUser;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
 import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
@@ -25,10 +25,10 @@ import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.HttpClient;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.HttpResponse;
-import io.ryos.rhino.sdk.dsl.specs.HttpDsl;
-import io.ryos.rhino.sdk.dsl.specs.HttpSpecAsyncHandler;
-import io.ryos.rhino.sdk.dsl.specs.impl.HttpDslImpl.RetryInfo;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
+import io.ryos.rhino.sdk.dsl.data.HttpSpecAsyncHandler;
+import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;

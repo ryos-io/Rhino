@@ -16,12 +16,12 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.http;
-import static io.ryos.rhino.sdk.dsl.specs.HttpDsl.from;
-import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
-import static io.ryos.rhino.sdk.dsl.specs.builder.ForEachBuilderImpl.in;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.global;
-import static io.ryos.rhino.sdk.dsl.specs.builder.SessionUtils.session;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.global;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import com.google.common.collect.ImmutableList;
@@ -33,7 +33,7 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.Start;
-import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;

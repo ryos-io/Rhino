@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.specs.WaitDsl;
+import io.ryos.rhino.sdk.dsl.WaitDsl;
 import reactor.core.publisher.Mono;
 
 /**

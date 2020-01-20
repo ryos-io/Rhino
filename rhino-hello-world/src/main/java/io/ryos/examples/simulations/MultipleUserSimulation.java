@@ -19,9 +19,9 @@ package io.ryos.examples.simulations;
 import static io.ryos.examples.benchmark.Constants.DISCOVERY_ENDPOINT;
 import static io.ryos.examples.benchmark.Constants.X_API_KEY;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
-import static io.ryos.rhino.sdk.dsl.specs.DSLSpec.http;
-import static io.ryos.rhino.sdk.dsl.specs.HttpSpec.from;
-import static io.ryos.rhino.sdk.dsl.specs.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.data.DSLSpec.http;
+import static io.ryos.rhino.sdk.dsl.data.HttpSpec.from;
+import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;

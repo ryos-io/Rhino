@@ -1,12 +1,12 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.specs.MaterializableDslItem.some;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import io.ryos.rhino.sdk.data.UserSessionImpl;
-import io.ryos.rhino.sdk.dsl.specs.SomeDsl;
+import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.util.UUID;

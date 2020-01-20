@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.exceptions;
 
-import io.ryos.rhino.sdk.dsl.specs.SessionDslItem.Scope;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 
 public class SessionKeyNotFoundException extends RuntimeException {
 

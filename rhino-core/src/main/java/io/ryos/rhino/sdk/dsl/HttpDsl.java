@@ -1,0 +1,54 @@
+package io.ryos.rhino.sdk.dsl;
+
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
+import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
+import io.ryos.rhino.sdk.users.data.User;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
+    SessionDslItem,
+    MeasurableDsl,
+    ResultingDsl<HttpDsl, HttpResponse> {
+
+  public enum Method {
+    GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH
+  }
+
+  static Map.Entry<String, List<String>> from(String key, String value) {
+    return Map.entry(key, Collections.singletonList(value));
+  }
+
+  // Getters
+  Method getMethod();
+
+  Function<UserSession, String> getEndpoint();
+
+  Supplier<InputStream> getUploadContent();
+
+  List<Function<UserSession, Entry<String, List<String>>>> getHeaders();
+
+  List<Function<UserSession, Entry<String, List<String>>>> getQueryParameters();
+
+  List<Function<UserSession, Entry<String, List<String>>>> getFormParameters();
+
+  RetryInfo getRetryInfo();
+
+  boolean isAuth();
+
+  User getAuthUser();
+
+  HttpResponse getResponse();
+
+  void setResponse(HttpResponse response);
+
+  Function<UserSession, User> getUserAccessor();
+
+  Supplier<User> getUserSupplier();
+}
