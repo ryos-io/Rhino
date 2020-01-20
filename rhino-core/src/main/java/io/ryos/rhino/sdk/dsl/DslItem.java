@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * Parent of all DSL entities.
+ *
+ * @author Erhan Bagdemir
  */
 public interface DslItem {
 

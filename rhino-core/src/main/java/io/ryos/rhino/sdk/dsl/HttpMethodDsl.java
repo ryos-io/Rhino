@@ -10,10 +10,16 @@ package io.ryos.rhino.sdk.dsl;
 public interface HttpMethodDsl extends MaterializableDslItem {
 
   HttpRetriableDsl get();
+
   HttpRetriableDsl head();
+
   HttpRetriableDsl put();
+
   HttpRetriableDsl post();
+
   HttpRetriableDsl delete();
+
   HttpRetriableDsl patch();
+
   HttpRetriableDsl options();
 }

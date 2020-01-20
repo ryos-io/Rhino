@@ -87,8 +87,8 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDsl,
     Validate.notEmpty(name, "Name must not be null.");
 
     children.add(new ForEachDslImpl<>(name, Collections.emptyList(),
-        forEachBuilder.getKey() != null ? forEachBuilder.getKey() : name,
-        forEachBuilder.getScope(),
+        forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
+        forEachBuilder.getSessionScope(),
         forEachBuilder.getIterableSupplier(),
         forEachBuilder.getForEachFunction()));
     return this;

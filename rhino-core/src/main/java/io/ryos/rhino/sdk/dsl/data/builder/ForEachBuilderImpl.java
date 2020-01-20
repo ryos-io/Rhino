@@ -79,7 +79,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     return this;
   }
 
-  public Scope getScope() {
+  public Scope getSessionScope() {
     return scope;
   }
 
@@ -94,7 +94,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public String getKey() {
+  public String getSessionKey() {
     return sessionKey;
   }
 

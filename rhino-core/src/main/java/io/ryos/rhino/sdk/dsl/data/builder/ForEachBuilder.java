@@ -34,9 +34,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<E, ? extends MaterializableDslItem> getForEachFunction();
 
-  String getKey();
+  String getSessionKey();
 
-  Scope getScope();
+  Scope getSessionScope();
 
   ForEachDsl<E, R> getSpec();
 
