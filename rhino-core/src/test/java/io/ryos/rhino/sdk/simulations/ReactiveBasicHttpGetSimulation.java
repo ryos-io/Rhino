@@ -5,6 +5,7 @@ import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.annotations.Before;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;

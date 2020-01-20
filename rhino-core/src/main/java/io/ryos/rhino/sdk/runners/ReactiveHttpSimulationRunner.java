@@ -29,6 +29,7 @@ import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDsl;
 import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
+import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
 import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
@@ -104,7 +105,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
-        .flatMap(tuple -> materializeDSLMethod(tuple.getT1(), tuple.getT2()))
+        .flatMap(tuple -> tuple.getT2().materializer(tuple.getT1()).materialize(tuple.getT2(), tuple.getT1()))
         .onErrorResume(this::handleThrowable)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
@@ -147,55 +148,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     } finally {
       masterLock.unlock();
     }
-  }
-
-  private Publisher<UserSession> materializeDSLMethod(final UserSession session,
-      final DslItem dsl) {
-    var childrenIterator = dsl.getChildren().iterator();
-    if (!childrenIterator.hasNext()) {
-      throw new NoSpecDefinedException(dsl.getName());
-    }
-
-    var nextItem = childrenIterator.next();
-    nextItem.setParent(dsl);
-    var materializer = createDSLSpecMaterializer(session, nextItem);
-    var acc = materializer.materialize((MaterializableDslItem) nextItem, session);
-
-    while (childrenIterator.hasNext()) {
-      var next = childrenIterator.next();
-      acc = acc.flatMap(s -> {
-        if (isConditionalSpec((MaterializableDslItem) next)) {
-          var predicate = ((ConditionalDslWrapper) next).getPredicate();
-          if (!predicate.test(s)) {
-            return Mono.just(s);
-          }
-        }
-        return createDSLSpecMaterializer(session, next).materialize((MaterializableDslItem) next, session);
-      });
-    }
-
-    return acc.onErrorResume(exception -> {
-      LOG.error(exception.getMessage());
-      if (exception instanceof TerminateSimulationException) {
-        return Mono.error(exception);
-      }
-          return Mono.empty();
-    });
-  }
-
-  private DslMaterializer<MaterializableDslItem> createDSLSpecMaterializer(UserSession session,
-      DslItem nextItem) {
-    DslMaterializer<MaterializableDslItem> materializer;
-    if (nextItem instanceof MaterializableDsl) {
-      materializer = ((MaterializableDsl) nextItem).materializer(session);
-    } else {
-      throw new RuntimeException("DslItem is not materializable.");
-    }
-    return materializer;
-  }
-
-  private boolean isConditionalSpec(MaterializableDslItem next) {
-    return next instanceof ConditionalDslWrapper;
   }
 
   @Override
@@ -250,10 +202,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     if (method != null) {
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
-          .flatMap(session -> {
-            DslItem runnable = executeMethod(method, getSimulationMetadata().getTestInstance());
-            return materializeDSLMethod(session, runnable);
-          })
+          .flatMap(session -> new DslMethodMaterializer().materialize(executeMethod(method, getSimulationMetadata().getTestInstance()), session))
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))
           .blockLast();

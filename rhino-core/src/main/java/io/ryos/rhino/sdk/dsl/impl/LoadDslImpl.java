@@ -10,6 +10,7 @@ import io.ryos.rhino.sdk.dsl.RunnableDsl;
 import io.ryos.rhino.sdk.dsl.SessionDsl;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -133,5 +134,11 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl, SessionDsl,
 
   public List<DslItem> getChildren() {
     return children;
+  }
+
+  @Override
+  public <T extends MaterializableDslItem> DslMaterializer<T> materializer(
+      UserSession userSession) {
+    return null;
   }
 }

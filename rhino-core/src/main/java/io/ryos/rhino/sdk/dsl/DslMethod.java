@@ -20,7 +20,7 @@ package io.ryos.rhino.sdk.dsl;
  * DSL method is the representation of the Java method annotated with
  * {@link io.ryos.rhino.sdk.annotations.Dsl} annotation.
  */
-public interface DslMethod extends DslItem {
+public interface DslMethod extends MaterializableDslItem {
 
   LoadDsl getDsl();
 }

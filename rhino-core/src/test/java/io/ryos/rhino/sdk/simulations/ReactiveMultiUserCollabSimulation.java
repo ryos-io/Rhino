@@ -55,7 +55,6 @@ public class ReactiveMultiUserCollabSimulation {
 
   @Before
   public LoadDsl setUp() {
-
     return Start.dsl()
         .run(http("Prepare by PUT text.txt")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))

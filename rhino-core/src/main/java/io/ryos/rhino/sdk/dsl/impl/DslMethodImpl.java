@@ -16,11 +16,19 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
+import io.ryos.rhino.sdk.dsl.MaterializableDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
+import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
+import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
+import reactor.core.publisher.Mono;
 
 public class DslMethodImpl implements DslItem, DslMethod {
 
@@ -65,6 +73,11 @@ public class DslMethodImpl implements DslItem, DslMethod {
   @Override
   public List<DslItem> getChildren() {
     return dsl.getChildren();
+  }
+
+  @Override
+  public DslMethodMaterializer materializer(UserSession session) {
+    return new DslMethodMaterializer();
   }
 
   @Override
