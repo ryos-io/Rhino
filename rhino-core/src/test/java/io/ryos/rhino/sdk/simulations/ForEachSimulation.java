@@ -31,8 +31,8 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
@@ -55,8 +55,7 @@ public class ForEachSimulation {
   public LoadDsl setUp() {
     return Start.dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
-        .forEach("upload loop",
-            in(session("index")).doRun(index ->
+        .forEach("upload loop", in(session("index")).doRun(index ->
                 http("Prepare by PUT text.txt")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
                 .auth()

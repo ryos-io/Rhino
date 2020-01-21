@@ -17,25 +17,18 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
-import io.ryos.rhino.sdk.dsl.MaterializableDsl;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
-import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
-import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
-import reactor.core.publisher.Mono;
 
 public class DslMethodImpl implements DslItem, DslMethod {
 
   private final String name;
-  private final LoadDsl dsl;
+  private final DslItem dsl;
 
-  public DslMethodImpl(String name, LoadDsl dsl) {
+  public DslMethodImpl(String name, DslItem dsl) {
     this.name = Validate.notNull(name, "Name must not be null.");
     this.dsl = Validate.notNull(dsl, "DSL must not be null.");
   }
@@ -81,7 +74,7 @@ public class DslMethodImpl implements DslItem, DslMethod {
   }
 
   @Override
-  public LoadDsl getDsl() {
+  public DslItem getDsl() {
     return dsl;
   }
 }

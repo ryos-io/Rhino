@@ -22,5 +22,5 @@ package io.ryos.rhino.sdk.dsl;
  */
 public interface DslMethod extends MaterializableDslItem {
 
-  LoadDsl getDsl();
+  DslItem getDsl();
 }

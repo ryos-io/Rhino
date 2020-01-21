@@ -1,7 +1,7 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DSLUtils.ifStatusCode;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;

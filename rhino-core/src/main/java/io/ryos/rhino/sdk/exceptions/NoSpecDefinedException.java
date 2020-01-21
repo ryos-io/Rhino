@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.exceptions;
 
 /**
- * The exception is thrown if there is no spec defined in {@link io.ryos.rhino.sdk.dsl.LoadDsl}.
- * The pipeline will then be terminated.
+ * The exception is thrown if there is no spec defined in {@link io.ryos.rhino.sdk.dsl.LoadDsl}. The
+ * pipeline will then be terminated.
  * <p>
  *
  * @author Erhan Bagdemir

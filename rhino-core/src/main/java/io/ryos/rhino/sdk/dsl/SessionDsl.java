@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.dsl;
 
 import java.util.function.Supplier;
 
-public interface SessionDsl {
+public interface SessionDsl extends DslItem {
 
   /**
    * Session DSL is used to save objects to the current session.
@@ -27,5 +27,5 @@ public interface SessionDsl {
    * @param objectFunction Object provider.
    * @return Runnable DSL instance.
    */
-  RunnableDsl session(String sessionKey, Supplier<Object> objectFunction);
+  LoadDsl session(String sessionKey, Supplier<Object> objectFunction);
 }

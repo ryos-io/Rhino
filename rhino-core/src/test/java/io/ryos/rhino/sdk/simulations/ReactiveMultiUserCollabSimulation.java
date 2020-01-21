@@ -16,8 +16,8 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.global;
@@ -32,8 +32,8 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
@@ -78,10 +78,10 @@ public class ReactiveMultiUserCollabSimulation {
     return Start.dsl()
         .forEach("get all files",
             in(global("uploads", "#this['PUT in Loop']")).doRun(file -> http("GET in Loop")
-            .header(X_API_KEY, SimulationConfig.getApiKey())
-            .auth()
-            .endpoint(session -> FILES_ENDPOINT)
-            .get()))
+                .header(X_API_KEY, SimulationConfig.getApiKey())
+                .auth()
+                .endpoint(session -> FILES_ENDPOINT)
+                .get()))
         .session("userB", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))

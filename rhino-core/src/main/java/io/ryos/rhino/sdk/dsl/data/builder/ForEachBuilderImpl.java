@@ -17,7 +17,7 @@
 package io.ryos.rhino.sdk.dsl.data.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.function.Function;
@@ -33,7 +33,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
-  private Function<E, ? extends MaterializableDslItem> forEachFunction;
+  private Function<E, ? extends DslItem> forEachFunction;
   private Function<UserSession, R> iterableSupplier;
   private ForEachDsl<E, R> forEachDsl;
 
@@ -57,7 +57,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> doRun(final Function<E, MaterializableDslItem> forEachFunction) {
+  public ForEachBuilder<E, R> doRun(final Function<E, DslItem> forEachFunction) {
     Validate.notNull(forEachFunction, "forEachFunction must not be null.");
     this.forEachFunction = forEachFunction;
     return this;
@@ -99,7 +99,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, ? extends MaterializableDslItem> getForEachFunction() {
+  public Function<E, ? extends DslItem> getForEachFunction() {
     return forEachFunction;
   }
 
