@@ -1,18 +1,47 @@
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
+import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
+import java.time.Duration;
+import java.util.function.Predicate;
 
 /**
- * Load DSL to describe load tests. The reactive runner materializes the DSL provided and run the
- * {@link MaterializableDslItem} instances registered.
+ * Runnable DSL is a {@link LoadDsl} instance which is used to describe executable steps.
  * <p>
  *
  * @author Erhan Bagdemir
- * @see io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner
- * @see MaterializableDslItem
  * @since 1.1.0
  */
-public interface LoadDsl extends DslItem {
+public interface LoadDsl extends DslItem, SessionDsl, IterableDsl, AssertionDsl, MappableDsl {
 
-  <R, T> RunnableDsl map(MapperBuilder<R, T> mapper);
+  /**
+   * Conditional runnable DSL is a {@link LoadDsl} if {@link Predicate} returns {@code true}, then
+   * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
+   * <p>
+   *
+   * @param spec      {@link MaterializableDslItem} to materialize and run.
+   * @param predicate {@link Predicate} which is conditional for execution of {@link
+   *                  MaterializableDslItem} provided.
+   * @return {@link LoadDslImpl} instance.
+   */
+  LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
+
+  /**
+   * Wait DSL is a DSL instance which makes execution halt for {@link Duration}.
+   * <p>
+   *
+   * @param duration {@link Duration} to wait.
+   * @return {@link LoadDslImpl} instance.
+   */
+  LoadDslImpl wait(Duration duration);
+
+  /**
+   * Runner DSL is a {@link LoadDsl} instance to run the {@link MaterializableDslItem} passed as
+   * parameter.
+   * <p>
+   *
+   * @param spec {@link MaterializableDslItem} to materialize and run.
+   * @return {@link LoadDslImpl} instance.
+   */
+  LoadDsl run(MaterializableDslItem spec);
 }

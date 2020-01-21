@@ -17,14 +17,14 @@
 package io.ryos.rhino.sdk.dsl.data.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.function.Function;
 
 public interface ForEachBuilder<E, R extends Iterable<E>> {
 
-  ForEachBuilder<E, R> doRun(Function<E, MaterializableDslItem> forEachFunction);
+  ForEachBuilder<E, R> doRun(Function<E, DslItem> forEachFunction);
 
   ForEachBuilder<E, R> saveTo(String sessionKey);
 
@@ -32,7 +32,7 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<UserSession, R> getIterableSupplier();
 
-  Function<E, ? extends MaterializableDslItem> getForEachFunction();
+  Function<E, ? extends DslItem> getForEachFunction();
 
   String getSessionKey();
 

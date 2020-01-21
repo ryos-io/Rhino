@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author Erhan Bagdemir
  */
-public interface DslItem {
+public interface DslItem extends MaterializableDsl {
 
   String getName();
 

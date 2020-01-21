@@ -17,9 +17,9 @@ public interface IterableDsl extends DslItem {
    *
    * @param name           Name of the runner DSL.
    * @param forEachBuilder Iterable builder.
-   * @return {@link RunnableDsl} runnable DSL instance.
+   * @return {@link LoadDsl} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> RunnableDsl forEach(String name,
+  <E, R extends Iterable<E>> LoadDsl forEach(String name,
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
@@ -27,24 +27,24 @@ public interface IterableDsl extends DslItem {
    *
    * @param predicate Run conditional.
    * @param spec      {@link MaterializableDslItem} to run.
-   * @return {@link RunnableDsl} runnable DSL instance.
+   * @return {@link LoadDsl} runnable DSL instance.
    */
-  RunnableDsl until(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  LoadDsl until(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Runs the {@link MaterializableDslItem} as long as the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
    * @param spec      {@link MaterializableDslItem} to run.
-   * @return {@link RunnableDsl} runnable DSL instance.
+   * @return {@link LoadDsl} runnable DSL instance.
    */
-  RunnableDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  LoadDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Runs the {@link MaterializableDslItem} repeatedly.
    *
    * @param spec {@link MaterializableDslItem} to run.
-   * @return {@link RunnableDsl} runnable DSL instance.
+   * @return {@link LoadDsl} runnable DSL instance.
    */
-  RunnableDsl repeat(MaterializableDslItem spec);
+  LoadDsl repeat(MaterializableDslItem spec);
 }
