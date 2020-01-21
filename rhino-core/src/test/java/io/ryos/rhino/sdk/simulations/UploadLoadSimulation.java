@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
@@ -13,7 +14,6 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -34,8 +34,7 @@ public class UploadLoadSimulation {
 
   @Dsl(name = "Upload File")
   public LoadDsl testUploadAndGetFile() {
-    return Start
-        .dsl()
+    return dsl()
         .session("2. User", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))

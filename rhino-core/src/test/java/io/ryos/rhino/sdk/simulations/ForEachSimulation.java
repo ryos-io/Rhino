@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
@@ -32,7 +33,6 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
@@ -53,7 +53,7 @@ public class ForEachSimulation {
 
   @Before
   public LoadDsl setUp() {
-    return Start.dsl()
+    return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("upload loop", in(session("index")).doRun(index ->
                 http("Prepare by PUT text.txt")
@@ -66,7 +66,7 @@ public class ForEachSimulation {
 
   @Dsl(name = "Get")
   public LoadDsl loadTestPutAndGetFile() {
-    return Start.dsl()
+    return dsl()
         .forEach("get files",
             in(global("uploads", "#this['Prepare by PUT text.txt']")).doRun(index ->
                 http("GET text.txt")

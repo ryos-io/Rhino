@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
@@ -9,7 +10,6 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.users.repositories.BasicUserRepositoryFactoryImpl;
 import java.util.UUID;
 
@@ -23,7 +23,7 @@ public class ReactiveBasicHttpGetSimulation {
 
   @Dsl(name = "Load DSL Request")
   public LoadDsl singleTestDsl() {
-    return Start.dsl()
+    return dsl()
         .run(http("Files Request")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
