@@ -64,7 +64,7 @@ public class ReactiveMultiUserCollabSimulation {
             .upload(() -> file("classpath:///test.txt"))
             .put().saveTo("Prepare by PUT text.txt", Scope.SIMULATION))
         .session("files", ReactiveMultiUserCollabSimulation::getFiles)
-        .forEach("test for each", in(session("files")).doRun(file -> http("PUT in Loop")
+        .forEach("test for each", in(session("files")).exec(file -> http("PUT in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT + "/" + file)
@@ -76,7 +76,7 @@ public class ReactiveMultiUserCollabSimulation {
   public LoadDsl loadTestPutAndGetFile() {
 
     return dsl().forEach("get all files",
-            in(global("uploads", "#this['PUT in Loop']")).doRun(file -> http("GET in Loop")
+            in(global("uploads", "#this['PUT in Loop']")).exec(file -> http("GET in Loop")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
                 .auth()
                 .endpoint(session -> FILES_ENDPOINT)

@@ -19,7 +19,7 @@ package io.ryos.rhino.sdk.dsl;
 import java.util.List;
 
 /**
- * Parent of all DSL entities.
+ * Dsl items are domain model objects representing the Dsl elements.
  *
  * @author Erhan Bagdemir
  */
@@ -37,5 +37,5 @@ public interface DslItem extends MaterializableDsl {
 
   String getParentName();
 
-  List<DslItem> getChildren();
+  List<MaterializableDslItem> getChildren();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Ryos.io.
+ * Copyright 2020 Ryos.io.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,21 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.EnsureDsl;
-import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
 import reactor.core.publisher.Mono;
 
-/**
- * Ensure spec matarializer implementation.
- * <p>
- *
- * @author Erhan Bagdemir
- * @since 1.1.0
- */
-public class EnsureDslMaterializer implements DslMaterializer<EnsureDsl> {
+public class ConditionalDslMaterializer implements DslMaterializer<ConditionalDslWrapper> {
 
   @Override
-  public Mono<UserSession> materialize(EnsureDsl dslItem, UserSession userSession) {
-    return Mono
-        .just(userSession)
-        .flatMap(s -> Mono.fromCallable(() -> {
-          if (!dslItem.getPredicate().test(s)) {
-            throw new TerminateSimulationException(dslItem.getCause());
-          }
-          return s;
-        }));
+  public Mono<UserSession> materialize(final ConditionalDslWrapper dslItem,
+      final UserSession userSession) {
+
+    return Mono.just(userSession)
+        .filter(dslItem.getPredicate())
+        .flatMap(s -> {
+          final MaterializableDslItem spec = dslItem.getWrappedDslItem();
+          return spec.materializer(userSession).materialize(spec, userSession);
+        });
   }
 }

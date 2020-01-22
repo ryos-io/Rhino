@@ -28,28 +28,28 @@ import reactor.core.publisher.Mono;
 public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
 
   @Override
-  public Mono<UserSession> materialize(final DslMethod dslMethod, final UserSession session) {
-    var childrenIterator = dslMethod.getChildren().iterator();
+  public Mono<UserSession> materialize(final DslMethod dslItem, final UserSession session) {
+    var childrenIterator = dslItem.getChildren().iterator();
     if (!childrenIterator.hasNext()) {
-      throw new NoSpecDefinedException(dslMethod.getName());
+      throw new NoSpecDefinedException(dslItem.getName());
     }
 
     var nextDslItem = childrenIterator.next();
-    nextDslItem.setParent(dslMethod);
+    nextDslItem.setParent(dslItem);
     var materializer = createDSLSpecMaterializer(session, nextDslItem);
-    var acc = materializer.materialize((MaterializableDslItem) nextDslItem, session);
+    var acc = materializer.materialize(nextDslItem, session);
 
     while (childrenIterator.hasNext()) {
       var next = childrenIterator.next();
       acc = acc.flatMap(s -> {
-        if (isConditionalSpec((MaterializableDslItem) next)) {
+        if (isConditionalSpec(next)) {
           var predicate = ((ConditionalDslWrapper) next).getPredicate();
           if (!predicate.test(s)) {
             return Mono.just(s);
           }
         }
         return createDSLSpecMaterializer(session, next)
-            .materialize((MaterializableDslItem) next, session);
+            .materialize(next, session);
       });
     }
 
@@ -66,14 +66,11 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
   }
 
 
-  private DslMaterializer<MaterializableDslItem> createDSLSpecMaterializer(UserSession session,
-      DslItem nextItem) {
-    DslMaterializer<MaterializableDslItem> materializer;
+  private DslMaterializer<MaterializableDslItem> createDSLSpecMaterializer(final UserSession session, final DslItem nextItem) {
     if (nextItem != null) {
-      materializer = nextItem.materializer(session);
-    } else {
-      throw new RuntimeException("DslItem is not materializable.");
+      return nextItem.materializer(session);
     }
-    return materializer;
+
+    throw new RuntimeException("DslItem is not materializable.");
   }
 }

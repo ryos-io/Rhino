@@ -1,10 +1,9 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.RunUntilDslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.RunUntilDsl;
+import io.ryos.rhino.sdk.dsl.mat.RunUntilDslMaterializer;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -39,7 +38,7 @@ public class RunUntilDslImpl extends AbstractMeasurableDsl implements RunUntilDs
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }

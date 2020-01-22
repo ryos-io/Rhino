@@ -58,12 +58,13 @@ import reactor.core.publisher.Mono;
 public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
 
-  public Mono<UserSession> materialize(final HttpDsl httpSpec, final UserSession userSession) {
+  public Mono<UserSession> materialize(final HttpDsl dslItem, final UserSession userSession) {
 
-    var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, httpSpec);
+    var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(httpSpec, session), httpSpecAsyncHandler).toCompletableFuture()));
-    var retriableMono = Optional.ofNullable(httpSpec.getRetryInfo()).map(retryInfo ->
+        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
+            dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
+    var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
             .map(hr -> isRequestRetriable(retryInfo, hr))
             .retryWhen(companion -> companion.zipWith(
@@ -77,8 +78,8 @@ public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
                 }))).orElse(responseMono);
 
     return retriableMono
-        .map(result -> httpSpec.handleResult(userSession, new HttpResponse(result)))
-        .onErrorResume(handleOnErrorResume(httpSpec, httpSpecAsyncHandler))
+        .map(result -> dslItem.handleResult(userSession, new HttpResponse(result)))
+        .onErrorResume(handleOnErrorResume(dslItem, httpSpecAsyncHandler))
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 

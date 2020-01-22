@@ -72,7 +72,7 @@ public class EnsureDslImpl extends AbstractMeasurableDsl implements EnsureDsl {
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }

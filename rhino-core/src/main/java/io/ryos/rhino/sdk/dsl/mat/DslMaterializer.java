@@ -30,10 +30,10 @@ import reactor.core.publisher.Mono;
 public interface DslMaterializer<T extends MaterializableDslItem> {
 
   /**
-   * Materializer takes the spec and convert it into a {@link Mono}.
+   * Materializer takes the DSL items and convert it into a {@link Mono}.
    *
-   * @param spec List of DSL MaterializableDslItem.
+   * @param dslItem List of DSL MaterializableDslItem.
    * @return Mono instance.
    */
-  Mono<UserSession> materialize(T spec, final UserSession userSession);
+  Mono<UserSession> materialize(T dslItem, final UserSession userSession);
 }

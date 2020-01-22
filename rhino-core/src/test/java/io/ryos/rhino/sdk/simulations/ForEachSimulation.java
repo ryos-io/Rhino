@@ -55,7 +55,7 @@ public class ForEachSimulation {
   public LoadDsl setUp() {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
-        .forEach("upload loop", in(session("index")).doRun(index ->
+        .forEach("upload loop", in(session("index")).exec(index ->
                 http("Prepare by PUT text.txt")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
                 .auth()
@@ -68,11 +68,11 @@ public class ForEachSimulation {
   public LoadDsl loadTestPutAndGetFile() {
     return dsl()
         .forEach("get files",
-            in(global("uploads", "#this['Prepare by PUT text.txt']")).doRun(index ->
-                http("GET text.txt")
+            in(global("uploads", "#this['Prepare by PUT text.txt']")).exec(index ->
+                dsl().runIf(s -> false, http("GET text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .get()).saveTo("uploads"));
+                    .get())).saveTo("uploads"));
   }
 }

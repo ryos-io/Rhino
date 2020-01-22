@@ -1,17 +1,16 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.ResultHandler;
-import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
-import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
-import io.ryos.rhino.sdk.dsl.data.HttpResponse;
-import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
+import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.MeasurableDsl;
+import io.ryos.rhino.sdk.dsl.ResultHandler;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
+import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -342,7 +341,7 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 

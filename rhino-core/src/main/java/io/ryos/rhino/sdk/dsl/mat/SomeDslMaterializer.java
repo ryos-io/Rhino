@@ -29,22 +29,21 @@ import reactor.core.publisher.Mono;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class SomeDslMaterializer implements DslMaterializer<SomeDsl> {
 
   @Override
-  public Mono<UserSession> materialize(SomeDsl spec, UserSession userSession) {
+  public Mono<UserSession> materialize(SomeDsl dslItem, UserSession userSession) {
 
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
           var userId = userSession.getUser().getId();
-          var measurement = new MeasurementImpl(spec.getParentName(), userId);
+          var measurement = new MeasurementImpl(dslItem.getParentName(), userId);
           var start = System.currentTimeMillis();
           var userEventStart = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getParentName(),
+              dslItem.getParentName(),
               start,
               start,
               0,
@@ -55,14 +54,14 @@ public class SomeDslMaterializer implements DslMaterializer<SomeDsl> {
 
           measurement.record(userEventStart);
 
-          var status = spec.getFunction().apply(session);
+          var status = dslItem.getFunction().apply(session);
 
-          measurement.measure(spec.getName(), status);
+          measurement.measure(dslItem.getName(), status);
           var elapsed = System.currentTimeMillis() - start;
           var userEventEnd = new UserEvent(
               session.getUser().getUsername(),
               session.getUser().getId(),
-              spec.getParentName(),
+              dslItem.getParentName(),
               start,
               start + elapsed,
               elapsed,
