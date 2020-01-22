@@ -26,7 +26,7 @@ import org.apache.commons.lang3.Validate;
  * @since 1.1.0
  */
 public class LoadDslImpl extends AbstractDSLItem implements SessionDsl, LoadDsl,
-    IterableDsl, AssertionDsl, MappableDsl, DslItem {
+    IterableDsl, AssertionDsl, MappableDsl, MaterializableDslItem {
 
   /**
    * Executable functions.
