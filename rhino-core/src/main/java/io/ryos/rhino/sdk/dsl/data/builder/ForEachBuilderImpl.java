@@ -27,7 +27,6 @@ import org.apache.commons.lang3.Validate;
  * Loop builder is a builder providing the spec with looping information to be executed.
  *
  * @author Erhan Bagdemir
- * @since 1.7.0
  */
 public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuilder<E, R> {
 
@@ -57,7 +56,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> doRun(final Function<E, DslItem> forEachFunction) {
+  public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachFunction) {
     Validate.notNull(forEachFunction, "forEachFunction must not be null.");
     this.forEachFunction = forEachFunction;
     return this;

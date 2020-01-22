@@ -35,10 +35,10 @@ public class MapperDslMaterializer implements DslMaterializer<MapperDsl> {
   private static final Logger LOG = LogManager.getLogger(MapperDslMaterializer.class);
 
   @Override
-  public Mono<UserSession> materialize(MapperDsl spec, UserSession userSession) {
+  public Mono<UserSession> materialize(final MapperDsl dslItem, final UserSession userSession) {
     return Mono.just(userSession).map(session -> {
       try {
-        var mapper = spec.getMapperBuilder();
+        var mapper = dslItem.getMapperBuilder();
         var value = userSession
             .get(mapper.getKey())
             .map((Function<Object, Object>) mapper.getMappingFunction())

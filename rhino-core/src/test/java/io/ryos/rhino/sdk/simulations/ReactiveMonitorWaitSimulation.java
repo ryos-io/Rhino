@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
@@ -27,7 +28,6 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
@@ -47,7 +47,7 @@ public class ReactiveMonitorWaitSimulation {
 
   @Dsl(name = "Upload File")
   public LoadDsl uploadAndWaitLoadTest() {
-    return Start.dsl()
+    return dsl()
         .run(http("Upload")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())

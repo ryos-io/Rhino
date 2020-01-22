@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
@@ -33,7 +34,6 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.List;
@@ -55,8 +55,8 @@ public class ReactiveMultiUserCollabSimulation {
 
   @Before
   public LoadDsl setUp() {
-    return Start.dsl()
-        .run(http("Prepare by PUT text.txt")
+
+    return dsl().run(http("Prepare by PUT text.txt")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
@@ -64,7 +64,7 @@ public class ReactiveMultiUserCollabSimulation {
             .upload(() -> file("classpath:///test.txt"))
             .put().saveTo("Prepare by PUT text.txt", Scope.SIMULATION))
         .session("files", ReactiveMultiUserCollabSimulation::getFiles)
-        .forEach("test for each", in(session("files")).doRun(file -> http("PUT in Loop")
+        .forEach("test for each", in(session("files")).exec(file -> http("PUT in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT + "/" + file)
@@ -75,9 +75,8 @@ public class ReactiveMultiUserCollabSimulation {
   @Dsl(name = "Upload and Get")
   public LoadDsl loadTestPutAndGetFile() {
 
-    return Start.dsl()
-        .forEach("get all files",
-            in(global("uploads", "#this['PUT in Loop']")).doRun(file -> http("GET in Loop")
+    return dsl().forEach("get all files",
+            in(global("uploads", "#this['PUT in Loop']")).exec(file -> http("GET in Loop")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
                 .auth()
                 .endpoint(session -> FILES_ENDPOINT)

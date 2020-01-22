@@ -25,16 +25,15 @@ import reactor.core.publisher.Mono;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class WaitDslMaterializer implements DslMaterializer<WaitDsl> {
 
   @Override
-  public Mono<UserSession> materialize(WaitDsl spec, UserSession userSession) {
+  public Mono<UserSession> materialize(WaitDsl dslItem, UserSession userSession) {
     return Mono
         .just(userSession)
         .flatMap(s -> Mono.fromCallable(() -> {
-          Thread.sleep(spec.getWaitTime().toMillis());
+          Thread.sleep(dslItem.getWaitTime().toMillis());
           return s;
         }));
   }

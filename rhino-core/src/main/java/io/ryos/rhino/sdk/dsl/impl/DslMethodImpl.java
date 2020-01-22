@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.dsl.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
@@ -64,7 +65,7 @@ public class DslMethodImpl implements DslItem, DslMethod {
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return dsl.getChildren();
   }
 

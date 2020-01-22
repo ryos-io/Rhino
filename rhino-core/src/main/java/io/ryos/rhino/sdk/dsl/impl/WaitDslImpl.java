@@ -17,11 +17,10 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.WaitDslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.WaitDsl;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.WaitDslMaterializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +32,6 @@ import org.apache.commons.lang3.Validate;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class WaitDslImpl extends AbstractMeasurableDsl implements WaitDsl {
 
@@ -61,7 +59,7 @@ public class WaitDslImpl extends AbstractMeasurableDsl implements WaitDsl {
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }

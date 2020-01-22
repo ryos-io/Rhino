@@ -24,10 +24,10 @@ import reactor.core.publisher.Mono;
 public class SessionDslMaterializer implements DslMaterializer<SessionDslItem> {
 
   @Override
-  public Mono<UserSession> materialize(SessionDslItem spec, UserSession userSession) {
-    Supplier<Object> objectSupplier = spec.getObjectFunction();
+  public Mono<UserSession> materialize(SessionDslItem dslItem, UserSession userSession) {
+    Supplier<Object> objectSupplier = dslItem.getObjectFunction();
     Object apply = objectSupplier.get();
-    userSession.add(spec.getSessionKey(), apply);
+    userSession.add(dslItem.getSessionKey(), apply);
     return Mono.just(userSession);
   }
 }

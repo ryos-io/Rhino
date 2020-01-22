@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
@@ -26,10 +25,9 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * For-each loop representation.
+ * For-each loop Dsl.
  *
  * @author Erhan Bagdemir
- * @since 1.7.0
  */
 public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDslItem implements
     ForEachDsl {
@@ -37,7 +35,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   /**
    * Child DSL items.
    */
-  private List<DslItem> children;
+  private List<MaterializableDslItem> children;
 
   /**
    * Function is a provider of iterable object instances.
@@ -59,7 +57,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
    * @param iterableSupplier Supplier for iterable.
    */
   public ForEachDslImpl(final String name,
-      final List<DslItem> children,
+      final List<MaterializableDslItem> children,
       final String sessionKey,
       final Scope scope,
       final Function<UserSession, R> iterableSupplier,
@@ -78,7 +76,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return children;
   }
 

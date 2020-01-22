@@ -17,13 +17,13 @@
 package io.ryos.rhino.sdk.simulations;
 
 
+import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.providers.RandomInMemoryFileProvider;
 
 @Simulation(name = "Random File Test")
@@ -34,8 +34,7 @@ public class RandomInMemoryFileProviderSimulation {
 
   @Dsl(name = "Random in memory file")
   public LoadDsl testRandomFiles() {
-    return Start.dsl()
-        .run(some("test").as(s -> {
+    return dsl().run(some("test").as(s -> {
           return "OK";
         }));
   }

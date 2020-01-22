@@ -17,11 +17,10 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.SomeDslMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.SomeDslMaterializer;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.Validate;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class SomeDslImpl extends AbstractMeasurableDsl implements SomeDsl {
 
@@ -60,7 +58,7 @@ public class SomeDslImpl extends AbstractMeasurableDsl implements SomeDsl {
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }

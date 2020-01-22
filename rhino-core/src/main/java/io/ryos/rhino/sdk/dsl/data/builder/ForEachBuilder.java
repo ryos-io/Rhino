@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 public interface ForEachBuilder<E, R extends Iterable<E>> {
 
-  ForEachBuilder<E, R> doRun(Function<E, DslItem> forEachFunction);
+  ForEachBuilder<E, R> exec(Function<E, DslItem> forEachFunction);
 
   ForEachBuilder<E, R> saveTo(String sessionKey);
 

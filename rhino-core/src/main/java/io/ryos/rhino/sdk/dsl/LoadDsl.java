@@ -12,16 +12,19 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface LoadDsl extends DslItem, SessionDsl, IterableDsl, AssertionDsl, MappableDsl {
+public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, MappableDsl,
+    MaterializableDslItem {
+
+  ThreadLocal<String> dslMethodName = new ThreadLocal<>();
 
   /**
    * Conditional runnable DSL is a {@link LoadDsl} if {@link Predicate} returns {@code true}, then
    * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
    * <p>
    *
-   * @param spec      {@link MaterializableDslItem} to materialize and run.
+   * @param spec {@link MaterializableDslItem} to materialize and run.
    * @param predicate {@link Predicate} which is conditional for execution of {@link
-   *                  MaterializableDslItem} provided.
+   * MaterializableDslItem} provided.
    * @return {@link LoadDslImpl} instance.
    */
   LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
@@ -44,4 +47,8 @@ public interface LoadDsl extends DslItem, SessionDsl, IterableDsl, AssertionDsl,
    * @return {@link LoadDslImpl} instance.
    */
   LoadDsl run(MaterializableDslItem spec);
+
+  public static LoadDsl dsl() {
+    return new LoadDslImpl(dslMethodName.get());
+  }
 }

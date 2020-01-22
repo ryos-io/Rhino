@@ -34,11 +34,10 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
-import io.ryos.rhino.sdk.dsl.Start;
 import io.ryos.rhino.sdk.dsl.DslMethod;
+import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
+import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -61,6 +60,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SimulationJobsScannerImpl implements SimulationJobsScanner {
+
   private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
 
   public SimulationMetadata createBenchmarkJob(final Class clazz) {
@@ -131,7 +131,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private String getName(Method method) {
     var name = method.getDeclaredAnnotation(Dsl.class).name();
-    Start.dslMethodName.set(name);
+    LoadDsl.dslMethodName.set(name);
     return name;
   }
 

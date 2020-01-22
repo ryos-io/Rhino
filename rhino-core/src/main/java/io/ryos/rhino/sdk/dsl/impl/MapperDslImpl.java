@@ -17,12 +17,11 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.MapperDslMaterializer;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.MapperDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.MapperDslMaterializer;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.Validate;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class MapperDslImpl<R, T> extends AbstractMeasurableDsl implements MapperDsl {
 
@@ -55,7 +53,7 @@ public class MapperDslImpl<R, T> extends AbstractMeasurableDsl implements Mapper
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }

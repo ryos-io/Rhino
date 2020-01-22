@@ -17,16 +17,16 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.mat.ConditionalDslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.Validate;
 
 /**
- * MaterializableDslItem wrapper including a predicate to define the conditional statement whether a spec is to be
+ * MaterializableDslItem wrapper including a predicate to define the conditional statement whether a wrappedDslItem is to be
  * run, or not.
  * <p>
  *
@@ -36,12 +36,13 @@ import org.apache.commons.lang3.Validate;
 public class ConditionalDslWrapper extends AbstractMeasurableDsl {
 
   private final Predicate<UserSession> predicate;
-  private final MaterializableDslItem spec;
+  private final MaterializableDslItem wrappedDslItem;
 
-  public ConditionalDslWrapper(MaterializableDslItem spec, Predicate<UserSession> predicate) {
-    super(spec.getName());
+  public ConditionalDslWrapper(MaterializableDslItem wrappedDslItem,
+      Predicate<UserSession> predicate) {
+    super(wrappedDslItem.getName());
 
-    this.spec = Validate.notNull(spec, "Spec must not be null.");
+    this.wrappedDslItem = Validate.notNull(wrappedDslItem, "Spec must not be null.");
     this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
   }
 
@@ -49,17 +50,17 @@ public class ConditionalDslWrapper extends AbstractMeasurableDsl {
     return predicate;
   }
 
-  public MaterializableDslItem getSpec() {
-    return spec;
+  public MaterializableDslItem getWrappedDslItem() {
+    return wrappedDslItem;
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return spec.materializer(session);
+  public DslMaterializer materializer(UserSession session) {
+    return new ConditionalDslMaterializer();
   }
 
   @Override
-  public List<DslItem> getChildren() {
+  public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
   }
 }
