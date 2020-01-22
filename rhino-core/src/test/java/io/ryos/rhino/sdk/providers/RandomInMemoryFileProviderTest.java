@@ -11,14 +11,6 @@ import org.junit.Test;
 
 public class RandomInMemoryFileProviderTest {
 
-  @Test(expected = NullPointerException.class)
-  public void testRandomInMemoryFileProviderWithMissingConfigs() {
-    SimulationConfig
-        .newInstance("classpath:///rhino_RandomInMemoryFileProvider_missingConfigs.properties",
-            Environment.DEV);
-    new RandomInMemoryFileProvider();
-  }
-
   @Test
   public void testRandomInMemoryFileProvider() throws IOException {
     SimulationConfig
