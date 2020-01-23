@@ -3,6 +3,12 @@ package io.ryos.rhino.sdk.dsl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 
+/**
+ * A materializable DSLs are those which have their reactive component counterparts. They are
+ * materialized into reactive components and become part of reactive pipeline.
+ *
+ * @author Erhan Bagdemir
+ */
 public interface MaterializableDsl {
 
   /**

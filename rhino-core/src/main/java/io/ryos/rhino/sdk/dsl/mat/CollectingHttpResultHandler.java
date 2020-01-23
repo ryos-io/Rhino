@@ -20,13 +20,13 @@ import static io.ryos.rhino.sdk.dsl.SessionDslItem.Scope.USER;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
-import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
+import io.ryos.rhino.sdk.dsl.ResultHandler;
 import io.ryos.rhino.sdk.dsl.ResultingDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,9 +59,9 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
 
     var activatedUser = getActiveUser((HttpDsl) currentSpec, userSession);
     var globalSession = userSession.getSimulationSessionFor(activatedUser);
-    var parentKey = currentSpec.getParent() != null
-        && currentSpec.getParent() instanceof SessionDslItem
-        && currentSpec.getParent() instanceof AbstractMeasurableDsl ?
+    var parentKey =
+        currentSpec.getParent() instanceof SessionDslItem && currentSpec
+            .getParent() instanceof AbstractMeasurableDsl ?
         getSessionKey(currentSpec.getParent()) : "";
     var currentKey = getSessionKey(currentSpec);
     var httpSpecData = new HttpDslData();

@@ -19,7 +19,9 @@ package io.ryos.rhino.sdk.dsl;
 import java.util.List;
 
 /**
- * Dsl items are domain model objects representing the Dsl elements.
+ * Dsl items are domain model objects representing the Dsl elements within the domain-specific
+ * language, that is Load DSL. {@link DslItem} instances are materializables and can be
+ * materialized into reactive components.
  *
  * @author Erhan Bagdemir
  */
