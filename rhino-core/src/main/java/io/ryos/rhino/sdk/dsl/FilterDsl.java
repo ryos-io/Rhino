@@ -17,28 +17,19 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
- * Some spec is a custom spec to enable developers to add arbitrary code snippets into the DSL.
- * <p>
+ * Filters the objects out which do not satisfy the {@link Predicate}.
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
-public interface SomeDsl extends MaterializableDslItem {
+public interface FilterDsl extends MaterializableDslItem {
 
   /**
-   * Function contains the code snippet to be applied.
-   * <p>
+   * Returns the {@link Predicate} which will be applied to the filter.
    *
-   * @return MaterializableDslItem function.
+   * @return {@link Predicate} instance.
    */
-  Function<UserSession, String> getFunction();
-
-  /**
-   * Method to add a spec function into the DSL.
-   * <p>
-   */
-  MaterializableDslItem exec(Function<UserSession, String> function);
+  Predicate<UserSession> getPredicate();
 }

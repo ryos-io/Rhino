@@ -30,7 +30,7 @@ public class SomeDslDslMaterializerTest {
     var user = new UserSessionImpl(
         new UserImpl("user", UUID.randomUUID().toString(), "", ""));
 
-    final SomeDsl spec = (SomeDsl) some("test").as(session -> {
+    final SomeDsl spec = (SomeDsl) some("test").exec(session -> {
       session.add("test", 1);
       return "OK";
     });

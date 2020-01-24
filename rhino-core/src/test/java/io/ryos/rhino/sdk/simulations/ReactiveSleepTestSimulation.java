@@ -43,7 +43,7 @@ public class ReactiveSleepTestSimulation {
 
   @Dsl(name = "Sleep Test")
   public LoadDsl testSleep() {
-    return dsl().run(some("Sleeping 1 sec.").as(session -> {
+    return dsl().run(some("Sleeping 1 sec.").exec(session -> {
       System.out.println(provider.take());
       return "OK";
     }));

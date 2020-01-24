@@ -34,7 +34,7 @@ public class RandomInMemoryFileProviderSimulation {
 
   @Dsl(name = "Random in memory file")
   public LoadDsl testRandomFiles() {
-    return dsl().run(some("test").as(s -> {
+    return dsl().run(some("test").exec(s -> {
           return "OK";
         }));
   }

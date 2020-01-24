@@ -39,6 +39,16 @@ public interface IterableDsl extends DslItem {
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
+   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
+   * instance.
+   *
+   * @param forEachBuilder Iterable builder.
+   * @return {@link LoadDsl} runnable DSL instance.
+   */
+  <E, R extends Iterable<E>> LoadDsl forEach(
+      ForEachBuilder<E, R> forEachBuilder);
+
+  /**
    * Runs the {@link MaterializableDslItem} till the {@link Predicate} holds.
    *
    * @param predicate Run conditional.

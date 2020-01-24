@@ -64,6 +64,8 @@ public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, Mappable
    */
   LoadDsl run(MaterializableDslItem spec);
 
+  LoadDsl filter(Predicate<UserSession> predicate);
+
   static LoadDsl dsl() {
     return new LoadDslImpl(dslMethodName.get());
   }

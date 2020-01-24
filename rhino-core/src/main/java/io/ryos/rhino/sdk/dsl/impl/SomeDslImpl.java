@@ -41,7 +41,7 @@ public class SomeDslImpl extends AbstractMeasurableDsl implements SomeDsl {
   }
 
   @Override
-  public MaterializableDslItem as(final Function<UserSession, String> function) {
+  public MaterializableDslItem exec(final Function<UserSession, String> function) {
     Validate.notNull(function, "function must not bu null.");
     this.function = function;
     return this;

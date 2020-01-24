@@ -17,11 +17,16 @@
 package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
+import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl;
 import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import java.time.Duration;
 import java.util.function.Predicate;
@@ -101,5 +106,23 @@ public class DslUtils {
 
   public static LoadDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
     return new LoadDslImpl(LoadDsl.dslMethodName.get()).asLongAs(predicate, dslItem);
+  }
+
+  public static LoadDsl filter(Predicate<UserSession> predicate) {
+    return new LoadDslImpl(LoadDsl.dslMethodName.get()).filter(predicate);
+  }
+
+  /**
+   * Static factory method to create a new {@link HttpDsl} instance.
+   *
+   * @param name Measurement point name.
+   * @return A new instance of {@link MaterializableDslItem}.
+   */
+  static HttpConfigDsl http(String name) {
+    return new HttpDslImpl(name);
+  }
+
+  static SomeDsl some(String name) {
+    return new SomeDslImpl(name);
   }
 }

@@ -58,7 +58,7 @@ public class ForEachUploadSimulation {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("iterate",
-            in(ImmutableList.of(1, 2, 3)).exec(index -> some("count").as(s -> {
+            in(ImmutableList.of(1, 2, 3)).exec(index -> some("count").exec(s -> {
               System.out.println(index);
               return "OK";
             })))

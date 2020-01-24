@@ -14,31 +14,21 @@
  * limitations under the License.
  */
 
-package io.ryos.rhino.sdk.dsl;
+package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import java.util.function.Function;
+import io.ryos.rhino.sdk.dsl.FilterDsl;
+import reactor.core.publisher.Mono;
 
 /**
- * Some spec is a custom spec to enable developers to add arbitrary code snippets into the DSL.
- * <p>
+ * Materializer to materialize {@link FilterDsl} instances.
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
-public interface SomeDsl extends MaterializableDslItem {
+public class FilterDslMaterializer implements DslMaterializer<FilterDsl> {
 
-  /**
-   * Function contains the code snippet to be applied.
-   * <p>
-   *
-   * @return MaterializableDslItem function.
-   */
-  Function<UserSession, String> getFunction();
-
-  /**
-   * Method to add a spec function into the DSL.
-   * <p>
-   */
-  MaterializableDslItem exec(Function<UserSession, String> function);
+  @Override
+  public Mono<UserSession> materialize(final FilterDsl dslItem, final UserSession userSession) {
+    return Mono.just(userSession).filter(dslItem.getPredicate());
+  }
 }
