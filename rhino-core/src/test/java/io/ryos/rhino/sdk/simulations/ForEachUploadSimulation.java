@@ -18,8 +18,10 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.runIf;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.global;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
@@ -39,7 +41,7 @@ import java.util.List;
 
 @Simulation(name = "Reactive Multi-User Test")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
-public class ForEachSimulation {
+public class ForEachUploadSimulation {
 
   private static final String FILES_ENDPOINT = getEndpoint("files");
   private static final String X_API_KEY = "X-Api-Key";
@@ -55,6 +57,11 @@ public class ForEachSimulation {
   public LoadDsl setUp() {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
+        .forEach("iterate",
+            in(ImmutableList.of(1, 2, 3)).exec(index -> some("count").as(s -> {
+              System.out.println(index);
+              return "OK";
+            })))
         .forEach("upload loop", in(session("index")).exec(index ->
                 http("Prepare by PUT text.txt")
                 .header(X_API_KEY, SimulationConfig.getApiKey())
@@ -68,8 +75,8 @@ public class ForEachSimulation {
   public LoadDsl loadTestPutAndGetFile() {
     return dsl()
         .forEach("get files",
-            in(global("uploads", "#this['Prepare by PUT text.txt']")).exec(index ->
-                dsl().runIf(s -> false, http("GET text.txt")
+            in(global("uploads")).exec(index -> runIf(s -> true,
+                http("GET text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)

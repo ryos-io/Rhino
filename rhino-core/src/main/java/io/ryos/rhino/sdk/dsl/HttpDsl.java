@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
     SessionDslItem,
     MeasurableDsl,
-    ResultingDsl<HttpDsl, HttpResponse> {
+    ResultingDsl<HttpResponse> {
 
   public enum Method {
     GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH

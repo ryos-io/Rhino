@@ -31,7 +31,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   }
 
   @Override
-  public LoadDslImpl wait(Duration duration) {
+  public LoadDsl wait(Duration duration) {
     Validate.notNull(duration, "Duration must not be null.");
     children.add(new WaitDslImpl(duration));
     return this;
@@ -91,7 +91,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   @Override
   public LoadDsl repeat(MaterializableDslItem spec) {
     Validate.notNull(spec, "Spec must not be null.");
-    children.add(new RunUntilDslImpl(spec, (s) -> true));
+    children.add(new RunUntilDslImpl(spec, s -> true));
     return this;
   }
 

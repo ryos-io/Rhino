@@ -25,8 +25,8 @@ import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.HttpClient;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
+import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.data.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
@@ -150,7 +150,7 @@ public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
     }
 
     if (httpSpec.isAuth()) {
-      var specOwner = getActiveUser(httpSpec, userSession);
+      var specOwner = getActiveUser(userSession);
       builder = handleAuth(specOwner, builder);
     }
 

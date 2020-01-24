@@ -52,7 +52,7 @@ public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, Mappable
    * @param duration {@link Duration} to wait.
    * @return {@link LoadDslImpl} instance.
    */
-  LoadDslImpl wait(Duration duration);
+  LoadDsl wait(Duration duration);
 
   /**
    * Runner DSL is a {@link LoadDsl} instance to run the {@link MaterializableDslItem} passed as

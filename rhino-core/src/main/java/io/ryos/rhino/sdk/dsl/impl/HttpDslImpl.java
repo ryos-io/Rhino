@@ -1,15 +1,19 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
+
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.MeasurableDsl;
-import io.ryos.rhino.sdk.dsl.ResultHandler;
+import io.ryos.rhino.sdk.dsl.ResultingDsl;
+import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
-import io.ryos.rhino.sdk.dsl.mat.CollectingHttpResultHandler;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
+import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
@@ -18,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -48,7 +51,6 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   private Supplier<User> userSupplier;
   private RetryInfo retryInfo;
   private HttpResponse response;
-  private ResultHandler<HttpResponse> resultHandler;
 
   /**
    * Creates a new {@link HttpDslImpl}.
@@ -328,16 +330,38 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
 
   @Override
   public UserSession handleResult(UserSession userSession, HttpResponse response) {
-    return Optional.ofNullable(resultHandler)
-        .orElse(new CollectingHttpResultHandler(userSession, this))
-        .handle(response);
+    var httpSpecData = new HttpDslData();
+    httpSpecData.setEndpoint(getEndpoint().apply(userSession));
+    httpSpecData.setResponse(response);
+
+    if (!hasParent()) {
+      final SessionDslItem sessionDslItem = this;
+      if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
+        userSession.add(sessionDslItem.getSessionKey(), httpSpecData);
+      } else {
+        var activatedUser = getActiveUser(userSession);
+        var globalSession = userSession.getSimulationSessionFor(activatedUser);
+        var specData = globalSession.<HttpDslData>get(sessionDslItem.getSessionKey())
+            .orElse(httpSpecData);
+        globalSession.add(sessionDslItem.getSessionKey(), specData);
+      }
+
+      return userSession;
+    }
+
+    return resolveSessionParent().handleResult(userSession, response);
   }
 
-  @Override
-  public HttpDsl withResultHandler(ResultHandler<HttpResponse> resultHandler) {
-    Validate.notNull(resultHandler, "Result handler must not be null.");
-    this.resultHandler = resultHandler;
-    return this;
+  private ResultingDsl resolveSessionParent() {
+    DslItem current = this;
+    ResultingDsl sessionItem = this;
+    while (current != null) {
+      if (current instanceof ResultingDsl) {
+        sessionItem = (ResultingDsl) current;
+      }
+      current = current.getParent();
+    }
+    return sessionItem;
   }
 
   @Override

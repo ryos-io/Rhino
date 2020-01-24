@@ -8,7 +8,7 @@ import java.util.function.Function;
  * @since 1.7.0
  */
 public interface ForEachDsl<E, R extends Iterable<E>> extends MaterializableDslItem,
-    SessionDslItem {
+    SessionDslItem, ResultingDsl {
 
   Function<UserSession, R> getIterableSupplier();
 

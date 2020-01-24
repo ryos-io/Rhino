@@ -16,11 +16,18 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
+
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.ResultingDsl;
+import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.ForEachDslMaterializer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -50,10 +57,10 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   /**
    * Constructs a new {@link ForEachDsl} instance.
    *
-   * @param name             Spec name.
-   * @param children         Child DSL items.
-   * @param sessionKey       Session key.
-   * @param scope            Session scope.
+   * @param name Spec name.
+   * @param children Child DSL items.
+   * @param sessionKey Session key.
+   * @param scope Session scope.
    * @param iterableSupplier Supplier for iterable.
    */
   public ForEachDslImpl(final String name,
@@ -88,5 +95,45 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   @Override
   public Function<S, ? extends MaterializableDslItem> getForEachFunction() {
     return forEachFunction;
+  }
+
+  @Override
+  public UserSession handleResult(final UserSession userSession, final Object response) {
+    final SessionDslItem sessionDslItem = this;
+    List<Object> listOfObjects = Collections.emptyList();
+    if (!hasParent()) {
+      if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
+        listOfObjects = userSession.<List<Object>>get(sessionDslItem.getSessionKey())
+            .orElse(new ArrayList<>());
+        listOfObjects.add(response);
+        userSession.add(sessionDslItem.getSessionKey(), listOfObjects);
+      } else {
+        var activatedUser = getActiveUser(userSession);
+        var globalSession = userSession.getSimulationSessionFor(activatedUser);
+        listOfObjects = globalSession.<List<Object>>get(sessionDslItem.getSessionKey())
+            .orElse(new ArrayList<>());
+        listOfObjects.add(response);
+        globalSession.add(sessionDslItem.getSessionKey(), listOfObjects);
+      }
+      return userSession;
+    }
+    return resolveSessionParent().handleResult(userSession, listOfObjects);
+  }
+
+  private ResultingDsl resolveSessionParent() {
+    DslItem current = this;
+    ResultingDsl sessionItem = this;
+    while (current != null) {
+      if (current instanceof ResultingDsl) {
+        sessionItem = (ResultingDsl) current;
+      }
+      current = current.getParent();
+    }
+    return sessionItem;
+  }
+
+  @Override
+  public String getSaveTo() {
+    return null;
   }
 }

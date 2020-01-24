@@ -57,7 +57,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return userSession;
     }
 
-    var activatedUser = getActiveUser((HttpDsl) currentSpec, userSession);
+    var activatedUser = getActiveUser(userSession);
     var globalSession = userSession.getSimulationSessionFor(activatedUser);
     var parentKey =
         currentSpec.getParent() instanceof SessionDslItem && currentSpec

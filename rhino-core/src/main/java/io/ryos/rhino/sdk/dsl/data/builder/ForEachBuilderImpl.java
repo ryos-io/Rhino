@@ -55,6 +55,11 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     return new ForEachBuilderImpl<>(iterableSupplier);
   }
 
+  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(R iterable) {
+    Validate.notNull(iterable, "Iterable must not be null.");
+    return new ForEachBuilderImpl<>(session -> iterable);
+  }
+
   @Override
   public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachFunction) {
     Validate.notNull(forEachFunction, "forEachFunction must not be null.");
