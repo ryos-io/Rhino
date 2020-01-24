@@ -26,6 +26,8 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   ForEachBuilder<E, R> exec(Function<E, DslItem> forEachFunction);
 
+  ForEachBuilder<E, R> map(Function<E, Object> mapper);
+
   ForEachBuilder<E, R> saveTo(String sessionKey);
 
   ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope);
@@ -33,6 +35,8 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
   Function<UserSession, R> getIterableSupplier();
 
   Function<E, ? extends DslItem> getForEachFunction();
+
+  Function<E, Object> getMapper();
 
   String getSessionKey();
 

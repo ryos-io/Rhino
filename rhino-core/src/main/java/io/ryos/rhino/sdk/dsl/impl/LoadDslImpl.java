@@ -93,7 +93,8 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
         forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
         forEachBuilder.getSessionScope(),
         forEachBuilder.getIterableSupplier(),
-        forEachBuilder.getForEachFunction()));
+        forEachBuilder.getForEachFunction(),
+        forEachBuilder.getMapper()));
     return this;
   }
 

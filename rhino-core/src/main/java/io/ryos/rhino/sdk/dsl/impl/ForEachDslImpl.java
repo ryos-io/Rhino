@@ -24,6 +24,7 @@ import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.ResultingDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.mat.CollectingMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.ForEachDslMaterializer;
 import java.util.ArrayList;
@@ -54,6 +55,8 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
    */
   private Function<S, ? extends MaterializableDslItem> forEachFunction;
 
+  private Function<S, Object> mapper;
+
   /**
    * Constructs a new {@link ForEachDsl} instance.
    *
@@ -68,18 +71,20 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
       final String sessionKey,
       final Scope scope,
       final Function<UserSession, R> iterableSupplier,
-      final Function<S, ? extends MaterializableDslItem> forEachFunction) {
+      final Function<S, ? extends MaterializableDslItem> forEachFunction,
+      final Function<S, Object> mapper) {
 
     super(name, sessionKey, scope);
 
     this.children = children;
     this.iterableSupplier = iterableSupplier;
     this.forEachFunction = forEachFunction;
+    this.mapper = mapper;
   }
 
   @Override
   public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new ForEachDslMaterializer();
+    return mapper != null ? new CollectingMaterializer<>() : new ForEachDslMaterializer<>();
   }
 
   @Override
@@ -95,6 +100,11 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   @Override
   public Function<S, ? extends MaterializableDslItem> getForEachFunction() {
     return forEachFunction;
+  }
+
+  @Override
+  public Function<S, Object> getMapper() {
+    return mapper;
   }
 
   @Override

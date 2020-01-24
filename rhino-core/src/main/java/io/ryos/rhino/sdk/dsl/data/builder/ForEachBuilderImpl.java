@@ -35,6 +35,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   private Function<E, ? extends DslItem> forEachFunction;
   private Function<UserSession, R> iterableSupplier;
   private ForEachDsl<E, R> forEachDsl;
+  private Function<E, Object> mapper;
 
   public ForEachBuilderImpl(final String sessionKey) {
     this.sessionKey = sessionKey;
@@ -64,6 +65,13 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachFunction) {
     Validate.notNull(forEachFunction, "forEachFunction must not be null.");
     this.forEachFunction = forEachFunction;
+    return this;
+  }
+
+  @Override
+  public ForEachBuilder<E, R> map(final Function<E, Object> mapper) {
+    Validate.notNull(mapper, "mapper must not be null.");
+    this.mapper = mapper;
     return this;
   }
 
@@ -105,6 +113,10 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   @Override
   public Function<E, ? extends DslItem> getForEachFunction() {
     return forEachFunction;
+  }
+
+  public Function<E, Object> getMapper() {
+    return mapper;
   }
 
   @Override
