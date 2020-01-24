@@ -74,7 +74,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   public void start() {
 
-    Hooks.onErrorDropped((t) -> {
+    Hooks.onErrorDropped(t -> {
     });
     var simulationMetadata = getSimulationMetadata();
 
@@ -99,6 +99,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendThrottling(flux);
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
+        .doOnError(t -> LOG.error("Something unexpected happened", t))
         .flatMap(tuple -> tuple.getT2().materializer(tuple.getT1()).materialize(tuple.getT2(), tuple.getT1()))
         .onErrorResume(this::handleThrowable)
         .doOnError(t -> LOG.error("Something unexpected happened", t))

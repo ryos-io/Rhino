@@ -18,7 +18,7 @@ package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
-import io.ryos.rhino.sdk.exceptions.SessionKeyNotFoundException;
+import io.ryos.rhino.sdk.exceptions.SessionObjectNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
 import java.util.HashMap;
 import java.util.function.Function;
@@ -46,14 +46,14 @@ public class SessionUtils {
   public static <T> Function<UserSession, T> session(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return session -> session.<T>get(sessionKey)
-        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
+        .orElseThrow(() -> new SessionObjectNotFoundException(sessionKey, Scope.USER));
   }
 
   public static <T> Function<UserSession, T> global(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return session -> session.getSimulationSession()
         .<T>get(sessionKey)
-        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
+        .orElseThrow(() -> new SessionObjectNotFoundException(sessionKey, Scope.SIMULATION));
   }
 
   public static <T> Function<UserSession, T> global(String sessionKey, String expression) {
@@ -61,7 +61,7 @@ public class SessionUtils {
     Validate.notEmpty(expression, "Expression must not be empty.");
     return session -> session.getSimulationSession().<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.SIMULATION));
+        .orElseThrow(() -> new SessionObjectNotFoundException(sessionKey, Scope.SIMULATION));
   }
 
   public static <T> Function<UserSession, T> session(String sessionKey, String expression) {
@@ -69,7 +69,7 @@ public class SessionUtils {
     Validate.notEmpty(expression, "Expression must not be empty.");
     return session -> session.<T>get(sessionKey)
         .map(o -> readObject(expression, o))
-        .orElseThrow(() -> new SessionKeyNotFoundException(sessionKey, Scope.USER));
+        .orElseThrow(() -> new SessionObjectNotFoundException(sessionKey, Scope.USER));
   }
 
   private static <T> T readObject(String expressionString, T object) {

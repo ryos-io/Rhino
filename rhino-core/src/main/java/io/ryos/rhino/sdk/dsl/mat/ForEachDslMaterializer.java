@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
+import io.ryos.rhino.sdk.exceptions.SessionObjectNotFoundException;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,15 @@ public class ForEachDslMaterializer<S, R extends Iterable<S>> implements
 
   @Override
   public Mono<UserSession> materialize(final ForEachDsl<S, R> dslItem, final UserSession session) {
-    var iterable = Optional.ofNullable(dslItem.getIterableSupplier().apply(session))
-        .orElseThrow(() -> new IllegalArgumentException("forEach() failed."));
+    final R iterable;
+    try { //TODO try-catch is just workaround. Find a way to escalate error with exception.
+      iterable = Optional.ofNullable(dslItem.getIterableSupplier().apply(session))
+          .orElseThrow(() -> new IllegalArgumentException("forEach() failed."));
+
+    } catch (SessionObjectNotFoundException keyNotFound) {
+      LOG.error(keyNotFound.getMessage());
+      return Mono.error(keyNotFound);
+    }
 
     return Flux.fromIterable(iterable)
         .map(dslItem.getForEachFunction())

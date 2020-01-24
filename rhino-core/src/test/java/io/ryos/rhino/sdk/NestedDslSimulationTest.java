@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.ryos.rhino.sdk;
 
-package io.ryos.rhino.sdk.exceptions;
+import io.ryos.rhino.sdk.simulations.NestedDslSimulation;
+import org.junit.Test;
 
-import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+public class NestedDslSimulationTest {
 
-public class SessionKeyNotFoundException extends RuntimeException {
+  private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
 
-  public SessionKeyNotFoundException(String key, Scope scope) {
-    super(String.format("Session key '%s' not found in '%s' scope.", key, scope));
+  @Test
+  public void testNested() {
+    Simulation.getInstance(PROPERTIES_FILE, NestedDslSimulation.class).start();
   }
 }
