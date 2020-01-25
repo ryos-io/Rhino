@@ -18,7 +18,9 @@ package io.ryos.rhino.sdk.users.repositories;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
+import io.ryos.rhino.sdk.users.oauth.OAuthUser;
 import io.ryos.rhino.sdk.users.oauth.OAuthUserAuthenticatorImpl;
+import io.ryos.rhino.sdk.users.oauth.UserAuthenticator;
 import io.ryos.rhino.sdk.users.source.UserSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +35,18 @@ import java.util.Objects;
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   private final long loginDelay;
-  private final OAuthUserAuthenticatorImpl authenticator;
+  private final UserAuthenticator<OAuthUser> authenticator;
   private final UserSource userSource;
 
-  OAuthUserRepositoryImpl(final UserSource userSource, long loginDelay) {
+  public OAuthUserRepositoryImpl(final UserSource userSource, final long loginDelay) {
     this.userSource = Objects.requireNonNull(userSource);
     this.authenticator = new OAuthUserAuthenticatorImpl();
+    this.loginDelay = loginDelay;
+  }
+
+  public OAuthUserRepositoryImpl(final UserSource userSource, final long loginDelay, final UserAuthenticator<OAuthUser> authenticator) {
+    this.userSource = Objects.requireNonNull(userSource);
+    this.authenticator = Objects.requireNonNull(authenticator, "Authenticator must not be null.");
     this.loginDelay = loginDelay;
   }
 
