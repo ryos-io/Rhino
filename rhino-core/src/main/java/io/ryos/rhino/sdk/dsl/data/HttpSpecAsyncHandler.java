@@ -25,7 +25,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private static final String BLANK = "";
 
   private final String stepName;
-  private final String specName;
+  private final String dslName;
   private final String userId;
   private final boolean measurementEnabled;
   private final boolean cumulativeMeasurement;
@@ -37,20 +37,20 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final RetryInfo retryInfo;
 
   public HttpSpecAsyncHandler(final UserSession session,
-      final HttpDsl spec) {
-    this.measurement = new MeasurementImpl(getMeasurementName(spec), session.getUser().getId());
-    this.specName = spec.getParentName();
+      final HttpDsl dslItem) {
+    this.measurement = new MeasurementImpl(getMeasurementName(dslItem), session.getUser().getId());
+    this.dslName = dslItem.getParentName();
     this.userId = session.getUser().getId();
-    this.stepName = spec.getMeasurementPoint();
+    this.stepName = dslItem.getMeasurementPoint();
     this.eventDispatcher = EventDispatcher.getInstance();
-    this.measurementEnabled = spec.isMeasurementEnabled();
-    this.retryInfo = spec.getRetryInfo();
-    this.cumulativeMeasurement = spec.isCumulative();
+    this.measurementEnabled = dslItem.isMeasurementEnabled();
+    this.retryInfo = dslItem.getRetryInfo();
+    this.cumulativeMeasurement = dslItem.isCumulative();
   }
 
-  private String getMeasurementName(final HttpDsl spec) {
-    if (spec.hasParent()) {
-      var parent = spec.getParent();
+  private String getMeasurementName(final HttpDsl dslItem) {
+    if (dslItem.hasParent()) {
+      var parent = dslItem.getParent();
       if (parent instanceof AbstractMeasurableDsl) {
         return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
       }
@@ -58,7 +58,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
         return parent.getName();
       }
     }
-    return spec.getName();
+    return dslItem.getName();
   }
 
   @Override
@@ -98,7 +98,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
       var userEventStart = new UserEvent(
           BLANK,
           userId,
-          specName,
+          dslName,
           start,
           start,
           0L,
@@ -116,7 +116,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     var userEventEnd = new UserEvent(
         BLANK,
         userId,
-        specName,
+        dslName,
         start,
         0,
         0L,
@@ -153,7 +153,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     var userEventEnd = new UserEvent(
         BLANK,
         userId,
-        specName,
+        dslName,
         start,
         start + elapsed,
         elapsed,
@@ -193,7 +193,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
       var userEventStart = new UserEvent(
           "",
           userId,
-          specName,
+          dslName,
           start,
           start,
           0L,

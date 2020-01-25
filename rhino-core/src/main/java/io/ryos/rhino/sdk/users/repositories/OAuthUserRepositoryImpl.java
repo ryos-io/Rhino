@@ -24,6 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * User repository of OAuth. If OAuth is used, this repository manages the users which are subject
+ * to be authenticated and authorized in context of OAuth framework.
+ *
+ * @author Erhan Bagdemir
+ */
 public class OAuthUserRepositoryImpl implements UserRepository<UserSession> {
 
   private final long loginDelay;
