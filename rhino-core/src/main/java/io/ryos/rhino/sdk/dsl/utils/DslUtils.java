@@ -118,11 +118,11 @@ public class DslUtils {
    * @param name Measurement point name.
    * @return A new instance of {@link MaterializableDslItem}.
    */
-  static HttpConfigDsl http(String name) {
+  public static HttpConfigDsl http(String name) {
     return new HttpDslImpl(name);
   }
 
-  static SomeDsl some(String name) {
+  public static SomeDsl some(String name) {
     return new SomeDslImpl(name);
   }
 }
