@@ -34,8 +34,7 @@ import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
-import io.ryos.rhino.sdk.users.data.UserImpl;
-import io.ryos.rhino.sdk.users.oauth.OAuthService;
+import io.ryos.rhino.sdk.users.oauth.OAuthUserImpl;
 import java.util.Optional;
 import java.util.function.Function;
 import org.apache.commons.lang3.NotImplementedException;
@@ -56,14 +55,16 @@ import reactor.core.publisher.Mono;
  * @since 1.1.0
  */
 public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
+
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
 
   public Mono<UserSession> materialize(final HttpDsl dslItem, final UserSession userSession) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
-            dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
+        .flatMap(session -> Mono
+            .fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
+                dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
     var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
             .map(hr -> isRequestRetriable(retryInfo, hr))
@@ -71,10 +72,10 @@ public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
                 Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
                   if (index < retryInfo.getNumOfRetries() + 1
                       && error instanceof RetryableOperationException) {
-                        return index;
-                      } else {
-                        throw Exceptions.propagate(new RetryFailedException(error));
-                      }
+                    return index;
+                  } else {
+                    throw Exceptions.propagate(new RetryFailedException(error));
+                  }
                 }))).orElse(responseMono);
 
     return retriableMono
@@ -159,14 +160,11 @@ public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
 
   private RequestBuilder handleAuth(User user, RequestBuilder builder) {
 
-    if (user instanceof UserImpl) {
-      return new BasicAuthRequestStrategy().addAuthHeaders(builder, user);
-    }
-
-    if (user instanceof OAuthService) {
+    if (user instanceof OAuthUserImpl) {
       return new OAuth2RequestStrategy().addAuthHeaders(builder, user);
     }
 
-    return builder;
+    return new BasicAuthRequestStrategy().addAuthHeaders(builder, user);
+
   }
 }
