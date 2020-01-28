@@ -17,7 +17,6 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
@@ -28,16 +27,16 @@ import reactor.core.publisher.Mono;
 public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
 
   @Override
-  public Mono<UserSession> materialize(final DslMethod dslItem, final UserSession session) {
-    var childrenIterator = dslItem.getChildren().iterator();
+  public Mono<UserSession> materialize(final DslMethod dslMethod, final UserSession session) {
+    var childrenIterator = dslMethod.getChildren().iterator();
     if (!childrenIterator.hasNext()) {
-      throw new NoSpecDefinedException(dslItem.getName());
+      throw new NoSpecDefinedException(dslMethod.getName());
     }
 
-    var nextDslItem = childrenIterator.next();
-    nextDslItem.setParent(dslItem);
-    var materializer = createDSLSpecMaterializer(session, nextDslItem);
-    var acc = materializer.materialize(nextDslItem, session);
+    var nextChildDsl = childrenIterator.next();
+    nextChildDsl.setParent(dslMethod);
+    var materializer = nextChildDsl.materializer(session);
+    var acc = materializer.materialize(nextChildDsl, session);
 
     while (childrenIterator.hasNext()) {
       var next = childrenIterator.next();
@@ -48,8 +47,7 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
             return Mono.just(s);
           }
         }
-        return createDSLSpecMaterializer(session, next)
-            .materialize(next, session);
+        return next.materializer(session).materialize(next, session);
       });
     }
 
@@ -63,14 +61,5 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
 
   private boolean isConditionalSpec(MaterializableDslItem next) {
     return next instanceof ConditionalDslWrapper;
-  }
-
-
-  private DslMaterializer<MaterializableDslItem> createDSLSpecMaterializer(final UserSession session, final DslItem nextItem) {
-    if (nextItem != null) {
-      return nextItem.materializer(session);
-    }
-
-    throw new RuntimeException("DslItem is not materializable.");
   }
 }
