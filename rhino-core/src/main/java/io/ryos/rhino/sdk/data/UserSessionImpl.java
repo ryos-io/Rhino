@@ -83,4 +83,11 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
         .map(LoadToken::getSimulationSession)
         .orElse(new SimulationSession(user));
   }
+
+  @Override
+  public String toString() {
+    return "UserSessionImpl{" +
+        "user=" + user +
+        '}';
+  }
 }

@@ -78,4 +78,11 @@ public class DslMethodImpl implements DslItem, DslMethod {
   public DslItem getDsl() {
     return dsl;
   }
+
+  @Override
+  public String toString() {
+    return "DslMethodImpl{" +
+        "name='" + name + '\'' +
+        '}';
+  }
 }
