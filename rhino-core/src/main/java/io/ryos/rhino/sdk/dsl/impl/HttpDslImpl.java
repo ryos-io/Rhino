@@ -334,7 +334,8 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     httpSpecData.setEndpoint(getEndpoint().apply(userSession));
     httpSpecData.setResponse(response);
 
-    if (!hasParent()) {
+    final ResultingDsl parentResultingDsl = resolveSessionParent();
+    if (!hasParent() || parentResultingDsl == null) {
       final SessionDslItem sessionDslItem = this;
       if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
         userSession.add(sessionDslItem.getSessionKey(), httpSpecData);
@@ -349,19 +350,19 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
       return userSession;
     }
 
-    return resolveSessionParent().handleResult(userSession, response);
+    return parentResultingDsl.handleResult(userSession, response);
   }
 
   private ResultingDsl resolveSessionParent() {
-    DslItem current = this;
-    ResultingDsl sessionItem = this;
+    DslItem current = getParent();
+    ResultingDsl resultingDsl = null;
     while (current != null) {
       if (current instanceof ResultingDsl) {
-        sessionItem = (ResultingDsl) current;
+        resultingDsl = (ResultingDsl) current;
       }
       current = current.getParent();
     }
-    return sessionItem;
+    return resultingDsl;
   }
 
   @Override
