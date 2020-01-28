@@ -22,28 +22,19 @@ import java.time.Duration;
 import java.util.function.Predicate;
 
 /**
- * Runnable DSL is a {@link LoadDsl} instance which is used to describe executable steps.
+ * DSL is a {@link LoadDsl} instance which is used to describe executable steps.
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, MappableDsl,
     MaterializableDslItem {
 
   ThreadLocal<String> dslMethodName = new ThreadLocal<>();
 
-  /**
-   * Conditional runnable DSL is a {@link LoadDsl} if {@link Predicate} returns {@code true}, then
-   * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
-   * <p>
-   *
-   * @param spec {@link MaterializableDslItem} to materialize and run.
-   * @param predicate {@link Predicate} which is conditional for execution of {@link
-   * MaterializableDslItem} provided.
-   * @return {@link LoadDslImpl} instance.
-   */
-  LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  public static LoadDsl dsl() {
+    return new LoadDslImpl(dslMethodName.get());
+  }
 
   /**
    * Wait DSL is a DSL instance which makes execution halt for {@link Duration}.
@@ -64,9 +55,23 @@ public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, Mappable
    */
   LoadDsl run(MaterializableDslItem spec);
 
-  LoadDsl filter(Predicate<UserSession> predicate);
+  /**
+   * Conditional runnable DSL is a {@link LoadDsl} if {@link Predicate} returns {@code true}, then
+   * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
+   * <p>
+   *
+   * @param spec      {@link MaterializableDslItem} to materialize and run.
+   * @param predicate {@link Predicate} which is conditional for execution of {@link
+   *                  MaterializableDslItem} provided.
+   * @return {@link LoadDslImpl} instance.
+   */
+  LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
-  static LoadDsl dsl() {
-    return new LoadDslImpl(dslMethodName.get());
-  }
+  /**
+   * Filter is used to filter according to the predicate.
+   *
+   * @param predicate Predicate instance applied in filter.
+   * @return {@link LoadDslImpl} instance.
+   */
+  LoadDsl filter(Predicate<UserSession> predicate);
 }

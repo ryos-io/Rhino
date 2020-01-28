@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Connectable DSL, is the DSL instance to bind chaining specs.
+ * Load DSL implementation, that is the container DSL instance to bind other DSL items.
  *
  * @author Erhan Bagdemir
  */
