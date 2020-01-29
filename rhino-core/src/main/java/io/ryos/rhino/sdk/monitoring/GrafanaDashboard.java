@@ -6,7 +6,6 @@ package io.ryos.rhino.sdk.monitoring;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public interface GrafanaDashboard {
 
