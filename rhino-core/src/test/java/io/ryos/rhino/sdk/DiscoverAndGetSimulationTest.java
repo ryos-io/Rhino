@@ -33,7 +33,7 @@ public class DiscoverAndGetSimulationTest {
   }
 
   @Test
-  public void testFirstAttemptFailingAndRetryUntil() throws InterruptedException {
+  public void loadTestDiscoverAndGet() throws InterruptedException {
     WireMock.configureFor("localhost", PORT);
     TestUtils.overridePorts(PORT);
 

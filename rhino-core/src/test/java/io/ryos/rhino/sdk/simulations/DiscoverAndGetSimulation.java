@@ -23,6 +23,7 @@ import java.util.UUID;
 @Simulation(name = "Reactive Multi-User Test")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class DiscoverAndGetSimulation {
+
   private static final String DISCOVERY_ENDPOINT = getEndpoint("discovery");
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
@@ -30,7 +31,7 @@ public class DiscoverAndGetSimulation {
 
 
   @Dsl(name = "Load DSL Discovery and GET")
-  public LoadDsl singleTestDsl() {
+  public LoadDsl loadTestDiscoverAndGet() {
     return dsl()
         .run(http("Discovery Request")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
