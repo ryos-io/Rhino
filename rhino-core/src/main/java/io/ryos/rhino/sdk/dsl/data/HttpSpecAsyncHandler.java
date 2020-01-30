@@ -24,7 +24,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
   private static final String BLANK = "";
 
-  private final String stepName;
+  private final String measurementPoint;
   private final String dslName;
   private final String userId;
   private final boolean measurementEnabled;
@@ -41,7 +41,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
     this.measurement = new MeasurementImpl(getMeasurementName(dslItem), session.getUser().getId());
     this.dslName = dslItem.getParentName();
     this.userId = session.getUser().getId();
-    this.stepName = dslItem.getMeasurementPoint();
+    this.measurementPoint = dslItem.getMeasurementPoint();
     this.eventDispatcher = EventDispatcher.getInstance();
     this.measurementEnabled = dslItem.isMeasurementEnabled();
     this.retryInfo = dslItem.getRetryInfo();
@@ -149,7 +149,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
     var elapsed = System.currentTimeMillis() - start;
 
-    measurement.measure(stepName, String.valueOf(status));
+    measurement.measure(measurementPoint, String.valueOf(status));
     var userEventEnd = new UserEvent(
         BLANK,
         userId,
