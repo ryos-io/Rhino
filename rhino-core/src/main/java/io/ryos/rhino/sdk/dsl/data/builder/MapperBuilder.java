@@ -21,8 +21,11 @@ import java.util.function.Function;
 import org.apache.commons.lang3.Validate;
 
 /**
+ * Helper builder used with map() DSL. Use {@link MapperBuilder} instances to complete the
+ * {@link io.ryos.rhino.sdk.dsl.LoadDsl#map(MapperBuilder)} DSL.
+ *
  * @author Erhan Bagdemir
- * @since 1.1.0
+ * @see io.ryos.rhino.sdk.dsl.LoadDsl#map(MapperBuilder)
  */
 public class MapperBuilder<R, T> {
 
@@ -35,17 +38,38 @@ public class MapperBuilder<R, T> {
     this.saveTo = key; // Default
   }
 
+  /**
+   * Use the method to access the session object with the key, sessionKey.
+   *
+   * @param sessionKey The session key of the object being accessed.
+   * @param <R>        The type of the session object.
+   * @param <T>        Target type to which the session object will be mapped.
+   * @return {@link MapperBuilder} instance.
+   */
   public static <R, T> MapperBuilder<R, T> from(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return new MapperBuilder<>(Objects.requireNonNull(sessionKey));
   }
 
+  /**
+   * Use to provide a {@link Function} instance which will be applied to the input object and
+   * returns the target object.
+   *
+   * @param mappingFunction The function which is used to map the input object to the output.
+   * @return {@link MapperBuilder} instance.
+   */
   public MapperBuilder<R, T> doMap(Function<R, T> mappingFunction) {
     Validate.notNull(mappingFunction, "Mapping function must not be null.");
     this.mappingFunction = mappingFunction;
     return this;
   }
 
+  /**
+   * After map function is applied, use this method to store the output object in the session.
+   *
+   * @param sessionKey Session key for the output instance.
+   * @return {@link MapperBuilder} instance.
+   */
   public MapperBuilder<R, T> saveTo(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     this.saveTo = sessionKey;
