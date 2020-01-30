@@ -111,7 +111,9 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   public UserSession handleResult(final UserSession userSession, final Object response) {
     final SessionDslItem sessionDslItem = this;
     List<Object> listOfObjects = Collections.emptyList();
-    if (!hasParent()) {
+
+    final ResultingDsl resultingDsl = resolveSessionParent();
+    if (!hasParent() || resultingDsl == null) {
       if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
         listOfObjects = userSession.<List<Object>>get(sessionDslItem.getSessionKey())
             .orElse(new ArrayList<>());
@@ -127,19 +129,19 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
       }
       return userSession;
     }
-    return resolveSessionParent().handleResult(userSession, listOfObjects);
+    return resultingDsl.handleResult(userSession, listOfObjects);
   }
 
   private ResultingDsl resolveSessionParent() {
-    DslItem current = this;
-    ResultingDsl sessionItem = this;
+    DslItem current = getParent();
+    ResultingDsl resultingDsl = null;
     while (current != null) {
       if (current instanceof ResultingDsl) {
-        sessionItem = (ResultingDsl) current;
+        resultingDsl = (ResultingDsl) current;
       }
       current = current.getParent();
     }
-    return sessionItem;
+    return resultingDsl;
   }
 
   @Override
