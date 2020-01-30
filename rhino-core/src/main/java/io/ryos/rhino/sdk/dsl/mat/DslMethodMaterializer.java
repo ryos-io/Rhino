@@ -40,6 +40,7 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
 
     while (childrenIterator.hasNext()) {
       var next = childrenIterator.next();
+      next.setParent(dslMethod);
       acc = acc.flatMap(s -> {
         if (isConditionalSpec(next)) {
           var predicate = ((ConditionalDslWrapper) next).getPredicate();
