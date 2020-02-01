@@ -16,6 +16,10 @@
 
 package io.ryos.rhino.sdk.reporting;
 
+import io.ryos.rhino.sdk.dsl.DslItem;
+import io.ryos.rhino.sdk.dsl.DslMethod;
+import io.ryos.rhino.sdk.dsl.MeasurableDsl;
+import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.ArrayList;
@@ -47,6 +51,15 @@ public class MeasurementImpl implements Measurement {
     this(parentName, userId, "", false, true, EventDispatcher.getInstance());
   }
 
+  public MeasurementImpl(final String userId, final MeasurableDsl measureableDslItem) {
+    this.parentName = getContainerMeasurement(measureableDslItem);
+    this.userId = userId;
+    this.measurementPoint = measureableDslItem.getMeasurementPoint();
+    this.cumulativeMeasurement = measureableDslItem.isCumulative();
+    this.measurementEnabled = measureableDslItem.isMeasurementEnabled();
+    this.dispatcher = EventDispatcher.getInstance();
+  }
+
   public MeasurementImpl(final String parentName,
       final String userId,
       final String measurementPoint,
@@ -60,6 +73,20 @@ public class MeasurementImpl implements Measurement {
     this.cumulativeMeasurement = cumulativeMeasurement;
     this.measurementEnabled = measurementEnabled;
     this.dispatcher = dispatcher;
+  }
+
+  private String getContainerMeasurement(final DslItem dslItem) {
+
+    if (dslItem.hasParent()) {
+      var parent = dslItem.getParent();
+      if (parent instanceof AbstractMeasurableDsl) {
+        return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
+      }
+      if (parent instanceof DslMethod) {
+        return parent.getName();
+      }
+    }
+    return dslItem.getName();
   }
 
   @Override
@@ -135,7 +162,13 @@ public class MeasurementImpl implements Measurement {
       elapsed = end - startTimer;
     }
 
-    addEvent(new DslEvent(STR_BLANK, userId, parentName, startTimer, end, elapsed, status, measurement));
+    addEvent(
+        new DslEvent(STR_BLANK, userId, parentName, startTimer, end, elapsed, status, measurement));
+  }
+
+  @Override
+  public void measure(String status) {
+    measure(measurementPoint, status);
   }
 
   @Override
@@ -190,5 +223,25 @@ public class MeasurementImpl implements Measurement {
 
   public synchronized void purge() {
     events.clear();
+  }
+
+  public String getParentName() {
+    return parentName;
+  }
+
+  public String getMeasurementPoint() {
+    return measurementPoint;
+  }
+
+  public boolean isCumulativeMeasurement() {
+    return cumulativeMeasurement;
+  }
+
+  public boolean isMeasurementEnabled() {
+    return measurementEnabled;
+  }
+
+  public boolean isMeasurementStarted() {
+    return measurementStarted;
   }
 }

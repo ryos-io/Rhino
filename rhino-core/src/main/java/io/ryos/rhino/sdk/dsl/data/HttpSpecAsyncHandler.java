@@ -3,12 +3,9 @@ package io.ryos.rhino.sdk.dsl.data;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHandler;
@@ -20,9 +17,6 @@ import org.asynchttpclient.netty.request.NettyRequest;
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
-  private final String measurementPoint;
-  private final boolean measurementEnabled;
-  private final boolean cumulativeMeasurement;
   private final MeasurementImpl measurement;
   private volatile long start = -1;
   private volatile int status;
@@ -30,30 +24,8 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final RetryInfo retryInfo;
 
   public HttpSpecAsyncHandler(final UserSession session, final HttpDsl dslItem) {
-    this.measurement = new MeasurementImpl(getContainerMeasurement(dslItem),
-        session.getUser().getId(),
-        dslItem.getMeasurementPoint(),
-        dslItem.isCumulative(),
-        dslItem.isMeasurementEnabled(),
-        EventDispatcher.getInstance());
-    this.measurementPoint = dslItem.getMeasurementPoint();
-    this.measurementEnabled = dslItem.isMeasurementEnabled();
+    this.measurement = new MeasurementImpl(session.getUser().getId(), dslItem);
     this.retryInfo = dslItem.getRetryInfo();
-    this.cumulativeMeasurement = dslItem.isCumulative();
-  }
-
-  private String getContainerMeasurement(final HttpDsl dslItem) {
-
-    if (dslItem.hasParent()) {
-      var parent = dslItem.getParent();
-      if (parent instanceof AbstractMeasurableDsl) {
-        return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
-      }
-      if (parent instanceof DslMethod) {
-        return parent.getName();
-      }
-    }
-    return dslItem.getName();
   }
 
   @Override
@@ -92,7 +64,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   public Response onCompleted() {
     var response = builder.build();
     var httpResponse = new HttpResponse(response);
-    if (measurementEnabled && isReadyToMeasure(httpResponse)) {
+    if (measurement.isMeasurementEnabled() && isReadyToMeasure(httpResponse)) {
       completeMeasurement();
     }
     if (SimulationConfig.debugHttp()) {
@@ -104,7 +76,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
-    measurement.measure(measurementPoint, String.valueOf(status));
+    measurement.measure(String.valueOf(status));
     measurement.finish();
   }
 
@@ -113,7 +85,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
       return true;
     }
 
-    if (!cumulativeMeasurement) {
+    if (!measurement.isCumulativeMeasurement()) {
       return true;
     }
 
@@ -122,15 +94,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public void onRequestSend(NettyRequest request) {
-
-    if (measurementEnabled) {
-
-      // if the start timestamp is not set, then set it. Otherwise, if it is a cumulative
-      // measurement, and the start is already set, then skip it.
-      if (start < 0 || !cumulativeMeasurement) {
-        this.start = System.currentTimeMillis();
-      }
-
+    if (measurement.isMeasurementEnabled()) {
       measurement.start();
     }
   }

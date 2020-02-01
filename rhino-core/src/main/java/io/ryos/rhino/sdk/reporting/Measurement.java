@@ -51,6 +51,8 @@ public interface Measurement {
    */
   void measure(String stepName, String status);
 
+  public void measure(String status);
+
   /**
    * The {@link LogEvent} will be recorded and stored internally. The
    * {@link io.ryos.rhino.sdk.runners.EventDispatcher} will then dispatch the persisted events to
