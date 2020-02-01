@@ -135,6 +135,14 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   }
 
   @Override
+  public LoadDsl measure(final String tag, final MaterializableDslItem dslItem) {
+    Validate.notNull(tag, "Tag must not be null.");
+    Validate.notNull(dslItem, "DSL item  must not be null.");
+    children.add(new MeasureDslImpl(tag, dslItem));
+    return this;
+  }
+
+  @Override
   public LoadDsl filter(Predicate<UserSession> predicate) {
     Validate.notNull(predicate, "Predicate must not be null.");
     children.add(new FilterDslImpl(predicate));

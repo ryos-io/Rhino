@@ -28,7 +28,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  */
 public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, MappableDsl,
-    MaterializableDslItem {
+    MaterializableDslItem, MeasureDsl {
 
   ThreadLocal<String> dslMethodName = new ThreadLocal<>();
 

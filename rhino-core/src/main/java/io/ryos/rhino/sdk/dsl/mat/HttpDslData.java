@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
+import java.io.InputStream;
 
 public class HttpDslData {
 
@@ -33,6 +34,18 @@ public class HttpDslData {
 
   public HttpResponse getResponse() {
     return response;
+  }
+
+  public int getStatusCode() {
+    return response.getStatusCode();
+  }
+
+  public String getResponseBodyAsString() {
+    return response.getResponse().getResponseBody();
+  }
+
+  public InputStream getResponseBodyAsStream() {
+    return response.getResponse().getResponseBodyAsStream();
   }
 
   public void setResponse(HttpResponse response) {

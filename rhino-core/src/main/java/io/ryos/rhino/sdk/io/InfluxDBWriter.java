@@ -20,8 +20,8 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import io.ryos.rhino.sdk.SimulationConfig;
+import io.ryos.rhino.sdk.reporting.DslEvent;
 import io.ryos.rhino.sdk.reporting.LogEvent;
-import io.ryos.rhino.sdk.reporting.ScenarioEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import java.util.Optional;
@@ -94,8 +94,8 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
   @Override
   public void write(final LogEvent logEvent) {
 
-    if (logEvent instanceof ScenarioEvent) {
-      createPoint((ScenarioEvent) logEvent);
+    if (logEvent instanceof DslEvent) {
+      createPoint((DslEvent) logEvent);
     }
 
     if (logEvent instanceof UserEvent) {
@@ -103,11 +103,11 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
     }
   }
 
-  private void createPoint(ScenarioEvent report) {
+  private void createPoint(DslEvent report) {
     var builder = Point.measurement("simulation_" + SimulationConfig.getSimulationId())
-        .tag("step", report.getStep())
+        .tag("step", report.getMeasurementPoint())
         .tag("status", report.getStatus())
-        .addField("scenario", report.getScenario())
+        .addField("scenario", report.getParentMeasurementPoint())
         .addField("pt", report.getElapsed())
         .addField("node", SimulationConfig.getNode());
     influxDB.setDatabase(dbName);
@@ -118,7 +118,7 @@ public class InfluxDBWriter extends AbstractActor implements ResultWriter<LogEve
     if (report.getEventType() == EventType.END) {
       var builder =
           Point.measurement("user_" + SimulationConfig.getSimulationId())
-              .tag("scenario", report.getScenario())
+              .tag("scenario", report.getParentMeasurementPoint())
               .addField("id", report.getId())
               .addField("node", SimulationConfig.getNode())
               .addField("pt", report.getElapsed());

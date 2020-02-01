@@ -80,7 +80,7 @@ public class DefaultSimulationCallable implements Callable<Measurement> {
 
     executeScenario(scenario, measurement, instance, userSession);
 
-    if (!measurement.isLastEventScenarioEvent()) {
+    if (!measurement.isLastEvent()) {
       measurement.measure("", "-");
     }
 

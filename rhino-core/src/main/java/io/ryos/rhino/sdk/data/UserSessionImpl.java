@@ -17,8 +17,10 @@
 package io.ryos.rhino.sdk.data;
 
 import io.ryos.rhino.sdk.dsl.data.LoadToken;
+import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUser;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,21 +35,31 @@ import java.util.Optional;
  */
 public class UserSessionImpl extends ContextImpl implements UserSession {
 
+  private static final String BLANK = "";
   private final User user;
   private SimulationSession simulationSession;
   private final List<LoadToken> tokens;
+  private final List<Measurement> measurements;
 
-  public UserSessionImpl(
-      final User user,
-      final SimulationSession session,
+  public UserSessionImpl(final User user, final SimulationSession session,
       final List<LoadToken> tokens) {
     this.user = user;
     this.simulationSession = session;
     this.tokens = tokens;
+    this.measurements = new ArrayList<>();
   }
 
   public UserSessionImpl(final User user) {
     this(user, null, null);
+  }
+
+  public void startMeasurement(final String measurementPoint, final String parentName) {
+  }
+
+  public void measure(String measurementPoint) {
+  }
+
+  public void completeMeasurement(String measurementPoint) {
   }
 
   @Override
@@ -71,10 +83,12 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
     return Optional.empty();
   }
 
+  @Override
   public SimulationSession getSimulationSession() {
     return simulationSession;
   }
 
+  @Override
   public SimulationSession getSimulationSessionFor(User user) {
     return tokens
         .stream()

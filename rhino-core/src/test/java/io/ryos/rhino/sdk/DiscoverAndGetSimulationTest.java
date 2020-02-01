@@ -44,7 +44,7 @@ public class DiscoverAndGetSimulationTest {
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/resource"))
         .willReturn(aResponse()
-            .withFixedDelay(1000)
+            .withFixedDelay(200)
             .withStatus(200)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/discovery"))

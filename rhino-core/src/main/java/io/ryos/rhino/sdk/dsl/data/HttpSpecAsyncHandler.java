@@ -8,8 +8,6 @@ import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,33 +20,30 @@ import org.asynchttpclient.netty.request.NettyRequest;
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
-  private static final String BLANK = "";
-
   private final String measurementPoint;
-  private final String dslName;
-  private final String userId;
   private final boolean measurementEnabled;
   private final boolean cumulativeMeasurement;
   private final MeasurementImpl measurement;
   private volatile long start = -1;
   private volatile int status;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
-  private final EventDispatcher eventDispatcher;
   private final RetryInfo retryInfo;
 
-  public HttpSpecAsyncHandler(final UserSession session,
-      final HttpDsl dslItem) {
-    this.measurement = new MeasurementImpl(getMeasurementName(dslItem), session.getUser().getId());
-    this.dslName = dslItem.getParentName();
-    this.userId = session.getUser().getId();
+  public HttpSpecAsyncHandler(final UserSession session, final HttpDsl dslItem) {
+    this.measurement = new MeasurementImpl(getContainerMeasurement(dslItem),
+        session.getUser().getId(),
+        dslItem.getMeasurementPoint(),
+        dslItem.isCumulative(),
+        dslItem.isMeasurementEnabled(),
+        EventDispatcher.getInstance());
     this.measurementPoint = dslItem.getMeasurementPoint();
-    this.eventDispatcher = EventDispatcher.getInstance();
     this.measurementEnabled = dslItem.isMeasurementEnabled();
     this.retryInfo = dslItem.getRetryInfo();
     this.cumulativeMeasurement = dslItem.isCumulative();
   }
 
-  private String getMeasurementName(final HttpDsl dslItem) {
+  private String getContainerMeasurement(final HttpDsl dslItem) {
+
     if (dslItem.hasParent()) {
       var parent = dslItem.getParent();
       if (parent instanceof AbstractMeasurableDsl) {
@@ -90,44 +85,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
    */
   @Override
   public void onThrowable(final Throwable t) {
-    // There is no start event for user measurement, so we need to create one.
-    // In Error case, we just want to make the error visible in stdout. We don't actually record
-    // any metric here, thus the start/end timestamps are irrelevant.
-    if (!measurementEnabled) {
-      this.start = System.currentTimeMillis();
-      var userEventStart = new UserEvent(
-          BLANK,
-          userId,
-          dslName,
-          start,
-          start,
-          0L,
-          EventType.START,
-          BLANK,
-          userId
-      );
-
-      measurement.record(userEventStart);
-    }
-
-    // Store the error event in the measurement stack.
-    measurement.measure(t.getMessage(), "N/A");
-
-    var userEventEnd = new UserEvent(
-        BLANK,
-        userId,
-        dslName,
-        start,
-        0,
-        0L,
-        EventType.END,
-        BLANK,
-        userId
-    );
-
-    measurement.record(userEventEnd);
-
-    eventDispatcher.dispatchEvents(measurement);
+    measurement.fail(t.getMessage());
   }
 
   @Override
@@ -146,25 +104,8 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
-
-    var elapsed = System.currentTimeMillis() - start;
-
     measurement.measure(measurementPoint, String.valueOf(status));
-    var userEventEnd = new UserEvent(
-        BLANK,
-        userId,
-        dslName,
-        start,
-        start + elapsed,
-        elapsed,
-        EventType.END,
-        BLANK,
-        userId
-    );
-
-    measurement.record(userEventEnd);
-
-    eventDispatcher.dispatchEvents(measurement);
+    measurement.finish();
   }
 
   private boolean isReadyToMeasure(HttpResponse httpResponse) {
@@ -190,19 +131,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
         this.start = System.currentTimeMillis();
       }
 
-      var userEventStart = new UserEvent(
-          "",
-          userId,
-          dslName,
-          start,
-          start,
-          0L,
-          EventType.START,
-          BLANK,
-          userId
-      );
-
-      measurement.record(userEventStart);
+      measurement.start();
     }
   }
 }

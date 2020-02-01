@@ -26,11 +26,28 @@ package io.ryos.rhino.sdk.reporting;
 public interface Measurement {
 
   /**
+   * Stops the measurement by committing the measurement to the dispatcher.
+   *
+   * @param message Failure description.
+   */
+  void fail(String message);
+
+  /**
+   * Starts the measurement.
+   */
+  void start();
+
+  /**
+   * Finishes the measurement by committing it to the dispatcher.
+   */
+  void finish();
+
+  /**
    * Call measure(String, int) to measure the temporal metrics.
    * <p>
    *
    * @param stepName The name of the step.
-   * @param status HTTP status of the load execution.
+   * @param status   HTTP status of the load execution.
    */
   void measure(String stepName, String status);
 

@@ -14,6 +14,11 @@ public class HttpResponse {
     return response;
   }
 
+  public String getResponseBodyAsString() {
+    return response.getResponseBody();
+  }
+
+
   public int getStatusCode() {
     return response.getStatusCode();
   }

@@ -27,7 +27,7 @@ public class DefaultSimulationLogFormatter implements SimulationLogFormatter {
   @Override
   public String format(final LogEvent event) {
     return String.format("\"%s\"\t\"%s\"\t%s\t%s\t%s\t%s%n",
-        event.getScenario(),
+        event.getParentMeasurementPoint(),
         event.getStart(),
         event.getElapsed(),
         event.getUsername(),

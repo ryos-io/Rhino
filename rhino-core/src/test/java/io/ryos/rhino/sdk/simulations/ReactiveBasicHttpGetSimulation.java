@@ -10,11 +10,11 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
-import io.ryos.rhino.sdk.users.repositories.BasicUserRepositoryFactoryImpl;
+import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.UUID;
 
 @Simulation(name = "Reactive Test")
-@UserRepository(factory = BasicUserRepositoryFactoryImpl.class)
+@UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class ReactiveBasicHttpGetSimulation {
 
   private static final String FILES_ENDPOINT = getEndpoint("files");
@@ -25,6 +25,13 @@ public class ReactiveBasicHttpGetSimulation {
   public LoadDsl singleTestDsl() {
     return dsl()
         .run(http("Files Request")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(FILES_ENDPOINT)
+            .get()
+            .saveTo("result"))
+        .run(http("Files Request 2")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
