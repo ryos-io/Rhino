@@ -33,8 +33,8 @@ public class RunUntilDslImpl extends AbstractMeasurableDsl implements RunUntilDs
   }
 
   @Override
-  public RunUntilDslMaterializer materializer(UserSession session) {
-    return new RunUntilDslMaterializer();
+  public RunUntilDslMaterializer materializer() {
+    return new RunUntilDslMaterializer(this);
   }
 
   @Override

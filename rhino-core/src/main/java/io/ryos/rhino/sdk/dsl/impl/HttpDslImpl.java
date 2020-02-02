@@ -324,8 +324,8 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(final UserSession session) {
-    return new HttpDslMaterializer();
+  public DslMaterializer materializer() {
+    return new HttpDslMaterializer(this);
   }
 
   @Override

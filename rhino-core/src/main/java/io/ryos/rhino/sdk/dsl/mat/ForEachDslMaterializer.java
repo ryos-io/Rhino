@@ -27,13 +27,18 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class ForEachDslMaterializer<S, R extends Iterable<S>> implements
-    DslMaterializer<ForEachDsl<S, R>> {
+public class ForEachDslMaterializer<S, R extends Iterable<S>> implements DslMaterializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ForEachDslMaterializer.class);
+  private final ForEachDsl<S, R> dslItem;
+
+  public ForEachDslMaterializer(ForEachDsl<S, R> dslItem) {
+    this.dslItem = dslItem;
+  }
+
 
   @Override
-  public Mono<UserSession> materialize(final ForEachDsl<S, R> dslItem, final UserSession session) {
+  public Mono<UserSession> materialize(final UserSession session) {
     final R iterable;
     try { //TODO try-catch is just workaround. Find a way to escalate error with exception.
       iterable = Optional.ofNullable(dslItem.getIterableSupplier().apply(session))
@@ -47,7 +52,7 @@ public class ForEachDslMaterializer<S, R extends Iterable<S>> implements
     return Flux.fromIterable(iterable)
         .map(dslItem.getForEachFunction())
         .map(childDsl -> populateToChildren(dslItem, childDsl))
-        .flatMap(childDsl -> childDsl.materializer(session).materialize(childDsl, session))
+        .flatMap(childDsl -> childDsl.materializer().materialize(session))
         .reduce((s1, s2) -> s1)
         .doOnError(e -> LOG.error("Unexpected error: ", e));
   }

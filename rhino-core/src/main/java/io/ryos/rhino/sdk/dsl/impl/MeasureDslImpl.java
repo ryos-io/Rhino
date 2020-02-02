@@ -1,43 +1,34 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
-import java.util.ArrayList;
+import io.ryos.rhino.sdk.dsl.mat.MeasureDslMaterializer;
+import java.util.Collections;
 import java.util.List;
 
 public class MeasureDslImpl extends AbstractDSLItem implements MaterializableDslItem {
 
   private final String tag;
-  private final MaterializableDslItem dslItem;
+  private final MaterializableDslItem childDsl;
 
-  public MeasureDslImpl(final String tag, final MaterializableDslItem dslItem) {
+  public MeasureDslImpl(final String tag, final MaterializableDslItem childDsl) {
     super(tag);
 
     this.tag = tag;
-    this.dslItem = dslItem;
-  }
-
-  public String getTag() {
-    return tag;
-  }
-
-  public DslItem getDslItem() {
-    return dslItem;
+    this.childDsl = childDsl;
   }
 
   @Override
   public List<MaterializableDslItem> getChildren() {
-    final ArrayList<MaterializableDslItem> objects = new ArrayList<>();
-    objects.add(dslItem);
-    return objects;
+    return Collections.singletonList(childDsl);
   }
 
   @Override
-  public <T extends MaterializableDslItem> DslMaterializer<T> materializer(
-      final UserSession userSession) {
+  public DslMaterializer materializer() {
+    return new MeasureDslMaterializer(this);
+  }
 
-    return null;
+  public String getTag() {
+    return tag;
   }
 }

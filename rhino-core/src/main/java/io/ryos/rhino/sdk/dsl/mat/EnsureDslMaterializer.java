@@ -28,15 +28,21 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class EnsureDslMaterializer implements DslMaterializer<EnsureDsl> {
+public class EnsureDslMaterializer implements DslMaterializer {
+
+  private final EnsureDsl ensureDsl;
+
+  public EnsureDslMaterializer(EnsureDsl ensureDsl) {
+    this.ensureDsl = ensureDsl;
+  }
 
   @Override
-  public Mono<UserSession> materialize(EnsureDsl dslItem, UserSession userSession) {
+  public Mono<UserSession> materialize(UserSession userSession) {
     return Mono
         .just(userSession)
         .flatMap(s -> Mono.fromCallable(() -> {
-          if (!dslItem.getPredicate().test(s)) {
-            throw new TerminateSimulationException(dslItem.getCause());
+          if (!ensureDsl.getPredicate().test(s)) {
+            throw new TerminateSimulationException(ensureDsl.getCause());
           }
           return s;
         }));

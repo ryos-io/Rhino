@@ -30,10 +30,16 @@ import reactor.core.publisher.Mono;
  *
  * @author Erhan Bagdemir
  */
-public class SomeDslMaterializer implements DslMaterializer<SomeDsl> {
+public class SomeDslMaterializer implements DslMaterializer {
+
+  private final SomeDsl dslItem;
+
+  public SomeDslMaterializer(SomeDsl dslItem) {
+    this.dslItem = dslItem;
+  }
 
   @Override
-  public Mono<UserSession> materialize(SomeDsl dslItem, UserSession userSession) {
+  public Mono<UserSession> materialize(UserSession userSession) {
 
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {

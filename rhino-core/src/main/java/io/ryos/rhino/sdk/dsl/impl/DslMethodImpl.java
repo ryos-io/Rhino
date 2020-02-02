@@ -70,8 +70,8 @@ public class DslMethodImpl implements DslItem, DslMethod {
   }
 
   @Override
-  public DslMethodMaterializer materializer(UserSession session) {
-    return new DslMethodMaterializer();
+  public DslMethodMaterializer materializer() {
+    return new DslMethodMaterializer(this);
   }
 
   @Override

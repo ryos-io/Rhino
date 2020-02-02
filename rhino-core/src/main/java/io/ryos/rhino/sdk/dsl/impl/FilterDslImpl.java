@@ -44,9 +44,8 @@ public class FilterDslImpl extends AbstractMeasurableDsl implements FilterDsl {
   }
 
   @Override
-  public FilterDslMaterializer materializer(
-      final UserSession userSession) {
-    return new FilterDslMaterializer();
+  public FilterDslMaterializer materializer() {
+    return new FilterDslMaterializer(this);
   }
 
   /**

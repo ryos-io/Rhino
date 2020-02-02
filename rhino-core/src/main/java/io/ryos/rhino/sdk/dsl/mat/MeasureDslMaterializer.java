@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Ryos.io.
+ * Copyright 2018 Ryos.io.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,22 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
+import io.ryos.rhino.sdk.dsl.impl.MeasureDslImpl;
 import reactor.core.publisher.Mono;
 
-public class ConditionalDslMaterializer implements DslMaterializer {
+/**
+ *
+ */
+public class MeasureDslMaterializer implements DslMaterializer {
 
-  private final ConditionalDslWrapper wrapper;
+  private final MeasureDslImpl dslItem;
 
-  public ConditionalDslMaterializer(ConditionalDslWrapper wrapper) {
-    this.wrapper = wrapper;
+  public MeasureDslMaterializer(MeasureDslImpl dslItem) {
+    this.dslItem = dslItem;
   }
 
   @Override
-  public Mono<UserSession> materialize(final UserSession userSession) {
-
-    return Mono.just(userSession)
-        .filter(wrapper.getPredicate())
-        .flatMap(s -> {
-          final MaterializableDslItem spec = wrapper.getWrappedDslItem();
-          return spec.materializer().materialize(userSession);
-        });
+  public Mono<UserSession> materialize(UserSession userSession) {
+    return dslItem.materializer().materialize(userSession);
   }
 }

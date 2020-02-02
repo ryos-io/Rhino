@@ -30,12 +30,18 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class MapperDslMaterializer implements DslMaterializer<MapperDsl> {
+public class MapperDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(MapperDslMaterializer.class);
 
+  private final MapperDsl dslItem;
+
+  public MapperDslMaterializer(MapperDsl dslItem) {
+    this.dslItem = dslItem;
+  }
+
   @Override
-  public Mono<UserSession> materialize(final MapperDsl dslItem, final UserSession userSession) {
+  public Mono<UserSession> materialize(final UserSession userSession) {
     return Mono.just(userSession).map(session -> {
       try {
         var mapper = dslItem.getMapperBuilder();

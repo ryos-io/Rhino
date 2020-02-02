@@ -67,8 +67,8 @@ public class EnsureDslImpl extends AbstractMeasurableDsl implements EnsureDsl {
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new EnsureDslMaterializer();
+  public DslMaterializer materializer() {
+    return new EnsureDslMaterializer(this);
   }
 
   @Override

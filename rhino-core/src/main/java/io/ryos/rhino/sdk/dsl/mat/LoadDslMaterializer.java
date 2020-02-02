@@ -20,10 +20,16 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
 import reactor.core.publisher.Mono;
 
-public class LoadDslMaterializer implements DslMaterializer<LoadDsl> {
+public class LoadDslMaterializer implements DslMaterializer {
+
+  private final LoadDsl dslItem;
+
+  public LoadDslMaterializer(LoadDsl dslItem) {
+    this.dslItem = dslItem;
+  }
 
   @Override
-  public Mono<UserSession> materialize(final LoadDsl dslItem, final UserSession userSession) {
-    return new DslMethodMaterializer().materialize(new DslMethodImpl("", dslItem), userSession);
+  public Mono<UserSession> materialize(final UserSession userSession) {
+    return new DslMethodMaterializer(new DslMethodImpl("", dslItem)).materialize(userSession);
   }
 }

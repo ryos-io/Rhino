@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.SessionDslMaterializer;
@@ -48,8 +47,8 @@ public class SessionDslImpl extends AbstractSessionDslItem {
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new SessionDslMaterializer();
+  public DslMaterializer materializer() {
+    return new SessionDslMaterializer(this);
   }
 
   @Override

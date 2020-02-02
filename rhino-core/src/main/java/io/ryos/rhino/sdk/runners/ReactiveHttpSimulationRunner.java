@@ -100,7 +100,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     flux = appendTake(flux);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> LOG.error("Something unexpected happened", t))
-        .flatMap(tuple -> tuple.getT2().materializer(tuple.getT1()).materialize(tuple.getT2(), tuple.getT1()))
+        .flatMap(tuple -> tuple.getT2().materializer().materialize(tuple.getT1()))
         .onErrorResume(this::handleThrowable)
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .doOnTerminate(this::shutdown)
@@ -200,7 +200,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
       Flux.fromStream(userSessionList.stream())
           .onErrorResume(this::handleThrowable)
-          .flatMap(session -> new DslMethodMaterializer().materialize(dslItem, session))
+          .flatMap(session -> new DslMethodMaterializer(dslItem).materialize(session))
           .doOnError(throwable -> LOG.error("Something unexpected happened", throwable))
           .doOnComplete(() -> signalCompletion(action))
           .blockLast();

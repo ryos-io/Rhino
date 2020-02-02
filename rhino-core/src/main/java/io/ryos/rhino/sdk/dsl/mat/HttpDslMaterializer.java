@@ -54,11 +54,17 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
+public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
 
-  public Mono<UserSession> materialize(final HttpDsl dslItem, final UserSession userSession) {
+  private final HttpDsl dslItem;
+
+  public HttpDslMaterializer(HttpDsl dslItem) {
+    this.dslItem = dslItem;
+  }
+
+  public Mono<UserSession> materialize(final UserSession userSession) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
 

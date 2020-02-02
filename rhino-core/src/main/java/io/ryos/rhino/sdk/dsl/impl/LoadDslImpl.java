@@ -160,8 +160,7 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   }
 
   @Override
-  public LoadDslMaterializer materializer(
-      UserSession userSession) {
-    return new LoadDslMaterializer();
+  public LoadDslMaterializer materializer() {
+    return new LoadDslMaterializer(this);
   }
 }

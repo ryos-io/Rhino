@@ -35,7 +35,7 @@ public class SomeDslDslMaterializerTest {
       return "OK";
     });
 
-    var materialize = new SomeDslMaterializer().materialize(spec, user);
+    var materialize = new SomeDslMaterializer(spec).materialize(user);
     var session = materialize.block();
 
     assertThat(session, notNullValue());

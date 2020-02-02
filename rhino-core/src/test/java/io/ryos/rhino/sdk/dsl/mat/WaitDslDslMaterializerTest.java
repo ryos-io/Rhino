@@ -15,13 +15,13 @@ public class WaitDslDslMaterializerTest {
 
   @Test
   public void testMaterialize() throws InterruptedException {
-
-    var waitSpecMaterializer = new WaitDslMaterializer();
+    var waitSpec = new WaitDslImpl(Duration.ofMillis(WAIT_TIME));
+    var waitSpecMaterializer = new WaitDslMaterializer(waitSpec);
 
     var user = new UserImpl("username", "pw", "id", "scope");
     var userSession = new UserSessionImpl(user);
-    var waitSpec = new WaitDslImpl(Duration.ofMillis(WAIT_TIME));
-    var mono = waitSpecMaterializer.materialize(waitSpec, userSession);
+
+    var mono = waitSpecMaterializer.materialize(userSession);
 
     // The first call is needed to get the pipeline initialized.
     // It takes a little longer.
