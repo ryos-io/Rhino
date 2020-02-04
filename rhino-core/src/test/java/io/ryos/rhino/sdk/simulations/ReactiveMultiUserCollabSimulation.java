@@ -56,13 +56,14 @@ public class ReactiveMultiUserCollabSimulation {
   @Before
   public LoadDsl setUp() {
 
-    return dsl().run(http("Prepare by PUT text.txt")
-        .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
-        .header(X_API_KEY, SimulationConfig.getApiKey())
-        .auth()
-        .endpoint(session -> FILES_ENDPOINT)
-        .upload(() -> file("classpath:///test.txt"))
-        .put().saveTo("Prepare by PUT text.txt", Scope.SIMULATION))
+    return dsl().run(
+        http("Prepare by PUT text.txt")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(session -> FILES_ENDPOINT)
+            .upload(() -> file("classpath:///test.txt"))
+            .put().saveTo("Prepare by PUT text.txt", Scope.SIMULATION))
         .session("files", ReactiveMultiUserCollabSimulation::getFiles)
         .forEach("test for each", in(session("files")).exec(file -> http("PUT in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
@@ -74,8 +75,9 @@ public class ReactiveMultiUserCollabSimulation {
 
   @Dsl(name = "Upload and Get")
   public LoadDsl loadTestPutAndGetFile() {
-    return dsl().forEach("get all files",
-        in(global("uploads")).exec(file -> http("GET in Loop")
+    return dsl()
+        .forEach("get all files", in(global("uploads")).exec(file ->
+            http("GET in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
