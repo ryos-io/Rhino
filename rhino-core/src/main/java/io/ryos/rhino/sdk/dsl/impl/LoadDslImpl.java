@@ -39,16 +39,20 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   }
 
   @Override
-  public LoadDsl run(MaterializableDslItem spec) {
-    Validate.notNull(spec, "Spec must not be null.");
-    children.add(spec);
+  public LoadDsl run(MaterializableDslItem dslItem) {
+    Validate.notNull(dslItem, "dslItem must not be null.");
+
+    dslItem.setParent(this);
+    children.add(dslItem);
     return this;
   }
 
   @Override
   public LoadDsl ensure(Predicate<UserSession> predicate) {
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new EnsureDslImpl(predicate));
+
+    var ensureDsl = new EnsureDslImpl(predicate);
+    children.add(ensureDsl);
     return this;
   }
 
@@ -56,7 +60,9 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   public LoadDsl ensure(Predicate<UserSession> predicate, String reason) {
     Validate.notNull(predicate, "Predicate must not be null.");
     Validate.notNull(reason, "Reason must not be null.");
-    children.add(new EnsureDslImpl(predicate, reason));
+
+    var ensureDsl = new EnsureDslImpl(predicate, reason);
+    children.add(ensureDsl);
     return this;
   }
 
@@ -64,7 +70,10 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   public LoadDsl session(String sessionKey, Supplier<Object> objectSupplier) {
     Validate.notNull(objectSupplier, "Object supplier must not be null.");
     Validate.notEmpty(sessionKey, "Session key must not be null.");
-    children.add(new SessionDslImpl(sessionKey, objectSupplier));
+
+    var sessionDsl = new SessionDslImpl(sessionKey, objectSupplier);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
     return this;
   }
 
@@ -72,14 +81,19 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   public LoadDsl session(final String sessionKey, final Object object) {
     Validate.notNull(object, "Object supplier must not be null.");
     Validate.notEmpty(sessionKey, "Session key must not be null.");
-    children.add(new SessionDslImpl(sessionKey, () -> object));
+
+    var sessionDsl = new SessionDslImpl(sessionKey, () -> object);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
     return this;
   }
 
   @Override
   public <R, T> LoadDsl map(MapperBuilder<R, T> mapperBuilder) {
     Validate.notNull(mapperBuilder, "Mapper builder must not be null.");
-    children.add(new MapperDslImpl<>(mapperBuilder));
+    MapperDslImpl<R, T> rtMapperDsl = new MapperDslImpl<>(mapperBuilder);
+    rtMapperDsl.setParent(this);
+    children.add(rtMapperDsl);
     return this;
   }
 
@@ -89,12 +103,15 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
     Validate.notNull(forEachBuilder, "For each builder must not be null.");
     Validate.notEmpty(name, "Name must not be null.");
 
-    children.add(new ForEachDslImpl(name, Collections.emptyList(),
+    var forEachDsl = new ForEachDslImpl(name, Collections.emptyList(),
         forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
         forEachBuilder.getSessionScope(),
         forEachBuilder.getIterableSupplier(),
         forEachBuilder.getForEachFunction(),
-        forEachBuilder.getMapper()));
+        forEachBuilder.getMapper());
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
     return this;
   }
 
@@ -104,53 +121,76 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
   }
 
   @Override
-  public LoadDsl repeat(MaterializableDslItem spec) {
-    Validate.notNull(spec, "Spec must not be null.");
-    children.add(new RunUntilDslImpl(spec, s -> true));
+  public LoadDsl repeat(MaterializableDslItem dslItem) {
+    Validate.notNull(dslItem, "dslItem must not be null.");
+
+    RunUntilDslImpl runUntilDsl = new RunUntilDslImpl(dslItem, s -> true);
+    runUntilDsl.setParent(this);
+    dslItem.setParent(runUntilDsl);
+    children.add(runUntilDsl);
     return this;
   }
 
   @Override
   public LoadDsl until(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
-    Validate.notNull(dslItem, "Spec must not be null.");
+    Validate.notNull(dslItem, "dslItem must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new RunUntilDslImpl(dslItem, predicate));
+
+    var runUntilDsl = new RunUntilDslImpl(dslItem, predicate);
+    runUntilDsl.setParent(this);
+    dslItem.setParent(runUntilDsl);
+    children.add(runUntilDsl);
     return this;
   }
 
   @Override
   public LoadDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
-    Validate.notNull(dslItem, "Spec must not be null.");
+    Validate.notNull(dslItem, "dslItem must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new RunUntilDslImpl(dslItem, (s) -> !predicate.test(s)));
+
+    var runUntilDsl = new RunUntilDslImpl(dslItem, (s) -> !predicate.test(s));
+    runUntilDsl.setParent(this);
+    dslItem.setParent(runUntilDsl);
+    children.add(runUntilDsl);
     return this;
   }
 
   @Override
   public LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
-    Validate.notNull(dslItem, "Spec must not be null.");
+    Validate.notNull(dslItem, "dslItem must not be null.");
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new ConditionalDslWrapper(dslItem, predicate));
+
+    var conditionalDslWrapper = new ConditionalDslWrapper(dslItem, predicate);
+    conditionalDslWrapper.setParent(this);
+    dslItem.setParent(conditionalDslWrapper);
+    children.add(conditionalDslWrapper);
     return this;
   }
 
   @Override
   public LoadDsl measure(final String tag, final MaterializableDslItem dslItem) {
     Validate.notNull(tag, "Tag must not be null.");
-    Validate.notNull(dslItem, "DSL item  must not be null.");
-    children.add(new MeasureDslImpl(tag, dslItem));
+    Validate.notNull(dslItem, "dslItem must not be null.");
+
+    var gaugeDsl = new GaugeDslImpl(tag, dslItem);
+    gaugeDsl.setParent(this);
+    dslItem.setParent(gaugeDsl);
+    children.add(gaugeDsl);
     return this;
   }
 
   @Override
   public LoadDsl filter(Predicate<UserSession> predicate) {
     Validate.notNull(predicate, "Predicate must not be null.");
-    children.add(new FilterDslImpl(predicate));
+
+    var filterDsl = new FilterDslImpl(predicate);
+    filterDsl.setParent(this);
+    children.add(filterDsl);
     return this;
   }
 
   public LoadDsl withName(final String dslName) {
-    Validate.notEmpty(dslName, "DSL name must not be null.");
+    Validate.notEmpty(dslName, "dslName must not be null.");
     super.setName(dslName);
     return this;
   }

@@ -30,6 +30,8 @@ public class LoadDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(final UserSession userSession) {
-    return new DslMethodMaterializer(new DslMethodImpl("", dslItem)).materialize(userSession);
+    DslMethodImpl dslMethod = new DslMethodImpl("na", dslItem);
+    dslMethod.setParent(dslItem.getParent());
+    return new DslMethodMaterializer(dslMethod).materialize(userSession);
   }
 }

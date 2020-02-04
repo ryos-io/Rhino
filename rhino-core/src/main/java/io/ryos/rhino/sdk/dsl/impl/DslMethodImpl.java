@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
@@ -26,8 +25,9 @@ import org.apache.commons.lang3.Validate;
 
 public class DslMethodImpl implements DslItem, DslMethod {
 
-  private final String name;
-  private final DslItem dsl;
+  private String name;
+  private DslItem dsl;
+  private DslItem parent;
 
   public DslMethodImpl(String name, DslItem dsl) {
     this.name = Validate.notNull(name, "Name must not be null.");
@@ -41,27 +41,27 @@ public class DslMethodImpl implements DslItem, DslMethod {
 
   @Override
   public void setName(String name) {
-    throw new UnsupportedOperationException();
+    this.name = name;
   }
 
   @Override
   public DslItem getParent() {
-    return null;
+    return parent;
   }
 
   @Override
   public void setParent(DslItem parent) {
-    throw new UnsupportedOperationException("DSL Method is top-level instance.");
+    this.parent = parent;
   }
 
   @Override
   public boolean hasParent() {
-    return false;
+    return parent != null;
   }
 
   @Override
   public String getParentName() {
-    return null;
+    return parent != null ? parent.getParentName() : "";
   }
 
   @Override

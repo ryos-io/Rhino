@@ -12,7 +12,7 @@ import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.SimulationLogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingSimulationLogFormatter;
-import io.ryos.rhino.sdk.reporting.MeasurementImpl;
+import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.StdoutReporter;
 import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
 import java.time.Instant;
@@ -23,8 +23,8 @@ import scala.concurrent.Await;
 import scala.concurrent.duration.FiniteDuration;
 
 /**
- * Singleton event dispatcher forwards the events created by simulation callables to
- * corresponding entities like actors wnich process them.
+ * Singleton event dispatcher forwards the events created by simulation callables to corresponding
+ * entities like actors wnich process them.
  * <p>
  *
  * @author Erhan Bagdemir
@@ -102,7 +102,7 @@ public class EventDispatcher {
     return INSTANCE;
   }
 
-  public void dispatchEvents(MeasurementImpl measurement) {
+  public void dispatchEvents(Measurement measurement) {
     try {
       measurement.getEvents().forEach(e -> {
         loggerActor.tell(e, ActorRef.noSender());

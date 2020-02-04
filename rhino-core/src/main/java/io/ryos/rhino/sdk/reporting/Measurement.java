@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.reporting;
 
+import java.util.List;
+
 /**
  * Measurement is used in performance tests to measure the result of execution. Recorded metrics will
  * be flushed into the storage registered.
@@ -68,4 +70,6 @@ public interface Measurement {
    * <p>
    */
   void purge();
+
+  List<LogEvent> getEvents();
 }

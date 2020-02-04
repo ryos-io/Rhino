@@ -19,7 +19,6 @@ package io.ryos.rhino.sdk.reporting;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MeasurableDsl;
-import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.ArrayList;
@@ -77,16 +76,14 @@ public class MeasurementImpl implements Measurement {
 
   private String getContainerMeasurement(final DslItem dslItem) {
 
-    if (dslItem.hasParent()) {
-      var parent = dslItem.getParent();
-      if (parent instanceof AbstractMeasurableDsl) {
-        return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
-      }
-      if (parent instanceof DslMethod) {
-        return parent.getName();
+    var dsl = dslItem;
+    while (dsl.hasParent()) {
+      dsl = dsl.getParent();
+      if (!dsl.hasParent() && dsl instanceof DslMethod) {
+        return dsl.getName();
       }
     }
-    return dslItem.getName();
+    return "";
   }
 
   @Override

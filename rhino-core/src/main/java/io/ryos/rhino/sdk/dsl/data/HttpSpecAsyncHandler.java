@@ -94,8 +94,6 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public void onRequestSend(NettyRequest request) {
-    if (measurement.isMeasurementEnabled()) {
-      measurement.start();
-    }
+    measurement.start();
   }
 }
