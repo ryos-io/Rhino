@@ -3,6 +3,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
@@ -32,8 +33,8 @@ public class DiscoverAndGetSimulation {
 
   @Dsl(name = "Load DSL Discovery and GET")
   public LoadDsl loadTestDiscoverAndGet() {
-    return dsl()
-        .run(http("Discovery Request")
+    return dsl().measure("hoho",
+        run(http("Discovery Request")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
@@ -47,8 +48,21 @@ public class DiscoverAndGetSimulation {
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session("endpoint"))
-            .get());
+            .get()));
   }
+
+  @Dsl(name = "Load DSL GET")
+  public LoadDsl loadTestDiscoverAndGet2() {
+    return dsl().measure("hoho",
+        run(http("Discovery Request 3")
+            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(X_API_KEY, SimulationConfig.getApiKey())
+            .auth()
+            .endpoint(DISCOVERY_ENDPOINT)
+            .get()
+            .saveTo("result")));
+  }
+
 
   private String extractEndpoint(HttpDslData result) {
     try {
