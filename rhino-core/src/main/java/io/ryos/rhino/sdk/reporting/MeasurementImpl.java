@@ -89,14 +89,13 @@ public class MeasurementImpl implements Measurement {
   @Override
   public void start() {
 
-    if (measurementEnabled && !measurementStarted) {
-      this.measurementStarted = true;
+    if (measurementEnabled) {
 
-      // if the start timestamp is not set, then set it. Otherwise, if it is a cumulative
-      // measurement, and the start is already set, then skip it.
-      if (start < 0 || !cumulativeMeasurement) {
-        this.start = System.currentTimeMillis();
+      if (!measurementStarted) {
+        this.measurementStarted = true;
       }
+
+      this.start = System.currentTimeMillis();
 
       registerStartUserEvent();
     }
@@ -126,12 +125,13 @@ public class MeasurementImpl implements Measurement {
 
     registerEndUserEvent();
     dispatcher.dispatchEvents(this);
+    start = -1;
   }
 
   private void registerEndUserEvent() {
+
     var elapsed = System.currentTimeMillis() - start;
-    UserEvent userEventEnd = new UserEvent(
-        STR_BLANK,
+    UserEvent userEventEnd = new UserEvent(STR_BLANK,
         userId,
         parentName,
         start,
@@ -147,20 +147,15 @@ public class MeasurementImpl implements Measurement {
 
   @Override
   public void measure(String measurement, String status) {
-
-    long startTimer = 0;
-    long end = 0;
-    long elapsed = 0;
-
-    if (!events.isEmpty()) {
-      LogEvent lastEvent = events.get(events.size() - 1);
-      end = System.currentTimeMillis();
-      startTimer = lastEvent.getEnd();
-      elapsed = end - startTimer;
+    if (!measurementStarted) {
+      throw new IllegalStateException("Measurement is not yet started.");
     }
 
+    long end = System.currentTimeMillis();
+    long elapsed = end - start;
+
     addEvent(
-        new DslEvent(STR_BLANK, userId, parentName, startTimer, end, elapsed, status, measurement));
+        new DslEvent(STR_BLANK, userId, parentName, start, end, elapsed, status, measurement));
   }
 
   @Override

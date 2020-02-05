@@ -20,9 +20,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.impl.GaugeDslImpl;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
 
@@ -41,8 +38,9 @@ public class MeasureDslMaterializer implements DslMaterializer {
 
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
-          var start = System.currentTimeMillis();
-          userSession.add("measurement-" + uuid + "-start", start);
+          var measurement = new MeasurementImpl(dslItem.getTag(), userSession.getUser().getId());
+          measurement.start();
+          userSession.add("measurement-" + uuid, measurement);
           return userSession;
         }))
         .flatMap(session -> {
@@ -51,40 +49,9 @@ public class MeasureDslMaterializer implements DslMaterializer {
           return materializableDslItem.materializer().materialize(userSession);
         })
         .flatMap(session -> Mono.fromCallable(() -> {
-          var start = session.<Long>get("measurement-" + uuid + "-start").get();
-          var userId = userSession.getUser().getId();
-          var measurement = new MeasurementImpl(dslItem.getTag(), userId);
-          var userEventStart = new UserEvent(
-              session.getUser().getUsername(),
-              session.getUser().getId(),
-              dslItem.getTag(),
-              start,
-              start,
-              0,
-              EventType.START,
-              null,
-              session.getUser().getId()
-          );
-
-          measurement.record(userEventStart);
-
+          var measurement = userSession.<MeasurementImpl>get("measurement-" + uuid).get();
           measurement.measure(dslItem.getName(), " ");
-          var elapsed = System.currentTimeMillis() - start;
-          var userEventEnd = new UserEvent(
-              session.getUser().getUsername(),
-              session.getUser().getId(),
-              dslItem.getTag(),
-              start,
-              start + elapsed,
-              elapsed,
-              EventType.END,
-              null,
-              session.getUser().getId()
-          );
-
-          measurement.record(userEventEnd);
-
-          EventDispatcher.getInstance().dispatchEvents(measurement);
+          measurement.finish();
 
           return session;
         }));

@@ -17,9 +17,9 @@ import org.asynchttpclient.netty.request.NettyRequest;
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
-  private final MeasurementImpl measurement;
-  private volatile long start = -1;
   private volatile int status;
+
+  private final MeasurementImpl measurement;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
   private final RetryInfo retryInfo;
 
@@ -64,7 +64,7 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   public Response onCompleted() {
     var response = builder.build();
     var httpResponse = new HttpResponse(response);
-    if (measurement.isMeasurementEnabled() && isReadyToMeasure(httpResponse)) {
+    if (isReadyToMeasure(httpResponse)) {
       completeMeasurement();
     }
     if (SimulationConfig.debugHttp()) {
@@ -81,11 +81,9 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   private boolean isReadyToMeasure(HttpResponse httpResponse) {
-    if (retryInfo == null) {
-      return true;
-    }
-
-    if (!measurement.isCumulativeMeasurement()) {
+    // if the request needs to be retried and the measure is not cumulative measurement, i.e
+    // every retry will be measured.
+    if (retryInfo == null || !measurement.isCumulativeMeasurement()) {
       return true;
     }
 
