@@ -21,17 +21,22 @@ import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.impl.ConditionalDslWrapper;
 import reactor.core.publisher.Mono;
 
-public class ConditionalDslMaterializer implements DslMaterializer<ConditionalDslWrapper> {
+public class ConditionalDslMaterializer implements DslMaterializer {
+
+  private final ConditionalDslWrapper wrapper;
+
+  public ConditionalDslMaterializer(ConditionalDslWrapper wrapper) {
+    this.wrapper = wrapper;
+  }
 
   @Override
-  public Mono<UserSession> materialize(final ConditionalDslWrapper dslItem,
-      final UserSession userSession) {
+  public Mono<UserSession> materialize(final UserSession userSession) {
 
     return Mono.just(userSession)
-        .filter(dslItem.getPredicate())
+        .filter(wrapper.getPredicate())
         .flatMap(s -> {
-          final MaterializableDslItem spec = dslItem.getWrappedDslItem();
-          return spec.materializer(userSession).materialize(spec, userSession);
+          final MaterializableDslItem spec = wrapper.getWrappedDslItem();
+          return spec.materializer().materialize(userSession);
         });
   }
 }

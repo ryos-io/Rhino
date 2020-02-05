@@ -16,6 +16,8 @@
 
 package io.ryos.rhino.sdk.reporting;
 
+import java.util.List;
+
 /**
  * Measurement is used in performance tests to measure the result of execution. Recorded metrics will
  * be flushed into the storage registered.
@@ -26,13 +28,32 @@ package io.ryos.rhino.sdk.reporting;
 public interface Measurement {
 
   /**
+   * Stops the measurement by committing the measurement to the dispatcher.
+   *
+   * @param message Failure description.
+   */
+  void fail(String message);
+
+  /**
+   * Starts the measurement.
+   */
+  void start();
+
+  /**
+   * Finishes the measurement by committing it to the dispatcher.
+   */
+  void finish();
+
+  /**
    * Call measure(String, int) to measure the temporal metrics.
    * <p>
    *
    * @param stepName The name of the step.
-   * @param status HTTP status of the load execution.
+   * @param status   HTTP status of the load execution.
    */
   void measure(String stepName, String status);
+
+  public void measure(String status);
 
   /**
    * The {@link LogEvent} will be recorded and stored internally. The
@@ -49,4 +70,6 @@ public interface Measurement {
    * <p>
    */
   void purge();
+
+  List<LogEvent> getEvents();
 }

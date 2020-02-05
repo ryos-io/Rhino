@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MapperDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
@@ -48,8 +47,8 @@ public class MapperDslImpl<R, T> extends AbstractMeasurableDsl implements Mapper
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new MapperDslMaterializer();
+  public DslMaterializer materializer() {
+    return new MapperDslMaterializer(this);
   }
 
   @Override

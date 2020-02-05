@@ -22,7 +22,7 @@ public class LogEvent implements Serializable {
 
   private final String username;
   private final String userId;
-  private final String scenario;
+  private final String parentMeasurementPoint;
   private final long start;
   private final long end;
   private final long elapsed;
@@ -36,7 +36,7 @@ public class LogEvent implements Serializable {
 
     this.username = username;
     this.userId = userId;
-    this.scenario = scenario;
+    this.parentMeasurementPoint = scenario;
     this.start = start;
     this.end = end;
     this.elapsed = elapsed;
@@ -50,8 +50,8 @@ public class LogEvent implements Serializable {
     return userId;
   }
 
-  public String getScenario() {
-    return scenario;
+  public String getParentMeasurementPoint() {
+    return parentMeasurementPoint;
   }
 
   public long getStart() {

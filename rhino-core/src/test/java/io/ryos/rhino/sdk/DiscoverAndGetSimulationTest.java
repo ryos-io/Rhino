@@ -6,7 +6,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.ryos.rhino.sdk.simulations.DiscoverAndGetSimulation;
+import io.ryos.rhino.sdk.simulations.MeasurementTagsSimulation;
 import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -44,7 +44,7 @@ public class DiscoverAndGetSimulationTest {
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/resource"))
         .willReturn(aResponse()
-            .withFixedDelay(1000)
+            .withFixedDelay(200)
             .withStatus(200)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/discovery"))
@@ -52,7 +52,7 @@ public class DiscoverAndGetSimulationTest {
             .withStatus(200)
             .withBody("{\"endpoint\": \"http://localhost:"+PORT+"/api/resource\"}")));
 
-    Simulation.getInstance(PROPERTIES_FILE, DiscoverAndGetSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, MeasurementTagsSimulation.class).start();
 
     Thread.sleep(5000L);
   }

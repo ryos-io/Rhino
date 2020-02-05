@@ -53,8 +53,8 @@ public class SomeDslImpl extends AbstractMeasurableDsl implements SomeDsl {
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new SomeDslMaterializer();
+  public DslMaterializer materializer() {
+    return new SomeDslMaterializer(this);
   }
 
   @Override

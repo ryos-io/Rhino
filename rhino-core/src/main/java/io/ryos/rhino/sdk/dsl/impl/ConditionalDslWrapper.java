@@ -55,8 +55,8 @@ public class ConditionalDslWrapper extends AbstractMeasurableDsl {
   }
 
   @Override
-  public DslMaterializer materializer(UserSession session) {
-    return new ConditionalDslMaterializer();
+  public DslMaterializer materializer() {
+    return new ConditionalDslMaterializer(this);
   }
 
   @Override

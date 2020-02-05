@@ -92,7 +92,7 @@ public class StdoutReporter extends AbstractActor {
   @Override
   public Receive createReceive() {
     return ReceiveBuilder.create()
-        .match(ScenarioEvent.class, this::persist)
+        .match(DslEvent.class, this::persist)
         .match(EndTestEvent.class, this::activateTermination)
         .build();
   }
@@ -109,15 +109,15 @@ public class StdoutReporter extends AbstractActor {
     sender().tell(MSG_OK, self());
   }
 
-  private void persist(final ScenarioEvent logEvent) {
+  private void persist(final DslEvent logEvent) {
     var countKey = String.format("Count/%s/%s/%s",
-        logEvent.getScenario(),
-        logEvent.getStep(),
+        logEvent.getParentMeasurementPoint(),
+        logEvent.getMeasurementPoint(),
         logEvent.getStatus());
 
     var responseTypeKey = String.format("ResponseTime/%s/%s/%s",
-        logEvent.getScenario(),
-        logEvent.getStep(),
+        logEvent.getParentMeasurementPoint(),
+        logEvent.getMeasurementPoint(),
         logEvent.getStatus());
 
     if (!metrics.containsKey(countKey)) {

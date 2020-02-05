@@ -27,14 +27,14 @@ public class UserEvent extends LogEvent {
 
   public UserEvent(String username,
       String userId,
-      String scenario,
+      String parentMeasurement,
       long start,
       long end,
       long elapsed,
       EventType eventType,
       String eventStatus,
       String id) {
-    super(username, userId, scenario, start, end, elapsed);
+    super(username, userId, parentMeasurement, start, end, elapsed);
     this.eventType = eventType;
     this.eventStatus = eventStatus;
     this.id = id;

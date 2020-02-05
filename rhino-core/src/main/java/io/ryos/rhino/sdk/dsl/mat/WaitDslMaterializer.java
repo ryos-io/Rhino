@@ -26,10 +26,16 @@ import reactor.core.publisher.Mono;
  *
  * @author Erhan Bagdemir
  */
-public class WaitDslMaterializer implements DslMaterializer<WaitDsl> {
+public class WaitDslMaterializer implements DslMaterializer {
+
+  private final WaitDsl dslItem;
+
+  public WaitDslMaterializer(WaitDsl dslItem) {
+    this.dslItem = dslItem;
+  }
 
   @Override
-  public Mono<UserSession> materialize(WaitDsl dslItem, UserSession userSession) {
+  public Mono<UserSession> materialize(UserSession userSession) {
     return Mono
         .just(userSession)
         .flatMap(s -> Mono.fromCallable(() -> {

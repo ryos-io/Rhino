@@ -25,10 +25,16 @@ import reactor.core.publisher.Mono;
  *
  * @author Erhan Bagdemir
  */
-public class FilterDslMaterializer implements DslMaterializer<FilterDsl> {
+public class FilterDslMaterializer implements DslMaterializer {
+
+  private final FilterDsl dslItem;
+
+  public FilterDslMaterializer(FilterDsl dslItem) {
+    this.dslItem = dslItem;
+  }
 
   @Override
-  public Mono<UserSession> materialize(final FilterDsl dslItem, final UserSession userSession) {
+  public Mono<UserSession> materialize(final UserSession userSession) {
     return Mono.just(userSession).filter(dslItem.getPredicate());
   }
 }

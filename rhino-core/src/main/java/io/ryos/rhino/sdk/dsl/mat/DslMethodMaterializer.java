@@ -24,10 +24,16 @@ import io.ryos.rhino.sdk.exceptions.NoSpecDefinedException;
 import io.ryos.rhino.sdk.exceptions.TerminateSimulationException;
 import reactor.core.publisher.Mono;
 
-public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
+public class DslMethodMaterializer implements DslMaterializer {
+
+  private final DslMethod dslMethod;
+
+  public DslMethodMaterializer(DslMethod dslMethod) {
+    this.dslMethod = dslMethod;
+  }
 
   @Override
-  public Mono<UserSession> materialize(final DslMethod dslMethod, final UserSession session) {
+  public Mono<UserSession> materialize(final UserSession session) {
     var childrenIterator = dslMethod.getChildren().iterator();
     if (!childrenIterator.hasNext()) {
       throw new NoSpecDefinedException(dslMethod.getName());
@@ -35,8 +41,8 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
 
     var nextChildDsl = childrenIterator.next();
     nextChildDsl.setParent(dslMethod);
-    var materializer = nextChildDsl.materializer(session);
-    var acc = materializer.materialize(nextChildDsl, session);
+    var materializer = nextChildDsl.materializer();
+    var acc = materializer.materialize(session);
 
     while (childrenIterator.hasNext()) {
       var next = childrenIterator.next();
@@ -48,7 +54,7 @@ public class DslMethodMaterializer implements DslMaterializer<DslMethod> {
             return Mono.just(s);
           }
         }
-        return next.materializer(session).materialize(next, session);
+        return next.materializer().materialize(session);
       });
     }
 

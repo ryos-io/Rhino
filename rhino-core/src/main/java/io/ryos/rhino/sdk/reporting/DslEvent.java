@@ -16,38 +16,39 @@
 
 package io.ryos.rhino.sdk.reporting;
 
-public class ScenarioEvent extends LogEvent {
+public class DslEvent extends LogEvent {
 
   private final String status;
-  private final String step;
+  private final String measurementPoint;
 
-  public ScenarioEvent(String username, String userId, String scenario,
+  public DslEvent(String username, String userId, String parentMeasurement,
       long start,
       long end,
       long elapsed,
       String status,
-      String step) {
-    super(username, userId, scenario, start, end, elapsed);
+      String measurement) {
+    super(username, userId, parentMeasurement, start, end, elapsed);
+
     this.status = status;
-    this.step = step;
+    this.measurementPoint = measurement;
   }
 
   public String getStatus() {
     return status;
   }
 
-  public String getStep() {
-    return step;
+  public String getMeasurementPoint() {
+    return measurementPoint;
   }
 
   @Override
   public String toString() {
-    return "ScenarioEvent{" +
+    return "DslEvent{" +
         "status='" + status + '\'' +
-        ", step='" + step + '\'' +
+        ", measurementPoint='" + measurementPoint + '\'' +
         ", username='" + getUsername() + '\'' +
         ", userId='" + getUserId() + '\'' +
-        ", scenario='" + getScenario() + '\'' +
+        ", scenario='" + getParentMeasurementPoint() + '\'' +
         ", start=" + getStart() +
         ", end=" + getEnd() +
         ", elapsed=" + getElapsed() +

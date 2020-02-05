@@ -3,14 +3,9 @@ package io.ryos.rhino.sdk.dsl.data;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.impl.AbstractMeasurableDsl;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHandler;
@@ -22,43 +17,15 @@ import org.asynchttpclient.netty.request.NettyRequest;
 public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   public static final Logger LOG = LogManager.getLogger(HttpSpecAsyncHandler.class);
-  private static final String BLANK = "";
-
-  private final String measurementPoint;
-  private final String dslName;
-  private final String userId;
-  private final boolean measurementEnabled;
-  private final boolean cumulativeMeasurement;
-  private final MeasurementImpl measurement;
-  private volatile long start = -1;
   private volatile int status;
+
+  private final MeasurementImpl measurement;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
-  private final EventDispatcher eventDispatcher;
   private final RetryInfo retryInfo;
 
-  public HttpSpecAsyncHandler(final UserSession session,
-      final HttpDsl dslItem) {
-    this.measurement = new MeasurementImpl(getMeasurementName(dslItem), session.getUser().getId());
-    this.dslName = dslItem.getParentName();
-    this.userId = session.getUser().getId();
-    this.measurementPoint = dslItem.getMeasurementPoint();
-    this.eventDispatcher = EventDispatcher.getInstance();
-    this.measurementEnabled = dslItem.isMeasurementEnabled();
+  public HttpSpecAsyncHandler(final UserSession session, final HttpDsl dslItem) {
+    this.measurement = new MeasurementImpl(session.getUser().getId(), dslItem);
     this.retryInfo = dslItem.getRetryInfo();
-    this.cumulativeMeasurement = dslItem.isCumulative();
-  }
-
-  private String getMeasurementName(final HttpDsl dslItem) {
-    if (dslItem.hasParent()) {
-      var parent = dslItem.getParent();
-      if (parent instanceof AbstractMeasurableDsl) {
-        return ((AbstractMeasurableDsl) parent).getMeasurementPoint();
-      }
-      if (parent instanceof DslMethod) {
-        return parent.getName();
-      }
-    }
-    return dslItem.getName();
   }
 
   @Override
@@ -90,51 +57,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
    */
   @Override
   public void onThrowable(final Throwable t) {
-    // There is no start event for user measurement, so we need to create one.
-    // In Error case, we just want to make the error visible in stdout. We don't actually record
-    // any metric here, thus the start/end timestamps are irrelevant.
-    if (!measurementEnabled) {
-      this.start = System.currentTimeMillis();
-      var userEventStart = new UserEvent(
-          BLANK,
-          userId,
-          dslName,
-          start,
-          start,
-          0L,
-          EventType.START,
-          BLANK,
-          userId
-      );
-
-      measurement.record(userEventStart);
-    }
-
-    // Store the error event in the measurement stack.
-    measurement.measure(t.getMessage(), "N/A");
-
-    var userEventEnd = new UserEvent(
-        BLANK,
-        userId,
-        dslName,
-        start,
-        0,
-        0L,
-        EventType.END,
-        BLANK,
-        userId
-    );
-
-    measurement.record(userEventEnd);
-
-    eventDispatcher.dispatchEvents(measurement);
+    measurement.fail(t.getMessage());
   }
 
   @Override
   public Response onCompleted() {
     var response = builder.build();
     var httpResponse = new HttpResponse(response);
-    if (measurementEnabled && isReadyToMeasure(httpResponse)) {
+    if (isReadyToMeasure(httpResponse)) {
       completeMeasurement();
     }
     if (SimulationConfig.debugHttp()) {
@@ -146,33 +76,14 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
-
-    var elapsed = System.currentTimeMillis() - start;
-
-    measurement.measure(measurementPoint, String.valueOf(status));
-    var userEventEnd = new UserEvent(
-        BLANK,
-        userId,
-        dslName,
-        start,
-        start + elapsed,
-        elapsed,
-        EventType.END,
-        BLANK,
-        userId
-    );
-
-    measurement.record(userEventEnd);
-
-    eventDispatcher.dispatchEvents(measurement);
+    measurement.measure(String.valueOf(status));
+    measurement.finish();
   }
 
   private boolean isReadyToMeasure(HttpResponse httpResponse) {
-    if (retryInfo == null) {
-      return true;
-    }
-
-    if (!cumulativeMeasurement) {
+    // if the request needs to be retried and the measure is not cumulative measurement, i.e
+    // every retry will be measured.
+    if (retryInfo == null || !measurement.isCumulativeMeasurement()) {
       return true;
     }
 
@@ -181,28 +92,6 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
 
   @Override
   public void onRequestSend(NettyRequest request) {
-
-    if (measurementEnabled) {
-
-      // if the start timestamp is not set, then set it. Otherwise, if it is a cumulative
-      // measurement, and the start is already set, then skip it.
-      if (start < 0 || !cumulativeMeasurement) {
-        this.start = System.currentTimeMillis();
-      }
-
-      var userEventStart = new UserEvent(
-          "",
-          userId,
-          dslName,
-          start,
-          start,
-          0L,
-          EventType.START,
-          BLANK,
-          userId
-      );
-
-      measurement.record(userEventStart);
-    }
+    measurement.start();
   }
 }

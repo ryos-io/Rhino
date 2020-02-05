@@ -54,24 +54,29 @@ import reactor.core.publisher.Mono;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
+public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
 
-  public Mono<UserSession> materialize(final HttpDsl dslItem, final UserSession userSession) {
+  private final HttpDsl dslItem;
+
+  public HttpDslMaterializer(HttpDsl dslItem) {
+    this.dslItem = dslItem;
+  }
+
+  public Mono<UserSession> materialize(final UserSession userSession) {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
+
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono
-            .fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
-                dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
+        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
+
     var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
             .map(hr -> isRequestRetriable(retryInfo, hr))
             .retryWhen(companion -> companion.zipWith(
                 Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
-                  if (index < retryInfo.getNumOfRetries() + 1
-                      && error instanceof RetryableOperationException) {
+                  if (index < retryInfo.getNumOfRetries() + 1 && error instanceof RetryableOperationException) {
                     return index;
                   } else {
                     throw Exceptions.propagate(new RetryFailedException(error));
@@ -84,8 +89,8 @@ public class HttpDslMaterializer implements DslMaterializer<HttpDsl> {
         .doOnError(t -> LOG.error("Http Client Error", t));
   }
 
-  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(final HttpDsl spec,
-      final HttpSpecAsyncHandler httpSpecAsyncHandler) {
+  private Function<Throwable, Mono<? extends UserSession>> handleOnErrorResume(
+      final HttpDsl spec, final HttpSpecAsyncHandler httpSpecAsyncHandler) {
     return error -> {
       if (error instanceof RetryFailedException && spec.isCumulative()) {
         httpSpecAsyncHandler.completeMeasurement();

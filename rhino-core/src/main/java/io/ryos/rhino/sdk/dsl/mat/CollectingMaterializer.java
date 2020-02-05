@@ -9,12 +9,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class CollectingMaterializer<S, R extends Iterable<S>> implements
-    DslMaterializer<ForEachDsl<S, R>> {
+    DslMaterializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(ForEachDslMaterializer.class);
 
+  private final ForEachDsl<S, R> dslItem;
+
+  public CollectingMaterializer(ForEachDsl<S, R> dslItem) {
+    this.dslItem = dslItem;
+  }
+
   @Override
-  public Mono<UserSession> materialize(final ForEachDsl<S, R> dslItem,
+  public Mono<UserSession> materialize(
       final UserSession session) {
     var iterable = Optional.ofNullable(dslItem.getIterableSupplier().apply(session))
         .orElseThrow(() -> new IllegalArgumentException("forEach() failed."));

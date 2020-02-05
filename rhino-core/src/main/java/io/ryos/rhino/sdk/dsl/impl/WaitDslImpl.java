@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.dsl.impl;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.WaitDsl;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
@@ -54,8 +53,8 @@ public class WaitDslImpl extends AbstractMeasurableDsl implements WaitDsl {
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return new WaitDslMaterializer();
+  public DslMaterializer materializer() {
+    return new WaitDslMaterializer(this);
   }
 
   @Override

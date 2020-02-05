@@ -324,26 +324,26 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(final UserSession session) {
-    return new HttpDslMaterializer();
+  public DslMaterializer materializer() {
+    return new HttpDslMaterializer(this);
   }
 
   @Override
   public UserSession handleResult(UserSession userSession, HttpResponse response) {
-    var httpSpecData = new HttpDslData();
-    httpSpecData.setEndpoint(getEndpoint().apply(userSession));
-    httpSpecData.setResponse(response);
+    var httpResultData = new HttpDslData();
+    httpResultData.setEndpoint(getEndpoint().apply(userSession));
+    httpResultData.setResponse(response);
 
     final ResultingDsl parentResultingDsl = resolveSessionParent();
     if (!hasParent() || parentResultingDsl == null) {
       final SessionDslItem sessionDslItem = this;
       if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
-        userSession.add(sessionDslItem.getSessionKey(), httpSpecData);
+        userSession.add(sessionDslItem.getSessionKey(), httpResultData);
       } else {
         var activatedUser = getActiveUser(userSession);
         var globalSession = userSession.getSimulationSessionFor(activatedUser);
         var specData = globalSession.<HttpDslData>get(sessionDslItem.getSessionKey())
-            .orElse(httpSpecData);
+            .orElse(httpResultData);
         globalSession.add(sessionDslItem.getSessionKey(), specData);
       }
 

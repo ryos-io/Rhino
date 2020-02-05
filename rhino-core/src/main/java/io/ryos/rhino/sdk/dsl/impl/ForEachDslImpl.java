@@ -83,8 +83,8 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   }
 
   @Override
-  public DslMaterializer<? extends MaterializableDslItem> materializer(UserSession session) {
-    return mapper != null ? new CollectingMaterializer<>() : new ForEachDslMaterializer<>();
+  public DslMaterializer materializer() {
+    return mapper != null ? new CollectingMaterializer<>(this) : new ForEachDslMaterializer<>(this);
   }
 
   @Override

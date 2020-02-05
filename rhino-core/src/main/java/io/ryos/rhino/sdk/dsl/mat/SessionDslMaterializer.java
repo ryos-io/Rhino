@@ -21,10 +21,16 @@ import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
-public class SessionDslMaterializer implements DslMaterializer<SessionDslItem> {
+public class SessionDslMaterializer implements DslMaterializer {
+
+  private final SessionDslItem dslItem;
+
+  public SessionDslMaterializer(SessionDslItem dslItem) {
+    this.dslItem = dslItem;
+  }
 
   @Override
-  public Mono<UserSession> materialize(SessionDslItem dslItem, UserSession userSession) {
+  public Mono<UserSession> materialize(UserSession userSession) {
     Supplier<Object> objectSupplier = dslItem.getObjectFunction();
     Object apply = objectSupplier.get();
     userSession.add(dslItem.getSessionKey(), apply);

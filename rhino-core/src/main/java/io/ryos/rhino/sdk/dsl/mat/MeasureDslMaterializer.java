@@ -17,37 +17,42 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.SomeDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.impl.GaugeDslImpl;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
+import java.util.UUID;
 import reactor.core.publisher.Mono;
 
-/**
- * Some spec materializer.
- * <p>
- *
- * @author Erhan Bagdemir
- */
-public class SomeDslMaterializer implements DslMaterializer {
+public class MeasureDslMaterializer implements DslMaterializer {
 
-  private final SomeDsl dslItem;
+  private final GaugeDslImpl dslItem;
 
-  public SomeDslMaterializer(SomeDsl dslItem) {
+  public MeasureDslMaterializer(GaugeDslImpl dslItem) {
     this.dslItem = dslItem;
   }
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
+    UUID uuid = UUID.randomUUID();
+    dslItem.setName(dslItem.getTag());
 
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
-          var userId = userSession.getUser().getId();
-          var measurement = new MeasurementImpl(dslItem.getParentName(), userId);
+          var measurement = new MeasurementImpl(dslItem.getTag(), userSession.getUser().getId());
           measurement.start();
-
-          var status = dslItem.getFunction().apply(session);
-
-          measurement.measure(dslItem.getName(), status);
+          userSession.add("measurement-" + uuid, measurement);
+          return userSession;
+        }))
+        .flatMap(session -> {
+          MaterializableDslItem materializableDslItem = dslItem.getChildren().get(0);
+          materializableDslItem.setParent(dslItem);
+          return materializableDslItem.materializer().materialize(userSession);
+        })
+        .flatMap(session -> Mono.fromCallable(() -> {
+          var measurement = userSession.<MeasurementImpl>get("measurement-" + uuid).get();
+          measurement.measure(dslItem.getName(), " ");
           measurement.finish();
+
           return session;
         }));
   }

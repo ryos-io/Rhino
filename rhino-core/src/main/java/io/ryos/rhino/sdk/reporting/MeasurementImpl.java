@@ -16,6 +16,11 @@
 
 package io.ryos.rhino.sdk.reporting;
 
+import io.ryos.rhino.sdk.dsl.DslItem;
+import io.ryos.rhino.sdk.dsl.DslMethod;
+import io.ryos.rhino.sdk.dsl.MeasurableDsl;
+import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
+import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,50 +34,177 @@ public class MeasurementImpl implements Measurement {
 
   private static final String STR_BLANK = "";
   private final List<LogEvent> events = new ArrayList<>();
-  private final String scenarioName;
+  private final String parentName;
   private final String userId;
 
-  public MeasurementImpl(final String scenarioName, final String userId) {
-    this.scenarioName = scenarioName;
+  private String measurementPoint;
+  private boolean cumulativeMeasurement;
+
+  private volatile boolean measurementEnabled;
+  private volatile boolean measurementStarted;
+  private long start = -1;
+
+  private EventDispatcher dispatcher;
+
+  public MeasurementImpl(final String parentName, final String userId) {
+    this(parentName, userId, "", false, true, EventDispatcher.getInstance());
+  }
+
+  public MeasurementImpl(final String userId, final MeasurableDsl measureableDslItem) {
+    this.parentName = getContainerMeasurement(measureableDslItem);
     this.userId = userId;
+    this.measurementPoint = measureableDslItem.getMeasurementPoint();
+    this.cumulativeMeasurement = measureableDslItem.isCumulative();
+    this.measurementEnabled = measureableDslItem.isMeasurementEnabled();
+    this.dispatcher = EventDispatcher.getInstance();
+  }
+
+  public MeasurementImpl(final String parentName,
+      final String userId,
+      final String measurementPoint,
+      final boolean cumulativeMeasurement,
+      final boolean measurementEnabled,
+      final EventDispatcher dispatcher) {
+
+    this.parentName = parentName;
+    this.userId = userId;
+    this.measurementPoint = measurementPoint;
+    this.cumulativeMeasurement = cumulativeMeasurement;
+    this.measurementEnabled = measurementEnabled;
+    this.dispatcher = dispatcher;
+  }
+
+  private String getContainerMeasurement(final DslItem dslItem) {
+
+    var dsl = dslItem;
+    while (dsl.hasParent()) {
+      dsl = dsl.getParent();
+      if (!dsl.hasParent() && dsl instanceof DslMethod) {
+        return dsl.getName();
+      }
+    }
+    return "";
   }
 
   @Override
-  public void measure(String stepName, String status) {
+  public void start() {
 
-    long start = 0;
-    long end = 0;
-    long elapsed = 0;
+    if (measurementEnabled) {
 
-    if (!events.isEmpty()) {
-      var lastEvent = events.get(events.size() - 1);
-      end = System.currentTimeMillis();
-      start = lastEvent.getEnd();
-      elapsed = end - start;
+      if (!measurementStarted) {
+        this.measurementStarted = true;
+      }
+
+      this.start = System.currentTimeMillis();
+
+      registerStartUserEvent();
+    }
+  }
+
+  private void registerStartUserEvent() {
+    UserEvent userEventStart = new UserEvent(
+        STR_BLANK,
+        userId,
+        parentName,
+        start,
+        start,
+        0L,
+        EventType.START,
+        STR_BLANK,
+        userId
+    );
+
+    record(userEventStart);
+  }
+
+  @Override
+  public void finish() {
+    if (!measurementStarted) {
+      throw new IllegalStateException("Measurement is not yet started.");
     }
 
-    var emptyEvent = new ScenarioEvent(STR_BLANK, userId, scenarioName,
+    registerEndUserEvent();
+    dispatcher.dispatchEvents(this);
+    start = -1;
+  }
+
+  private void registerEndUserEvent() {
+
+    var elapsed = System.currentTimeMillis() - start;
+    UserEvent userEventEnd = new UserEvent(STR_BLANK,
+        userId,
+        parentName,
         start,
-        end,
+        start + elapsed,
         elapsed,
-        status,
-        stepName);
+        EventType.END,
+        STR_BLANK,
+        userId
+    );
 
-    addEvent(emptyEvent);
+    record(userEventEnd);
   }
 
-  private synchronized void addEvent(ScenarioEvent event) {
+  @Override
+  public void measure(String measurement, String status) {
+    if (!measurementStarted) {
+      throw new IllegalStateException("Measurement is not yet started.");
+    }
+
+    long end = System.currentTimeMillis();
+    long elapsed = end - start;
+
+    addEvent(
+        new DslEvent(STR_BLANK, userId, parentName, start, end, elapsed, status, measurement));
+  }
+
+  @Override
+  public void measure(String status) {
+    measure(measurementPoint, status);
+  }
+
+  @Override
+  public synchronized void record(final LogEvent event) {
     events.add(event);
   }
 
-  public void record(final LogEvent event) {
+  @Override
+  public void fail(String message) {
+    // There is no start event for user measurement, so we need to create one.
+    // In Error case, we just want to make the error visible in stdout. We don't actually record
+    // any metric here, thus the start/end timestamps are irrelevant.
+    if (!measurementEnabled) {
+      start();
+    }
+
+    // Store the error event in the measurement stack.
+    measure(message, "N/A");
+
+    var userEventEnd = new UserEvent(
+        STR_BLANK,
+        userId,
+        parentName,
+        start,
+        0,
+        0L,
+        EventType.END,
+        STR_BLANK,
+        userId
+    );
+
+    record(userEventEnd);
+
+    dispatcher.dispatchEvents(this);
+  }
+
+  private synchronized void addEvent(final DslEvent event) {
     events.add(event);
   }
 
-  public boolean isLastEventScenarioEvent() {
+  public boolean isLastEvent() {
     if (!events.isEmpty()) {
       var lastEvent = events.get(events.size() - 1);
-      return lastEvent instanceof ScenarioEvent;
+      return lastEvent instanceof DslEvent;
     }
     return false;
   }
@@ -83,5 +215,25 @@ public class MeasurementImpl implements Measurement {
 
   public synchronized void purge() {
     events.clear();
+  }
+
+  public String getParentName() {
+    return parentName;
+  }
+
+  public String getMeasurementPoint() {
+    return measurementPoint;
+  }
+
+  public boolean isCumulativeMeasurement() {
+    return cumulativeMeasurement;
+  }
+
+  public boolean isMeasurementEnabled() {
+    return measurementEnabled;
+  }
+
+  public boolean isMeasurementStarted() {
+    return measurementStarted;
   }
 }

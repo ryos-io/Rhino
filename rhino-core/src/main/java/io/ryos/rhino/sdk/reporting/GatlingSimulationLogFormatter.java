@@ -45,8 +45,8 @@ public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
    */
   @Override
   public String format(final LogEvent event) {
-    if (event instanceof ScenarioEvent) {
-      return convert((ScenarioEvent) event);
+    if (event instanceof DslEvent) {
+      return convert((DslEvent) event);
     }
 
     if (event instanceof UserEvent) {
@@ -56,10 +56,10 @@ public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
     return "N/A";
   }
 
-  private String convert(ScenarioEvent event) {
+  private String convert(DslEvent event) {
     return String.format("REQUEST\t%s\t\t%s\t%s\t%s\t%s\t %n",
         event.getUserId(),
-        event.getStep(),
+        event.getMeasurementPoint(),
         event.getStart(),
         event.getEnd(),
         event.getStatus().equals("200") ? "OK" : "KO"
@@ -68,7 +68,7 @@ public class GatlingSimulationLogFormatter implements SimulationLogFormatter {
 
   private String convert(UserEvent event) {
     return String.format("USER\t%s\t%s\t%s\t%d\t%d%n",
-        event.getScenario(),
+        event.getParentMeasurementPoint(),
         event.getId(),
         event.getEventType(),
         event.getStart(),
