@@ -31,7 +31,7 @@ import org.junit.Test;
 public class MeasurementTagsSimulationTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
-  private static final int PORT = 8088;
+  private static final int PORT = 8079;
 
   private WireMockServer wmServer;
 
