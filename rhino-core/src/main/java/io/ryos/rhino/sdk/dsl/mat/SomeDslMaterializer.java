@@ -19,9 +19,6 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import io.ryos.rhino.sdk.reporting.UserEvent;
-import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
-import io.ryos.rhino.sdk.runners.EventDispatcher;
 import reactor.core.publisher.Mono;
 
 /**
@@ -45,41 +42,12 @@ public class SomeDslMaterializer implements DslMaterializer {
         .flatMap(session -> Mono.fromCallable(() -> {
           var userId = userSession.getUser().getId();
           var measurement = new MeasurementImpl(dslItem.getParentName(), userId);
-          var start = System.currentTimeMillis();
-          var userEventStart = new UserEvent(
-              session.getUser().getUsername(),
-              session.getUser().getId(),
-              dslItem.getParentName(),
-              start,
-              start,
-              0,
-              EventType.START,
-              null,
-              session.getUser().getId()
-          );
-
-          measurement.record(userEventStart);
+          measurement.start();
 
           var status = dslItem.getFunction().apply(session);
 
           measurement.measure(dslItem.getName(), status);
-          var elapsed = System.currentTimeMillis() - start;
-          var userEventEnd = new UserEvent(
-              session.getUser().getUsername(),
-              session.getUser().getId(),
-              dslItem.getParentName(),
-              start,
-              start + elapsed,
-              elapsed,
-              EventType.END,
-              null,
-              session.getUser().getId()
-          );
-
-          measurement.record(userEventEnd);
-
-          EventDispatcher.getInstance().dispatchEvents(measurement);
-
+          measurement.finish();
           return session;
         }));
   }
