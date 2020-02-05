@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.annotations;
 
-import io.ryos.rhino.sdk.runners.DefaultSimulationRunner;
+import io.ryos.rhino.sdk.runners.ReactiveHttpSimulationRunner;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -26,18 +26,19 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to declare which implementation of {@link SimulationRunner} will be used. Default
- * runner, that is {@link DefaultSimulationRunner}, is implemented in push-style, so that the
+ * runner, that is {@link ReactiveHttpSimulationRunner}, is implemented in push-style, so that the
  * generated load will cause the scenarios to get called. If the scenario implementation is
  * blocking, then the caller thread will get blocked, as well.
  * <p>
- *
+ * <p>
  * The number of threads which will be employed, can be configured in rhino.properties file with
  * the property, "runner.parallelisation".
  * <p>
- * @deprecated Runner is deprecated. There is only one Runner impl. It is the reactive one.
+ *
  * @author Erhan Bagdemir
  * @see SimulationRunner
  * @since 1.1.0
+ * @deprecated Runner is deprecated. There is only one Runner impl. It is the reactive one.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -45,5 +46,5 @@ import java.lang.annotation.Target;
 @Deprecated
 public @interface Runner {
 
-  Class<? extends SimulationRunner> clazz() default DefaultSimulationRunner.class;
+  Class<? extends SimulationRunner> clazz() default ReactiveHttpSimulationRunner.class;
 }
