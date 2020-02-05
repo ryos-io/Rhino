@@ -94,7 +94,15 @@ public class ReactiveMonitorWaitTest {
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor-2")
-        .willSetStateTo("ended")
+        .willSetStateTo("monitor-3")
+        .willReturn(aResponse()
+            .withFixedDelay(100)
+            .withStatus(404)));
+
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
+        .inScenario("retriable")
+        .whenScenarioStateIs("monitor-3")
+        .willSetStateTo(STARTED)
         .willReturn(aResponse()
             .withFixedDelay(100)
             .withStatus(200)));
@@ -102,6 +110,6 @@ public class ReactiveMonitorWaitTest {
     TestUtils.overridePorts(PORT);
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveMonitorWaitSimulation.class).start();
-    Thread.sleep(2000L);
+    Thread.sleep(6000L);
   }
 }

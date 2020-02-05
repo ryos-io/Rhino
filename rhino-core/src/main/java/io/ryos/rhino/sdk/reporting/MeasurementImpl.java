@@ -88,15 +88,9 @@ public class MeasurementImpl implements Measurement {
 
   @Override
   public void start() {
-
-    if (measurementEnabled) {
-
-      if (!measurementStarted) {
-        this.measurementStarted = true;
-      }
-
+    if (measurementEnabled && !measurementStarted) {
+      this.measurementStarted = true;
       this.start = System.currentTimeMillis();
-
       registerStartUserEvent();
     }
   }
