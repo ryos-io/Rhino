@@ -18,9 +18,9 @@ import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
-@Simulation(name = "Reactive Upload Test")
+@Simulation(name = "Collaborative Upload Test")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
-public class UploadLoadSimulation {
+public class CollaborativeUploadLoadSimulation {
 
   private static final String FILES_ENDPOINT = getEndpoint("files");
   private static final String X_REQUEST_ID = "X-Request-Id";

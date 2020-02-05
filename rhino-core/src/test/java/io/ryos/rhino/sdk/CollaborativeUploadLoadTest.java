@@ -7,7 +7,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.ryos.rhino.sdk.simulations.UploadLoadSimulation;
+import io.ryos.rhino.sdk.simulations.CollaborativeUploadLoadSimulation;
 import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore
-public class UploadLoadTest {
+public class CollaborativeUploadLoadTest {
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final int PORT = 8087;
 
@@ -54,7 +54,7 @@ public class UploadLoadTest {
 
     TestUtils.overridePorts(PORT);
 
-    Simulation.getInstance(PROPERTIES_FILE, UploadLoadSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, CollaborativeUploadLoadSimulation.class).start();
 
     Thread.sleep(1000L);
   }

@@ -33,7 +33,7 @@ public class DiscoverAndGetSimulation {
 
   @Dsl(name = "Load DSL Discovery and GET")
   public LoadDsl loadTestDiscoverAndGet() {
-    return dsl().measure("hoho",
+    return dsl().measure("Discovery and GET",
         run(http("Discovery Request")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
