@@ -53,15 +53,6 @@ public class UserSessionImpl extends ContextImpl implements UserSession {
     this(user, null, null);
   }
 
-  public void startMeasurement(final String measurementPoint, final String parentName) {
-  }
-
-  public void measure(String measurementPoint) {
-  }
-
-  public void completeMeasurement(String measurementPoint) {
-  }
-
   @Override
   public User getUser() {
     return user;
