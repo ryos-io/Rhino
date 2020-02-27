@@ -105,8 +105,6 @@ public class MeasurementImpl implements Measurement {
       throw new IllegalStateException("Measurement is not yet started.");
     }
     elapsed += millis;
-
-    //System.out.println(measurementPoint + " : " + elapsed);
   }
 
   public void commit(String status) {

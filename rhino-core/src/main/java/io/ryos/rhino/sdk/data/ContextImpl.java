@@ -65,12 +65,10 @@ public class ContextImpl implements Context {
   @Override
   public void commit(String status) {
     measurements.forEach(m -> m.commit(status));
-    //measurements.clear();
   }
 
   @Override
   public void remove(Measurement measurement) {
     measurements.remove(measurement);
-    //measurements.clear();
   }
 }
