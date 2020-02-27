@@ -175,6 +175,9 @@ public class LoadDslImpl extends AbstractDSLItem implements LoadDsl {
     var gaugeDsl = new GaugeDslImpl(tag, dslItem);
     gaugeDsl.setParent(this);
     dslItem.setParent(gaugeDsl);
+    if (dslItem instanceof LoadDsl) {
+      dslItem.setName(tag);
+    }
     children.add(gaugeDsl);
     return this;
   }

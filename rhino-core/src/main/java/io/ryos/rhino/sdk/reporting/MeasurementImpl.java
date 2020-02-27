@@ -43,11 +43,16 @@ public class MeasurementImpl implements Measurement {
   private volatile boolean measurementEnabled;
   private volatile boolean measurementStarted;
   private long start = -1;
+  private long elapsed = 0L;
 
   private EventDispatcher dispatcher;
 
   public MeasurementImpl(final String parentName, final String userId) {
     this(parentName, userId, "", false, true, EventDispatcher.getInstance());
+  }
+
+  public MeasurementImpl(final String parentName, final String tagName, final String userId) {
+    this(parentName, userId, tagName, false, true, EventDispatcher.getInstance());
   }
 
   public MeasurementImpl(final String userId, final MeasurableDsl measureableDslItem) {
@@ -95,6 +100,43 @@ public class MeasurementImpl implements Measurement {
     }
   }
 
+  public void add(long millis) {
+    if (!measurementStarted) {
+      throw new IllegalStateException("Measurement is not yet started.");
+    }
+    elapsed += millis;
+  }
+
+  public void commit(String status) {
+    commit(this.getMeasurementPoint(), status);
+  }
+
+  public void commit(String measurement, String status) {
+
+    if (!measurementStarted) {
+      throw new IllegalStateException("Measurement is not yet started.");
+    }
+
+    addEvent(new DslEvent(STR_BLANK, userId, parentName, start, start + this.elapsed, elapsed, status, measurement));
+
+    UserEvent userEventEnd = new UserEvent(STR_BLANK,
+        userId,
+        parentName,
+        start,
+        start + this.elapsed,
+        this.elapsed,
+        EventType.END,
+        STR_BLANK,
+        userId
+    );
+
+    record(userEventEnd);
+
+    dispatcher.dispatchEvents(this);
+    start = -1;
+    elapsed = 0;
+  }
+
   private void registerStartUserEvent() {
     UserEvent userEventStart = new UserEvent(
         STR_BLANK,
@@ -140,21 +182,22 @@ public class MeasurementImpl implements Measurement {
   }
 
   @Override
-  public void measure(String measurement, String status) {
+  public long measure(String measurement, String status) {
     if (!measurementStarted) {
       throw new IllegalStateException("Measurement is not yet started.");
     }
 
     long end = System.currentTimeMillis();
-    long elapsed = end - start;
+    this.elapsed = end - start;
 
-    addEvent(
-        new DslEvent(STR_BLANK, userId, parentName, start, end, elapsed, status, measurement));
+    addEvent(new DslEvent(STR_BLANK, userId, parentName, start, end, elapsed, status, measurement));
+
+    return this.elapsed;
   }
 
   @Override
-  public void measure(String status) {
-    measure(measurementPoint, status);
+  public long measure(String status) {
+    return measure(measurementPoint, status);
   }
 
   @Override
@@ -193,14 +236,6 @@ public class MeasurementImpl implements Measurement {
 
   private synchronized void addEvent(final DslEvent event) {
     events.add(event);
-  }
-
-  public boolean isLastEvent() {
-    if (!events.isEmpty()) {
-      var lastEvent = events.get(events.size() - 1);
-      return lastEvent instanceof DslEvent;
-    }
-    return false;
   }
 
   public List<LogEvent> getEvents() {

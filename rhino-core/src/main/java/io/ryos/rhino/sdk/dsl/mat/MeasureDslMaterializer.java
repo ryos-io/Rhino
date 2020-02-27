@@ -19,40 +19,43 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.impl.GaugeDslImpl;
+import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
 
 public class MeasureDslMaterializer implements DslMaterializer {
 
-  private final GaugeDslImpl dslItem;
+  private final GaugeDslImpl gaugeDsl;
 
-  public MeasureDslMaterializer(GaugeDslImpl dslItem) {
-    this.dslItem = dslItem;
+  public MeasureDslMaterializer(GaugeDslImpl gauge) {
+    this.gaugeDsl = gauge;
   }
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
     UUID uuid = UUID.randomUUID();
-    dslItem.setName(dslItem.getTag());
-
+    List<Measurement> measurements = new ArrayList<>();
+    gaugeDsl.setName(gaugeDsl.getTag());
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
-          var measurement = new MeasurementImpl(dslItem.getTag(), userSession.getUser().getId());
+          var measurement = new MeasurementImpl("", gaugeDsl.getTag(),
+              userSession.getUser().getId());
           measurement.start();
-          userSession.add("measurement-" + uuid, measurement);
+          measurements.add(measurement);
+          userSession.register(measurement);
           return userSession;
         }))
         .flatMap(session -> {
-          MaterializableDslItem materializableDslItem = dslItem.getChildren().get(0);
-          materializableDslItem.setParent(dslItem);
-          return materializableDslItem.materializer().materialize(userSession);
+          MaterializableDslItem materializableDslItem = gaugeDsl.getMeasureableItem();
+          materializableDslItem.setParent(gaugeDsl);
+          return materializableDslItem.materializer().materialize(session);
         })
         .flatMap(session -> Mono.fromCallable(() -> {
-          var measurement = userSession.<MeasurementImpl>get("measurement-" + uuid).get();
-          measurement.measure(dslItem.getName(), " ");
-          measurement.finish();
-
+          session.commit(" ");
+          measurements.forEach(session::remove);
           return session;
         }));
   }

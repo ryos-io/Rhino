@@ -33,7 +33,7 @@ public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, Mappable
   ThreadLocal<String> dslMethodName = new ThreadLocal<>();
 
   public static LoadDsl dsl() {
-    return new LoadDslImpl(dslMethodName.get());
+    return new LoadDslImpl("");
   }
 
   /**
