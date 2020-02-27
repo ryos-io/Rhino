@@ -126,23 +126,6 @@ $ docker run -t yourproject:latest
 ```
 
 
-## Getting Started
-
-If you think that the Rhino is the right framework for you, you can follow the wiki to get started:
-
-* [Getting Started with Rhino](https://github.com/bagdemir/rhino/wiki/Getting-Started)
-* [Simulations](https://github.com/ryos-io/Rhino/wiki/Simulations) - The annotated load testing entities.
-* [Providers](https://github.com/bagdemir/rhino/wiki/Providers) - Data feeders used at injection points in Simulations.
-* [Configuration](https://github.com/bagdemir/rhino/wiki/Configuration) - Configure your load testing project.
-* [Test Users in Simulations](https://github.com/bagdemir/rhino/wiki/Testing-with-Users) - Users in Simulations.
-* [Reporting](https://github.com/bagdemir/Rhino/wiki/Reporting) - Reporting the load metrics.
-* [Measurements](https://github.com/bagdemir/Rhino/wiki/Measurements) - Record measurement. 
-
-### Integrations
-* [Influx DB Integration](https://github.com/bagdemir/Rhino/wiki/Influx-DB-Integration) - Push the metrics into Influx DB. 
-* [Grafana Integration](https://github.com/bagdemir/Rhino/wiki/Grafana-Integration) - Show the metrics on Grafana. 
-* [Gatling Integration](https://github.com/ryos-io/Rhino/wiki/Generating-Gatling-Reports) - To create Gatling simulation reports.
-
 Questions/Contributions?
 ---
 
