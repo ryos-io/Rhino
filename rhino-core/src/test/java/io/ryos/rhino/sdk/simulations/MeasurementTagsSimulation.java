@@ -21,7 +21,6 @@ import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -32,16 +31,12 @@ import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
-@Simulation(name = "Reactive Multi-User Test")
+@Simulation(name = "Nested Measurement Test")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
 public class MeasurementTagsSimulation {
 
   private static final String DISCOVERY_ENDPOINT = getEndpoint("discovery");
   private static final String FILE_ENDPOINT = getEndpoint("files");
-
-  private static final String X_REQUEST_ID = "X-Request-Id";
-  private static final String X_API_KEY = "X-Api-K  ey";
-  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Provider(clazz = UUIDProvider.class)
   private UUIDProvider provider;
@@ -49,14 +44,14 @@ public class MeasurementTagsSimulation {
   @Dsl(name = "Load DSL Discovery and GET")
   public LoadDsl loadTestDiscoverAndGet() {
     return dsl()
-        .measure("level1",
+        .measure("Outer Measurement",
             dsl().run(discovery())
-                .measure("Get Request ",
-                    run(getResource(1))));
+                .measure("Inner Measurement",
+                    run(getResource())));
   }
 
-  private HttpRetriableDsl getResource(int index) {
-    return http("Get Request " + index)
+  private HttpRetriableDsl getResource() {
+    return http("Get Request")
         .auth()
         .header(session -> HttpDsl.from("X-Request-Id", "Test-" + provider.take()))
         .endpoint(s -> FILE_ENDPOINT)
