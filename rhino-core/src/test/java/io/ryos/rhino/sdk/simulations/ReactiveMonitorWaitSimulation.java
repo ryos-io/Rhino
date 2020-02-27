@@ -20,6 +20,7 @@ import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -56,14 +57,14 @@ public class ReactiveMonitorWaitSimulation {
             .endpoint(session -> FILES_ENDPOINT)
             .put()
             .saveTo("result"))
-        .run(http("Monitor")
+        .measure("cumulative", run(http("Monitor")
             .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-            .retryIf(response -> response.getStatusCode() != 200, 2)
-            .cumulative());
+            .retryIf(response -> response.getStatusCode() != 200, 2).cumulative()
+            ));
   }
 }

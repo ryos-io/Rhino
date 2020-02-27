@@ -25,6 +25,11 @@ public class GaugeDslImpl extends AbstractDSLItem implements GaugeDsl {
   }
 
   @Override
+  public MaterializableDslItem getMeasureableItem() {
+    return childDsl;
+  }
+
+  @Override
   public DslMaterializer materializer() {
     return new MeasureDslMaterializer(this);
   }

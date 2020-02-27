@@ -22,8 +22,10 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   private final MeasurementImpl measurement;
   private final Response.ResponseBuilder builder = new Response.ResponseBuilder();
   private final RetryInfo retryInfo;
+  private final UserSession session;
 
   public HttpSpecAsyncHandler(final UserSession session, final HttpDsl dslItem) {
+    this.session = session;
     this.measurement = new MeasurementImpl(session.getUser().getId(), dslItem);
     this.retryInfo = dslItem.getRetryInfo();
   }
@@ -76,7 +78,10 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
-    measurement.measure(String.valueOf(status));
+    long measure = measurement.measure(String.valueOf(status));
+
+    session.notify(measure);
+
     measurement.finish();
   }
 

@@ -59,14 +59,15 @@ public class MeasurementTagsSimulationTest {
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    wmServer.stubFor(WireMock.get(urlEqualTo("/api/resource"))
+    wmServer.stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
-            .withFixedDelay(200)
+            .withFixedDelay(600)
             .withStatus(200)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/discovery"))
         .willReturn(aResponse()
             .withStatus(200)
+            .withFixedDelay(200)
             .withBody("{\"endpoint\": \"http://localhost:" + PORT + "/api/resource\"}")));
 
     Simulation.getInstance(PROPERTIES_FILE, MeasurementTagsSimulation.class).start();

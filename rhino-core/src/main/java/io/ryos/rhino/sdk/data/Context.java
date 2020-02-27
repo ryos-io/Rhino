@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.data;
 
+import io.ryos.rhino.sdk.reporting.Measurement;
 import java.util.Optional;
 
 
@@ -57,4 +58,12 @@ public interface Context {
    * @return true if the context is empty.
    */
   boolean isEmpty();
+
+  void register(Measurement measurement);
+
+  void notify(long time);
+
+  void commit(String status);
+
+  void remove(Measurement measurement);
 }

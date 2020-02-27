@@ -35,7 +35,7 @@ public class NestedDslSimulation {
         .forEach(in(session("index")).map(n -> (Integer) n * 2).saveTo("mapped", Scope.USER))
         .forEach(in(session("mapped")).exec(s ->
             some("test").exec(session -> {
-              System.out.println(s);
+              //System.out.println(s);
               return "OK";
             })));
   }
