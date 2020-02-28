@@ -1,9 +1,9 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
@@ -37,7 +37,7 @@ public class CollaborativeUploadLoadSimulation {
     return dsl()
         .session("2. User", () -> userProvider.take())
         .run(http("PUT text.txt")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
@@ -45,7 +45,7 @@ public class CollaborativeUploadLoadSimulation {
             .put()
             .saveTo("result"))
         .run(http("GET text.txt")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth((session("2. User")))
             .endpoint(session -> FILES_ENDPOINT)

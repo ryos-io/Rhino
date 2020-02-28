@@ -16,11 +16,11 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.global;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
@@ -77,7 +77,7 @@ public class ReactiveMultiUserCollabSimulation {
 
   private HttpDsl uploadFile() {
     return http("Prepare by PUT text.txt")
-        .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+        .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
         .header(X_API_KEY, SimulationConfig.getApiKey())
         .auth()
         .endpoint(session -> FILES_ENDPOINT)
@@ -96,14 +96,14 @@ public class ReactiveMultiUserCollabSimulation {
             .get()))
         .session("userB", () -> userProvider.take())
         .run(http("PUT text.txt")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
             .upload(() -> file("classpath:///test.txt"))
             .put())
         .run(http("GET text.txt")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + userProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth(session("userB"))
             .endpoint(global("Prepare by PUT text.txt", "endpoint"))

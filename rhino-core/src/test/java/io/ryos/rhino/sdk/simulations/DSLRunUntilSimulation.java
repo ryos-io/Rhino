@@ -1,10 +1,10 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.ifStatusCode;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -29,7 +29,7 @@ public class DSLRunUntilSimulation {
   public LoadDsl singleTestDsl() {
     return dsl()
         .until(ifStatusCode(200), http("PUT Request")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .upload(() -> file("classpath:///test.txt"))
@@ -37,7 +37,7 @@ public class DSLRunUntilSimulation {
             .put()
             .saveTo("result"))
         .run(http("GET on Files")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(FILES_ENDPOINT)
