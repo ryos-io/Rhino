@@ -1,9 +1,9 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
@@ -35,7 +35,7 @@ public class DiscoverAndGetSimulation {
   public LoadDsl loadTestDiscoverAndGet() {
     return dsl().measure("measure 1",
         run(http("Discovery Request")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(DISCOVERY_ENDPOINT)
@@ -44,7 +44,7 @@ public class DiscoverAndGetSimulation {
         .map(MapperBuilder.from("result")
             .doMap(result -> extractEndpoint((HttpDslData) result)).saveTo("endpoint"))
         .run(http("Get Request")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session("endpoint"))
@@ -55,14 +55,13 @@ public class DiscoverAndGetSimulation {
   public LoadDsl loadTestDiscoverAndGet2() {
     return dsl().measure("measure 2",
         run(http("Discovery Request 3")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(DISCOVERY_ENDPOINT)
             .get()
             .saveTo("result")));
   }
-
 
   private String extractEndpoint(HttpDslData result) {
     try {

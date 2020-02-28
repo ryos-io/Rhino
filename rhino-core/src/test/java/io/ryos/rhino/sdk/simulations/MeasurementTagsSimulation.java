@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
@@ -53,7 +54,7 @@ public class MeasurementTagsSimulation {
   private HttpRetriableDsl getResource() {
     return http("Get Request")
         .auth()
-        .header(session -> HttpDsl.from("X-Request-Id", "Test-" + provider.take()))
+        .header(session -> headerValue("X-Request-Id", "Test-" + provider.take()))
         .endpoint(s -> FILE_ENDPOINT)
         .get();
   }
@@ -61,7 +62,7 @@ public class MeasurementTagsSimulation {
   private HttpDsl discovery() {
     return http("Discovery Request")
         .auth()
-        .header(session -> HttpDsl.from("X-Request-Id", "Test-" + provider.take()))
+        .header(session -> headerValue("X-Request-Id", "Test-" + provider.take()))
         .endpoint(DISCOVERY_ENDPOINT)
         .get()
         .saveTo("result");

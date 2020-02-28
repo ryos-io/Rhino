@@ -16,11 +16,11 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.HttpDsl.from;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
+import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
 import io.ryos.rhino.sdk.SimulationConfig;
@@ -50,7 +50,7 @@ public class ReactiveMonitorWaitSimulation {
   public LoadDsl uploadAndWaitLoadTest() {
     return dsl()
         .run(http("Upload")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .upload(() -> file("classpath:///test.txt"))
@@ -58,13 +58,13 @@ public class ReactiveMonitorWaitSimulation {
             .put()
             .saveTo("result"))
         .measure("cumulative", run(http("Monitor")
-            .header(session -> from(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
+            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(session -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-                .retryIf(response -> response.getStatusCode() != 200, 2)
-            ));
+            .retryIf(response -> response.getStatusCode() != 200, 2)
+        ));
   }
 }

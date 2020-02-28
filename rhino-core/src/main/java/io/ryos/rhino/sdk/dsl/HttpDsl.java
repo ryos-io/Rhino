@@ -37,10 +37,6 @@ public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
     GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH
   }
 
-  static Map.Entry<String, List<String>> from(String key, String value) {
-    return Map.entry(key, Collections.singletonList(value));
-  }
-
   // Getters
   Method getMethod();
 
