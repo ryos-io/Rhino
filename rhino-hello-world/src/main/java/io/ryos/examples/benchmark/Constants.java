@@ -16,9 +16,19 @@
 
 package io.ryos.examples.benchmark;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Constants {
 
-  public static final String DISCOVERY_ENDPOINT = "http://localhost:8089/api/files";
+  public static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
   public static final String X_REQUEST_ID = "X-Request-Id";
   public static final String X_API_KEY = "X-Api-Key";
+
+  public static final String DISCOVERY_ENDPOINT = getEndpoint();
+  public static final ObjectMapper MAPPER = new ObjectMapper();
+
+  public static String getEndpoint() {
+    return String.format("http://localhost:%s/api/%s", 8089, "discovery");
+  }
 }
+

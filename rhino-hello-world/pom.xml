@@ -43,7 +43,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>./</classpathPrefix>
-                            <mainClass>io.ryos.examples.benchmark.Rhino</mainClass>
+                            <mainClass>io.ryos.examples.benchmark.TwoUsersUploadDownloadSimulationTest</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -21,21 +21,29 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
+import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
-import static io.ryos.examples.benchmark.Constants.DISCOVERY_ENDPOINT;
+import static io.ryos.examples.benchmark.Constants.FILES_ENDPOINT;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
 import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.http;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
+import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 
+/*
+ Every simulation needs to start with a @Simulation annotation and a describing name which is used
+ in reporting and dashboards. The simulations, that require user interactions as in "a user is
+ sending a request to the backend", must include a user repository factory, that is a factory for
+ user repositories. User repositories are sources for users.
+ */
 @Simulation(name = "Upload and Get Simulation")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
-public class MultipleUserSimulation {
+public class TwoUsersUploadDownloadSimulation {
 
   @UserProvider
   private OAuthUserProvider userProvider;
@@ -44,21 +52,26 @@ public class MultipleUserSimulation {
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
-  public LoadDsl singleTestDsl() {
+  public LoadDsl simulateTwoUsersUploadDownload() {
     return dsl()
-        .run(http("UPLOAD text.txt")
-            .header(c -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
-            .auth()
-            .endpoint((c) -> DISCOVERY_ENDPOINT)
-            .upload(() -> file("classpath:///test.txt"))
-            .put()
-            .saveTo("result"))
-        .run(http("GET text.txt")
-            .header(c -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
-            .auth(userProvider.take())
-            .endpoint((c) -> DISCOVERY_ENDPOINT)
-            .upload(() -> file("classpath:///test.txt"))
-            .put()
-            .saveTo("result"));
+        .run(putFile())
+        .run(getFile());
+  }
+
+  private HttpRetriableDsl getFile() {
+    return http(  "GET text.txt")
+        .header(c -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
+        .auth(session -> userProvider.take())
+        .endpoint(session("UPLOAD text.txt", "endpoint"))
+        .get();
+  }
+
+  private HttpRetriableDsl putFile() {
+    return http("UPLOAD text.txt")
+        .header(session -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
+        .auth()
+        .endpoint(session -> FILES_ENDPOINT + "/" + uuidProvider.take())
+        .upload(() -> file("classpath:///test.txt"))
+        .put();
   }
 }
