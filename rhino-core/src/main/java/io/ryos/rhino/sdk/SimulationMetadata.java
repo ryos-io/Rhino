@@ -23,7 +23,7 @@ import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslMethod;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
@@ -119,10 +119,10 @@ public class SimulationMetadata {
   private List<Scenario> scenarios;
 
   /**
-   * A list of {@link LoadDsl} instances defined in getLoadDsls methods.
+   * A list of {@link DslBuilder} instances defined in getLoadDsls methods.
    * <p>
    */
-  private List<LoadDsl> loadDsls;
+  private List<DslBuilder> dslBuilders;
 
   private List<DslMethod> dslMethods;
 
@@ -178,7 +178,7 @@ public class SimulationMetadata {
     this.rampUpInfo = builder.rampUpInfo;
     this.simulationClass = builder.simulationClass;
     this.scenarios = builder.scenarios;
-    this.loadDsls = builder.loadDsls;
+    this.dslBuilders = builder.dslBuilders;
     this.dslMethods = builder.dslMethods;
     this.prepareMethod = builder.prepareMethod;
     this.cleanupMethod = builder.cleanUpMethod;
@@ -238,8 +238,8 @@ public class SimulationMetadata {
     return scenarios;
   }
 
-  public List<LoadDsl> getDsls() {
-    return loadDsls;
+  public List<DslBuilder> getDsls() {
+    return dslBuilders;
   }
 
   public List<DslMethod> getDslMethods() {
@@ -343,7 +343,7 @@ public class SimulationMetadata {
      * List of {@link MaterializableDslItem} instances.
      * <p>
      */
-    private List<LoadDsl> loadDsls;
+    private List<DslBuilder> dslBuilders;
 
     /**
      * The {@link java.lang.reflect.Method} instance for preparing the test.
@@ -457,8 +457,8 @@ public class SimulationMetadata {
       return this;
     }
 
-    public Builder withDsls(final List<LoadDsl> loadDsls) {
-      this.loadDsls = loadDsls;
+    public Builder withDsls(final List<DslBuilder> dslBuilders) {
+      this.dslBuilders = dslBuilders;
       return this;
     }
 

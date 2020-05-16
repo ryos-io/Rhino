@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
@@ -28,7 +28,7 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
@@ -43,7 +43,7 @@ public class MeasurementTagsSimulation {
   private UUIDProvider provider;
 
   @Dsl(name = "Load DSL Discovery and GET")
-  public LoadDsl loadTestDiscoverAndGet() {
+  public DslBuilder loadTestDiscoverAndGet() {
     return dsl()
         .measure("Outer Measurement",
             dsl().run(discovery())

@@ -33,13 +33,13 @@ public interface SessionDsl extends DslItem {
    * @param objectSupplier Object provider.
    * @return Runnable DSL instance.
    */
-  LoadDsl session(String sessionKey, Supplier<Object> objectSupplier);
+  DslBuilder session(String sessionKey, Supplier<Object> objectSupplier);
 
   /**
    * Session DSL is used to save objects to the current session.
    *
    * @param object Object instance to store in the session.
-   * @return {@link LoadDsl} instance.
+   * @return {@link DslBuilder} instance.
    */
-  LoadDsl session(String sessionKey, Object object);
+  DslBuilder session(String sessionKey, Object object);
 }

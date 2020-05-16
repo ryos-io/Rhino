@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
@@ -13,7 +13,7 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
@@ -32,7 +32,7 @@ public class DiscoverAndGetSimulation {
 
 
   @Dsl(name = "Load DSL Discovery and GET")
-  public LoadDsl loadTestDiscoverAndGet() {
+  public DslBuilder loadTestDiscoverAndGet() {
     return dsl().measure("measure 1",
         run(http("Discovery Request")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
@@ -52,7 +52,7 @@ public class DiscoverAndGetSimulation {
   }
 
   @Dsl(name = "Load DSL GET")
-  public LoadDsl loadTestDiscoverAndGet2() {
+  public DslBuilder loadTestDiscoverAndGet2() {
     return dsl().measure("measure 2",
         run(http("Discovery Request 3")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))

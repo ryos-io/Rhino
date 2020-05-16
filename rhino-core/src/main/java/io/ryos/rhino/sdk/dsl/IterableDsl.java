@@ -33,9 +33,9 @@ public interface IterableDsl extends DslItem {
    *
    * @param name           Name of the runner DSL.
    * @param forEachBuilder Iterable builder.
-   * @return {@link LoadDsl} runnable DSL instance.
+   * @return {@link DslBuilder} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> LoadDsl forEach(String name,
+  <E, R extends Iterable<E>> DslBuilder forEach(String name,
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
@@ -43,9 +43,9 @@ public interface IterableDsl extends DslItem {
    * instance.
    *
    * @param forEachBuilder Iterable builder.
-   * @return {@link LoadDsl} runnable DSL instance.
+   * @return {@link DslBuilder} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> LoadDsl forEach(
+  <E, R extends Iterable<E>> DslBuilder forEach(
       ForEachBuilder<E, R> forEachBuilder);
 
   /**
@@ -53,24 +53,24 @@ public interface IterableDsl extends DslItem {
    *
    * @param predicate Run conditional.
    * @param spec      {@link MaterializableDslItem} to run.
-   * @return {@link LoadDsl} runnable DSL instance.
+   * @return {@link DslBuilder} runnable DSL instance.
    */
-  LoadDsl until(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  DslBuilder until(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Runs the {@link MaterializableDslItem} as long as the {@link Predicate} holds.
    *
    * @param predicate Run conditional.
    * @param spec      {@link MaterializableDslItem} to run.
-   * @return {@link LoadDsl} runnable DSL instance.
+   * @return {@link DslBuilder} runnable DSL instance.
    */
-  LoadDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  DslBuilder asLongAs(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Runs the {@link MaterializableDslItem} repeatedly.
    *
    * @param spec {@link MaterializableDslItem} to run.
-   * @return {@link LoadDsl} runnable DSL instance.
+   * @return {@link DslBuilder} runnable DSL instance.
    */
-  LoadDsl repeat(MaterializableDslItem spec);
+  DslBuilder repeat(MaterializableDslItem spec);
 }

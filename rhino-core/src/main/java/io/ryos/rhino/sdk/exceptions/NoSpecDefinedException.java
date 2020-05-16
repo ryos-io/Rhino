@@ -16,8 +16,10 @@
 
 package io.ryos.rhino.sdk.exceptions;
 
+import io.ryos.rhino.sdk.dsl.DslBuilder;
+
 /**
- * The exception is thrown if there is no spec defined in {@link io.ryos.rhino.sdk.dsl.LoadDsl}. The
+ * The exception is thrown if there is no spec defined in {@link DslBuilder}. The
  * pipeline will then be terminated.
  * <p>
  *

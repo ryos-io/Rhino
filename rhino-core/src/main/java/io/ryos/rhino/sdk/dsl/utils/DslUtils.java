@@ -19,13 +19,13 @@ package io.ryos.rhino.sdk.dsl.utils;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl;
-import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import java.time.Duration;
@@ -63,53 +63,53 @@ public class DslUtils {
             .orElse(-1) == statusCode;
   }
 
-  public static LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem matDslItem) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).runIf(predicate, matDslItem);
+  public static DslBuilder runIf(Predicate<UserSession> predicate, MaterializableDslItem matDslItem) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).runIf(predicate, matDslItem);
   }
 
-  public static LoadDsl run(MaterializableDslItem matDslItem) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).run(matDslItem);
+  public static DslBuilder run(MaterializableDslItem matDslItem) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).run(matDslItem);
   }
 
-  public static LoadDsl wait(Duration duration) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).wait(duration);
+  public static DslBuilder wait(Duration duration) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).wait(duration);
   }
 
-  public static LoadDsl ensure(Predicate<UserSession> predicate) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).ensure(predicate);
+  public static DslBuilder ensure(Predicate<UserSession> predicate) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).ensure(predicate);
   }
 
-  public static LoadDsl ensure(Predicate<UserSession> predicate, String reason) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).ensure(predicate, reason);
+  public static DslBuilder ensure(Predicate<UserSession> predicate, String reason) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).ensure(predicate, reason);
   }
 
-  public static LoadDsl session(String sessionKey, Supplier<Object> objectSupplier) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).session(sessionKey, objectSupplier);
+  public static DslBuilder session(String sessionKey, Supplier<Object> objectSupplier) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, objectSupplier);
   }
 
-  public static <R, T> LoadDsl map(MapperBuilder<R, T> mapperBuilder) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).map(mapperBuilder);
+  public static <R, T> DslBuilder map(MapperBuilder<R, T> mapperBuilder) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).map(mapperBuilder);
   }
 
-  public static <E, R extends Iterable<E>> LoadDsl forEach(String name,
+  public static <E, R extends Iterable<E>> DslBuilder forEach(String name,
       ForEachBuilder<E, R> forEachBuilder) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).forEach(name, forEachBuilder);
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).forEach(name, forEachBuilder);
   }
 
-  public static LoadDsl repeat(MaterializableDslItem spec) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).repeat(spec);
+  public static DslBuilder repeat(MaterializableDslItem spec) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).repeat(spec);
   }
 
-  public static LoadDsl until(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).until(predicate, dslItem);
+  public static DslBuilder until(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).until(predicate, dslItem);
   }
 
-  public static LoadDsl asLongAs(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).asLongAs(predicate, dslItem);
+  public static DslBuilder asLongAs(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).asLongAs(predicate, dslItem);
   }
 
-  public static LoadDsl filter(Predicate<UserSession> predicate) {
-    return new LoadDslImpl(LoadDsl.dslMethodName.get()).filter(predicate);
+  public static DslBuilder filter(Predicate<UserSession> predicate) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).filter(predicate);
   }
 
   /**
