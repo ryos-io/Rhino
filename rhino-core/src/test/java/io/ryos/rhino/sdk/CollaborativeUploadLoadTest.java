@@ -46,16 +46,16 @@ public class CollaborativeUploadLoadTest {
 
     stubFor(WireMock.put(urlEqualTo("/api/files"))
             .willReturn(aResponse()
-                .withStatus(201).withFixedDelay(200)));
+                .withStatus(201).withFixedDelay(1000)));
 
     stubFor(WireMock.get(urlEqualTo("/api/files"))
         .willReturn(aResponse()
-            .withStatus(200).withFixedDelay(200)));
+            .withStatus(200).withFixedDelay(1000)));
 
     TestUtils.overridePorts(PORT);
 
     Simulation.getInstance(PROPERTIES_FILE, CollaborativeUploadLoadSimulation.class).start();
 
-    Thread.sleep(1000L);
+    Thread.sleep(6000L);
   }
 }

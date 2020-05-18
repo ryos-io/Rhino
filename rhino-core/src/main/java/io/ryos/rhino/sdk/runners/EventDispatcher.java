@@ -13,8 +13,8 @@ import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.SimulationLogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingSimulationLogFormatter;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.reporting.StdoutReporter;
-import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
+import io.ryos.rhino.sdk.reporting.MetricCollector;
+import io.ryos.rhino.sdk.reporting.MetricCollector.EndTestEvent;
 import java.time.Instant;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
@@ -41,11 +41,11 @@ public class EventDispatcher {
   private EventDispatcher(final SimulationMetadata simulationMetadata) {
 
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.stdOutReptorter = system
-        .actorOf(StdoutReporter.props(simulationMetadata.getNumberOfUsers(),
+    this.metricCollector = system
+        .actorOf(MetricCollector.props(simulationMetadata.getNumberOfUsers(),
             Instant.now(),
             simulationMetadata.getDuration()),
-            StdoutReporter.class.getName());
+            MetricCollector.class.getName());
     this.loggerActor = system
         .actorOf(SimulationLogWriter.props(simulationMetadata.getReportingURI(),
             simulationMetadata.getLogFormatter()),
@@ -90,7 +90,7 @@ public class EventDispatcher {
    * heartbeat about the running test.
    * <p>
    */
-  private ActorRef stdOutReptorter;
+  private ActorRef metricCollector;
 
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
@@ -106,7 +106,7 @@ public class EventDispatcher {
     try {
       measurement.getEvents().forEach(e -> {
         loggerActor.tell(e, ActorRef.noSender());
-        stdOutReptorter.tell(e, ActorRef.noSender());
+        metricCollector.tell(e, ActorRef.noSender());
 
         if (simulationMetadata.isEnableInflux()) {
           influxActor.tell(e, ActorRef.noSender());
@@ -134,7 +134,7 @@ public class EventDispatcher {
   }
 
   private void requestForTermination() {
-    var ask = Patterns.ask(stdOutReptorter, new EndTestEvent(Instant.now()),
+    var ask = Patterns.ask(metricCollector, new EndTestEvent(Instant.now()),
         TERMINATION_REQUEST_TIMEOUT);
     try {
       Await.result(ask, FiniteDuration.Inf());

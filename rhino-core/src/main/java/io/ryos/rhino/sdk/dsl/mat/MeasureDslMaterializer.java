@@ -23,7 +23,6 @@ import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import reactor.core.publisher.Mono;
 
 public class MeasureDslMaterializer implements DslMaterializer {
@@ -36,7 +35,6 @@ public class MeasureDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
-    UUID uuid = UUID.randomUUID();
     List<Measurement> measurements = new ArrayList<>();
     gaugeDsl.setName(gaugeDsl.getTag());
     return Mono.just(userSession)

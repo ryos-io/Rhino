@@ -34,6 +34,11 @@ public interface SimulationRunner {
    */
   void start();
 
+  /**
+   * Starts the simulation instance.
+   * <p>
+   */
+  void verify();
 
   /**
    * Stop the simulation instance, by shutting down all components.

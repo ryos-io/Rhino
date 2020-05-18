@@ -105,8 +105,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz()
-            : ReactiveHttpSimulationRunner.class)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())
@@ -237,8 +236,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     throw new RepositoryNotFoundException();
   }
 
-  private UserRepository createWithDefaultConstructor(
-      Class<? extends UserRepositoryFactory> factory) {
+  private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {
     try {
       return factory.getDeclaredConstructor().newInstance().create();
     } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

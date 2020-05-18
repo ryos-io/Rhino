@@ -78,11 +78,9 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
   }
 
   public void completeMeasurement() {
-    long measure = measurement.measure(String.valueOf(status));
-
-    session.notify(measure);
-
-    measurement.finish();
+    final long measure = measurement.measure(String.valueOf(status));
+    this.session.notify(measure);
+    this.measurement.finish();
   }
 
   private boolean isReadyToMeasure(HttpResponse httpResponse) {

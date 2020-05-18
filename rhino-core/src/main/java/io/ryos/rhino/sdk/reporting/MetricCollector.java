@@ -19,12 +19,15 @@ package io.ryos.rhino.sdk.reporting;
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
+import io.ryos.rhino.sdk.ExecutionMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +39,18 @@ import org.slf4j.LoggerFactory;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public class StdoutReporter extends AbstractActor {
+public class MetricCollector extends AbstractActor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StdoutReporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetricCollector.class);
   private static final long DELAY = 1000L;
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
   private static final int MSG_OK = 200;
+  private static final int CONTAINER_WIDTH = 130;
 
   private Instant startTime;
   private Duration duration;
   private int numberOfUsers;
+  private ExecutionMode executionMode;
 
   /**
    * Indicates whether the termination event has been received.
@@ -66,27 +71,48 @@ public class StdoutReporter extends AbstractActor {
    * moneyTransfer_checkDebit_responseTime = 15ms moneyTransfer_checkDebit_OK = 250
    * moneyTransfer_checkDebit_NOTFOUND = 2
    */
-  private final Map<String, Long> metrics = new LinkedHashMap<>();
+  private final Map<String, Long> performanceMetrics = new LinkedHashMap<>();
+  private final Map<String, SummaryStatistics> performanceStats = new LinkedHashMap<>();
+  private final Map<String, DescriptiveStatistics> performanceRollingStats = new LinkedHashMap<>();
 
-  // Akka static factory.
   public static Props props(int numberOfUsers, Instant startTime, Duration duration) {
-    return Props.create(StdoutReporter.class, () -> new StdoutReporter(numberOfUsers, startTime,
+    return Props.create(MetricCollector.class, () -> new MetricCollector(numberOfUsers, startTime,
         duration));
   }
 
-  private StdoutReporter(int numberOfUsers, Instant startTime, Duration duration) {
+  public static Props props(final int numberOfUsers, final Instant startTime,
+      final Duration duration,
+      final ExecutionMode executionMode) {
+    return Props.create(MetricCollector.class, () -> new MetricCollector(numberOfUsers, startTime,
+        duration, executionMode));
+  }
+
+  private MetricCollector(final int numberOfUsers, final Instant startTime, final Duration duration,
+      final ExecutionMode executionMode) {
+
+    this.executionMode = executionMode;
     this.receivedTerminationEvent = false;
     this.duration = duration;
     this.numberOfUsers = numberOfUsers;
     this.startTime = startTime;
     this.timer = new Timer("Stdout Report Timer");
+
+    if (this.executionMode != ExecutionMode.VERIFY) {
+      startTimer();
+    }
+  }
+
+  private void startTimer() {
+
     final TimerTask timerTask = new TimerTask() {
       @Override
-      public void run() {
-        flushReport(null);
-      }
+      public void run() { flushReport(null); }
     };
-    this.timer.schedule(timerTask, DELAY, PERIOD);
+    timer.schedule(timerTask, DELAY, PERIOD);
+  }
+
+  private MetricCollector(final int numberOfUsers, final Instant startTime, final Duration duration) {
+    this(numberOfUsers, startTime, duration, ExecutionMode.PERFORMANCE);
   }
 
   @Override
@@ -110,6 +136,7 @@ public class StdoutReporter extends AbstractActor {
   }
 
   private void persist(final DslEvent logEvent) {
+
     var countKey = String.format("Count/%s/%s/%s",
         logEvent.getParentMeasurementPoint(),
         logEvent.getMeasurementPoint(),
@@ -120,33 +147,48 @@ public class StdoutReporter extends AbstractActor {
         logEvent.getMeasurementPoint(),
         logEvent.getStatus());
 
-    if (!metrics.containsKey(countKey)) {
-      metrics.put(countKey, 0L);
+    if (!performanceStats.containsKey(responseTypeKey)) {
+      performanceStats.put(responseTypeKey, new SummaryStatistics());
     }
 
-    if (!metrics.containsKey(responseTypeKey)) {
-      metrics.put(responseTypeKey, 0L);
+    if (!performanceRollingStats.containsKey(responseTypeKey)) {
+      var descriptiveStatistics = new DescriptiveStatistics();
+      descriptiveStatistics.setWindowSize(100);
+      performanceRollingStats.put(responseTypeKey, descriptiveStatistics);
     }
 
-    var currVal = metrics.get(countKey);
-    metrics.put(countKey, ++currVal);
+    if (!performanceMetrics.containsKey(countKey)) {
+      performanceMetrics.put(countKey, 0L);
+    }
 
-    var currElapsed = metrics.get(responseTypeKey);
-    metrics.put(responseTypeKey, currElapsed + logEvent.getElapsed());
+    if (!performanceMetrics.containsKey(responseTypeKey)) {
+      performanceMetrics.put(responseTypeKey, 0L);
+    }
+
+    var currVal = performanceMetrics.get(countKey);
+    performanceMetrics.put(countKey, ++currVal);
+
+    var currElapsed = performanceMetrics.get(responseTypeKey);
+    performanceMetrics.put(responseTypeKey, currElapsed + logEvent.getElapsed());
+
+    performanceStats.get(responseTypeKey).addValue(logEvent.getElapsed());
+    performanceRollingStats.get(responseTypeKey).addValue(logEvent.getElapsed());
   }
 
   private void flushReport(EndTestEvent event) {
-    if (metrics.isEmpty()) {
+    if (performanceMetrics.isEmpty()) {
       LOG.info("There is no record in measurement yet. Test is running...");
       return;
     }
 
-    var consoleOutputView = new ConsoleOutputView(100,
+    var consoleOutputView = new PerformanceConsoleOutputView(CONTAINER_WIDTH,
         numberOfUsers,
         startTime,
         event != null ? event.getEndTestTime() : null,
         duration,
-        metrics);
+        performanceMetrics,
+        performanceStats,
+        performanceRollingStats);
 
     if (LOG.isInfoEnabled()) {
       LOG.info(consoleOutputView.getView());

@@ -23,16 +23,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConsoleOutputView {
+public class PerformanceConsoleOutputView {
 
   private static final String COUNT = "Count/";
   private static final String RESPONSE_TIME = "ResponseTime/";
   private static final String BLANK_STR = "";
-  public static final int HEADER_LEFT_PADDING_SIZE = 2;
-  private static final Logger LOG = LoggerFactory.getLogger(ConsoleOutputView.class);
+  private static final int HEADER_LEFT_PADDING_SIZE = 2;
+  private static final Logger LOG = LoggerFactory.getLogger(PerformanceConsoleOutputView.class);
   private static final String DATETIME_PATTERN = "HH:mm:ss";
   private static final String NOT_AVAILABLE = "N/A";
   private static final String EMPTY_SPACE = " ";
@@ -47,16 +49,22 @@ public class ConsoleOutputView {
   private final Instant endTime;
   private final Duration duration;
   private final Map<String, Long> metrics;
+  private final Map<String, SummaryStatistics> stats;
+  private final Map<String, DescriptiveStatistics> rollingStats;
 
-  public ConsoleOutputView(int containerWidth,
+  public PerformanceConsoleOutputView(int containerWidth,
       int numberOfUsers, Instant startTime, Instant endTime, Duration duration,
-      Map<String, Long> metrics) {
+      Map<String, Long> metrics,
+      Map<String, SummaryStatistics> stats,
+      Map<String, DescriptiveStatistics> rollingStats) {
     this.containerWidth = containerWidth;
     this.numberOfUsers = numberOfUsers;
     this.startTime = startTime;
     this.endTime = endTime;
     this.duration = duration;
     this.metrics = metrics;
+    this.stats = stats;
+    this.rollingStats = rollingStats;
   }
 
   public String getView() {
@@ -68,15 +76,25 @@ public class ConsoleOutputView {
     var countMetrics = metrics.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith(COUNT))
-        .map(e -> formatKey(e.getKey()) + EMPTY_SPACE + e.getValue())
+        .map(e -> formatKey(e.getKey()) + EMPTY_SPACE + String.format("%5s", Math.round(e.getValue())))
         .collect(Collectors.toList());
 
-    var responseTypeMetrics = metrics.entrySet()
+    var responseTimeStats = stats.entrySet()
         .stream()
         .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
-        .map(e -> formatKey(e.getKey()) + EMPTY_SPACE + getAvgResponseTime(e.getKey(), e.getValue())
-            + EMPTY_SPACE
-            + "ms")
+        .map(e -> formatKey(e.getKey()) + EMPTY_SPACE + String.format("%5s ms", Math.round(e.getValue().getMean())))
+        .collect(Collectors.toList());
+
+    var responseTimeRollingStats = rollingStats.entrySet()
+        .stream()
+        .filter(e -> e.getKey().startsWith(RESPONSE_TIME))
+        .map(e -> formatKey(e.getKey()) + EMPTY_SPACE
+            + String.format("%5s ms %5s ms %5s ms %5s ms",
+            Math.round(e.getValue().getMean()),
+            Math.round(e.getValue().getPercentile(50.0)),
+            Math.round(e.getValue().getPercentile(96.0)),
+            Math.round(e.getValue().getPercentile(99.0)))
+        )
         .collect(Collectors.toList());
 
     long overAllResponseTime = metrics.entrySet()
@@ -117,12 +135,15 @@ public class ConsoleOutputView {
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
     output.append(createHeader("Number of executions")).append(LB);
     output.append(String.join("\n", countMetrics)).append(LB);
-    output.append(createHeader("Response Time"))
-        .append(LB);
-    output.append(String.join("\n", responseTypeMetrics)).append(LB).append(LB);
+    output.append(createHeader("Response Time (overall avg)")).append(LB);
+    output.append(String.join("\n", responseTimeStats)).append(LB).append(LB);
+    output.append(createHeader("Rolling Stats (100 sample-window)")).append(LB);
+    output.append(String.format("%90s %5s %8s %8s %8s", "status", "mean", "median", "p96", "p99")).append(LB);
+    output.append(HEADER_LINE_STYLE.repeat(containerWidth)).append(LB);
+    output.append(String.join("\n", responseTimeRollingStats)).append(LB).append(LB);
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
 
-    output.append(String.format("%70s %23.9s ms", "Average Response Time", avgRT)).append(LB);
+    output.append(String.format("%70s %25.9s ms", "Average Response Time", avgRT)).append(LB);
     output.append(String.format("%70s %19.9s ", "Total Request", totalNumberOfRequests)).append(LB);
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
 
@@ -145,13 +166,6 @@ public class ConsoleOutputView {
         .format(dateTime);
   }
 
-  private long getAvgResponseTime(final String key, final long totalElapsed) {
-    final Long totalCount = metrics.get(key.replace(RESPONSE_TIME, COUNT));
-    if (totalCount > 0) {
-      return totalElapsed / totalCount;
-    }
-    return -1;
-  }
 
   private String formatKey(final String key) {
     var normalizedStr = key.replace(RESPONSE_TIME, BLANK_STR).replace(COUNT, BLANK_STR);

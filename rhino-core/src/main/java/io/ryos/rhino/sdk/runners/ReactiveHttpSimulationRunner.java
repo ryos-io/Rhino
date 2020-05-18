@@ -72,7 +72,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     this.continueCondition = masterLock.newCondition();
   }
 
-  public void start() {
+  private void execute() {
+    execute(null);
+  }
+
+  private void execute(final Integer numberOfCycles) {
+    int cycles = getStopAfterFromEnv();
+    if (numberOfCycles != null && cycles < 0) {
+      cycles = numberOfCycles;
+    }
 
     Hooks.onErrorDropped(t -> {
     });
@@ -97,7 +105,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     flux = appendRampUp(flux);
     flux = appendThrottling(flux);
-    flux = appendTake(flux);
+    flux = appendTake(flux, cycles);
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .flatMap(tuple -> tuple.getT2().materializer().materialize(tuple.getT1()))
@@ -115,11 +123,23 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     shutdown();
   }
 
+  @Override
+  public void start() {
+    execute();
+  }
+
+  @Override
+  public void verify() {
+    execute(1);
+  }
+
   private void cleanup(List<UserSession> userList) {
     if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
       executeAfter(userList);
       awaitIf(() -> !isCleanupCompleted);
+    } else {
+      isCleanupCompleted = true;
     }
   }
 
@@ -128,6 +148,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       LOG.info("Preparation started.");
       executeBefore(userList);
       awaitIf(() -> !isPrepareCompleted);
+    } else {
+      isPrepareCompleted = true;
     }
   }
 
@@ -147,7 +169,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   @Override
   public void stop() {
-    LOG.info("Someone pushed the stop() button on runner.");
+    LOG.info("Simulation completed.");
     shutdown();
   }
 
@@ -165,6 +187,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     LOG.info("Stopping the simulation...");
     subscribe.dispose();
     dslIterator.stop();
+    EventDispatcher.getInstance().stop();
 
     LOG.info("Shutting down completed ...");
     LOG.info("Bye!");

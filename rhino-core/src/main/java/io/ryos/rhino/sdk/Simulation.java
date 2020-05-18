@@ -135,6 +135,19 @@ public class Simulation {
     return context;
   }
 
+  public void verify() {
+    try {
+      if (simulationRunners.isEmpty()) {
+        throw new SimulationNotFoundException(
+            "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
+      }
+      simulationRunners.forEach(SimulationRunner::verify);
+    } catch (Exception t) {
+      LOG.error("Cannot start application", t);
+      System.exit(-1);
+    }
+  }
+
   public void start() {
     try {
       if (simulationRunners.isEmpty()) {
