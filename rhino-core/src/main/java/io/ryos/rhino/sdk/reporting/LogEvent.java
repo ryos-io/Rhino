@@ -27,12 +27,12 @@ public class LogEvent implements Serializable {
   private final long end;
   private final long elapsed;
 
-  public LogEvent(String username,
-      String userId,
-      String scenario,
-      long start,
-      long end,
-      long elapsed) {
+  public LogEvent(final String username,
+      final String userId,
+      final String scenario,
+      final long start,
+      final long end,
+      final long elapsed) {
 
     this.username = username;
     this.userId = userId;

@@ -21,12 +21,14 @@ public class DslEvent extends LogEvent {
   private final String status;
   private final String measurementPoint;
 
-  public DslEvent(String username, String userId, String parentMeasurement,
-      long start,
-      long end,
-      long elapsed,
-      String status,
-      String measurement) {
+  public DslEvent(final String username,
+      final String userId,
+      final String parentMeasurement,
+      final long start,
+      final long end,
+      final long elapsed,
+      final String status,
+      final String measurement) {
     super(username, userId, parentMeasurement, start, end, elapsed);
 
     this.status = status;
