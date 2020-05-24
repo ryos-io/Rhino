@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.resulting;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
 
@@ -31,12 +32,13 @@ public class ReactiveBasicHttpGetSimulation {
             .endpoint(FILES_ENDPOINT)
             .get()
             .saveTo("result"))
-        .run(http("Files Request 2")
+        .verify(http("Files Request 2")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
             .endpoint(FILES_ENDPOINT)
             .get()
-            .saveTo("result"));
+                .saveTo("result"),
+            resulting("201"));
   }
 }

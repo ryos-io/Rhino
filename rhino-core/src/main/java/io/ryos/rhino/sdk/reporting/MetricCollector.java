@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  *
  * @author Erhan Bagdemir
- * @since 1.1.0
  */
 public class MetricCollector extends AbstractActor {
 
@@ -64,13 +63,7 @@ public class MetricCollector extends AbstractActor {
    */
   private Timer timer;
 
-  /**
-   * Key format is scenario_step_$metric e.g
-   * <p>
-   * <p>
-   * moneyTransfer_checkDebit_responseTime = 15ms moneyTransfer_checkDebit_OK = 250
-   * moneyTransfer_checkDebit_NOTFOUND = 2
-   */
+  private final Map<String, String> verificationResult = new LinkedHashMap<>();
   private final Map<String, Long> performanceMetrics = new LinkedHashMap<>();
   private final Map<String, SummaryStatistics> performanceStats = new LinkedHashMap<>();
   private final Map<String, DescriptiveStatistics> performanceRollingStats = new LinkedHashMap<>();
@@ -78,13 +71,6 @@ public class MetricCollector extends AbstractActor {
   public static Props props(int numberOfUsers, Instant startTime, Duration duration) {
     return Props.create(MetricCollector.class, () -> new MetricCollector(numberOfUsers, startTime,
         duration));
-  }
-
-  public static Props props(final int numberOfUsers, final Instant startTime,
-      final Duration duration,
-      final ExecutionMode executionMode) {
-    return Props.create(MetricCollector.class, () -> new MetricCollector(numberOfUsers, startTime,
-        duration, executionMode));
   }
 
   private MetricCollector(final int numberOfUsers, final Instant startTime, final Duration duration,
@@ -102,17 +88,20 @@ public class MetricCollector extends AbstractActor {
     }
   }
 
+  private MetricCollector(final int numberOfUsers, final Instant startTime,
+      final Duration duration) {
+    this(numberOfUsers, startTime, duration, ExecutionMode.PERFORMANCE);
+  }
+
   private void startTimer() {
 
     final TimerTask timerTask = new TimerTask() {
       @Override
-      public void run() { flushReport(null); }
+      public void run() {
+        flushReport(null);
+      }
     };
     timer.schedule(timerTask, DELAY, PERIOD);
-  }
-
-  private MetricCollector(final int numberOfUsers, final Instant startTime, final Duration duration) {
-    this(numberOfUsers, startTime, duration, ExecutionMode.PERFORMANCE);
   }
 
   @Override
@@ -147,6 +136,11 @@ public class MetricCollector extends AbstractActor {
         logEvent.getMeasurementPoint(),
         logEvent.getStatus());
 
+    var verificationTypeKey = String.format("Verification/%s/%s/%s",
+        logEvent.getParentMeasurementPoint(),
+        logEvent.getMeasurementPoint(),
+        logEvent.getStatus());
+
     if (!performanceStats.containsKey(responseTypeKey)) {
       performanceStats.put(responseTypeKey, new SummaryStatistics());
     }
@@ -165,6 +159,19 @@ public class MetricCollector extends AbstractActor {
       performanceMetrics.put(responseTypeKey, 0L);
     }
 
+    if (!verificationResult.containsKey(verificationTypeKey)) {
+      verificationResult.put(responseTypeKey, "");
+    }
+
+    VerificationInfo verificationInfo = logEvent.getVerificationInfo();
+    if (verificationInfo != null) {
+      boolean testResult = verificationInfo.getPredicate().test(logEvent.getStatus());
+      verificationResult.put(verificationTypeKey,
+          getVerificationResult(testResult) + (!testResult ?
+              "  Expected " + verificationInfo.getDescription() + " but was " + logEvent.getStatus()
+              : ""));
+    }
+
     var currVal = performanceMetrics.get(countKey);
     performanceMetrics.put(countKey, ++currVal);
 
@@ -173,6 +180,10 @@ public class MetricCollector extends AbstractActor {
 
     performanceStats.get(responseTypeKey).addValue(logEvent.getElapsed());
     performanceRollingStats.get(responseTypeKey).addValue(logEvent.getElapsed());
+  }
+
+  private String getVerificationResult(Boolean testResult) {
+    return testResult ? "SUCCESS" : "FAIL";
   }
 
   private void flushReport(EndTestEvent event) {
@@ -186,6 +197,7 @@ public class MetricCollector extends AbstractActor {
         startTime,
         event != null ? event.getEndTestTime() : null,
         duration,
+        verificationResult,
         performanceMetrics,
         performanceStats,
         performanceRollingStats);

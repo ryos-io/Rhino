@@ -30,10 +30,11 @@ import org.slf4j.LoggerFactory;
 
 public class PerformanceConsoleOutputView {
 
+  private static final String VERIFICATION = "Verification/";
   private static final String COUNT = "Count/";
   private static final String RESPONSE_TIME = "ResponseTime/";
   private static final String BLANK_STR = "";
-  private static final int HEADER_LEFT_PADDING_SIZE = 2;
+  private static final int HEADER_LEFT_PADDING_SIZE = 1;
   private static final Logger LOG = LoggerFactory.getLogger(PerformanceConsoleOutputView.class);
   private static final String DATETIME_PATTERN = "HH:mm:ss";
   private static final String NOT_AVAILABLE = "N/A";
@@ -48,12 +49,14 @@ public class PerformanceConsoleOutputView {
   private final Instant startTime;
   private final Instant endTime;
   private final Duration duration;
+  private final Map<String, String> verification;
   private final Map<String, Long> metrics;
   private final Map<String, SummaryStatistics> stats;
   private final Map<String, DescriptiveStatistics> rollingStats;
 
   public PerformanceConsoleOutputView(int containerWidth,
       int numberOfUsers, Instant startTime, Instant endTime, Duration duration,
+      Map<String, String> verification,
       Map<String, Long> metrics,
       Map<String, SummaryStatistics> stats,
       Map<String, DescriptiveStatistics> rollingStats) {
@@ -65,6 +68,7 @@ public class PerformanceConsoleOutputView {
     this.metrics = metrics;
     this.stats = stats;
     this.rollingStats = rollingStats;
+    this.verification = verification;
   }
 
   public String getView() {
@@ -72,6 +76,13 @@ public class PerformanceConsoleOutputView {
       LOG.info("There is no record in measurement yet. Test is running...");
       return "";
     }
+
+    var verificationResults = verification.entrySet()
+        .stream()
+        .filter(e -> e.getKey().startsWith(VERIFICATION))
+        .map(e -> formatVerifyKey(e.getKey()) + EMPTY_SPACE + String.format("%5s",
+            e.getValue()))
+        .collect(Collectors.toList());
 
     var countMetrics = metrics.entrySet()
         .stream()
@@ -122,9 +133,6 @@ public class PerformanceConsoleOutputView {
     output.append("Elapsed : ").append(Duration.between(startTime, Instant.now()).toSeconds())
         .append(" secs ETA : ")
         .append(formatDate(startTime.plus(duration)))
-        .append(" (duration ")
-        .append(duration.toMinutes())
-        .append(" mins)")
         .append(LB);
 
     if (endTime != null) {
@@ -136,13 +144,14 @@ public class PerformanceConsoleOutputView {
     output.append(createHeader("Number of executions")).append(LB);
     output.append(String.join("\n", countMetrics)).append(LB);
     output.append(createHeader("Response Time (overall avg)")).append(LB);
-    output.append(String.join("\n", responseTimeStats)).append(LB).append(LB);
+    output.append(String.join("\n", responseTimeStats)).append(LB);
+    output.append(createHeader("Verification")).append(LB);
+    output.append(String.join("\n", verificationResults)).append(LB).append(LB);
     output.append(createHeader("Rolling Stats (100 sample-window)")).append(LB);
     output.append(String.format("%90s %5s %8s %8s %8s", "status", "mean", "median", "p96", "p99")).append(LB);
     output.append(HEADER_LINE_STYLE.repeat(containerWidth)).append(LB);
     output.append(String.join("\n", responseTimeRollingStats)).append(LB).append(LB);
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
-
     output.append(String.format("%70s %25.9s ms", "Average Response Time", avgRT)).append(LB);
     output.append(String.format("%70s %19.9s ", "Total Request", totalNumberOfRequests)).append(LB);
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
@@ -166,9 +175,21 @@ public class PerformanceConsoleOutputView {
         .format(dateTime);
   }
 
+  private String formatVerifyKey(final String key) {
+    var normalizedStr = key
+        .replace(VERIFICATION, BLANK_STR);
+    var sections = normalizedStr.split(SPLITTER);
+    if (sections.length > 2) {
+      return String.format("> %-38.39s%-46.57s", sections[0], sections[1]);
+    }
+    return BLANK_STR;
+  }
 
   private String formatKey(final String key) {
-    var normalizedStr = key.replace(RESPONSE_TIME, BLANK_STR).replace(COUNT, BLANK_STR);
+    var normalizedStr = key
+        .replace(RESPONSE_TIME, BLANK_STR)
+        .replace(VERIFICATION, BLANK_STR)
+        .replace(COUNT, BLANK_STR);
     var sections = normalizedStr.split(SPLITTER);
     if (sections.length > 2) {
       return String.format("> %-38.39s%-38.39s%12.12s", sections[0], sections[1], sections[2]);

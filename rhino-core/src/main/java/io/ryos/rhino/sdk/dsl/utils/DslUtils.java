@@ -28,6 +28,7 @@ import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl;
 import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -63,7 +64,8 @@ public class DslUtils {
             .orElse(-1) == statusCode;
   }
 
-  public static DslBuilder runIf(Predicate<UserSession> predicate, MaterializableDslItem matDslItem) {
+  public static DslBuilder runIf(Predicate<UserSession> predicate,
+      MaterializableDslItem matDslItem) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).runIf(predicate, matDslItem);
   }
 
@@ -104,7 +106,8 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).until(predicate, dslItem);
   }
 
-  public static DslBuilder asLongAs(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
+  public static DslBuilder asLongAs(Predicate<UserSession> predicate,
+      MaterializableDslItem dslItem) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).asLongAs(predicate, dslItem);
   }
 
@@ -124,5 +127,9 @@ public class DslUtils {
 
   public static SomeDsl some(String name) {
     return new SomeDslImpl(name);
+  }
+
+  public static VerificationInfo<String> resulting(String state) {
+    return new VerificationInfo<String>(state, (t) -> t.equals(state));
   }
 }

@@ -15,6 +15,7 @@ import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   private User authUser;
   private Method httpMethod;
   private Function<UserSession, String> endpoint;
+  private VerificationInfo verifier;
   private Function<UserSession, User> oauthUserAccessor;
   private Supplier<User> userSupplier;
   private RetryInfo retryInfo;
@@ -368,6 +370,15 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   @Override
   public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
+  }
+
+  public VerificationInfo getVerifier() {
+    return verifier;
+  }
+
+  @Override
+  public void setVerifier(VerificationInfo predicate) {
+    verifier = predicate;
   }
 
   public static class RetryInfo {

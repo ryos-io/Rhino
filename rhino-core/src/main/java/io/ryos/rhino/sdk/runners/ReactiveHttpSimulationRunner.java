@@ -76,17 +76,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     execute(null);
   }
 
-  private void execute(final Integer numberOfCycles) {
-    int cycles = getStopAfterFromEnv();
-    if (numberOfCycles != null && cycles < 0) {
-      cycles = numberOfCycles;
-    }
-
+  private void execute(final Integer numberOfRepeats) {
     Hooks.onErrorDropped(t -> {
     });
     var simulationMetadata = getSimulationMetadata();
 
-    LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
+    printStart(numberOfRepeats, simulationMetadata);
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
@@ -105,7 +100,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     flux = appendRampUp(flux);
     flux = appendThrottling(flux);
-    flux = appendTake(flux, cycles);
+    flux = appendTake(flux, getRepeats(numberOfRepeats));
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .flatMap(tuple -> tuple.getT2().materializer().materialize(tuple.getT1()))
@@ -123,6 +118,27 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     shutdown();
   }
 
+  private void printStart(Integer numberOfRepeats, SimulationMetadata simulationMetadata) {
+    if (null != numberOfRepeats && numberOfRepeats == 1) {
+      LOG.info("Starting the verification tests.");
+    }
+    if (null == numberOfRepeats) {
+      LOG.info("Starting the load tests for {} minutes.",
+          simulationMetadata.getDuration().toMinutes());
+    }
+    if (null != numberOfRepeats && numberOfRepeats > 1) {
+      LOG.info("Starting the performance tests for {} cycles.", numberOfRepeats);
+    }
+  }
+
+  private int getRepeats(final Integer numberOfRepeats) {
+    int repeats = getStopAfterFromEnv();
+    if (numberOfRepeats != null && repeats < 0) {
+      repeats = numberOfRepeats;
+    }
+    return repeats;
+  }
+
   @Override
   public void start() {
     execute();
@@ -131,6 +147,11 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   @Override
   public void verify() {
     execute(1);
+  }
+
+  @Override
+  public void times(int numberOfRepeats) {
+    execute(numberOfRepeats);
   }
 
   private void cleanup(List<UserSession> userList) {

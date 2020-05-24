@@ -3,9 +3,11 @@ package io.ryos.rhino.sdk.dsl.impl;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.VerifiableDslItem;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.mat.LoadDslMaterializer;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +44,17 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   public DslBuilder run(MaterializableDslItem dslItem) {
     Validate.notNull(dslItem, "dslItem must not be null.");
 
+    dslItem.setParent(this);
+    children.add(dslItem);
+    return this;
+  }
+
+  @Override
+  public <T> DslBuilder verify(VerifiableDslItem dslItem, VerificationInfo<T> verificationInfo) {
+    Validate.notNull(dslItem, "dslItem must not be null.");
+    Validate.notNull(verificationInfo, "verificationInfo must not be null.");
+
+    dslItem.setVerifier(verificationInfo);
     dslItem.setParent(this);
     children.add(dslItem);
     return this;

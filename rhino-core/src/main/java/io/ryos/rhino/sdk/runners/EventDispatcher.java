@@ -35,7 +35,6 @@ public class EventDispatcher {
   private static final Logger LOG = LogManager.getLogger(EventDispatcher.class);
   private static final long TERMINATION_REQUEST_TIMEOUT = 5000L;
   private static final String ACTOR_SYS_NAME = "rhino-dispatcher";
-
   private static EventDispatcher INSTANCE;
 
   private EventDispatcher(final SimulationMetadata simulationMetadata) {
@@ -102,14 +101,14 @@ public class EventDispatcher {
     return INSTANCE;
   }
 
-  public void dispatchEvents(Measurement measurement) {
+  public void dispatchEvents(final Measurement measurement) {
     try {
-      measurement.getEvents().forEach(e -> {
-        loggerActor.tell(e, ActorRef.noSender());
-        metricCollector.tell(e, ActorRef.noSender());
+      measurement.getEvents().forEach(event -> {
+        loggerActor.tell(event, ActorRef.noSender());
+        metricCollector.tell(event, ActorRef.noSender());
 
         if (simulationMetadata.isEnableInflux()) {
-          influxActor.tell(e, ActorRef.noSender());
+          influxActor.tell(event, ActorRef.noSender());
         }
       });
     } finally {

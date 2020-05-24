@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.function.Predicate;
 
@@ -74,4 +75,6 @@ public interface DslBuilder extends SessionDsl, IterableDsl, AssertionDsl, Mappa
    * @return {@link DslBuilderImpl} instance.
    */
   DslBuilder filter(Predicate<UserSession> predicate);
+
+  public <T> DslBuilder verify(VerifiableDslItem dslItem, VerificationInfo<T> verificationInfo);
 }

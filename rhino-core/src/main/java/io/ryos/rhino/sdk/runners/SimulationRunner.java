@@ -16,33 +16,37 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import io.ryos.rhino.sdk.SimulationMetadata;
-
 /**
- * Simulation runner. The implementations of this type run the simulation instances.
- * <p>
+ * Simulation controller to start and stop simulations. Simulations will be run depending on the
+ * method being called as load, performance or verification tests.
  *
  * @author Erhan Bagdemir
- * @version 1.0.0
- * @see SimulationMetadata
  */
 public interface SimulationRunner {
 
   /**
-   * Starts the simulation instance.
-   * <p>
+   * Starts a simulation instance for load testing. The test will be run till the time is over, that
+   * is defined in the {@link io.ryos.rhino.sdk.annotations.Simulation} annotation, or {@link
+   * io.ryos.rhino.sdk.dsl.EnsureDsl} DSL item fails.
    */
   void start();
 
   /**
-   * Starts the simulation instance.
-   * <p>
+   * Starts a simulation instance for verification testing in which the test will be run once and
+   * depending on {@link io.ryos.rhino.sdk.dsl.VerifiableDslItem} DSL, the test will fail or pass.
    */
   void verify();
 
   /**
-   * Stop the simulation instance, by shutting down all components.
-   * <p>
+   * Starts a simulation instance for the number of times given as numberOfRepeats parameter. This
+   * method is handy if you run performance tests and take samples for fix sized executions.
+   *
+   * @param numberOfRepeats Number of cycles the simulation needs to run.
+   */
+  void times(int numberOfRepeats);
+
+  /**
+   * Stop the simulation instance immediately by shutting down all components.
    */
   void stop();
 }

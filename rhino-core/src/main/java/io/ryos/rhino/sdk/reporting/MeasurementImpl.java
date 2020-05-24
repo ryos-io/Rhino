@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.reporting;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MeasurableDsl;
+import io.ryos.rhino.sdk.dsl.VerifiableDslItem;
 import io.ryos.rhino.sdk.reporting.UserEvent.EventType;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ public class MeasurementImpl implements Measurement {
   private String measurementPoint;
   private boolean cumulativeMeasurement;
 
+  private MeasurableDsl measurableDsl;
   private volatile boolean measurementEnabled;
   private volatile boolean measurementStarted;
   private long start = -1;
@@ -62,6 +64,7 @@ public class MeasurementImpl implements Measurement {
     this.cumulativeMeasurement = measureableDslItem.isCumulative();
     this.measurementEnabled = measureableDslItem.isMeasurementEnabled();
     this.dispatcher = EventDispatcher.getInstance();
+    this.measurableDsl = measureableDslItem;
   }
 
   public MeasurementImpl(final String parentName,
@@ -116,6 +119,7 @@ public class MeasurementImpl implements Measurement {
       throw new IllegalStateException("Measurement is not yet started.");
     }
 
+    var verifier = getVerifier();
     addEvent(new DslEvent(STR_BLANK,
         this.userId,
         this.parentName,
@@ -123,7 +127,8 @@ public class MeasurementImpl implements Measurement {
         this.start + this.elapsed,
         this.elapsed,
         status,
-        measurement));
+        measurement,
+        verifier));
 
     var userEventEnd = new UserEvent(STR_BLANK,
         this.userId,
@@ -133,7 +138,8 @@ public class MeasurementImpl implements Measurement {
         this.elapsed,
         EventType.END,
         STR_BLANK,
-        this.userId
+        this.userId,
+        verifier
     );
 
     record(userEventEnd);
@@ -141,6 +147,13 @@ public class MeasurementImpl implements Measurement {
     this.dispatcher.dispatchEvents(this);
     this.start = -1;
     this.elapsed = 0;
+  }
+
+  private VerificationInfo getVerifier() {
+    if (measurableDsl instanceof VerifiableDslItem) {
+      return ((VerifiableDslItem) measurableDsl).getVerifier();
+    }
+    return null;
   }
 
   private void registerStartUserEvent() {
@@ -153,7 +166,8 @@ public class MeasurementImpl implements Measurement {
         0L,
         EventType.START,
         STR_BLANK,
-        this.userId
+        this.userId,
+        getVerifier()
     );
 
     record(userEventStart);
@@ -181,7 +195,8 @@ public class MeasurementImpl implements Measurement {
         elapsed,
         EventType.END,
         STR_BLANK,
-        this.userId
+        this.userId,
+        getVerifier()
     );
 
     record(userEventEnd);
@@ -203,7 +218,8 @@ public class MeasurementImpl implements Measurement {
         end,
         this.elapsed,
         status,
-        measurement));
+        measurement,
+        getVerifier()));
 
     return this.elapsed;
   }
@@ -239,7 +255,8 @@ public class MeasurementImpl implements Measurement {
         0L,
         EventType.END,
         STR_BLANK,
-        this.userId
+        this.userId,
+        getVerifier()
     );
 
     record(userEventEnd);
@@ -277,5 +294,9 @@ public class MeasurementImpl implements Measurement {
 
   public boolean isMeasurementStarted() {
     return measurementStarted;
+  }
+
+  public MeasurableDsl getMeasurableDsl() {
+    return measurableDsl;
   }
 }

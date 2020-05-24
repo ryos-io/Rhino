@@ -54,7 +54,7 @@ public class ReactiveBasicHttpGetTest {
             .withStatus(200)));
 
     TestUtils.overridePorts(PORT);
-    Simulation.getInstance(PROPERTIES_FILE, ReactiveBasicHttpGetSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveBasicHttpGetSimulation.class).times(50);
     Thread.sleep(5000L);
   }
 }

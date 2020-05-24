@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
@@ -29,7 +28,6 @@ import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
-import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 

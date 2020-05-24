@@ -28,8 +28,9 @@ public class DslEvent extends LogEvent {
       final long end,
       final long elapsed,
       final String status,
-      final String measurement) {
-    super(username, userId, parentMeasurement, start, end, elapsed);
+      final String measurement,
+      final VerificationInfo verificationInfo) {
+    super(username, userId, parentMeasurement, start, end, elapsed, verificationInfo);
 
     this.status = status;
     this.measurementPoint = measurement;
