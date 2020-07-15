@@ -13,8 +13,8 @@ import io.ryos.rhino.sdk.io.InfluxDBWriter;
 import io.ryos.rhino.sdk.io.SimulationLogWriter;
 import io.ryos.rhino.sdk.reporting.GatlingSimulationLogFormatter;
 import io.ryos.rhino.sdk.reporting.Measurement;
-import io.ryos.rhino.sdk.reporting.StdoutReporter;
-import io.ryos.rhino.sdk.reporting.StdoutReporter.EndTestEvent;
+import io.ryos.rhino.sdk.reporting.MetricCollector;
+import io.ryos.rhino.sdk.reporting.MetricCollector.EndTestEvent;
 import java.time.Instant;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
@@ -35,17 +35,16 @@ public class EventDispatcher {
   private static final Logger LOG = LogManager.getLogger(EventDispatcher.class);
   private static final long TERMINATION_REQUEST_TIMEOUT = 5000L;
   private static final String ACTOR_SYS_NAME = "rhino-dispatcher";
-
   private static EventDispatcher INSTANCE;
 
   private EventDispatcher(final SimulationMetadata simulationMetadata) {
 
     this.simulationMetadata = Objects.requireNonNull(simulationMetadata);
-    this.stdOutReptorter = system
-        .actorOf(StdoutReporter.props(simulationMetadata.getNumberOfUsers(),
+    this.metricCollector = system
+        .actorOf(MetricCollector.props(simulationMetadata.getNumberOfUsers(),
             Instant.now(),
             simulationMetadata.getDuration()),
-            StdoutReporter.class.getName());
+            MetricCollector.class.getName());
     this.loggerActor = system
         .actorOf(SimulationLogWriter.props(simulationMetadata.getReportingURI(),
             simulationMetadata.getLogFormatter()),
@@ -90,7 +89,7 @@ public class EventDispatcher {
    * heartbeat about the running test.
    * <p>
    */
-  private ActorRef stdOutReptorter;
+  private ActorRef metricCollector;
 
   private ActorSystem system = ActorSystem.create(ACTOR_SYS_NAME);
 
@@ -102,14 +101,14 @@ public class EventDispatcher {
     return INSTANCE;
   }
 
-  public void dispatchEvents(Measurement measurement) {
+  public void dispatchEvents(final Measurement measurement) {
     try {
-      measurement.getEvents().forEach(e -> {
-        loggerActor.tell(e, ActorRef.noSender());
-        stdOutReptorter.tell(e, ActorRef.noSender());
+      measurement.getEvents().forEach(event -> {
+        loggerActor.tell(event, ActorRef.noSender());
+        metricCollector.tell(event, ActorRef.noSender());
 
         if (simulationMetadata.isEnableInflux()) {
-          influxActor.tell(e, ActorRef.noSender());
+          influxActor.tell(event, ActorRef.noSender());
         }
       });
     } finally {
@@ -134,7 +133,7 @@ public class EventDispatcher {
   }
 
   private void requestForTermination() {
-    var ask = Patterns.ask(stdOutReptorter, new EndTestEvent(Instant.now()),
+    var ask = Patterns.ask(metricCollector, new EndTestEvent(Instant.now()),
         TERMINATION_REQUEST_TIMEOUT);
     try {
       Await.result(ask, FiniteDuration.Inf());

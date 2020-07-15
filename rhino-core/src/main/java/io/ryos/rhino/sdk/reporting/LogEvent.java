@@ -26,13 +26,15 @@ public class LogEvent implements Serializable {
   private final long start;
   private final long end;
   private final long elapsed;
+  private final VerificationInfo verificationInfo;
 
-  public LogEvent(String username,
-      String userId,
-      String scenario,
-      long start,
-      long end,
-      long elapsed) {
+  public LogEvent(final String username,
+      final String userId,
+      final String scenario,
+      final long start,
+      final long end,
+      final long elapsed,
+      final VerificationInfo verificationInfo) {
 
     this.username = username;
     this.userId = userId;
@@ -40,6 +42,7 @@ public class LogEvent implements Serializable {
     this.start = start;
     this.end = end;
     this.elapsed = elapsed;
+    this.verificationInfo = verificationInfo;
   }
 
   public String getUsername() {
@@ -64,5 +67,9 @@ public class LogEvent implements Serializable {
 
   public long getElapsed() {
     return elapsed;
+  }
+
+  public VerificationInfo getVerificationInfo() {
+    return verificationInfo;
   }
 }

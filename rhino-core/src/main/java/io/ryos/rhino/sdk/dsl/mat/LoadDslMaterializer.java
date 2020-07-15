@@ -16,15 +16,15 @@
 package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
 import reactor.core.publisher.Mono;
 
 public class LoadDslMaterializer implements DslMaterializer {
 
-  private final LoadDsl dslItem;
+  private final DslBuilder dslItem;
 
-  public LoadDslMaterializer(LoadDsl dslItem) {
+  public LoadDslMaterializer(DslBuilder dslItem) {
     this.dslItem = dslItem;
   }
 

@@ -62,6 +62,7 @@ public class Simulation {
       Runtime.getRuntime().addShutdownHook(new Thread(Simulation.this::stop));
       Application.showBranding();
       initializeConfiguration(path);
+
       this.metadata = extractJobFromClass(simulationClass);
       this.simulationRunners = getSimulationRunners(Collections.singletonList(metadata));
     } catch (Exception pe) {
@@ -102,7 +103,6 @@ public class Simulation {
 
   private SimulationRunner getRunner(final Class<? extends SimulationRunner> runnerClass,
       final Context context) {
-
     try {
       var declaredConstructor = runnerClass.getDeclaredConstructor(Context.class);
       return declaredConstructor.newInstance(context);
@@ -135,16 +135,40 @@ public class Simulation {
     return context;
   }
 
+  public void verify() {
+    try {
+      verifyRunners();
+      simulationRunners.forEach(SimulationRunner::verify);
+    } catch (Exception t) {
+      LOG.error("Cannot start application", t);
+      System.exit(-1);
+    }
+  }
+
+  public void times(int numberOfRepeats) {
+    try {
+      verifyRunners();
+      simulationRunners.forEach(t -> t.times(numberOfRepeats));
+    } catch (Exception t) {
+      LOG.error("Cannot start application", t);
+      System.exit(-1);
+    }
+  }
+
   public void start() {
     try {
-      if (simulationRunners.isEmpty()) {
-        throw new SimulationNotFoundException(
-            "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
-      }
+      verifyRunners();
       simulationRunners.forEach(SimulationRunner::start);
     } catch (Exception t) {
       LOG.error("Cannot start application", t);
       System.exit(-1);
+    }
+  }
+
+  private void verifyRunners() {
+    if (simulationRunners.isEmpty()) {
+      throw new SimulationNotFoundException(
+          "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
     }
   }
 

@@ -16,16 +16,17 @@
 
 package io.ryos.rhino.sdk.dsl.data.builder;
 
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import java.util.Objects;
 import java.util.function.Function;
 import org.apache.commons.lang3.Validate;
 
 /**
  * Helper builder used with map() DSL. Use {@link MapperBuilder} instances to complete the
- * {@link io.ryos.rhino.sdk.dsl.LoadDsl#map(MapperBuilder)} DSL.
+ * {@link DslBuilder#map(MapperBuilder)} DSL.
  *
  * @author Erhan Bagdemir
- * @see io.ryos.rhino.sdk.dsl.LoadDsl#map(MapperBuilder)
+ * @see DslBuilder#map(MapperBuilder)
  */
 public class MapperBuilder<R, T> {
 

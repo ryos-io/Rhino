@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
-import java.util.function.Predicate;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 
-public interface AssertionDsl extends DslItem {
+public interface VerifiableDslItem extends MaterializableDslItem {
 
-  /**
-   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
-   *
-   * @return {@link DslBuilderImpl} instance.
-   */
-  DslBuilder ensure(Predicate<UserSession> predicate);
+  VerificationInfo getVerifier();
 
-  /**
-   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
-   *
-   * @return {@link DslBuilderImpl} instance.
-   */
-  DslBuilder ensure(Predicate<UserSession> predicate, String reason);
+  void setVerifier(VerificationInfo verificationInfo);
 }

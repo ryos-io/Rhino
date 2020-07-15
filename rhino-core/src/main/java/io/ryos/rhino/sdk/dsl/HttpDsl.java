@@ -21,9 +21,7 @@ import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.users.data.User;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -31,6 +29,7 @@ import java.util.function.Supplier;
 public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
     SessionDslItem,
     MeasurableDsl,
+    VerifiableDslItem,
     ResultingDsl<HttpResponse> {
 
   public enum Method {

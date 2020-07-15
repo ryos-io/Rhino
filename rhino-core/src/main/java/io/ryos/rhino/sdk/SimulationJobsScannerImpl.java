@@ -35,9 +35,9 @@ import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.dsl.DslMethod;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
-import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
@@ -88,7 +88,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .filter(this::hasDslAnnotation)
         .filter(this::isEnabled)
         .map(method -> new Pair<>(method.getDeclaredAnnotation(Dsl.class).name(),
-            ReflectionUtils.<LoadDsl>executeMethod(method, testInstance)))
+            ReflectionUtils.<DslBuilder>executeMethod(method, testInstance)))
         .map(this::getLoadDsl)
         .collect(toList());
 
@@ -105,8 +105,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz()
-            : ReactiveHttpSimulationRunner.class)
+        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())
@@ -131,14 +130,14 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
 
   private String getName(Method method) {
     var name = method.getDeclaredAnnotation(Dsl.class).name();
-    LoadDsl.dslMethodName.set(name);
+    DslBuilder.dslMethodName.set(name);
     return name;
   }
 
-  private LoadDsl getLoadDsl(Pair<String, LoadDsl> pair) {
+  private DslBuilder getLoadDsl(Pair<String, DslBuilder> pair) {
     var loadDsl = pair.getSecond();
-    if (loadDsl instanceof LoadDslImpl) {
-      return ((LoadDslImpl) loadDsl).withName(pair.getFirst());
+    if (loadDsl instanceof DslBuilderImpl) {
+      return ((DslBuilderImpl) loadDsl).withName(pair.getFirst());
     }
     return loadDsl;
   }
@@ -237,8 +236,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     throw new RepositoryNotFoundException();
   }
 
-  private UserRepository createWithDefaultConstructor(
-      Class<? extends UserRepositoryFactory> factory) {
+  private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {
     try {
       return factory.getDeclaredConstructor().newInstance().create();
     } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

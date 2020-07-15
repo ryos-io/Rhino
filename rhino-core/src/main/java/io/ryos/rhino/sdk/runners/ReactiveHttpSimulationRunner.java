@@ -72,13 +72,16 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     this.continueCondition = masterLock.newCondition();
   }
 
-  public void start() {
+  private void execute() {
+    execute(null);
+  }
 
+  private void execute(final Integer numberOfRepeats) {
     Hooks.onErrorDropped(t -> {
     });
     var simulationMetadata = getSimulationMetadata();
 
-    LOG.info("Starting load test for {} minutes ...", simulationMetadata.getDuration().toMinutes());
+    printStart(numberOfRepeats, simulationMetadata);
 
     if (simulationMetadata.getGrafanaInfo() != null) {
       setUpGrafanaDashboard();
@@ -97,7 +100,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     flux = appendRampUp(flux);
     flux = appendThrottling(flux);
-    flux = appendTake(flux);
+    flux = appendTake(flux, getRepeats(numberOfRepeats));
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> LOG.error("Something unexpected happened", t))
         .flatMap(tuple -> tuple.getT2().materializer().materialize(tuple.getT1()))
@@ -115,11 +118,49 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     shutdown();
   }
 
+  private void printStart(Integer numberOfRepeats, SimulationMetadata simulationMetadata) {
+    if (null != numberOfRepeats && numberOfRepeats == 1) {
+      LOG.info("Starting the verification tests.");
+    }
+    if (null == numberOfRepeats) {
+      LOG.info("Starting the load tests for {} minutes.",
+          simulationMetadata.getDuration().toMinutes());
+    }
+    if (null != numberOfRepeats && numberOfRepeats > 1) {
+      LOG.info("Starting the performance tests for {} cycles.", numberOfRepeats);
+    }
+  }
+
+  private int getRepeats(final Integer numberOfRepeats) {
+    int repeats = getStopAfterFromEnv();
+    if (numberOfRepeats != null && repeats < 0) {
+      repeats = numberOfRepeats;
+    }
+    return repeats;
+  }
+
+  @Override
+  public void start() {
+    execute();
+  }
+
+  @Override
+  public void verify() {
+    execute(1);
+  }
+
+  @Override
+  public void times(int numberOfRepeats) {
+    execute(numberOfRepeats);
+  }
+
   private void cleanup(List<UserSession> userList) {
     if (getSimulationMetadata().getCleanupMethod() != null) {
       LOG.info("Clean-up started.");
       executeAfter(userList);
       awaitIf(() -> !isCleanupCompleted);
+    } else {
+      isCleanupCompleted = true;
     }
   }
 
@@ -128,6 +169,8 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       LOG.info("Preparation started.");
       executeBefore(userList);
       awaitIf(() -> !isPrepareCompleted);
+    } else {
+      isPrepareCompleted = true;
     }
   }
 
@@ -147,7 +190,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   @Override
   public void stop() {
-    LOG.info("Someone pushed the stop() button on runner.");
+    LOG.info("Simulation completed.");
     shutdown();
   }
 
@@ -165,6 +208,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     LOG.info("Stopping the simulation...");
     subscribe.dispose();
     dslIterator.stop();
+    EventDispatcher.getInstance().stop();
 
     LOG.info("Shutting down completed ...");
     LOG.info("Bye!");

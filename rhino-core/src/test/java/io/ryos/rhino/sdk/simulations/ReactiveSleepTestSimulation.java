@@ -16,14 +16,14 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 
@@ -42,7 +42,7 @@ public class ReactiveSleepTestSimulation {
   private UUIDProvider provider;
 
   @Dsl(name = "Sleep Test")
-  public LoadDsl testSleep() {
+  public DslBuilder testSleep() {
     return dsl().run(some("Sleeping 1 sec.").exec(session -> {
       System.out.println(provider.take());
       return "OK";

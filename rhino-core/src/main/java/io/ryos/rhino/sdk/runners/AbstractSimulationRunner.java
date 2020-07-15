@@ -37,6 +37,7 @@ import reactor.core.publisher.Flux;
 public abstract class AbstractSimulationRunner implements SimulationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractSimulationRunner.class);
+  private static final String STOP_AFTER = "STOP_AFTER";
 
   private final SimulationMetadata simulationMetadata;
 
@@ -54,9 +55,9 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
                 .toArray(String[]::new));
   }
 
-  protected int getStopAfter() {
+  protected int getStopAfterFromEnv() {
     var envVars = System.getenv();
-    var numberOfTurns = envVars.get("STOP_AFTER");
+    var numberOfTurns = envVars.get(STOP_AFTER);
     int stopAfter = -1;
     if (numberOfTurns != null) {
       stopAfter = Integer.parseInt(numberOfTurns);
@@ -83,9 +84,7 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
     return flux;
   }
 
-  protected Flux<UserSession> appendTake(
-      Flux<UserSession> flux) {
-    int stopAfter = getStopAfter();
+  protected Flux<UserSession> appendTake(Flux<UserSession> flux, int stopAfter) {
     if (stopAfter > 0) {
       flux = flux.take(stopAfter);
     } else {

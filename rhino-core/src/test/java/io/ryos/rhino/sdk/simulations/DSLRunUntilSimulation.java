@@ -1,6 +1,6 @@
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.ifStatusCode;
@@ -11,7 +11,7 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public class DSLRunUntilSimulation {
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
-  public LoadDsl singleTestDsl() {
+  public DslBuilder singleTestDsl() {
     return dsl()
         .until(ifStatusCode(200), http("PUT Request")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))

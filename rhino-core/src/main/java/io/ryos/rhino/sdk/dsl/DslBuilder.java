@@ -17,23 +17,24 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.impl.LoadDslImpl;
+import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
+import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.function.Predicate;
 
 /**
- * DSL is a {@link LoadDsl} instance which is used to describe executable steps.
+ * DSL is a {@link DslBuilder} instance which is used to describe executable steps.
  * <p>
  *
  * @author Erhan Bagdemir
  */
-public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, MappableDsl,
+public interface DslBuilder extends SessionDsl, IterableDsl, AssertionDsl, MappableDsl,
     MaterializableDslItem, MeasureDsl {
 
   ThreadLocal<String> dslMethodName = new ThreadLocal<>();
 
-  public static LoadDsl dsl() {
-    return new LoadDslImpl("");
+  public static DslBuilder dsl() {
+    return new DslBuilderImpl("");
   }
 
   /**
@@ -41,37 +42,39 @@ public interface LoadDsl extends SessionDsl, IterableDsl, AssertionDsl, Mappable
    * <p>
    *
    * @param duration {@link Duration} to wait.
-   * @return {@link LoadDslImpl} instance.
+   * @return {@link DslBuilderImpl} instance.
    */
-  LoadDsl wait(Duration duration);
+  DslBuilder wait(Duration duration);
 
   /**
-   * Runner DSL is a {@link LoadDsl} instance to run the {@link MaterializableDslItem} passed as
+   * Runner DSL is a {@link DslBuilder} instance to run the {@link MaterializableDslItem} passed as
    * parameter.
    * <p>
    *
    * @param spec {@link MaterializableDslItem} to materialize and run.
-   * @return {@link LoadDslImpl} instance.
+   * @return {@link DslBuilderImpl} instance.
    */
-  LoadDsl run(MaterializableDslItem spec);
+  DslBuilder run(MaterializableDslItem spec);
 
   /**
-   * Conditional runnable DSL is a {@link LoadDsl} if {@link Predicate} returns {@code true}, then
+   * Conditional runnable DSL is a {@link DslBuilder} if {@link Predicate} returns {@code true}, then
    * the execution proceeds and it runs the {@link MaterializableDslItem} passed as parameter.
    * <p>
    *
    * @param spec      {@link MaterializableDslItem} to materialize and run.
    * @param predicate {@link Predicate} which is conditional for execution of {@link
    *                  MaterializableDslItem} provided.
-   * @return {@link LoadDslImpl} instance.
+   * @return {@link DslBuilderImpl} instance.
    */
-  LoadDsl runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
+  DslBuilder runIf(Predicate<UserSession> predicate, MaterializableDslItem spec);
 
   /**
    * Filter is used to filter according to the predicate.
    *
    * @param predicate Predicate instance applied in filter.
-   * @return {@link LoadDslImpl} instance.
+   * @return {@link DslBuilderImpl} instance.
    */
-  LoadDsl filter(Predicate<UserSession> predicate);
+  DslBuilder filter(Predicate<UserSession> predicate);
+
+  public <T> DslBuilder verify(VerifiableDslItem dslItem, VerificationInfo<T> verificationInfo);
 }

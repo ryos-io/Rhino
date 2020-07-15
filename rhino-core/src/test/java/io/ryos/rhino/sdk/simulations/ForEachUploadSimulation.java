@@ -16,7 +16,7 @@
 
 package io.ryos.rhino.sdk.simulations;
 
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.some;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
@@ -33,7 +33,7 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -54,7 +54,7 @@ public class ForEachUploadSimulation {
   }
 
   @Before
-  public LoadDsl setUp() {
+  public DslBuilder setUp() {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("iterate",
@@ -72,7 +72,7 @@ public class ForEachUploadSimulation {
   }
 
   @Dsl(name = "Get")
-  public LoadDsl loadTestPutAndGetFile() {
+  public DslBuilder loadTestPutAndGetFile() {
     return dsl()
         .forEach("get files",
             in(global("uploads")).exec(index -> runIf(s -> true,

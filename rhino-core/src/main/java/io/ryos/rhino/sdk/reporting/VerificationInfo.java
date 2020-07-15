@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
+package io.ryos.rhino.sdk.reporting;
 
-package io.ryos.rhino.sdk.dsl;
-
-import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import java.util.function.Predicate;
 
-public interface AssertionDsl extends DslItem {
+public class VerificationInfo<T> {
 
-  /**
-   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
-   *
-   * @return {@link DslBuilderImpl} instance.
-   */
-  DslBuilder ensure(Predicate<UserSession> predicate);
+  private final String description;
+  private final Predicate<T> predicate;
 
-  /**
-   * Ensure DSL is to assert the predicate passed holds true, otherwise it stops the pipeline.
-   *
-   * @return {@link DslBuilderImpl} instance.
-   */
-  DslBuilder ensure(Predicate<UserSession> predicate, String reason);
+  public VerificationInfo(final String description,
+      final Predicate<T> predicate) {
+    this.description = description;
+    this.predicate = predicate;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public Predicate<T> getPredicate() {
+    return predicate;
+  }
 }

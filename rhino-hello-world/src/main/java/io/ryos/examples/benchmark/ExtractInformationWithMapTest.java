@@ -20,7 +20,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.ryos.examples.simulations.ExtractInformationWithMapSimulation;
 import io.ryos.rhino.sdk.Simulation;
-import org.apache.commons.math3.stat.inference.TestUtils;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
