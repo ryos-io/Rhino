@@ -17,6 +17,7 @@ import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslMaterializer;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import io.ryos.rhino.sdk.users.data.User;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -224,10 +225,20 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public HttpConfigDsl upload(final Supplier<InputStream> inputStream) {
-    Validate.notNull(inputStream, "Input stream must not be null.");
-    this.toUpload = inputStream;
+  public HttpConfigDsl upload(final Supplier<InputStream> inputStreamSupplier) {
+    Validate.notNull(inputStreamSupplier, "Input stream must not be null.");
+    this.toUpload = inputStreamSupplier;
     return this;
+  }
+
+  @Override
+  public HttpConfigDsl payload(final Supplier<InputStream> inputStreamSupplier) {
+    return upload(inputStreamSupplier);
+  }
+
+  @Override
+  public HttpConfigDsl payload(final String stringPayload) {
+    return upload(() -> new ByteArrayInputStream(stringPayload.getBytes()));
   }
 
   @Override

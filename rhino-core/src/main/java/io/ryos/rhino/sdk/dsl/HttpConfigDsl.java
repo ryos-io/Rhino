@@ -81,6 +81,10 @@ public interface HttpConfigDsl extends HttpMethodDsl {
 
   HttpConfigDsl upload(final Supplier<InputStream> inputStream);
 
+  HttpConfigDsl payload(final Supplier<InputStream> inputStreamSupplier);
+
+  HttpConfigDsl payload(final String stringPayload);
+
   Function<UserSession, User> getUserAccessor();
 
   Supplier<User> getUserSupplier();

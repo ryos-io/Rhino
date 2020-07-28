@@ -21,6 +21,7 @@ import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
 import static org.asynchttpclient.Dsl.options;
+import static org.asynchttpclient.Dsl.post;
 import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.HttpClient;
@@ -130,7 +131,7 @@ public class HttpDslMaterializer implements DslMaterializer {
             .setBody(httpSpec.getUploadContent().get());
         break;
       case POST:
-        builder = put(endpoint)
+        builder = post(endpoint)
             .setBody(httpSpec.getUploadContent().get());
         break;
       // case X : rest of methods, we support...
