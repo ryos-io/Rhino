@@ -23,10 +23,11 @@ public class OAuth2RequestStrategy implements UserAuthRequestStrategy {
 
         if (USER.equals(SimulationConfig.getBearerType())) {
           builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + userToken);
-          builder = builder.addHeader(SimulationConfig.getHeaderName(), serviceAccessToken);
+          builder = builder.addHeader(SimulationConfig.getHeaderName(),
+              BEARER + serviceAccessToken);
         } else if (SERVICE.equals(SimulationConfig.getBearerType())) {
           builder = builder.addHeader(HEADER_AUTHORIZATION, BEARER + serviceAccessToken);
-          builder = builder.addHeader(SimulationConfig.getHeaderName(), userToken);
+          builder = builder.addHeader(SimulationConfig.getHeaderName(), BEARER + userToken);
         } else {
           throw new UnknownTokenTypeException(SimulationConfig.getBearerType());
         }
