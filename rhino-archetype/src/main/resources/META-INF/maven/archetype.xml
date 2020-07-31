@@ -3,7 +3,7 @@
     <id>benchmark</id>
     <sources>
         <source>src/main/java/benchmark/Rhino.java</source>
-        <source>src/main/java/benchmark/RhinoEntity.java</source>
+        <source>src/main/java/benchmark/ReactiveBasicHttpGetSimulation.java</source>
     </sources>
 
     <resources>

@@ -7,13 +7,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.ryos.examples.simulations.MultipleUserSimulation;
+import ${groupId}.benchmark.ReactiveBasicHttpGetSimulation;
 import io.ryos.rhino.sdk.Simulation;
 
 public class Rhino {
 
   private static final String PROPS = "classpath:///rhino.properties";
-  private static final String SIM_NAME = "Server-Status Simulation";
   private static final int PORT = 8089;
 
   public static void main(String... args) {
@@ -22,14 +21,14 @@ public class Rhino {
     wireMockServer.start();
 
     configureFor("localhost", 8089);
-    stubFor(WireMock.get(urlEqualTo("/api/status")).willReturn(aResponse()
+    stubFor(WireMock.get(urlEqualTo("/files")).willReturn(aResponse()
         .withStatus(200)));
     stubFor(WireMock.post(urlEqualTo("/token"))
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    Simulation.getInstance(PROPS, MultipleUserSimulation.class).start();
+    Simulation.getInstance(PROPS, ReactiveBasicHttpGetSimulation.class).start();
 
     wireMockServer.stop();
   }
