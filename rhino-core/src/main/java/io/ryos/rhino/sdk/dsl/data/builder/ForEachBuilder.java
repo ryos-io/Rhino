@@ -28,9 +28,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   ForEachBuilder<E, R> map(Function<E, Object> mapper);
 
-  ForEachBuilder<E, R> saveTo(String sessionKey);
+  ForEachBuilder<E, R> collect(String sessionKey);
 
-  ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope);
+  ForEachBuilder<E, R> collect(String sessionKey, Scope scope);
 
   Function<UserSession, R> getIterableSupplier();
 

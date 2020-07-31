@@ -68,7 +68,7 @@ public class ForEachUploadSimulation {
                 .auth()
                 .endpoint(session -> FILES_ENDPOINT + "/" + index)
                 .upload(() -> file("classpath:///test.txt"))
-                .get()).saveTo("uploads", Scope.SIMULATION));
+                    .get()).collect("uploads", Scope.SIMULATION));
   }
 
   @Dsl(name = "Get")
@@ -80,6 +80,6 @@ public class ForEachUploadSimulation {
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .get())).saveTo("uploads"));
+                    .get())).collect("uploads"));
   }
 }

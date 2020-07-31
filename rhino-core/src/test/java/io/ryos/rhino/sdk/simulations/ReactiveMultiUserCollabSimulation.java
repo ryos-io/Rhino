@@ -32,9 +32,9 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
-import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -63,7 +63,7 @@ public class ReactiveMultiUserCollabSimulation {
         .forEach("test for each",
             in(session("files"))
                 .exec(this::uploadFileForSecondUser)
-                .saveTo("uploads", Scope.SIMULATION));
+                .collect("uploads", Scope.SIMULATION));
   }
 
   private HttpRetriableDsl uploadFileForSecondUser(Object file) {

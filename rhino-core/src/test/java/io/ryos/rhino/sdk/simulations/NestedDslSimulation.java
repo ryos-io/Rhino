@@ -28,7 +28,7 @@ public class NestedDslSimulation {
   public DslBuilder setUp() {
     return dsl()
         .session("index", ImmutableList.of(1, 2, 3))
-        .forEach(in(session("index")).map(n -> (Integer) n * 2).saveTo("mapped", Scope.USER))
+        .forEach(in(session("index")).map(n -> (Integer) n * 2).collect("mapped", Scope.USER))
         .forEach(in(session("mapped")).exec(s ->
             some("test").exec(session -> {
               return "OK";

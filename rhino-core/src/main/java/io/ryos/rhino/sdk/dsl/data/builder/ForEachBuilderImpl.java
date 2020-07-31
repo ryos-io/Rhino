@@ -76,14 +76,14 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> saveTo(final String sessionKey) {
+  public ForEachBuilder<E, R> collect(final String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     this.sessionKey = sessionKey;
     return this;
   }
 
   @Override
-  public ForEachBuilder<E, R> saveTo(String sessionKey, Scope scope) {
+  public ForEachBuilder<E, R> collect(String sessionKey, Scope scope) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     Validate.notNull(scope, "Scope must not be null.");
     this.sessionKey = sessionKey;
