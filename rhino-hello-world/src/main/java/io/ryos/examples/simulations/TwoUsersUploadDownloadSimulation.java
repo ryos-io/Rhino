@@ -21,15 +21,16 @@ import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
 import static io.ryos.examples.benchmark.Constants.FILES_ENDPOINT;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.data.UploadStream.file;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.http;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
@@ -52,7 +53,7 @@ public class TwoUsersUploadDownloadSimulation {
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Upload File")
-  public LoadDsl simulateTwoUsersUploadDownload() {
+  public DslBuilder simulateTwoUsersUploadDownload() {
     return dsl()
         .run(putFile())
         .run(getFile());

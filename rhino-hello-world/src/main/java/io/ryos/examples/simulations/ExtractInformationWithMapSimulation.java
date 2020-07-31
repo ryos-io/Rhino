@@ -24,18 +24,18 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
+import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
-import io.ryos.rhino.sdk.dsl.LoadDsl;
+
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
-
 import static io.ryos.examples.benchmark.Constants.DISCOVERY_ENDPOINT;
 import static io.ryos.examples.benchmark.Constants.MAPPER;
 import static io.ryos.examples.benchmark.Constants.X_API_KEY;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
-import static io.ryos.rhino.sdk.dsl.LoadDsl.dsl;
+import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder.from;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
@@ -47,7 +47,7 @@ import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 public class ExtractInformationWithMapSimulation {
 
   @Dsl(name = "Load DSL Discovery and GET")
-  public LoadDsl simulateExtractInformationWithMap() {
+  public DslBuilder simulateExtractInformationWithMap() {
     return dsl().measure("measure 1",
         run(getDiscovery())
             .map(from("result")
