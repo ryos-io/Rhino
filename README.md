@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-2.0.0-72c247" />
+  <img src="https://img.shields.io/badge/rhino--core-2.0.1-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
@@ -52,7 +52,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
 </dependency>
 ```
 
