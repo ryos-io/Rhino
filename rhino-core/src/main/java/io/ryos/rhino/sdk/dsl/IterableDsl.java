@@ -17,7 +17,9 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -35,8 +37,21 @@ public interface IterableDsl extends DslItem {
    * @param forEachBuilder Iterable builder.
    * @return {@link DslBuilder} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> DslBuilder forEach(String name,
-      ForEachBuilder<E, R> forEachBuilder);
+  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(String name,
+      ForEachBuilder<E, R, T> forEachBuilder);
+
+  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      Function<UserSession, R> iterableExtractor,
+      Function<E, T> dslItemExtractor, String sessionKey, Scope scope);
+
+  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final Function<UserSession, R> iterableExtractor,
+      final Function<E, T> dslItemExtractor,
+      final String sessionKey);
+
+  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final Function<UserSession, R> iterableExtractor,
+      final Function<E, T> dslItemExtractor);
 
   /**
    * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
@@ -45,8 +60,8 @@ public interface IterableDsl extends DslItem {
    * @param forEachBuilder Iterable builder.
    * @return {@link DslBuilder} runnable DSL instance.
    */
-  <E, R extends Iterable<E>> DslBuilder forEach(
-      ForEachBuilder<E, R> forEachBuilder);
+  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      ForEachBuilder<E, R, T> forEachBuilder);
 
   /**
    * Runs the {@link MaterializableDslItem} till the {@link Predicate} holds.

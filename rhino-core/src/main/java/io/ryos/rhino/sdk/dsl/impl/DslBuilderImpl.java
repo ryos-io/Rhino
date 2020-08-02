@@ -1,8 +1,10 @@
 package io.ryos.rhino.sdk.dsl.impl;
 
+import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.dsl.VerifiableDslItem;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.Validate;
@@ -111,12 +114,13 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   }
 
   @Override
-  public <E, R extends Iterable<E>> DslBuilder forEach(String name,
-      ForEachBuilder<E, R> forEachBuilder) {
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final String name,
+      final ForEachBuilder<E, R, T> forEachBuilder) {
     Validate.notNull(forEachBuilder, "For each builder must not be null.");
     Validate.notEmpty(name, "Name must not be null.");
 
-    var forEachDsl = new ForEachDslImpl(name, Collections.emptyList(),
+    var forEachDsl = new ForEachDslImpl<E, R, T>(name, Collections.emptyList(),
         forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
         forEachBuilder.getSessionScope(),
         forEachBuilder.getIterableSupplier(),
@@ -129,7 +133,66 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   }
 
   @Override
-  public <E, R extends Iterable<E>> DslBuilder forEach(final ForEachBuilder<E, R> forEachBuilder) {
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final Function<UserSession, R> iterableExtractor,
+      final Function<E, T> dslItemExtractor,
+      final String sessionKey,
+      final Scope scope) {
+
+    var forEachDsl = new ForEachDslImpl<E, R, T>("forEach-" + UUID.randomUUID(),
+        Collections.emptyList(),
+        sessionKey,
+        scope,
+        iterableExtractor,
+        ImmutableList.of(dslItemExtractor),
+        null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final Function<UserSession, R> iterableExtractor,
+      final Function<E, T> dslItemExtractor,
+      final String sessionKey) {
+
+    var forEachDsl = new ForEachDslImpl<E, R, T>("forEach-" + UUID.randomUUID(),
+        Collections.emptyList(),
+        sessionKey,
+        Scope.USER,
+        iterableExtractor,
+        ImmutableList.of(dslItemExtractor),
+        null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final Function<UserSession, R> iterableExtractor,
+      final Function<E, T> dslItemExtractor) {
+
+    var name = "forEach-" + UUID.randomUUID();
+    var forEachDsl = new ForEachDslImpl<E, R, T>(name,
+        Collections.emptyList(),
+        name,
+        Scope.USER,
+        iterableExtractor,
+        ImmutableList.of(dslItemExtractor),
+        null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      final ForEachBuilder<E, R, T> forEachBuilder) {
     return forEach("forEach-" + UUID.randomUUID(), forEachBuilder);
   }
 

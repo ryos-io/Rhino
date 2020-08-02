@@ -93,8 +93,9 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).map(mapperBuilder);
   }
 
-  public static <E, R extends Iterable<E>> DslBuilder forEach(String name,
-      ForEachBuilder<E, R> forEachBuilder) {
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      String name,
+      ForEachBuilder<E, R, T> forEachBuilder) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).forEach(name, forEachBuilder);
   }
 

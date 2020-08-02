@@ -17,27 +17,27 @@
 package io.ryos.rhino.sdk.dsl.data.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.List;
 import java.util.function.Function;
 
-public interface ForEachBuilder<E, R extends Iterable<E>> {
+public interface ForEachBuilder<E, R extends Iterable<E>, T extends MaterializableDslItem> {
 
-  ForEachBuilder<E, R> exec(Function<E, DslItem> forEachFunction);
+  ForEachBuilder<E, R, T> exec(Function<E, T> forEachFunction);
 
-  ForEachBuilder<E, R> map(Function<E, Object> mapper);
+  ForEachBuilder<E, R, T> map(Function<E, Object> mapper);
 
-  ForEachBuilder<E, R> collect(String sessionKey);
+  ForEachBuilder<E, R, T> collect(String sessionKey);
 
-  ForEachBuilder<E, R> collect(String sessionKey, Scope scope);
+  ForEachBuilder<E, R, T> collect(String sessionKey, Scope scope);
 
   Function<UserSession, R> getIterableSupplier();
 
-  Function<E, ? extends DslItem> getForEachChildDslItemFunction();
+  Function<E, T> getForEachChildDslItemFunction();
 
-  List<Function<E, ? extends DslItem>> getForEachChildDslItemFunctions();
+  List<Function<E, T>> getForEachChildDslItemFunctions();
 
   Function<E, Object> getMapper();
 

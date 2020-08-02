@@ -17,8 +17,8 @@
 package io.ryos.rhino.sdk.dsl.data.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,11 +30,12 @@ import org.apache.commons.lang3.Validate;
  *
  * @author Erhan Bagdemir
  */
-public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuilder<E, R> {
+public class ForEachBuilderImpl<E, R extends Iterable<E>, T extends MaterializableDslItem> implements
+    ForEachBuilder<E, R, T> {
 
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
-  private List<Function<E, ? extends DslItem>> forEachChildDslItemFunctions =
+  private List<Function<E, T>> forEachChildDslItemFunctions =
       new LinkedList<>();
   private Function<UserSession, R> iterableSupplier;
   private ForEachDsl<E, R> forEachDsl;
@@ -48,45 +49,47 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
     this.iterableSupplier = iterableSupplier;
   }
 
-  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(final String sessionKey) {
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> ForEachBuilder<E, R,
+      T> in(final String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return new ForEachBuilderImpl<>(sessionKey);
   }
 
-  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> ForEachBuilder<E, R, T> in(
       Function<UserSession, R> iterableSupplier) {
     Validate.notNull(iterableSupplier, "Iterable supplier must not be null.");
     return new ForEachBuilderImpl<>(iterableSupplier);
   }
 
-  public static <E, R extends Iterable<E>> ForEachBuilder<E, R> in(R iterable) {
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> ForEachBuilder<E, R, T> in(
+      R iterable) {
     Validate.notNull(iterable, "Iterable must not be null.");
     return new ForEachBuilderImpl<>(session -> iterable);
   }
 
   @Override
-  public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachChildDslItemFunction) {
+  public ForEachBuilder<E, R, T> exec(final Function<E, T> forEachChildDslItemFunction) {
     Validate.notNull(forEachChildDslItemFunction, "forEachChildDslItemFunction must not be null.");
     forEachChildDslItemFunctions.add(forEachChildDslItemFunction);
     return this;
   }
 
   @Override
-  public ForEachBuilder<E, R> map(final Function<E, Object> mapper) {
+  public ForEachBuilder<E, R, T> map(final Function<E, Object> mapper) {
     Validate.notNull(mapper, "mapper must not be null.");
     this.mapper = mapper;
     return this;
   }
 
   @Override
-  public ForEachBuilder<E, R> collect(final String sessionKey) {
+  public ForEachBuilder<E, R, T> collect(final String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     this.sessionKey = sessionKey;
     return this;
   }
 
   @Override
-  public ForEachBuilder<E, R> collect(String sessionKey, Scope scope) {
+  public ForEachBuilder<E, R, T> collect(String sessionKey, Scope scope) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     Validate.notNull(scope, "Scope must not be null.");
     this.sessionKey = sessionKey;
@@ -114,12 +117,12 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, ? extends DslItem> getForEachChildDslItemFunction() {
+  public Function<E, T> getForEachChildDslItemFunction() {
     return forEachChildDslItemFunctions.get(0);
   }
 
   @Override
-  public List<Function<E, ? extends DslItem>> getForEachChildDslItemFunctions() {
+  public List<Function<E, T>> getForEachChildDslItemFunctions() {
     return forEachChildDslItemFunctions;
   }
 

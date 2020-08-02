@@ -36,7 +36,8 @@ import java.util.function.Function;
  *
  * @author Erhan Bagdemir
  */
-public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDslItem implements
+public class ForEachDslImpl<S, R extends Iterable<S>, T extends MaterializableDslItem> extends
+    AbstractSessionDslItem implements
     ForEachDsl {
 
   /**
@@ -52,7 +53,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   /**
    * For each function.
    */
-  private List<Function<S, ? extends MaterializableDslItem>> forEachFunctions;
+  private List<Function<S, T>> forEachFunctions;
 
   private Function<S, Object> mapper;
 
@@ -70,7 +71,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
       final String sessionKey,
       final Scope scope,
       final Function<UserSession, R> iterableSupplier,
-      final List<Function<S, ? extends MaterializableDslItem>> forEachFunctions,
+      final List<Function<S, T>> forEachFunctions,
       final Function<S, Object> mapper) {
 
     super(name, sessionKey, scope);
@@ -97,7 +98,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   }
 
   @Override
-  public List<Function<S, ? extends MaterializableDslItem>> getForEachFunctions() {
+  public List<Function<S, T>> getForEachFunctions() {
     return forEachFunctions;
   }
 
