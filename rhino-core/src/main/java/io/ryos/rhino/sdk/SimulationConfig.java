@@ -294,6 +294,10 @@ public class SimulationConfig {
     return properties.getProperty("db.influx.policy");
   }
 
+  public static String getSimulationOutputStyle() {
+    return instance.getSimOutputStyle();
+  }
+
   private String getSimId() {
     return simulationId;
   }
@@ -459,5 +463,9 @@ public class SimulationConfig {
 
   public static String getHeaderName() {
     return instance.getAuthHeaderName();
+  }
+
+  private String getSimOutputStyle() {
+    return properties.getProperty("simulation.output.style");
   }
 }

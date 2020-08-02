@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.reporting;
 
+import io.ryos.rhino.sdk.SimulationConfig;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -145,12 +146,19 @@ public class PerformanceConsoleOutputView {
     output.append(String.join("\n", countMetrics)).append(LB);
     output.append(createHeader("Response Time (overall avg)")).append(LB);
     output.append(String.join("\n", responseTimeStats)).append(LB);
-    output.append(createHeader("Verification")).append(LB);
-    output.append(String.join("\n", verificationResults)).append(LB).append(LB);
-    output.append(createHeader("Rolling Stats (100 sample-window)")).append(LB);
-    output.append(String.format("%90s %5s %8s %8s %8s", "status", "mean", "median", "p96", "p99")).append(LB);
-    output.append(HEADER_LINE_STYLE.repeat(containerWidth)).append(LB);
-    output.append(String.join("\n", responseTimeRollingStats)).append(LB).append(LB);
+
+    if (!verificationResults.isEmpty()) {
+      output.append(createHeader("Verification")).append(LB);
+      output.append(String.join("\n", verificationResults)).append(LB).append(LB);
+    }
+
+    if ("full".equalsIgnoreCase(SimulationConfig.getSimulationOutputStyle())) {
+      output.append(createHeader("Rolling Stats (100 sample-window)")).append(LB);
+      output.append(String.format("%90s %5s %8s %8s %8s", "status", "mean", "median", "p96", "p99"))
+          .append(LB);
+      output.append(HEADER_LINE_STYLE.repeat(containerWidth)).append(LB);
+      output.append(String.join("\n", responseTimeRollingStats)).append(LB).append(LB);
+    }
     output.append(BORDER_LINE_STYLE.repeat(containerWidth)).append(LB);
     output.append(String.format("%70s %25.9s ms", "Average Response Time", avgRT)).append(LB);
     output.append(String.format("%70s %19.9s ", "Total Request", totalNumberOfRequests)).append(LB);
