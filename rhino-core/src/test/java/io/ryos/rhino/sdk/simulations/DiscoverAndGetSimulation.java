@@ -36,7 +36,8 @@ public class DiscoverAndGetSimulation {
   public DslBuilder loadTestDiscoverAndGet() {
     return dsl().measure("measure 1",
         run(getDiscovery())
-          .map(MapperBuilder.from("result").doMap(r -> extractEndpoint((HttpDslData) r)).saveTo("endpoint"))
+            .map(MapperBuilder.in("result").doMap(r -> extractEndpoint((HttpDslData) r))
+                .collect("endpoint"))
           .run(getRequest()));
   }
 

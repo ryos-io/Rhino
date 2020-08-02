@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Constants {
 
   public static final String FILES_ENDPOINT = "http://localhost:8089/api/files";
+  public static final String IDS_ENDPOINT = "http://localhost:8089/api/id";
   public static final String X_REQUEST_ID = "X-Request-Id";
   public static final String X_API_KEY = "X-Api-Key";
 

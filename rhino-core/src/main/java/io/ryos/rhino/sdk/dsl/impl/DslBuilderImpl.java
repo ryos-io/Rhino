@@ -120,7 +120,7 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
         forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
         forEachBuilder.getSessionScope(),
         forEachBuilder.getIterableSupplier(),
-        forEachBuilder.getForEachFunction(),
+        forEachBuilder.getForEachChildDslItemFunctions(),
         forEachBuilder.getMapper());
 
     forEachDsl.setParent(this);

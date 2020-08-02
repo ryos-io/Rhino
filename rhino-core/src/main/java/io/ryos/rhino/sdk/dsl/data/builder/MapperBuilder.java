@@ -16,7 +16,9 @@
 
 package io.ryos.rhino.sdk.dsl.data.builder;
 
+import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.Objects;
 import java.util.function.Function;
 import org.apache.commons.lang3.Validate;
@@ -33,10 +35,16 @@ public class MapperBuilder<R, T> {
   private String key;
   private Function<R, T> mappingFunction;
   private String saveTo;
+  private Scope sessionScope = Scope.USER;
+  private Function<UserSession, T> sessionExtractor;
 
   private MapperBuilder(String key) {
     this.key = key;
     this.saveTo = key; // Default
+  }
+
+  private MapperBuilder(Function<UserSession, T> sessionExtractor) {
+    this.sessionExtractor = sessionExtractor;
   }
 
   /**
@@ -47,9 +55,13 @@ public class MapperBuilder<R, T> {
    * @param <T>        Target type to which the session object will be mapped.
    * @return {@link MapperBuilder} instance.
    */
-  public static <R, T> MapperBuilder<R, T> from(String sessionKey) {
+  public static <R, T> MapperBuilder<R, T> in(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     return new MapperBuilder<>(Objects.requireNonNull(sessionKey));
+  }
+
+  public static <R, T> MapperBuilder<R, T> in(Function<UserSession, T> sessionExtractor) {
+    return new MapperBuilder<>(Objects.requireNonNull(sessionExtractor));
   }
 
   /**
@@ -71,9 +83,23 @@ public class MapperBuilder<R, T> {
    * @param sessionKey Session key for the output instance.
    * @return {@link MapperBuilder} instance.
    */
-  public MapperBuilder<R, T> saveTo(String sessionKey) {
+  public MapperBuilder<R, T> collect(String sessionKey) {
     Validate.notEmpty(sessionKey, "Session key must not be empty.");
     this.saveTo = sessionKey;
+    return this;
+  }
+
+  /**
+   * After map function is applied, use this method to store the output object in the session.
+   *
+   * @param sessionKey   Session key for the output instance.
+   * @param sessionScope Session scope.
+   * @return {@link MapperBuilder} instance.
+   */
+  public MapperBuilder<R, T> collect(String sessionKey, Scope sessionScope) {
+    Validate.notEmpty(sessionKey, "Session key must not be empty.");
+    this.saveTo = sessionKey;
+    this.sessionScope = sessionScope;
     return this;
   }
 
@@ -87,5 +113,13 @@ public class MapperBuilder<R, T> {
 
   public String getSaveTo() {
     return saveTo;
+  }
+
+  public Scope getSessionScope() {
+    return sessionScope;
+  }
+
+  public Function<UserSession, T> getSessionExtractor() {
+    return sessionExtractor;
   }
 }

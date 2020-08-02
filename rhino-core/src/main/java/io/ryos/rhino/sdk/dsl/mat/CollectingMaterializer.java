@@ -20,8 +20,8 @@ public class CollectingMaterializer<S, R extends Iterable<S>> implements
   }
 
   @Override
-  public Mono<UserSession> materialize(
-      final UserSession session) {
+  public Mono<UserSession> materialize(final UserSession session) {
+
     var iterable = Optional.ofNullable(dslItem.getIterableSupplier().apply(session))
         .orElseThrow(() -> new IllegalArgumentException("forEach() failed."));
 

@@ -27,9 +27,8 @@ import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import io.ryos.rhino.sdk.dsl.mat.CollectingMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.ForEachDslMaterializer;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 /**
@@ -53,7 +52,7 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   /**
    * For each function.
    */
-  private Function<S, ? extends MaterializableDslItem> forEachFunction;
+  private List<Function<S, ? extends MaterializableDslItem>> forEachFunctions;
 
   private Function<S, Object> mapper;
 
@@ -71,14 +70,14 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
       final String sessionKey,
       final Scope scope,
       final Function<UserSession, R> iterableSupplier,
-      final Function<S, ? extends MaterializableDslItem> forEachFunction,
+      final List<Function<S, ? extends MaterializableDslItem>> forEachFunctions,
       final Function<S, Object> mapper) {
 
     super(name, sessionKey, scope);
 
     this.children = children;
     this.iterableSupplier = iterableSupplier;
-    this.forEachFunction = forEachFunction;
+    this.forEachFunctions = forEachFunctions;
     this.mapper = mapper;
   }
 
@@ -98,8 +97,8 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   }
 
   @Override
-  public Function<S, ? extends MaterializableDslItem> getForEachFunction() {
-    return forEachFunction;
+  public List<Function<S, ? extends MaterializableDslItem>> getForEachFunctions() {
+    return forEachFunctions;
   }
 
   @Override
@@ -110,20 +109,20 @@ public class ForEachDslImpl<S, R extends Iterable<S>> extends AbstractSessionDsl
   @Override
   public UserSession handleResult(final UserSession userSession, final Object response) {
     final SessionDslItem sessionDslItem = this;
-    List<Object> listOfObjects = Collections.emptyList();
 
+    List<Object> listOfObjects = new CopyOnWriteArrayList<>();
     final ResultingDsl resultingDsl = resolveSessionParent();
     if (!hasParent() || resultingDsl == null) {
       if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
         listOfObjects = userSession.<List<Object>>get(sessionDslItem.getSessionKey())
-            .orElse(new ArrayList<>());
+            .orElse(new CopyOnWriteArrayList<>());
         listOfObjects.add(response);
         userSession.add(sessionDslItem.getSessionKey(), listOfObjects);
       } else {
         var activatedUser = getActiveUser(userSession);
         var globalSession = userSession.getSimulationSessionFor(activatedUser);
         listOfObjects = globalSession.<List<Object>>get(sessionDslItem.getSessionKey())
-            .orElse(new ArrayList<>());
+            .orElse(new CopyOnWriteArrayList<>());
         listOfObjects.add(response);
         globalSession.add(sessionDslItem.getSessionKey(), listOfObjects);
       }

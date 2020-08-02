@@ -52,7 +52,7 @@ public class ExtractInformationWithMapSimulation {
         run(getDiscovery())
             .map(from("result")
                 .doMap(result -> extractEndpoint((HttpDslData) result))
-                .saveTo("endpoint"))
+                .collect("endpoint"))
             .run(get()));
   }
 

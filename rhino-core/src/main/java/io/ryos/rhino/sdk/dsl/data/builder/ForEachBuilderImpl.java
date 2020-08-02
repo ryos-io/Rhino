@@ -20,6 +20,8 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 import org.apache.commons.lang3.Validate;
 
@@ -32,7 +34,8 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
 
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
-  private Function<E, ? extends DslItem> forEachFunction;
+  private List<Function<E, ? extends DslItem>> forEachChildDslItemFunctions =
+      new LinkedList<>();
   private Function<UserSession, R> iterableSupplier;
   private ForEachDsl<E, R> forEachDsl;
   private Function<E, Object> mapper;
@@ -62,9 +65,9 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachFunction) {
-    Validate.notNull(forEachFunction, "forEachFunction must not be null.");
-    this.forEachFunction = forEachFunction;
+  public ForEachBuilder<E, R> exec(final Function<E, DslItem> forEachChildDslItemFunction) {
+    Validate.notNull(forEachChildDslItemFunction, "forEachChildDslItemFunction must not be null.");
+    forEachChildDslItemFunctions.add(forEachChildDslItemFunction);
     return this;
   }
 
@@ -111,9 +114,15 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>> implements ForEachBuil
   }
 
   @Override
-  public Function<E, ? extends DslItem> getForEachFunction() {
-    return forEachFunction;
+  public Function<E, ? extends DslItem> getForEachChildDslItemFunction() {
+    return forEachChildDslItemFunctions.get(0);
   }
+
+  @Override
+  public List<Function<E, ? extends DslItem>> getForEachChildDslItemFunctions() {
+    return forEachChildDslItemFunctions;
+  }
+
 
   public Function<E, Object> getMapper() {
     return mapper;

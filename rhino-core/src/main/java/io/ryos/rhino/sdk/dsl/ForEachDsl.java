@@ -1,6 +1,7 @@
 package io.ryos.rhino.sdk.dsl;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -11,7 +12,7 @@ public interface ForEachDsl<E, R extends Iterable<E>> extends MaterializableDslI
 
   Function<UserSession, R> getIterableSupplier();
 
-  Function<E, MaterializableDslItem> getForEachFunction();
+  List<Function<E, ? extends MaterializableDslItem>> getForEachFunctions();
 
   Function<E, Object> getMapper();
 }

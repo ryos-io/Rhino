@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+import java.util.List;
 import java.util.function.Function;
 
 public interface ForEachBuilder<E, R extends Iterable<E>> {
@@ -34,7 +35,9 @@ public interface ForEachBuilder<E, R extends Iterable<E>> {
 
   Function<UserSession, R> getIterableSupplier();
 
-  Function<E, ? extends DslItem> getForEachFunction();
+  Function<E, ? extends DslItem> getForEachChildDslItemFunction();
+
+  List<Function<E, ? extends DslItem>> getForEachChildDslItemFunctions();
 
   Function<E, Object> getMapper();
 

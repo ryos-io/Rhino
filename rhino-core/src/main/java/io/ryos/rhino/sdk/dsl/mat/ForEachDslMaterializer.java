@@ -36,7 +36,6 @@ public class ForEachDslMaterializer<S, R extends Iterable<S>> implements DslMate
     this.dslItem = dslItem;
   }
 
-
   @Override
   public Mono<UserSession> materialize(final UserSession session) {
     final R iterable;
@@ -50,7 +49,7 @@ public class ForEachDslMaterializer<S, R extends Iterable<S>> implements DslMate
     }
 
     return Flux.fromIterable(iterable)
-        .map(dslItem.getForEachFunction())
+        .flatMap(s -> Flux.fromIterable(dslItem.getForEachFunctions()).map(a -> a.apply(s)))
         .map(childDsl -> populateToChildren(dslItem, childDsl))
         .flatMap(childDsl -> childDsl.materializer().materialize(session))
         .reduce((s1, s2) -> s1)
