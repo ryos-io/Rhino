@@ -37,7 +37,7 @@ import static io.ryos.examples.benchmark.Constants.X_API_KEY;
 import static io.ryos.examples.benchmark.Constants.X_REQUEST_ID;
 import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
-import static io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder.from;
+import static io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder.in;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
@@ -50,7 +50,7 @@ public class ExtractInformationWithMapSimulation {
   public DslBuilder simulateExtractInformationWithMap() {
     return dsl().measure("measure 1",
         run(getDiscovery())
-            .map(from("result")
+            .map(in("result")
                 .doMap(result -> extractEndpoint((HttpDslData) result))
                 .collect("endpoint"))
             .run(get()));
