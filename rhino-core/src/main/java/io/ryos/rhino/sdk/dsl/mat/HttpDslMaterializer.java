@@ -36,8 +36,10 @@ import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUserImpl;
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,11 +130,13 @@ public class HttpDslMaterializer implements DslMaterializer {
         break;
       case PUT:
         builder = put(endpoint)
-            .setBody(httpSpec.getUploadContent().get());
+            .setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
+                .orElseGet(() -> new ByteArrayInputStream(httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
         break;
       case POST:
         builder = post(endpoint)
-            .setBody(httpSpec.getUploadContent().get());
+            .setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
+                .orElseGet(() -> new ByteArrayInputStream(httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
         break;
       // case X : rest of methods, we support...
       default:

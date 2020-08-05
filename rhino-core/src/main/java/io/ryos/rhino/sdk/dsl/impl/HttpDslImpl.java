@@ -41,6 +41,7 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     HttpRetriableDsl {
 
   private Supplier<InputStream> toUpload;
+  private Function<UserSession, String> toLazyUpload;
 
   private List<Function<UserSession, Entry<String, List<String>>>> headers = new ArrayList<>();
   private List<Function<UserSession, Entry<String, List<String>>>> queryParams = new ArrayList<>();
@@ -237,6 +238,13 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
+  public HttpConfigDsl payload(final Function<UserSession, String> payloadFunction) {
+    Validate.notNull(payloadFunction, "Payload function must not be null.");
+    this.toLazyUpload = payloadFunction;
+    return this;
+  }
+
+  @Override
   public HttpConfigDsl payload(final String stringPayload) {
     return upload(() -> new ByteArrayInputStream(stringPayload.getBytes()));
   }
@@ -270,6 +278,12 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   public Supplier<InputStream> getUploadContent() {
     return toUpload;
   }
+
+  @Override
+  public Function<UserSession, String> getLazyStringPayload() {
+    return toLazyUpload;
+  }
+
 
   @Override
   public Method getMethod() {
