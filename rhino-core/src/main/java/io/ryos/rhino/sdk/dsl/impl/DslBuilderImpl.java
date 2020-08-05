@@ -154,6 +154,23 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
 
   @Override
   public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      R iterable, Function<E, T> dslItemExtractor, String sessionKey, Scope scope) {
+
+    var forEachDsl = new ForEachDslImpl<E, R, T>("forEach-" + UUID.randomUUID(),
+        Collections.emptyList(),
+        sessionKey,
+        scope,
+        s -> iterable,
+        ImmutableList.of(dslItemExtractor),
+        null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
       final Function<UserSession, R> iterableExtractor,
       final Function<E, T> dslItemExtractor,
       final String sessionKey) {
@@ -173,17 +190,42 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
 
   @Override
   public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      R iterable, Function<E, T> dslItemExtractor, String sessionKey) {
+
+    var forEachDsl = new ForEachDslImpl<E, R, T>("forEach-" + UUID.randomUUID(),
+        Collections.emptyList(),
+        sessionKey,
+        Scope.USER,
+        s -> iterable,
+        ImmutableList.of(dslItemExtractor),
+        null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
       final Function<UserSession, R> iterableExtractor,
       final Function<E, T> dslItemExtractor) {
 
     var name = "forEach-" + UUID.randomUUID();
-    var forEachDsl = new ForEachDslImpl<E, R, T>(name,
-        Collections.emptyList(),
-        name,
-        Scope.USER,
-        iterableExtractor,
-        ImmutableList.of(dslItemExtractor),
-        null);
+    var forEachDsl = new ForEachDslImpl<E, R, T>(name, Collections.emptyList(), name, Scope.USER,
+        iterableExtractor, ImmutableList.of(dslItemExtractor), null);
+
+    forEachDsl.setParent(this);
+    children.add(forEachDsl);
+    return this;
+  }
+
+  @Override
+  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      R iterable, Function<E, T> dslItemExtractor) {
+
+    var name = "forEach-" + UUID.randomUUID();
+    var forEachDsl = new ForEachDslImpl<E, R, T>(name, Collections.emptyList(), name, Scope.USER,
+        s -> iterable, ImmutableList.of(dslItemExtractor), null);
 
     forEachDsl.setParent(this);
     children.add(forEachDsl);

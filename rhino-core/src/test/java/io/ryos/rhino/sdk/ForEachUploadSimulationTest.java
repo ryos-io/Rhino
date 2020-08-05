@@ -23,6 +23,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import io.ryos.rhino.sdk.simulations.ForEachTestSimulation;
 import io.ryos.rhino.sdk.simulations.ForEachUploadSimulation;
 import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
@@ -67,7 +68,7 @@ public class ForEachUploadSimulationTest {
 
     TestUtils.overridePorts(PORT);
 
-    Simulation.getInstance(PROPERTIES_FILE, ForEachUploadSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, ForEachTestSimulation.class).start();
     Thread.sleep(10000L);
   }
 }

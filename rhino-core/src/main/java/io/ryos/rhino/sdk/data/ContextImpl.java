@@ -37,7 +37,7 @@ public class ContextImpl implements Context {
   }
 
   public <T> Optional<T> get(String key) {
-    if (storage.containsKey(Objects.requireNonNull(key, "session key may not be null."))) {
+    if (storage.containsKey(Objects.requireNonNull(key, "define key may not be null."))) {
       return Optional.<T>of((T) storage.<T>get(key));
     }
     return Optional.empty();

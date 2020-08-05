@@ -20,6 +20,8 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MapperDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Mono;
@@ -49,10 +51,18 @@ public class MapperDslMaterializer implements DslMaterializer {
         var sessionExtractor = mapperBuilder.getSessionExtractor();
         var sessionValue = Optional.ofNullable(sessionExtractor)
             .map(f -> f.apply(session))
-            .orElse(userSession.get(mapperBuilder.getKey()).orElseThrow(
-                () -> new IllegalArgumentException(
-                    "No session object found with the key: " + mapperBuilder.getKey())));
-        var mappedValue = mapperBuilder.getMappingFunction().apply(sessionValue);
+            .orElseGet(() ->
+                userSession.get(mapperBuilder.getKey()).orElseThrow(() -> new IllegalArgumentException(
+                    "No define object found with the key: " + mapperBuilder.getKey())));
+
+        Object mappedValue;
+        if (sessionValue instanceof Iterable) {
+          mappedValue = StreamSupport.stream(((Iterable) sessionValue).spliterator(), false)
+              .map(o -> mapperBuilder.getMappingFunction().apply(o))
+              .collect(Collectors.toList());
+        } else {
+          mappedValue = mapperBuilder.getMappingFunction().apply(sessionValue);
+        }
 
         if (sessionScope.equals(Scope.SIMULATION)) {
           userSession.getSimulationSession().add(mapperBuilder.getSaveTo(), mappedValue);

@@ -30,6 +30,7 @@ import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -52,7 +53,7 @@ public class DslUtils {
    *   until(ifStatusCode(200), http("Request"));
    * </pre>
    * <p>
-   * Default session key for expected Http response is "result".
+   * Default define key for expected Http response is "result".
    *
    * @param statusCode Status code of the Http Response.
    * @return Predicate instance.
@@ -85,8 +86,12 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).ensure(predicate, reason);
   }
 
-  public static DslBuilder session(String sessionKey, Supplier<Object> objectSupplier) {
-    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, objectSupplier);
+  public static DslBuilder define(String sessionKey, Supplier<Object> valueSupplier) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, valueSupplier);
+  }
+
+  public static DslBuilder collect(String sessionKey, Supplier<Object> valueSupplier) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, valueSupplier);
   }
 
   public static <R, T> DslBuilder map(MapperBuilder<R, T> mapperBuilder) {
@@ -97,6 +102,11 @@ public class DslUtils {
       String name,
       ForEachBuilder<E, R, T> forEachBuilder) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).forEach(name, forEachBuilder);
+  }
+
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
+      R iterable, Function<E, T> dslItemExtractor) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).forEach(iterable, dslItemExtractor);
   }
 
   public static DslBuilder repeat(MaterializableDslItem spec) {

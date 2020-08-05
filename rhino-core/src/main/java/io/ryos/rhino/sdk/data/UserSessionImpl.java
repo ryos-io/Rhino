@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * User session is a stash to store objects and share them among scenarios or DSLs in every load
+ * User define is a stash to store objects and share them among scenarios or DSLs in every load
  * generation cycle. Once load generation cycle completes,
  * will be created before the simulation starts, and it will existing during the simulation
  * execution.

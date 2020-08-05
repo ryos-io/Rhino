@@ -127,7 +127,7 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return ((AbstractMeasurableDsl) dslItem).getMeasurementPoint();
     }
 
-    throw new RuntimeException("Cannot determine session key.");
+    throw new RuntimeException("Cannot determine define key.");
   }
 
   private Map<String, List<Object>> getMapSupplier(DslItem spec) {
@@ -146,6 +146,6 @@ public class CollectingHttpResultHandler implements ResultHandler<HttpResponse> 
       return ((SessionDslItem) currentSpec).getSessionScope().equals(USER);
     }
 
-    throw new RuntimeException("Cannot determine session scope.");
+    throw new RuntimeException("Cannot determine define scope.");
   }
 }

@@ -112,7 +112,8 @@ public class ForEachDslImpl<S, R extends Iterable<S>, T extends MaterializableDs
     final SessionDslItem sessionDslItem = this;
 
     List<Object> listOfObjects = new CopyOnWriteArrayList<>();
-    final ResultingDsl resultingDsl = resolveSessionParent();
+    final ResultingDsl resultingDsl = resolveResultableParent();
+
     if (!hasParent() || resultingDsl == null) {
       if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
         listOfObjects = userSession.<List<Object>>get(sessionDslItem.getSessionKey())
@@ -129,10 +130,16 @@ public class ForEachDslImpl<S, R extends Iterable<S>, T extends MaterializableDs
       }
       return userSession;
     }
+
+    return delegateToParent(userSession, listOfObjects, resultingDsl);
+  }
+
+  private UserSession delegateToParent(UserSession userSession, List<Object> listOfObjects,
+      ResultingDsl resultingDsl) {
     return resultingDsl.handleResult(userSession, listOfObjects);
   }
 
-  private ResultingDsl resolveSessionParent() {
+  private ResultingDsl resolveResultableParent() {
     DslItem current = getParent();
     ResultingDsl resultingDsl = null;
     while (current != null) {

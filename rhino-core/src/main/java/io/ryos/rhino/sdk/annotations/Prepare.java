@@ -37,13 +37,13 @@ import java.lang.annotation.Target;
  *
  * <code>
  * @Prepare
- * public static void prepare(SimulationSession session) {
+ * public static void prepare(SimulationSession define) {
  * // your code here.
  * }
  * </code>
  *
  * Prepare method might take an argument which is {@link io.ryos.rhino.sdk.data.SimulationSession}
- * a global context, that might be accessed by scenarios. The simulation session will not be
+ * a global context, that might be accessed by scenarios. The simulation define will not be
  * cleaned up after every scenario execution, but in clean-up method after the simulation completes.
  * <p>
  *

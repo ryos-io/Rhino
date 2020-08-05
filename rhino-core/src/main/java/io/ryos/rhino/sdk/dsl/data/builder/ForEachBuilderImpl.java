@@ -17,9 +17,13 @@
 package io.ryos.rhino.sdk.dsl.data.builder;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.ExpressionDsl;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
+import io.ryos.rhino.sdk.dsl.MaterializableDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
+import io.ryos.rhino.sdk.dsl.impl.ExpressionDslImpl;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -67,10 +71,25 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>, T extends Materializab
     return new ForEachBuilderImpl<>(session -> iterable);
   }
 
+  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> ForEachBuilder<E, R, T> in(
+      E ... items) {
+    R iterable = (R) Arrays.<E>asList(items);
+    Validate.notNull(iterable, "Iterable must not be null.");
+    return new ForEachBuilderImpl<E, R, T>(session -> iterable);
+  }
+
   @Override
   public ForEachBuilder<E, R, T> exec(final Function<E, T> forEachChildDslItemFunction) {
     Validate.notNull(forEachChildDslItemFunction, "forEachChildDslItemFunction must not be null.");
     forEachChildDslItemFunctions.add(forEachChildDslItemFunction);
+    return this;
+  }
+
+  @Override
+  public ForEachBuilder<E, R, T> eval(final Function<E, Object> expression) {
+    Validate.notNull(expression, "forEachChildDslItemFunction must not be null.");
+    forEachChildDslItemFunctions.add(item -> (T) new ExpressionDslImpl<>("")
+        .exec(session -> expression.apply(item)));
     return this;
   }
 

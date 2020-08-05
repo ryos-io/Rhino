@@ -48,11 +48,11 @@ public class MapperBuilder<R, T> {
   }
 
   /**
-   * Use the method to access the session object with the key, sessionKey.
+   * Use the method to access the define object with the key, sessionKey.
    *
-   * @param sessionKey The session key of the object being accessed.
-   * @param <R>        The type of the session object.
-   * @param <T>        Target type to which the session object will be mapped.
+   * @param sessionKey The define key of the object being accessed.
+   * @param <R>        The type of the define object.
+   * @param <T>        Target type to which the define object will be mapped.
    * @return {@link MapperBuilder} instance.
    */
   public static <R, T> MapperBuilder<R, T> in(String sessionKey) {
@@ -78,7 +78,7 @@ public class MapperBuilder<R, T> {
   }
 
   /**
-   * After map function is applied, use this method to store the output object in the session.
+   * After map function is applied, use this method to store the output object in the define.
    *
    * @param sessionKey Session key for the output instance.
    * @return {@link MapperBuilder} instance.
@@ -90,7 +90,7 @@ public class MapperBuilder<R, T> {
   }
 
   /**
-   * After map function is applied, use this method to store the output object in the session.
+   * After map function is applied, use this method to store the output object in the define.
    *
    * @param sessionKey   Session key for the output instance.
    * @param sessionScope Session scope.

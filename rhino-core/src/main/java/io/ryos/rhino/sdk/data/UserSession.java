@@ -20,7 +20,7 @@ import io.ryos.rhino.sdk.users.data.User;
 import java.util.Optional;
 
 /**
- * User session is a stash to store objects and share them among scenarios per user session. A user
+ * User define is a stash to store objects and share them among scenarios per user define. A user
  * will be created before the simulation starts, and it will existing during the simulation
  * execution.
  * <p>
@@ -31,10 +31,10 @@ import java.util.Optional;
 public interface UserSession extends Context {
 
   /**
-   * Returns the user of the current session.
+   * Returns the user of the current define.
    * <p>
    *
-   * @return The user of the current session.
+   * @return The user of the current define.
    */
   User getUser();
 

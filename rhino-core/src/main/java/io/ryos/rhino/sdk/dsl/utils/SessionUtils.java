@@ -31,7 +31,7 @@ import ognl.OgnlException;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Provides accessor methods for session objects.
+ * Provides accessor methods for define objects.
  *
  * @author Erhan Bagdemir
  * @since 1.7.0
@@ -39,7 +39,7 @@ import org.apache.commons.lang3.Validate;
 public class SessionUtils {
 
   public static User getActiveUser(final UserSession userSession) {
-    Validate.notNull(userSession, "User session must not be null.");
+    Validate.notNull(userSession, "User define must not be null.");
     return userSession.getUser();
   }
 

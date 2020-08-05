@@ -58,17 +58,18 @@ public class ForEachUploadSimulation {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
         .forEach("iterate",
-            in(session("index")).exec(index -> some("count").exec(s -> {
+            in(ImmutableList.of(1, 2, 3)).exec(index ->
+                dsl().runIf(s -> (int) index % 2 == 0, some("count").exec(s -> {
               System.out.println(index);
               return "OK";
-            })))
+            }))))
         .forEach("upload loop",
             in(session("index"))
-                .exec(index -> http("Prepare by PUT text.txt")
+                .exec(index -> dsl().run(http("Prepare by PUT text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .upload(() -> file("classpath:///test.txt")).get())
+                    .upload(() -> file("classpath:///test.txt")).get()))
                 .collect("uploads", Scope.SIMULATION));
   }
 
