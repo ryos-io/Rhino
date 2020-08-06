@@ -40,7 +40,7 @@ public class ForEachTestSimulation {
   public DslBuilder setUp() {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
-        .forEach(in(session("index")).eval(i -> (int)i *2).collect("doubles"))
+        .forEach(in(session("index")).map(i -> (int)i *2).collect("doubles"))
         .forEach(ImmutableList.of(1, 2, 3), i1 ->
              forEach(ImmutableList.of(1, 2, 3), i2 ->
                  runIf(session -> i1 * i2 % 2 == 0, define("calc",() -> i1 * i2))))

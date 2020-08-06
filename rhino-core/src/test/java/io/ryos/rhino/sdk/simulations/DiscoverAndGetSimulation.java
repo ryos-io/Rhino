@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.eval;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
