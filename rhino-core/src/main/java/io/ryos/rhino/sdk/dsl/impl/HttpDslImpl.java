@@ -55,6 +55,7 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   private Supplier<User> userSupplier;
   private RetryInfo retryInfo;
   private HttpResponse response;
+  private boolean waitResult = false;
 
   /**
    * Creates a new {@link HttpDslImpl}.
@@ -291,6 +292,12 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
+  public HttpDsl waitResult() {
+    this.waitResult = true;
+    return this;
+  }
+
+  @Override
   public List<Function<UserSession, Entry<String, List<String>>>> getHeaders() {
     return headers;
   }
@@ -350,6 +357,10 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     return retryInfo;
   }
 
+  public boolean isWaitResult() {
+    return waitResult;
+  }
+
   @Override
   public DslMaterializer materializer() {
     return new HttpDslMaterializer(this);
@@ -363,21 +374,26 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
 
     final ResultingDsl parentResultingDsl = resolveSessionParent();
     if (!hasParent() || parentResultingDsl == null) {
-      final SessionDslItem sessionDslItem = this;
-      if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
-        userSession.add(sessionDslItem.getSessionKey(), httpResultData);
-      } else {
-        var activatedUser = getActiveUser(userSession);
-        var globalSession = userSession.getSimulationSessionFor(activatedUser);
-        var specData = globalSession.<HttpDslData>get(sessionDslItem.getSessionKey())
-            .orElse(httpResultData);
-        globalSession.add(sessionDslItem.getSessionKey(), specData);
-      }
-
+      handleLocalScope(userSession, httpResultData);
       return userSession;
     }
 
+    handleLocalScope(userSession, httpResultData);
+
     return parentResultingDsl.handleResult(userSession, response);
+  }
+
+  private void handleLocalScope(UserSession userSession, HttpDslData httpResultData) {
+    final SessionDslItem sessionDslItem = this;
+    if (sessionDslItem.getSessionScope().equals(Scope.USER)) {
+      userSession.add(sessionDslItem.getSessionKey(), httpResultData);
+    } else {
+      var activatedUser = getActiveUser(userSession);
+      var globalSession = userSession.getSimulationSessionFor(activatedUser);
+      var specData = globalSession.<HttpDslData>get(sessionDslItem.getSessionKey())
+          .orElse(httpResultData);
+      globalSession.add(sessionDslItem.getSessionKey(), specData);
+    }
   }
 
   private ResultingDsl resolveSessionParent() {

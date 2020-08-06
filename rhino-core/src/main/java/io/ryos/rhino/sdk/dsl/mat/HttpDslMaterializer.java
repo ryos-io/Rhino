@@ -25,6 +25,7 @@ import static org.asynchttpclient.Dsl.post;
 import static org.asynchttpclient.Dsl.put;
 
 import io.ryos.rhino.sdk.HttpClient;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
@@ -38,6 +39,7 @@ import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUserImpl;
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.NotImplementedException;
@@ -60,9 +62,7 @@ import reactor.core.publisher.Mono;
 public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
-
   private final HttpDsl dslItem;
-
   public HttpDslMaterializer(HttpDsl dslItem) {
     this.dslItem = dslItem;
   }
@@ -72,7 +72,27 @@ public class HttpDslMaterializer implements DslMaterializer {
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
 
     var responseMono = Mono.just(userSession)
-        .flatMap(session -> Mono.fromCompletionStage(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
+        .flatMap(session -> {
+          if (dslItem.isWaitResult()) {
+            try {
+              return Mono
+                  .just(HttpClient.INSTANCE.getClient()
+                      .executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler)
+                      .toCompletableFuture().get());
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            } catch (ExecutionException e) {
+              e.printStackTrace();
+            }
+
+            return null;
+          }
+
+          return Mono
+              .fromCompletionStage(
+                  HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem
+                      , session), httpSpecAsyncHandler).toCompletableFuture());
+        });
 
     var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
@@ -129,14 +149,21 @@ public class HttpDslMaterializer implements DslMaterializer {
         builder = delete(endpoint);
         break;
       case PUT:
-        builder = put(endpoint)
-            .setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
-                .orElseGet(() -> new ByteArrayInputStream(httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+        builder = put(endpoint);
+        if (httpSpec.getUploadContent() != null || httpSpec.getLazyStringPayload() != null) {
+          builder.setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
+              .orElseGet(() -> new ByteArrayInputStream(
+                  httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+        }
         break;
       case POST:
-        builder = post(endpoint)
-            .setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
-                .orElseGet(() -> new ByteArrayInputStream(httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+        builder = post(endpoint);
+        if (httpSpec.getUploadContent() != null || httpSpec.getLazyStringPayload() != null) {
+          builder.setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
+              .orElseGet(() -> new ByteArrayInputStream(
+                  httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+        }
+
         break;
       // case X : rest of methods, we support...
       default:
@@ -165,6 +192,11 @@ public class HttpDslMaterializer implements DslMaterializer {
       builder = handleAuth(specOwner, builder);
     }
 
+    if (SimulationConfig.debugHttp()) {
+      LOG.info("[debug.http=true][url={}][headers={}]",
+          builder.build().getUrl(),
+          builder.build().getHeaders());
+    }
     return builder;
   }
 

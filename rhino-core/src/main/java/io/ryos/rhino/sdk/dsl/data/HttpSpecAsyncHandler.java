@@ -70,9 +70,10 @@ public class HttpSpecAsyncHandler implements AsyncHandler<Response> {
       completeMeasurement();
     }
     if (SimulationConfig.debugHttp()) {
-      LOG.info("[debug.http=true][statusCode={}][body={}]",
+      LOG.info("[debug.http=true][statusCode={}][body={}][headers={}]",
           response.getStatusCode(),
-          response.getResponseBody());
+          response.getResponseBody(),
+          response.getHeaders());
     }
     return response;
   }
