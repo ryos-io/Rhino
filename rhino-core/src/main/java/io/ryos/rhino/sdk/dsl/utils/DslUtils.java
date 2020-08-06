@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.ExpressionDsl;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
@@ -25,11 +26,13 @@ import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
+import io.ryos.rhino.sdk.dsl.impl.ExpressionDslImpl;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl;
 import io.ryos.rhino.sdk.dsl.impl.SomeDslImpl;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -138,6 +141,10 @@ public class DslUtils {
 
   public static SomeDsl some(String name) {
     return new SomeDslImpl(name);
+  }
+
+  public static ExpressionDsl eval(Consumer<UserSession> expression) {
+    return new ExpressionDslImpl(expression);
   }
 
   public static VerificationInfo<String> resulting(String state) {

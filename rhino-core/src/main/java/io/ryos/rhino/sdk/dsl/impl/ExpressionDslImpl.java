@@ -24,20 +24,16 @@ import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.ExpressionDslMaterializer;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
-public class ExpressionDslImpl<R> extends AbstractDSLItem implements ExpressionDsl<R> {
+public class ExpressionDslImpl extends AbstractDSLItem implements ExpressionDsl {
 
-  private Function<UserSession, R> expression;
+  private Consumer<UserSession> expression;
 
-  public ExpressionDslImpl(String name) {
-    super(name);
-  }
+  public ExpressionDslImpl(Consumer<UserSession> expression) {
+    super("");
 
-  @Override
-  public MaterializableDslItem exec(Function<UserSession, R> expression) {
     this.expression = expression;
-    return this;
   }
 
   @Override
@@ -47,10 +43,10 @@ public class ExpressionDslImpl<R> extends AbstractDSLItem implements ExpressionD
 
   @Override
   public <T extends MaterializableDslItem> DslMaterializer materializer() {
-    return new ExpressionDslMaterializer<R>(this);
+    return new ExpressionDslMaterializer(this);
   }
 
-  public Function<UserSession, R> getExpression() {
+  public Consumer<UserSession> getExpression() {
     return expression;
   }
 

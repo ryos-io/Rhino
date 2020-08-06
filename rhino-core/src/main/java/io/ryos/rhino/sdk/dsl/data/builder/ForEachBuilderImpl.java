@@ -20,7 +20,6 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ForEachDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
-import io.ryos.rhino.sdk.dsl.impl.ExpressionDslImpl;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,14 +79,6 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>, T extends Materializab
   public ForEachBuilder<E, R, T> exec(final Function<E, T> forEachChildDslItemFunction) {
     Validate.notNull(forEachChildDslItemFunction, "forEachChildDslItemFunction must not be null.");
     forEachChildDslItemFunctions.add(forEachChildDslItemFunction);
-    return this;
-  }
-
-  @Override
-  public ForEachBuilder<E, R, T> eval(final Function<E, Object> expression) {
-    Validate.notNull(expression, "forEachChildDslItemFunction must not be null.");
-    forEachChildDslItemFunctions.add(item -> (T) new ExpressionDslImpl<>("")
-        .exec(session -> expression.apply(item)));
     return this;
   }
 

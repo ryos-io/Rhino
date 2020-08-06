@@ -27,8 +27,6 @@ public interface ForEachBuilder<E, R extends Iterable<E>, T extends Materializab
 
   ForEachBuilder<E, R, T> exec(Function<E, T> forEachFunction);
 
-  ForEachBuilder<E, R, T> eval(Function<E, Object> expression);
-
   ForEachBuilder<E, R, T> map(Function<E, Object> mapper);
 
   ForEachBuilder<E, R, T> collect(String sessionKey);

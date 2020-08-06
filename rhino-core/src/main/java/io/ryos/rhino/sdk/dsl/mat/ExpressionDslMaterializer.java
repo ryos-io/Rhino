@@ -18,13 +18,13 @@ package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ExpressionDsl;
-import io.ryos.rhino.sdk.dsl.ResultingDsl;
 import reactor.core.publisher.Mono;
 
-public class ExpressionDslMaterializer<T> implements DslMaterializer {
-  private final ExpressionDsl<T> dslItem;
+public class ExpressionDslMaterializer implements DslMaterializer {
 
-  public ExpressionDslMaterializer(final ExpressionDsl<T> dslItem) {
+  private final ExpressionDsl dslItem;
+
+  public ExpressionDslMaterializer(final ExpressionDsl dslItem) {
     this.dslItem = dslItem;
   }
 
@@ -32,8 +32,7 @@ public class ExpressionDslMaterializer<T> implements DslMaterializer {
   public Mono<UserSession> materialize(UserSession userSession) {
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
-          var returnValue = dslItem.getExpression().apply(session);
-          dslItem.handleResult(session, returnValue);
+          dslItem.getExpression().accept(session);
           return session;
         }));
   }
