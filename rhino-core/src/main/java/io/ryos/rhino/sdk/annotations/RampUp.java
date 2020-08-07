@@ -6,6 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Ramp-up annotation is used to increase the load in controlled steps, from start rps till it
  * reaches the target RPS during the ramp-up phase defined with duration.
+ *
+ * If you wish you can override this annotation's properties als via System properties,e.g.
+ * <code>-Dsimulation.rampup.io.ryos.rhino.test.ReactiveSleepTestSimulation.startRps=100</code>
  * <p>
  */
 @Retention(RetentionPolicy.RUNTIME)

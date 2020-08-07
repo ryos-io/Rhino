@@ -24,9 +24,11 @@ import io.ryos.rhino.sdk.users.source.UserSource.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
 import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 
 /**
  * Simulation configuration instances are used to configure Rhino tests.
@@ -294,6 +296,17 @@ public class SimulationConfig {
     return properties.getProperty("db.influx.policy");
   }
 
+  private RampupInfo getRampupInfo(String name) {
+    String prefix = "simulation.rampup." + name + ".";
+    UnaryOperator<String> val =
+        key -> System
+            .getProperty(prefix + key, properties.getProperty(prefix + key, "0"));
+    var startRps = Integer.parseInt(val.apply("startRps"));
+    var targetRps = Integer.parseInt(val.apply("targetRps"));
+    var duration = Duration.ofSeconds(Long.parseLong(val.apply("durationInMins")));
+    return new RampupInfo(startRps, targetRps, duration);
+  }
+
   public static String getSimulationOutputStyle() {
     return instance.getSimOutputStyle();
   }
@@ -451,6 +464,10 @@ public class SimulationConfig {
 
   public static String getServiceClientSecret() {
     return instance.getServiceAuthClientSecret();
+  }
+
+  public static RampupInfo getRampupInfo(Class simulation) {
+    return instance.getRampupInfo(simulation.getCanonicalName());
   }
 
   public static boolean isServiceAuthenticationEnabled() {

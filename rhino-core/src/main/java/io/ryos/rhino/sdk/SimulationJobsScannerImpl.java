@@ -34,11 +34,10 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
-import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
-import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
+import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
-import io.ryos.rhino.sdk.exceptions.IllegalMethodSignatureException;
+import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
 import io.ryos.rhino.sdk.exceptions.RepositoryNotFoundException;
 import io.ryos.rhino.sdk.exceptions.RhinoFrameworkError;
 import io.ryos.rhino.sdk.exceptions.SpecificationNotFoundException;
@@ -105,7 +104,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     return new SimulationMetadata.Builder()
         .withSimulationClass(clazz)
         .withUserRepository(userRepo)
-        .withRunner(runnerAnnotation != null ? runnerAnnotation.clazz() : ReactiveHttpSimulationRunner.class)
+        .withRunner(runnerAnnotation != null
+            ? runnerAnnotation.clazz()
+            : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
         .withDuration(Duration.ofMinutes(simAnnotation.durationInMins()))
         .withUserRegion(simAnnotation.userRegion())
@@ -165,12 +166,21 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
   private RampupInfo getRampupInfo(Class clazz, Simulation simAnnotation) {
     var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+    RampupInfo rampupInfo = SimulationConfig.getRampupInfo(clazz);
     if (rampUpAnnotation != null) {
-      var duration = simAnnotation.durationInMins();
+      var duration = rampupInfo.getDuration() == Duration.ZERO
+          ? simAnnotation.durationInMins()
+          : rampupInfo.getDuration().toMinutes();
       if (rampUpAnnotation.durationInMins() >= 0) {
         duration = rampUpAnnotation.durationInMins();
       }
-      return new RampupInfo(rampUpAnnotation.startRps(), rampUpAnnotation.targetRps(),
+      return new RampupInfo(
+          (rampupInfo.getStartRps() == 0)
+              ? rampUpAnnotation.startRps()
+              : rampupInfo.getStartRps(),
+          (rampupInfo.getTargetRps() == 0)
+              ? rampUpAnnotation.targetRps()
+              : rampupInfo.getTargetRps(),
           Duration.ofMinutes(duration));
     }
     return null;
@@ -236,7 +246,8 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     throw new RepositoryNotFoundException();
   }
 
-  private UserRepository createWithDefaultConstructor(Class<? extends UserRepositoryFactory> factory) {
+  private UserRepository createWithDefaultConstructor(
+      Class<? extends UserRepositoryFactory> factory) {
     try {
       return factory.getDeclaredConstructor().newInstance().create();
     } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
@@ -251,25 +262,5 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         filter(m -> Arrays.stream(m.getDeclaredAnnotations()).
             anyMatch(annotation::isInstance)).
         findFirst(); // TODO only the first step method?
-  }
-
-  private <T extends Annotation> Optional<Method> findStaticMethodWith(Class<?> clazz,
-      Class<T> annotation, Class<?>... args) {
-
-    return Arrays.stream(clazz.getMethods()).
-        filter(m -> Arrays.stream(m.getAnnotations()).
-            anyMatch(annotation::isInstance)).
-        findFirst()
-        .map(Method::getName)
-        .map(name -> getStaticMethod(clazz, name, args));
-  }
-
-  private Method getStaticMethod(Class<?> clazz, String name, Class<?>... args) {
-    try {
-      return clazz.getMethod(name, args);
-    } catch (NoSuchMethodException e) {
-      throw new IllegalMethodSignatureException(
-          "Static method with name: " + name + "on class:" + clazz.toString());
-    }
   }
 }
