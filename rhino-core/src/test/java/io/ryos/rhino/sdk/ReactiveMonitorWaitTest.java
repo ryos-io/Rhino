@@ -75,14 +75,6 @@ public class ReactiveMonitorWaitTest {
             .withFixedDelay(100)
             .withStatus(201)));
 
-    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
-        .inScenario("retriable")
-        .whenScenarioStateIs("monitor")
-        .willSetStateTo("monitor")
-        .willReturn(aResponse()
-            .withFixedDelay(100)
-            .withStatus(201)));
-
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
         .inScenario("retriable")
         .whenScenarioStateIs("monitor")
