@@ -181,12 +181,13 @@ public class MeasurementImpl implements Measurement {
 
     registerEndUserEvent();
     this.dispatcher.dispatchEvents(this);
-    this.start = -1;
+    // this.start = -1;
   }
 
   private void registerEndUserEvent() {
 
     var elapsed = System.currentTimeMillis() - start;
+
     UserEvent userEventEnd = new UserEvent(STR_BLANK,
         this.userId,
         this.parentName,
