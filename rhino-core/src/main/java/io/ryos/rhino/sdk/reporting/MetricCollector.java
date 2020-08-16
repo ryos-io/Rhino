@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
  * @author Erhan Bagdemir
  */
 public class MetricCollector extends AbstractActor {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MetricCollector.class);
   private static final long DELAY = 1000L;
   private static final long PERIOD = 1000L * 5; // TODO make configurable.
   private static final int MSG_OK = 200;
@@ -188,7 +186,7 @@ public class MetricCollector extends AbstractActor {
 
   private void flushReport(EndTestEvent event) {
     if (performanceMetrics.isEmpty()) {
-      LOG.info("There is no record in measurement yet. Test is running...");
+      System.out.println("There is no record in measurement yet. Test is running...");
       return;
     }
 
@@ -202,9 +200,8 @@ public class MetricCollector extends AbstractActor {
         performanceStats,
         performanceRollingStats);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info(consoleOutputView.getView());
-    }
+
+        System.out.println(consoleOutputView.getView());
   }
 
   public static class EndTestEvent {

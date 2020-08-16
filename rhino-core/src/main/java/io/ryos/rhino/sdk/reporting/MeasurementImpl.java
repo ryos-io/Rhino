@@ -181,7 +181,7 @@ public class MeasurementImpl implements Measurement {
 
     registerEndUserEvent();
     this.dispatcher.dispatchEvents(this);
-    // this.start = -1;
+    this.start = System.currentTimeMillis();
   }
 
   private void registerEndUserEvent() {

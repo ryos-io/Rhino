@@ -120,14 +120,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private void printStart(Integer numberOfRepeats, SimulationMetadata simulationMetadata) {
     if (null != numberOfRepeats && numberOfRepeats == 1) {
-      LOG.info("Starting the verification tests.");
+      System.out.println("Starting the verification tests.");
     }
     if (null == numberOfRepeats) {
-      LOG.info("Starting the load tests for {} minutes.",
-          simulationMetadata.getDuration().toMinutes());
+      System.out.println(String.format("Starting the load tests for %s minutes.",
+          simulationMetadata.getDuration().toMinutes()));
     }
     if (null != numberOfRepeats && numberOfRepeats > 1) {
-      LOG.info("Starting the performance tests for {} cycles.", numberOfRepeats);
+      System.out.println(String.format("Starting the performance tests for %s cycles.",
+          numberOfRepeats));
     }
   }
 
@@ -156,7 +157,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private void cleanup(List<UserSession> userList) {
     if (getSimulationMetadata().getCleanupMethod() != null) {
-      LOG.info("Clean-up started.");
+      System.out.println("Clean-up started.");
       executeAfter(userList);
       awaitIf(() -> !isCleanupCompleted);
     } else {
@@ -166,7 +167,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private void prepare(List<UserSession> userList) {
     if (getSimulationMetadata().getBeforeMethod() != null) {
-      LOG.info("Preparation started.");
+      System.out.println("Preparation started.");
       executeBefore(userList);
       awaitIf(() -> !isPrepareCompleted);
     } else {
@@ -181,7 +182,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
         continueCondition.await(1, TimeUnit.SECONDS);
       }
     } catch (InterruptedException e) {
-      LOG.error("Interrupted.", e);
+      System.err.println("Interrupted." + e.getLocalizedMessage());
       Thread.currentThread().interrupt();
     } finally {
       masterLock.unlock();
@@ -190,7 +191,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   @Override
   public void stop() {
-    LOG.info("Simulation completed.");
+    System.out.println("Simulation completed.");
     shutdown();
   }
 
@@ -205,13 +206,15 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     shutdownInitiated = true;
 
-    LOG.info("Stopping the simulation...");
+    System.out.println("Stopping the simulation...");
     subscribe.dispose();
     dslIterator.stop();
     EventDispatcher.getInstance().stop();
 
-    LOG.info("Shutting down completed ...");
-    LOG.info("Bye!");
+    System.out.println("Shutting down completed ...");
+    System.out.println("Bye!");
+
+    System.exit(0);
   }
 
   private void executeBefore(List<UserSession> userSessionList) {
@@ -220,7 +223,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
           userSessionList,
           () -> {
             isPrepareCompleted = true;
-            LOG.info("Preparation completed.");
+            System.out.println("Preparation completed.");
           });
     }
   }
@@ -230,7 +233,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
       materializeMethod("After", getSimulationMetadata().getAfterMethod(),
           userSessionList,
           () -> {
-            LOG.info("Clean-up completed.");
+            System.out.println("Clean-up completed.");
             isCleanupCompleted = true;
           });
     }
@@ -268,7 +271,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
   }
 
   private Publisher<? extends UserSession> handleThrowable(Throwable throwable) {
-    LOG.error("Skipping error. Pipeline continues.", throwable);
+    System.err.println("Skipping error. Pipeline continues." + throwable);
     return Mono.empty();
   }
 }

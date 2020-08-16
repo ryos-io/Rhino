@@ -68,7 +68,7 @@ public class ForEachUploadSimulationTest {
 
     TestUtils.overridePorts(PORT);
 
-    Simulation.getInstance(PROPERTIES_FILE, ForEachTestSimulation.class).start();
+    Simulation.getInstance(PROPERTIES_FILE, ForEachUploadSimulation.class).start();
     Thread.sleep(10000L);
   }
 }

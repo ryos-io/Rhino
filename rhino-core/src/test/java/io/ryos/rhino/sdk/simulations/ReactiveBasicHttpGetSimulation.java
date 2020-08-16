@@ -19,20 +19,21 @@ import java.util.UUID;
 public class ReactiveBasicHttpGetSimulation {
 
   private static final String FILES_ENDPOINT = getEndpoint("files");
+  private static final String PREPARE_ENDPOINT = getEndpoint("prepare");
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
 
   @Dsl(name = "Load DSL Request")
   public DslBuilder singleTestDsl() {
     return dsl()
-        .run(http("Files Request")
+        .run(http("Prepare Request")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint(FILES_ENDPOINT)
+            .endpoint(PREPARE_ENDPOINT)
             .get()
             .saveTo("result"))
-        .verify(http("Files Request 2")
+        .verify(http("Files Request")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()

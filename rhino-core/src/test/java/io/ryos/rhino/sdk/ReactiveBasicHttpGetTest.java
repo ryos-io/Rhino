@@ -50,7 +50,7 @@ public class ReactiveBasicHttpGetTest {
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/prepare"))
         .willReturn(aResponse()
-            .withFixedDelay(800)
+            .withFixedDelay(400)
             .withStatus(200)));
 
     TestUtils.overridePorts(PORT);

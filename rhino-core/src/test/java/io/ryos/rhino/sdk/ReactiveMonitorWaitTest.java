@@ -72,7 +72,7 @@ public class ReactiveMonitorWaitTest {
         .whenScenarioStateIs(STARTED)
         .willSetStateTo("monitor")
         .willReturn(aResponse()
-            .withFixedDelay(100)
+            .withFixedDelay(10)
             .withStatus(201)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
@@ -80,7 +80,7 @@ public class ReactiveMonitorWaitTest {
         .whenScenarioStateIs("monitor")
         .willSetStateTo("monitor-2")
         .willReturn(aResponse()
-            .withFixedDelay(100)
+            .withFixedDelay(1000)
             .withStatus(404)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
@@ -88,7 +88,7 @@ public class ReactiveMonitorWaitTest {
         .whenScenarioStateIs("monitor-2")
         .willSetStateTo("monitor-3")
         .willReturn(aResponse()
-            .withFixedDelay(100)
+            .withFixedDelay(2000)
             .withStatus(404)));
 
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/monitor"))
@@ -96,7 +96,7 @@ public class ReactiveMonitorWaitTest {
         .whenScenarioStateIs("monitor-3")
         .willSetStateTo(STARTED)
         .willReturn(aResponse()
-            .withFixedDelay(100)
+            .withFixedDelay(3000)
             .withStatus(200)));
 
     TestUtils.overridePorts(PORT);

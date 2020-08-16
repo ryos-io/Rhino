@@ -33,10 +33,7 @@ import org.apache.logging.log4j.Logger;
 public class Application {
 
   private static final String CLASSPATH_SCHEME = "classpath://";
-  private static final String CLASSPATH_RHINO_PROPERTIES = CLASSPATH_SCHEME + "/rhino.properties";
   private static final String BRANDING = "/branding.txt";
-  private static final String SIMULATION = "Server-Status Simulation";
-  private static final Logger LOG = LogManager.getLogger(SimulationJobsScannerImpl.class);
 
   // Shows up the Rhino branding.
   static void showBranding() {
@@ -44,10 +41,10 @@ public class Application {
     final InputStream stream = Application.class.getResourceAsStream(BRANDING);
     try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
       while (bufferedReader.ready()) {
-        LOG.info(bufferedReader.readLine());
+        System.out.println(bufferedReader.readLine());
       }
     } catch (IOException e) {
-      LOG.error("Can not start the application.", e);
+      System.err.println("Can not start the application:" + e.getMessage());
     }
   }
 }

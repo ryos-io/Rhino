@@ -74,7 +74,7 @@ public class PerformanceConsoleOutputView {
 
   public String getView() {
     if (metrics.isEmpty()) {
-      LOG.info("There is no record in measurement yet. Test is running...");
+      System.out.println("There is no record in measurement yet. Test is running...");
       return "";
     }
 
