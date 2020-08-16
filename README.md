@@ -49,7 +49,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>2.1.3</version>
+  <version>2.1.5</version>
 </dependency>
 ```
 
@@ -76,9 +76,6 @@ might have multiple DSL methods defined which will be materialized into reactive
 @Simulation(name = "Server-Status Simulation")
 public class RhinoEntity {
 
-  private static final String TARGET = "http://localhost:8089/api/status";
-  private static final String X_REQUEST_ID = "X-Request-Id";
-  
   @Provider(factory = UUIDProvider.class)
   private UUIDProvider uuidProvider;
 
@@ -103,9 +100,6 @@ A simple Rhino application would look like:
 import io.ryos.rhino.sdk.Simulation;
 
 public class Rhino {
-
-    private static final String PROPS = "classpath:///rhino.properties";
-    private static final String SIM_NAME = "Server-Status Simulation";
 
     public static void main(String ... args) {
         Simulation.create(PROPS, SIM_NAME).start();
