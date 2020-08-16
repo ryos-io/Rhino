@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-2.1.3-72c247" />
+  <img src="https://img.shields.io/badge/rhino--core-2.1.5-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
 </p>
 
