@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="https://github.com/bagdemir/rhino/blob/master/rhino_works.png"  width="300"/>
-</p>
 
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
