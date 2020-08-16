@@ -213,8 +213,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     System.out.println("Shutting down completed ...");
     System.out.println("Bye!");
-
-    System.exit(0);
   }
 
   private void executeBefore(List<UserSession> userSessionList) {
