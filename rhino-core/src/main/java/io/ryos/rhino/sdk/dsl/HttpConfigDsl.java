@@ -83,7 +83,7 @@ public interface HttpConfigDsl extends HttpMethodDsl {
 
   HttpConfigDsl payload(final Supplier<InputStream> inputStreamSupplier);
 
-  HttpConfigDsl payload(final Function<UserSession, String> payloadFunction);
+  HttpConfigDsl payload(final Function<UserSession, InputStream> payloadFunction);
 
   HttpConfigDsl payload(final String stringPayload);
 

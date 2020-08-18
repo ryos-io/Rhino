@@ -47,7 +47,7 @@ public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
 
   Supplier<InputStream> getUploadContent();
 
-  Function<UserSession, String> getLazyStringPayload();
+  Function<UserSession, InputStream> getLazyStringPayload();
 
   List<Function<UserSession, Entry<String, List<String>>>> getHeaders();
 
