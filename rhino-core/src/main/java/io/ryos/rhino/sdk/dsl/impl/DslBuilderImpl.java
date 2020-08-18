@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -307,6 +308,16 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
     var filterDsl = new FilterDslImpl(predicate);
     filterDsl.setParent(this);
     children.add(filterDsl);
+    return this;
+  }
+
+  @Override
+  public DslBuilder eval(Consumer<UserSession> expression) {
+    Validate.notNull(expression, "Expression must not be null.");
+
+    var expressionDsl = new ExpressionDslImpl(expression);
+    expressionDsl.setParent(this);
+    children.add(expressionDsl);
     return this;
   }
 

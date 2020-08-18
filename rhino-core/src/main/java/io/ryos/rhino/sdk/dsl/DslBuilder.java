@@ -20,6 +20,7 @@ import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -76,5 +77,23 @@ public interface DslBuilder extends SessionDsl, IterableDsl, AssertionDsl, Mappa
    */
   DslBuilder filter(Predicate<UserSession> predicate);
 
-  public <T> DslBuilder verify(VerifiableDslItem dslItem, VerificationInfo<T> verificationInfo);
+  /**
+   * Expression to evaluate. The processing time of running the expression will not be reported.
+   *
+   * @param expression A consumer taking a user session instance as parameter.
+   * @return A DslBuilder instance.
+   */
+  DslBuilder eval(Consumer<UserSession> expression);
+
+
+  /**
+   * Verifies the results of the DSL expression. The verification result will be output in the
+   * reports.
+   *
+   * @param dslItem          Verifiable DSL item, of which result will be verified.
+   * @param verificationInfo Verification info contains the information how the verifiable DSL item
+   *                         will be verified.
+   * @return A DslBuilder instance.
+   */
+  <T> DslBuilder verify(VerifiableDslItem dslItem, VerificationInfo<T> verificationInfo);
 }
