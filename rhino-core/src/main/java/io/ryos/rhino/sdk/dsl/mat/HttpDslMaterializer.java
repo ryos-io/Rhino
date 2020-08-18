@@ -152,16 +152,14 @@ public class HttpDslMaterializer implements DslMaterializer {
         builder = put(endpoint);
         if (httpSpec.getUploadContent() != null || httpSpec.getLazyStringPayload() != null) {
           builder.setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
-              .orElseGet(() -> new ByteArrayInputStream(
-                  httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+              .orElseGet(() -> httpSpec.getLazyStringPayload().apply(userSession)));
         }
         break;
       case POST:
         builder = post(endpoint);
         if (httpSpec.getUploadContent() != null || httpSpec.getLazyStringPayload() != null) {
           builder.setBody(Optional.ofNullable(httpSpec.getUploadContent()).map(Supplier::get)
-              .orElseGet(() -> new ByteArrayInputStream(
-                  httpSpec.getLazyStringPayload().apply(userSession).getBytes())));
+              .orElseGet(() -> httpSpec.getLazyStringPayload().apply(userSession)));
         }
 
         break;
