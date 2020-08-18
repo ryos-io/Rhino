@@ -20,6 +20,7 @@ import static com.google.common.collect.Streams.stream;
 import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
+import io.ryos.rhino.sdk.HttpClient;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -27,6 +28,7 @@ import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.impl.DslMethodImpl;
 import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
@@ -210,6 +212,11 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
     subscribe.dispose();
     dslIterator.stop();
     EventDispatcher.getInstance().stop();
+    try {
+      HttpClient.INSTANCE.getClient().close();
+    } catch (IOException e) {
+      LOG.debug("Error shutting down http client", e);
+    }
 
     System.out.println("Shutting down completed ...");
     System.out.println("Bye!");
