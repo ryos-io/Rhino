@@ -12,14 +12,29 @@ import org.apache.commons.lang3.Validate;
 public class RunUntilDslImpl extends AbstractMeasurableDsl implements RunUntilDsl {
 
   private static final String BLANK = "";
-  private final Predicate<UserSession> predicate;
   private final MaterializableDslItem spec;
+
+  private Predicate<UserSession> predicate;
+  private int maxRepeat;
 
   public RunUntilDslImpl(MaterializableDslItem spec, Predicate<UserSession> predicate) {
     super(BLANK);
 
     this.predicate = Validate.notNull(predicate, "Predicate must not be null.");
     this.spec = Validate.notNull(spec, "Spec must not be null.");
+  }
+
+  public RunUntilDslImpl(MaterializableDslItem spec, int maxRepeat) {
+    super(BLANK);
+
+    Validate.isTrue(maxRepeat > 0, "repeat count must be > 0", maxRepeat);
+    this.spec = Validate.notNull(spec, "Spec must not be null.");
+    this.maxRepeat = maxRepeat;
+  }
+
+  @Override
+  public int getMaxRepeat() {
+    return maxRepeat;
   }
 
   @Override

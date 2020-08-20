@@ -98,4 +98,6 @@ public interface IterableDsl extends DslItem {
    * @return {@link DslBuilder} runnable DSL instance.
    */
   DslBuilder repeat(MaterializableDslItem spec);
+
+  DslBuilder repeat(MaterializableDslItem spec, int times);
 }

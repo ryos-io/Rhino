@@ -24,4 +24,6 @@ public interface RunUntilDsl extends MaterializableDslItem {
   Predicate<UserSession> getPredicate();
 
   MaterializableDslItem getSpec();
+
+  int getMaxRepeat();
 }
