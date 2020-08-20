@@ -22,11 +22,6 @@ testing web services which consists of the Rhino Java SDK as well as a collectio
 
 
 With **Influx DB** and **Grafana** Integration, you can also monitor the current load testing and watch how services under test behaves under certain load pattern.  
-
-<p align="center">
-<img src="http://ryos.io/static/integration.jpg" width="640"/>
-</p>
-
 **Rhino's philosophy is:**
 
 * one repository for project's source code as well as Unit, Integration, Load and Performance Tests.
