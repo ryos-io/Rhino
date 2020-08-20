@@ -116,6 +116,10 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).repeat(spec);
   }
 
+  public static DslBuilder repeat(MaterializableDslItem spec, int times) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).repeat(spec, times);
+  }
+
   public static DslBuilder until(Predicate<UserSession> predicate, MaterializableDslItem dslItem) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).until(predicate, dslItem);
   }

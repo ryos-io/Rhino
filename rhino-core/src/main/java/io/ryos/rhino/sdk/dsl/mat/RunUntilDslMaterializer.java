@@ -14,13 +14,29 @@ public class RunUntilDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
-    return Mono.just(userSession).map(session -> {
-      while (!dslItem.getPredicate().test(userSession)) {
-        var targetSpec = dslItem.getSpec();
-        var materializer = targetSpec.materializer();
-        materializer.materialize(userSession).block();
-      }
-      return session;
-    });
+
+    if (dslItem.getPredicate() != null) {
+      return Mono.just(userSession).map(session -> {
+        while (!dslItem.getPredicate().test(userSession)) {
+          var targetSpec = dslItem.getSpec();
+          var materializer = targetSpec.materializer();
+          materializer.materialize(userSession).block();
+        }
+        return session;
+      });
+
+    } else {
+
+      return Mono.just(userSession).map(session -> {
+        int retryCount = 0;
+        while (retryCount < dslItem.getMaxRepeat()) {
+          var targetSpec = dslItem.getSpec();
+          var materializer = targetSpec.materializer();
+          materializer.materialize(userSession).block();
+          retryCount++;
+        }
+        return session;
+      });
+    }
   }
 }

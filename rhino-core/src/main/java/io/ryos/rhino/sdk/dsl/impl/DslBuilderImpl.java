@@ -242,8 +242,17 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   @Override
   public DslBuilder repeat(MaterializableDslItem dslItem) {
     Validate.notNull(dslItem, "dslItem must not be null.");
-
     RunUntilDslImpl runUntilDsl = new RunUntilDslImpl(dslItem, s -> true);
+    runUntilDsl.setParent(this);
+    dslItem.setParent(runUntilDsl);
+    children.add(runUntilDsl);
+    return this;
+  }
+
+  @Override
+  public DslBuilder repeat(MaterializableDslItem dslItem, int times) {
+    Validate.notNull(dslItem, "dslItem must not be null.");
+    RunUntilDslImpl runUntilDsl = new RunUntilDslImpl(dslItem, times);
     runUntilDsl.setParent(this);
     dslItem.setParent(runUntilDsl);
     children.add(runUntilDsl);
