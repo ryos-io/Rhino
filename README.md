@@ -37,6 +37,7 @@ the framework every time they need to write new load tests.
 
 Considering all these aspects, we began with Project Rhino in 2018 and it is available as F/OSS  with Apache 2.0 License, now.
 
+
 ## How to use?
 
 Add maven dependency into your project:
@@ -76,8 +77,8 @@ public class RhinoEntity {
   private UUIDProvider uuidProvider;
 
   @Dsl(name = "Health")
-  public LoadDsl performHealth() {
-    return Start.dsl()
+  public DslBuilder performHealth() {
+    return dsl()
         .run(http("Health API Call")
             .header(c -> from(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
             .endpoint(TARGET)
