@@ -16,7 +16,6 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
-import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
 import static org.asynchttpclient.Dsl.delete;
 import static org.asynchttpclient.Dsl.get;
 import static org.asynchttpclient.Dsl.head;
@@ -31,13 +30,13 @@ import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.data.HttpSpecAsyncHandler;
 import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
+import io.ryos.rhino.sdk.dsl.utils.SessionUtils;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUserImpl;
-import java.io.ByteArrayInputStream;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -186,7 +185,7 @@ public class HttpDslMaterializer implements DslMaterializer {
     }
 
     if (httpSpec.isAuth()) {
-      var specOwner = getActiveUser(userSession);
+      var specOwner = SessionUtils.getEffectiveHttpUser(httpSpec, userSession);
       builder = handleAuth(specOwner, builder);
     }
 

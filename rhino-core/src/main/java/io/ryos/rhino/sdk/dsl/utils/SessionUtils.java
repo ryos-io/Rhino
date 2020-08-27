@@ -17,6 +17,7 @@
 package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.exceptions.SessionObjectNotFoundException;
 import io.ryos.rhino.sdk.users.data.User;
@@ -40,6 +41,26 @@ public class SessionUtils {
 
   public static User getActiveUser(final UserSession userSession) {
     Validate.notNull(userSession, "User define must not be null.");
+    return userSession.getUser();
+  }
+
+  public static User getEffectiveHttpUser(final HttpDsl httpSpec, final UserSession userSession) {
+    Validate.notNull(httpSpec, "Http spec must not be null.");
+    Validate.notNull(userSession, "User session must not be null.");
+
+    var userSupplier = httpSpec.getUserSupplier();
+    if (userSupplier != null) {
+      return userSupplier.get();
+    }
+
+    var userAccessor = httpSpec.getUserAccessor();
+    if (userAccessor != null) {
+      return userAccessor.apply(userSession);
+    }
+
+    if (httpSpec.getAuthUser() != null) {
+      return httpSpec.getAuthUser();
+    }
     return userSession.getUser();
   }
 
