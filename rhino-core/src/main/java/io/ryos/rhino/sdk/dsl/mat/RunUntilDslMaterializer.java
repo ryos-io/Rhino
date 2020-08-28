@@ -2,6 +2,7 @@ package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.RunUntilDsl;
+import java.util.Optional;
 import reactor.core.publisher.Mono;
 
 public class RunUntilDslMaterializer implements DslMaterializer {
@@ -14,29 +15,13 @@ public class RunUntilDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
-
-    if (dslItem.getPredicate() != null) {
-      return Mono.just(userSession).map(session -> {
-        while (!dslItem.getPredicate().test(userSession)) {
-          var targetSpec = dslItem.getSpec();
-          var materializer = targetSpec.materializer();
-          materializer.materialize(userSession).block();
-        }
-        return session;
-      });
-
-    } else {
-
-      return Mono.just(userSession).map(session -> {
-        int retryCount = 0;
-        while (retryCount < dslItem.getMaxRepeat()) {
-          var targetSpec = dslItem.getSpec();
-          var materializer = targetSpec.materializer();
-          materializer.materialize(userSession).block();
-          retryCount++;
-        }
-        return session;
-      });
-    }
+    return Optional.ofNullable(dslItem.getPredicate())
+        .map(p -> Mono.just(userSession)
+            .flatMap(session -> dslItem.getSpec().materializer().materialize(userSession))
+            .repeat(() -> !dslItem.getPredicate().test(userSession)).last())
+        .orElseGet(() -> Mono.just(userSession)
+            .flatMap(session -> dslItem.getSpec().materializer().materialize(userSession))
+            .repeat(dslItem.getMaxRepeat() - 1)
+            .last());
   }
 }
