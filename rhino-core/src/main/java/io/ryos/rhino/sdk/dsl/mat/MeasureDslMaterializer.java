@@ -19,10 +19,7 @@ package io.ryos.rhino.sdk.dsl.mat;
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.impl.GaugeDslImpl;
-import io.ryos.rhino.sdk.reporting.Measurement;
 import io.ryos.rhino.sdk.reporting.MeasurementImpl;
-import java.util.ArrayList;
-import java.util.List;
 import reactor.core.publisher.Mono;
 
 public class MeasureDslMaterializer implements DslMaterializer {
@@ -35,14 +32,12 @@ public class MeasureDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
-    List<Measurement> measurements = new ArrayList<>();
     gaugeDsl.setName(gaugeDsl.getTag());
     return Mono.just(userSession)
         .flatMap(session -> Mono.fromCallable(() -> {
           var measurement = new MeasurementImpl("", gaugeDsl.getTag(),
               userSession.getUser().getId());
           measurement.start();
-          measurements.add(measurement);
           userSession.register(measurement);
           return userSession;
         }))
@@ -53,7 +48,6 @@ public class MeasureDslMaterializer implements DslMaterializer {
         })
         .flatMap(session -> Mono.fromCallable(() -> {
           session.commit(" ");
-          measurements.forEach(session::remove);
           return session;
         }));
   }
