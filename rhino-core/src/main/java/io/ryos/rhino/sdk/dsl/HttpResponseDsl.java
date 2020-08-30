@@ -28,6 +28,5 @@ import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 public interface HttpResponseDsl extends MaterializableDslItem {
 
   HttpDsl saveTo(String sessionKey);
-
   HttpDsl saveTo(String sessionKey, Scope scope);
 }

@@ -19,6 +19,7 @@ package io.ryos.rhino.sdk.simulations;
 import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
 import static io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilderImpl.in;
+import static io.ryos.rhino.sdk.dsl.utils.DslUtils.collect;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
 import static io.ryos.rhino.sdk.utils.TestUtils.getEndpoint;
@@ -48,10 +49,26 @@ public class ForEachNestedSimulation {
         .session("i", () -> ImmutableList.of(1, 2, 3))
         .session("j", () -> ImmutableList.of(1, 2, 3))
         .forEach(in(session("i")).exec(i ->
-            getDiscovery()
+            dsl()
+                .run(http("Discovery Request -1")
+                    .header(session -> headerValue(X_REQUEST_ID,
+                        "Rhino-" + UUID.randomUUID().toString()))
+                    .header(X_API_KEY, SimulationConfig.getApiKey())
+                    .auth()
+                    .endpoint(DISCOVERY_ENDPOINT)
+                    .get()
+                    .collect("list.outer")
+                    .waitResult())
                 .forEach(in(session("j")).exec(j ->
-                    getDiscovery())
-                    .collect("list.inner"))).collect("list.outer"));
+                    dsl()
+                        .run(collect(http("Discovery Request -2")
+                            .header(session -> headerValue(X_REQUEST_ID,
+                                "Rhino-" + UUID.randomUUID().toString()))
+                            .header(X_API_KEY, SimulationConfig.getApiKey())
+                            .auth()
+                            .endpoint(DISCOVERY_ENDPOINT)
+                            .get(), "list.inner"))
+                ))));
   }
 
   private DslBuilder getDiscovery() {

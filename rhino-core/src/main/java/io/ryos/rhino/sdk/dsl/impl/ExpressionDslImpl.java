@@ -18,8 +18,10 @@ package io.ryos.rhino.sdk.dsl.impl;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.ExpressionDsl;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.dsl.ResultingDsl;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
 import io.ryos.rhino.sdk.dsl.mat.ExpressionDslMaterializer;
 import java.util.Collections;
@@ -60,6 +62,16 @@ public class ExpressionDslImpl extends AbstractDSLItem implements ExpressionDsl 
 
   @Override
   public String getSaveTo() {
+    return null;
+  }
+
+  @Override
+  public HttpDsl saveTo(String sessionKey) {
+    return null;
+  }
+
+  @Override
+  public HttpDsl saveTo(String sessionKey, Scope scope) {
     return null;
   }
 }

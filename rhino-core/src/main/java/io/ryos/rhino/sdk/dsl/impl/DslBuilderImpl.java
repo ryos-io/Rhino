@@ -116,11 +116,10 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
 
   @Override
   public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      final String name,
       final ForEachBuilder<E, R, T> forEachBuilder) {
     Validate.notNull(forEachBuilder, "For each builder must not be null.");
-    Validate.notEmpty(name, "Name must not be null.");
 
+    var name = "forEach-" + UUID.randomUUID();
     var forEachDsl = new ForEachDslImpl<E, R, T>(name, Collections.emptyList(),
         forEachBuilder.getSessionKey() != null ? forEachBuilder.getSessionKey() : name,
         forEachBuilder.getSessionScope(),
@@ -231,12 +230,6 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
     forEachDsl.setParent(this);
     children.add(forEachDsl);
     return this;
-  }
-
-  @Override
-  public <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      final ForEachBuilder<E, R, T> forEachBuilder) {
-    return forEach("forEach-" + UUID.randomUUID(), forEachBuilder);
   }
 
   @Override

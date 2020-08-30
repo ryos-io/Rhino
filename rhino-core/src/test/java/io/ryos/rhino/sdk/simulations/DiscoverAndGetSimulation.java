@@ -2,7 +2,6 @@ package io.ryos.rhino.sdk.simulations;
 
 import static io.ryos.rhino.sdk.dsl.DslBuilder.dsl;
 import static io.ryos.rhino.sdk.dsl.MaterializableDslItem.http;
-import static io.ryos.rhino.sdk.dsl.utils.DslUtils.eval;
 import static io.ryos.rhino.sdk.dsl.utils.DslUtils.run;
 import static io.ryos.rhino.sdk.dsl.utils.HeaderUtils.headerValue;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.session;
@@ -16,7 +15,6 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.mat.HttpDslData;
@@ -54,7 +52,7 @@ public class DiscoverAndGetSimulation {
             .saveTo("result")));
   }
 
-  private HttpRetriableDsl getRequest() {
+  private HttpDsl getRequest() {
     return http("Get Request")
         .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
         .header(X_API_KEY, SimulationConfig.getApiKey())

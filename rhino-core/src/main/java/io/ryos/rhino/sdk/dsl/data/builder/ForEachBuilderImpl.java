@@ -32,7 +32,7 @@ import org.apache.commons.lang3.Validate;
  * @author Erhan Bagdemir
  */
 public class ForEachBuilderImpl<E, R extends Iterable<E>, T extends MaterializableDslItem> implements
-    ForEachBuilder<E, R, T> {
+    ForEachBuilder<E, R, T>, ForEachMapBuilder<E, R, T> {
 
   private String sessionKey;
   private Scope scope = Scope.EPHEMERAL;
@@ -83,7 +83,7 @@ public class ForEachBuilderImpl<E, R extends Iterable<E>, T extends Materializab
   }
 
   @Override
-  public ForEachBuilder<E, R, T> map(final Function<E, Object> mapper) {
+  public ForEachMapBuilder<E, R, T> map(final Function<E, Object> mapper) {
     Validate.notNull(mapper, "mapper must not be null.");
     this.mapper = mapper;
     return this;

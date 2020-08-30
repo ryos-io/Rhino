@@ -26,9 +26,8 @@ import io.ryos.rhino.sdk.annotations.Dsl;
 import io.ryos.rhino.sdk.annotations.Provider;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
-import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 
@@ -51,7 +50,7 @@ public class MeasurementTagsSimulation {
                     run(getResource())));
   }
 
-  private HttpRetriableDsl getResource() {
+  private HttpDsl getResource() {
     return http("Get Request")
         .auth()
         .header(session -> headerValue("X-Request-Id", "Test-" + provider.take()))

@@ -57,30 +57,27 @@ public class ForEachUploadSimulation {
   public DslBuilder setUp() {
     return dsl()
         .session("index", () -> ImmutableList.of(1, 2, 3))
-        .forEach("iterate",
-            in(getFiles()).exec(index -> some("count").exec(s -> {
+        .forEach(in(getFiles()).exec(index -> some("count").exec(s -> {
               System.out.println(index);
               return "OK";
             })))
-        .forEach("upload loop",
-            in(session("index"))
+        .forEach(in(session("index"))
                 .exec(index -> http("Prepare by PUT text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .upload(() -> file("classpath:///test.txt")).get())
-                .collect("uploads", Scope.SIMULATION));
+                    .upload(() -> file("classpath:///test.txt")).get()
+                    .collect("uploads", Scope.SIMULATION)));
   }
 
   @Dsl(name = "Get")
   public DslBuilder loadTestPutAndGetFile() {
     return dsl()
-        .forEach("get files",
-            in(global("uploads")).exec(index -> runIf(s -> true,
+        .forEach(in(global("uploads")).exec(index -> runIf(s -> true,
                 http("GET text.txt")
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(session -> FILES_ENDPOINT + "/" + index)
-                    .get())).collect("uploads"));
+                    .get())));
   }
 }

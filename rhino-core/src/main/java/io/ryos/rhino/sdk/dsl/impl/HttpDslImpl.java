@@ -3,13 +3,13 @@ package io.ryos.rhino.sdk.dsl.impl;
 import static io.ryos.rhino.sdk.dsl.utils.SessionUtils.getActiveUser;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.CollectableDslItem;
+import io.ryos.rhino.sdk.dsl.ContainerScopeDsl;
 import io.ryos.rhino.sdk.dsl.DslItem;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
-import io.ryos.rhino.sdk.dsl.MeasurableDsl;
-import io.ryos.rhino.sdk.dsl.ResultingDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import io.ryos.rhino.sdk.dsl.mat.DslMaterializer;
@@ -38,7 +38,10 @@ import org.apache.commons.lang3.Validate;
  * @since 1.1.0
  */
 public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, HttpConfigDsl,
-    HttpRetriableDsl {
+    HttpRetriableDsl, CollectableDslItem {
+
+  private Scope collectorsScope = Scope.USER;
+  private String collectorsSessionKey;
 
   private Supplier<InputStream> toUpload;
   private Function<UserSession, InputStream> toLazyUpload;
@@ -69,43 +72,43 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public HttpRetriableDsl get() {
+  public HttpDsl get() {
     this.httpMethod = Method.GET;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl head() {
+  public HttpDsl head() {
     this.httpMethod = Method.HEAD;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl put() {
+  public HttpDsl put() {
     this.httpMethod = Method.PUT;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl patch() {
+  public HttpDsl patch() {
     this.httpMethod = Method.PATCH;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl post() {
+  public HttpDsl post() {
     this.httpMethod = Method.POST;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl delete() {
+  public HttpDsl delete() {
     this.httpMethod = Method.DELETE;
     return this;
   }
 
   @Override
-  public HttpRetriableDsl options() {
+  public HttpDsl options() {
     this.httpMethod = Method.OPTIONS;
     return this;
   }
@@ -251,7 +254,7 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public MeasurableDsl retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
+  public HttpDsl retryIf(final Predicate<HttpResponse> predicate, final int numOfRetries) {
     Validate.isTrue(numOfRetries >= 0, "numberOfRetries must be bigger than zero.");
     Validate.notNull(predicate, "predicate must not be null.");
     this.retryInfo = new RetryInfo(predicate, numOfRetries);
@@ -272,6 +275,23 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     Validate.notNull(sessionKey, "Session key must not be null.");
     setSessionKey(sessionKey);
     setSessionScope(Scope.USER);
+    return this;
+  }
+
+  @Override
+  public HttpDsl collect(String sessionKey, Scope scope) {
+    Validate.notNull(sessionKey, "Session key must not be null.");
+    Validate.notNull(scope, "scope must not be null.");
+    collectorsSessionKey = sessionKey;
+    collectorsScope = scope;
+    return this;
+  }
+
+  @Override
+  public HttpDsl collect(String sessionKey) {
+    Validate.notNull(sessionKey, "Session key must not be null.");
+    collectorsSessionKey = sessionKey;
+    collectorsScope = Scope.USER;
     return this;
   }
 
@@ -372,15 +392,17 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     httpResultData.setEndpoint(getEndpoint().apply(userSession));
     httpResultData.setResponse(response);
 
-    final ResultingDsl parentResultingDsl = resolveSessionParent();
-    if (!hasParent() || parentResultingDsl == null) {
+    final ContainerScopeDsl parentResultingDsl = findContainerScope();
+    if (parentResultingDsl == null) {
       handleLocalScope(userSession, httpResultData);
       return userSession;
     }
 
     handleLocalScope(userSession, httpResultData);
 
-    return parentResultingDsl.handleResult(userSession, response);
+    return collectorsSessionKey != null ? parentResultingDsl.collect(userSession, response,
+        getCollectorsSessionKey(),
+        getCollectorsScope()) : userSession;
   }
 
   private void handleLocalScope(UserSession userSession, HttpDslData httpResultData) {
@@ -396,12 +418,12 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
     }
   }
 
-  private ResultingDsl resolveSessionParent() {
+  private ContainerScopeDsl findContainerScope() {
     DslItem current = getParent();
-    ResultingDsl resultingDsl = null;
+    ContainerScopeDsl resultingDsl = null;
     while (current != null) {
-      if (current instanceof ResultingDsl) {
-        resultingDsl = (ResultingDsl) current;
+      if (current instanceof ContainerScopeDsl) {
+        resultingDsl = (ContainerScopeDsl) current;
       }
       current = current.getParent();
     }
@@ -415,6 +437,14 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
 
   public VerificationInfo getVerifier() {
     return verifier;
+  }
+
+  public Scope getCollectorsScope() {
+    return collectorsScope;
+  }
+
+  public String getCollectorsSessionKey() {
+    return collectorsSessionKey;
   }
 
   @Override

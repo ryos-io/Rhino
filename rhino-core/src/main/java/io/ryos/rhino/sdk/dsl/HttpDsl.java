@@ -26,10 +26,11 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface HttpDsl extends RetriableDsl<MeasurableDsl, HttpResponse>,
+public interface HttpDsl extends RetriableDsl<HttpResponse>,
     SessionDslItem,
     MeasurableDsl,
     VerifiableDslItem,
+    CollectableDslItem,
     ResultingDsl<HttpResponse> {
 
   public enum Method {

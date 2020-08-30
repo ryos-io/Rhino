@@ -17,13 +17,14 @@
 package io.ryos.rhino.sdk.dsl.utils;
 
 import io.ryos.rhino.sdk.data.UserSession;
+import io.ryos.rhino.sdk.dsl.CollectableDslItem;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.ExpressionDsl;
 import io.ryos.rhino.sdk.dsl.HttpConfigDsl;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
-import io.ryos.rhino.sdk.dsl.data.builder.ForEachBuilder;
 import io.ryos.rhino.sdk.dsl.data.builder.MapperBuilder;
 import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.dsl.impl.ExpressionDslImpl;
@@ -93,18 +94,19 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, valueSupplier);
   }
 
-  public static DslBuilder collect(String sessionKey, Supplier<Object> valueSupplier) {
-    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, valueSupplier);
+  public static <T extends CollectableDslItem> CollectableDslItem collect(T dslItem,
+      String sessionKey) {
+    return dslItem.collect(sessionKey);
+  }
+
+  public static <T extends CollectableDslItem> CollectableDslItem collect(T dslItem,
+      String sessionKey,
+      Scope scope) {
+    return dslItem.collect(sessionKey, scope);
   }
 
   public static <R, T> DslBuilder map(MapperBuilder<R, T> mapperBuilder) {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).map(mapperBuilder);
-  }
-
-  public static <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      String name,
-      ForEachBuilder<E, R, T> forEachBuilder) {
-    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).forEach(name, forEachBuilder);
   }
 
   public static <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(

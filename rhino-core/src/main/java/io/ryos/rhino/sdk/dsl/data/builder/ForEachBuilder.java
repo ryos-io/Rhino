@@ -27,11 +27,7 @@ public interface ForEachBuilder<E, R extends Iterable<E>, T extends Materializab
 
   ForEachBuilder<E, R, T> exec(Function<E, T> forEachFunction);
 
-  ForEachBuilder<E, R, T> map(Function<E, Object> mapper);
-
-  ForEachBuilder<E, R, T> collect(String sessionKey);
-
-  ForEachBuilder<E, R, T> collect(String sessionKey, Scope scope);
+  ForEachMapBuilder<E, R, T> map(Function<E, Object> mapper);
 
   Function<UserSession, R> getIterableSupplier();
 

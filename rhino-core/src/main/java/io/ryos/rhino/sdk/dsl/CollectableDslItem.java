@@ -16,18 +16,12 @@
 
 package io.ryos.rhino.sdk.dsl;
 
-import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 
-/**
- */
-public interface ResultingDsl<R> extends MaterializableDslItem {
+public interface CollectableDslItem extends MaterializableDslItem {
 
-  UserSession handleResult(UserSession userSession, R response);
+  HttpDsl collect(String sessionKey);
 
-  String getSaveTo();
+  HttpDsl collect(String sessionKey, Scope scope);
 
-  HttpDsl saveTo(String sessionKey);
-
-  HttpDsl saveTo(String sessionKey, Scope scope);
 }

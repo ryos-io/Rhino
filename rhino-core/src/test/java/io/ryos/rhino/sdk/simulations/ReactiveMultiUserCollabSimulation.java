@@ -34,7 +34,6 @@ import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.dsl.HttpDsl;
-import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
@@ -60,19 +59,17 @@ public class ReactiveMultiUserCollabSimulation {
     return dsl()
         .run(uploadFile())
         .session("files", ReactiveMultiUserCollabSimulation::getFiles)
-        .forEach("test for each",
-            in(session("files"))
-                .exec(this::uploadFileForSecondUser)
-                .collect("uploads", Scope.SIMULATION));
+        .forEach(in(session("files")).exec(this::uploadFileForSecondUser));
   }
 
-  private HttpRetriableDsl uploadFileForSecondUser(Object file) {
+  private HttpDsl uploadFileForSecondUser(Object file) {
     return http("PUT in Loop")
         .header(X_API_KEY, SimulationConfig.getApiKey())
         .auth()
         .endpoint(session -> FILES_ENDPOINT + "/" + file)
         .upload(() -> file("classpath:///test.txt"))
-        .put();
+        .put()
+        .collect("uploads", Scope.SIMULATION);
   }
 
   private HttpDsl uploadFile() {
@@ -88,7 +85,7 @@ public class ReactiveMultiUserCollabSimulation {
   @Dsl(name = "Upload and Get")
   public DslBuilder loadTestPutAndGetFile() {
     return dsl()
-        .forEach("get all files", in(global("uploads")).exec(file ->
+        .forEach(in(global("uploads")).exec(file ->
             http("GET in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()

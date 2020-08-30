@@ -29,17 +29,6 @@ import java.util.function.Predicate;
  */
 public interface IterableDsl extends DslItem {
 
-  /**
-   * For-each DSL spec loops through the sequence of elements built by {@link ForEachBuilder}
-   * instance.
-   *
-   * @param name           Name of the runner DSL.
-   * @param forEachBuilder Iterable builder.
-   * @return {@link DslBuilder} runnable DSL instance.
-   */
-  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(String name,
-      ForEachBuilder<E, R, T> forEachBuilder);
-
   <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
       Function<UserSession, R> iterableExtractor,
       Function<E, T> dslItemExtractor, String sessionKey, Scope scope);

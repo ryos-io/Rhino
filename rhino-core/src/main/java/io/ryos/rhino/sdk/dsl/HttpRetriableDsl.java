@@ -26,7 +26,7 @@ import java.util.function.Predicate;
  * @author Erhan Bagdemir
  * @since 1.1.0
  */
-public interface HttpRetriableDsl extends HttpResponseDsl {
+public interface HttpRetriableDsl extends ResultingDsl<HttpResponse>, CollectableDslItem {
 
-  MaterializableDslItem retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
+  HttpDsl retryIf(Predicate<HttpResponse> predicate, int numOfRetries);
 }
