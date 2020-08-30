@@ -24,6 +24,7 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
@@ -83,7 +84,7 @@ public class UploadAndReadMultipleFilesWithMultiUsersSimulation {
     return r.getResponseBodyAsString();
   }
 
-  private HttpRetriableDsl getMetadata(Object response) {
+  private HttpDsl getMetadata(Object response) {
      return http("GET metadata")
         .header(c -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
         .auth()
@@ -91,7 +92,7 @@ public class UploadAndReadMultipleFilesWithMultiUsersSimulation {
         .get();
   }
 
-  private HttpRetriableDsl uploadFile(Object file) {
+  private HttpDsl uploadFile(Object file) {
 
     return http("File upload")
         .header(session -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
@@ -101,7 +102,7 @@ public class UploadAndReadMultipleFilesWithMultiUsersSimulation {
         .put();
   }
 
-  private HttpRetriableDsl getFile(Object id) {
+  private HttpDsl getFile(Object id) {
     return http("GET text.txt")
         .header(c -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
         .auth(session -> userProvider.take())

@@ -22,6 +22,7 @@ import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.HttpDsl;
 import io.ryos.rhino.sdk.dsl.HttpRetriableDsl;
 import io.ryos.rhino.sdk.providers.OAuthUserProvider;
 import io.ryos.rhino.sdk.providers.UUIDProvider;
@@ -59,7 +60,7 @@ public class TwoUsersUploadDownloadSimulation {
         .run(getFile());
   }
 
-  private HttpRetriableDsl getFile() {
+  private HttpDsl getFile() {
     return http(  "GET text.txt")
         .header(c -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
         .auth(session -> userProvider.take())
@@ -67,7 +68,7 @@ public class TwoUsersUploadDownloadSimulation {
         .get();
   }
 
-  private HttpRetriableDsl putFile() {
+  private HttpDsl putFile() {
     return http("UPLOAD text.txt")
         .header(session -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + uuidProvider.take()))
         .auth()

@@ -56,7 +56,7 @@ public class ExtractInformationWithMapSimulation {
             .run(get()));
   }
 
-  private HttpRetriableDsl get() {
+  private HttpDsl get() {
     return http("Get Request")
         .header(session -> headerValue(X_REQUEST_ID, "TwoUsersUploadDownloadSimulationTest-" + UUID.randomUUID().toString()))
         .header(X_API_KEY, SimulationConfig.getApiKey())
