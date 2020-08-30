@@ -30,23 +30,7 @@ import java.util.function.Predicate;
 public interface IterableDsl extends DslItem {
 
   <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      Function<UserSession, R> iterableExtractor,
-      Function<E, T> dslItemExtractor, String sessionKey, Scope scope);
-
-  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      R iterable,
-      Function<E, T> dslItemExtractor, String sessionKey, Scope scope);
-
-  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
       R iterable, Function<E, T> dslItemExtractor);
-
-  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      R iterable, Function<E, T> dslItemExtractor, String sessionKey);
-
-  <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
-      final Function<UserSession, R> iterableExtractor,
-      final Function<E, T> dslItemExtractor,
-      final String sessionKey);
 
   <E, R extends Iterable<E>, T extends MaterializableDslItem> DslBuilder forEach(
       final Function<UserSession, R> iterableExtractor,
