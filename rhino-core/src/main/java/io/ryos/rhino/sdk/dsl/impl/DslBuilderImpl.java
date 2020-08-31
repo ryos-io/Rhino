@@ -12,6 +12,8 @@ import io.ryos.rhino.sdk.dsl.mat.LoadDslMaterializer;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +52,17 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
 
     dslItem.setParent(this);
     children.add(dslItem);
+    return this;
+  }
+
+  @Override
+  public DslBuilder run(Collection<MaterializableDslItem> dslItems) {
+    if (dslItems == null || dslItems.isEmpty()) {
+      return this;
+    }
+
+    dslItems.forEach(this::setParent);
+    children.addAll(dslItems);
     return this;
   }
 
