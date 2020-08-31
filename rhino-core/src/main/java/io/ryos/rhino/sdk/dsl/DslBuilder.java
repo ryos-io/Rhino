@@ -21,6 +21,7 @@ import io.ryos.rhino.sdk.dsl.impl.DslBuilderImpl;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.function.Consumer;
+import java.util.Collection;
 import java.util.function.Predicate;
 
 /**
@@ -56,6 +57,16 @@ public interface DslBuilder extends SessionDsl, IterableDsl, AssertionDsl, Mappa
    * @return {@link DslBuilderImpl} instance.
    */
   DslBuilder run(MaterializableDslItem spec);
+
+  /**
+   * Runner DSL is a {@link DslBuilder} instance to run the {@link MaterializableDslItem}s passed as
+   * parameters.
+   * <p>
+   *
+   * @param specs {@link MaterializableDslItem}s to materialize and run.
+   * @return {@link DslBuilderImpl} instance.
+   */
+  DslBuilder run(Collection<MaterializableDslItem> specs);
 
   /**
    * Conditional runnable DSL is a {@link DslBuilder} if {@link Predicate} returns {@code true}, then

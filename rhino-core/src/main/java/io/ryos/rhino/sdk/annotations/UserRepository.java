@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface UserRepository {
   /**
-   * Delay between login requests while requesting token from IMS.
+   * Delay between login requests while requesting token from the OAuth Provider.
    * <p>
    *
    * @return Delay in millis.
