@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 /**
- * Entity to deserialize the JSON responses from the IMS.
+ * Entity to deserialize the JSON responses from the OAuth Provider.
  *
  * @author Erhan Bagdemir
  * @since 1.0.0

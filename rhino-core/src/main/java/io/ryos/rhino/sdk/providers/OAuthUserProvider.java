@@ -42,7 +42,7 @@ public class OAuthUserProvider extends AbstractProvider<OAuthUser> {
 
     var user = userSessionRepository.take().getUser();
     if (user instanceof OAuthUser) {
-      return (OAuthUser) userSessionRepository.take().getUser();
+      return (OAuthUser) user;
     }
 
     throw new NoUserFoundException("No OAuth users found in the repository.");
@@ -50,8 +50,8 @@ public class OAuthUserProvider extends AbstractProvider<OAuthUser> {
 
   /**
    * Take a user from the repository excluding the one passed as parameter till the repository
-   * provides one. If after three attempts not succeeds, then {@link IllegalArgumentException} will
-   * be thrown.
+   * provides one. If this does not succeed after three attempts, an
+   * {@link IllegalArgumentException} will be thrown.
    * <p>
    *
    * @param excludedUser User instance.
