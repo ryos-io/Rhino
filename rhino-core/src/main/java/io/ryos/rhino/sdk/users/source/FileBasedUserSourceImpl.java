@@ -45,7 +45,7 @@ public class FileBasedUserSourceImpl implements UserSource {
     if (userList.isEmpty()) {
       throw new NoUserFoundException(
           "No valid user found in " + pathToFile + ". The CSV file should contain "
-              + "lines in the following format: username;password;scope");
+              + "lines in the following format: username;password;scopes;region");
     }
     return userList;
   }
