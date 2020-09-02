@@ -119,3 +119,8 @@ Questions/Contributions?
 
 Feel free to fork the project and make contributions in terms of Pull Requests. For bigger 
 proposals, architectural discussions and bug reports, use the Github's issue tracker.
+
+Sponsors
+--- 
+
+<a href="https://www.jetbrains.com/?from=Ryos"><img src="https://user-images.githubusercontent.com/1160613/92041635-e01bd400-ed78-11ea-8fa4-3c2325fc680b.png" width="100"></a>
