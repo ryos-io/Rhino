@@ -12,7 +12,6 @@ import io.ryos.rhino.sdk.dsl.mat.LoadDslMaterializer;
 import io.ryos.rhino.sdk.reporting.VerificationInfo;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -97,6 +96,7 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   }
 
   @Override
+  @Deprecated
   public DslBuilder session(String sessionKey, Supplier<Object> objectSupplier) {
     Validate.notNull(objectSupplier, "Object supplier must not be null.");
     Validate.notEmpty(sessionKey, "Session key must not be null.");
@@ -108,6 +108,7 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
   }
 
   @Override
+  @Deprecated
   public DslBuilder session(final String sessionKey, final Object object) {
     Validate.notNull(object, "Object supplier must not be null.");
     Validate.notEmpty(sessionKey, "Session key must not be null.");
@@ -117,6 +118,53 @@ public class DslBuilderImpl extends AbstractDSLItem implements DslBuilder {
     children.add(sessionDsl);
     return this;
   }
+
+  @Override
+  public DslBuilder define(String sessionKey, Supplier<Object> objectSupplier) {
+    Validate.notNull(objectSupplier, "Object supplier must not be null.");
+    Validate.notEmpty(sessionKey, "Session key must not be null.");
+
+    var sessionDsl = new SessionDslImpl(sessionKey, objectSupplier);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
+    return this;
+  }
+
+  @Override
+  public DslBuilder define(final String sessionKey, final Object object) {
+    Validate.notNull(object, "Object supplier must not be null.");
+    Validate.notEmpty(sessionKey, "Session key must not be null.");
+
+    var sessionDsl = new SessionDslImpl(sessionKey, () -> object);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
+    return this;
+  }
+
+  @Override
+  public DslBuilder define(final String sessionKey, final Object object, final Scope scope) {
+    Validate.notNull(object, "Object supplier must not be null.");
+    Validate.notEmpty(sessionKey, "Session key must not be null.");
+    Validate.notNull(scope, "scope key must not be null.");
+
+    var sessionDsl = new SessionDslImpl(sessionKey, () -> object, scope);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
+    return this;
+  }
+
+  @Override
+  public DslBuilder define(final String sessionKey, final Supplier<Object> objectSupplier, final Scope scope) {
+    Validate.notNull(objectSupplier, "Object supplier must not be null.");
+    Validate.notEmpty(sessionKey, "Session key must not be null.");
+    Validate.notNull(scope, "scope key must not be null.");
+
+    var sessionDsl = new SessionDslImpl(sessionKey, objectSupplier, scope);
+    sessionDsl.setParent(this);
+    children.add(sessionDsl);
+    return this;
+  }
+
 
   @Override
   public <R, T> DslBuilder map(MapperBuilder<R, T> mapperBuilder) {

@@ -16,6 +16,7 @@
 
 package io.ryos.rhino.sdk.dsl;
 
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.function.Supplier;
 
 /**
@@ -27,19 +28,27 @@ public interface SessionDsl extends DslItem {
 
   /**
    * Session DSL is used to save objects to the current define which are provided by the object
-   * supplier.
+   * supplier. Use {@link #define(String, Supplier)} instead.
    *
    * @param sessionKey     Session key.
    * @param objectSupplier Object provider.
    * @return Runnable DSL instance.
    */
+  @Deprecated
   DslBuilder session(String sessionKey, Supplier<Object> objectSupplier);
 
   /**
-   * Session DSL is used to save objects to the current define.
+   * Session DSL is used to save objects to the current define.  Use {@link #define(String, Object)} instead.
    *
    * @param object Object instance to store in the define.
    * @return {@link DslBuilder} instance.
    */
+  @Deprecated
   DslBuilder session(String sessionKey, Object object);
+
+  DslBuilder define(String sessionKey, Supplier<Object> objectSupplier);
+  DslBuilder define(String sessionKey, Object object);
+  DslBuilder define(String sessionKey, Object object, Scope scope);
+  DslBuilder define(String sessionKey, Supplier<Object> objectSupplier, Scope scope);
+
 }

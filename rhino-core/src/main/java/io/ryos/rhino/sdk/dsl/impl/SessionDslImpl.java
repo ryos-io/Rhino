@@ -28,12 +28,23 @@ public class SessionDslImpl extends AbstractSessionDslItem {
 
   private final String sessionKey;
   private final Supplier<Object> objectSupplier;
+  private final Scope scope;
+
+  public SessionDslImpl(String sessionKey, Supplier<Object> objectSupplier,
+      Scope scope) {
+    super("");
+
+    this.sessionKey = Validate.notEmpty(sessionKey, "Session key must not be null.");
+    this.objectSupplier = Validate.notNull(objectSupplier, "Object supplier must not null.");
+    this.scope = scope;
+  }
 
   public SessionDslImpl(String sessionKey, Supplier<Object> objectSupplier) {
     super("");
 
     this.sessionKey = Validate.notEmpty(sessionKey, "Session key must not be null.");
     this.objectSupplier = Validate.notNull(objectSupplier, "Object supplier must not null.");
+    this.scope = Scope.USER;
   }
 
   @Override
@@ -54,5 +65,9 @@ public class SessionDslImpl extends AbstractSessionDslItem {
   @Override
   public List<MaterializableDslItem> getChildren() {
     return Collections.emptyList();
+  }
+
+  public Scope getScope() {
+    return scope;
   }
 }

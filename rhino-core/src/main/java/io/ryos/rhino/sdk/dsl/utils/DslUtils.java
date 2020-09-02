@@ -94,6 +94,20 @@ public class DslUtils {
     return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, valueSupplier);
   }
 
+  public static DslBuilder define(String sessionKey, Object value) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).session(sessionKey, () -> value);
+  }
+
+  public static DslBuilder define(String sessionKey, Object value, Scope scope) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).define(sessionKey, () -> value,
+        scope);
+  }
+
+  public static DslBuilder define(String sessionKey, Supplier<Object> valueSupplier, Scope scope) {
+    return new DslBuilderImpl(DslBuilder.dslMethodName.get()).define(sessionKey, valueSupplier,
+        scope);
+  }
+
   public static <T extends CollectableDslItem> CollectableDslItem collect(T dslItem,
       String sessionKey) {
     return dslItem.collect(sessionKey);

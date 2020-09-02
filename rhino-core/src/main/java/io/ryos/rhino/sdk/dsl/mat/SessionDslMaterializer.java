@@ -18,6 +18,7 @@ package io.ryos.rhino.sdk.dsl.mat;
 
 import io.ryos.rhino.sdk.data.UserSession;
 import io.ryos.rhino.sdk.dsl.SessionDslItem;
+import io.ryos.rhino.sdk.dsl.SessionDslItem.Scope;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
@@ -31,9 +32,16 @@ public class SessionDslMaterializer implements DslMaterializer {
 
   @Override
   public Mono<UserSession> materialize(UserSession userSession) {
+
     Supplier<Object> objectSupplier = dslItem.getObjectFunction();
     Object apply = objectSupplier.get();
-    userSession.add(dslItem.getSessionKey(), apply);
+
+    if (Scope.USER.equals(dslItem.getSessionScope())) {
+      userSession.add(dslItem.getSessionKey(), apply);
+    } else {
+      userSession.getSimulationSession().add(dslItem.getSessionKey(), apply);
+    }
+
     return Mono.just(userSession);
   }
 }
