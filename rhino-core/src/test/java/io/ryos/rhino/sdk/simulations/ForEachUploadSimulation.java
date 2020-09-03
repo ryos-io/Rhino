@@ -56,7 +56,7 @@ public class ForEachUploadSimulation {
   @Before
   public DslBuilder setUp() {
     return dsl()
-        .session("index", () -> ImmutableList.of(1, 2, 3))
+        .define("index", () -> ImmutableList.of(1, 2, 3))
         .forEach(in(getFiles()).exec(index -> some("count").exec(s -> {
               System.out.println(index);
               return "OK";
