@@ -17,72 +17,95 @@
 package io.ryos.rhino.sdk;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.ryos.rhino.sdk.simulations.ReactiveMultiUserCollabSimulation;
 import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
-@Ignore
 public class ReactiveMultiUserCollabTest {
+
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
   private static final int PORT = 8099;
 
-  private WireMockServer wmServer;
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
+      .jettyAcceptors(2)
+      .jettyAcceptQueueSize(100)
+      .containerThreads(100));
 
   @Before
   public void setUp() {
-    wmServer = new WireMockServer(wireMockConfig().port(PORT)
-        .jettyAcceptors(2)
-        .jettyAcceptQueueSize(100)
-        .containerThreads(100));
-    wmServer.start();
   }
 
   @After
   public void tearDown() {
-    wmServer.stop();
+    wireMockRule.stop();
   }
 
   @Test
   public void testMultiUser() throws InterruptedException {
-    WireMock.configureFor("localhost", PORT);
 
-    wmServer.stubFor(WireMock.post(urlEqualTo("/token"))
+    wireMockRule.stubFor(WireMock.post(urlEqualTo("/token"))
+        .inScenario("multiUser")
+        .willSetStateTo("secondUser")
         .willReturn(aResponse()
             .withStatus(200)
             .withBody("{\"access_token\": \"abc123\", \"refresh_token\": \"abc123\"}")));
 
-    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
+    wireMockRule.stubFor(WireMock.post(urlEqualTo("/token"))
+        .inScenario("multiUser")
+        .whenScenarioStateIs("secondUser")
+        .willSetStateTo("end")
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withBody("{\"access_token\": \"abc345\", \"refresh_token\": \"abc345\"}")));
+
+    wireMockRule.stubFor(WireMock.put(urlEqualTo("/api/files/file1"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
+    wireMockRule.stubFor(WireMock.put(urlEqualTo("/api/files/file2"))
         .willReturn(aResponse()
             .withStatus(201)
             .withFixedDelay(400)));
 
-    wmServer.stubFor(WireMock.put(urlEqualTo("/api/files"))
+    wireMockRule.stubFor(WireMock.put(urlEqualTo("/api/files"))
         .willReturn(aResponse()
             .withStatus(201)
+            .withHeader("Location",
+                "http://localhost:" + wireMockRule.port() + "/api/files/newAsset")
             .withFixedDelay(400)));
 
-    wmServer.stubFor(WireMock.get(urlEqualTo("/api/files"))
+    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/files/newAsset"))
         .willReturn(aResponse()
             .withStatus(200)
             .withFixedDelay(400)));
 
-    TestUtils.overridePorts(PORT);
+    wireMockRule.stubFor(WireMock.get(urlEqualTo("/api/files"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withFixedDelay(400)));
 
-    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).start();
+    TestUtils.overridePorts(wireMockRule.port());
 
-    Thread.sleep(5000L);
+    Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).times(1);
+
+    Thread.sleep(2000);
+
+    wireMockRule.verify(3, putRequestedFor(urlEqualTo("/api/files")));
+    wireMockRule.verify(1, getRequestedFor(urlEqualTo("/api/files/newAsset")));
+    wireMockRule.verify(2, getRequestedFor(urlEqualTo("/api/files")));
+    wireMockRule.verify(4, putRequestedFor(urlMatching("/api/files/.*")));
   }
 }

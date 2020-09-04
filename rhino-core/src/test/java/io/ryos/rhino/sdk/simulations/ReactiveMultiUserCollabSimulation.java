@@ -58,7 +58,7 @@ public class ReactiveMultiUserCollabSimulation {
   public DslBuilder setUp() {
     return dsl()
         .run(uploadFile())
-        .session("files", ReactiveMultiUserCollabSimulation::getFiles)
+        .define("files", ReactiveMultiUserCollabSimulation::getFiles)
         .forEach(in(session("files")).exec(this::uploadFileForSecondUser));
   }
 
@@ -91,7 +91,7 @@ public class ReactiveMultiUserCollabSimulation {
             .auth()
             .endpoint(session -> FILES_ENDPOINT)
             .get()))
-        .session("userB", () -> userProvider.take())
+        .define("userB", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
@@ -103,7 +103,7 @@ public class ReactiveMultiUserCollabSimulation {
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth(session("userB"))
-            .endpoint(global("Prepare by PUT text.txt", "endpoint"))
+            .endpoint(global("Prepare by PUT text.txt", "headers['Location']"))
             .get());
   }
 }
