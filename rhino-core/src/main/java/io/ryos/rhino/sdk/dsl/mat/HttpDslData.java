@@ -16,9 +16,13 @@
 
 package io.ryos.rhino.sdk.dsl.mat;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import io.ryos.rhino.sdk.dsl.data.HttpResponse;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class HttpDslData {
 
@@ -35,6 +39,16 @@ public class HttpDslData {
 
   public HttpResponse getResponse() {
     return response;
+  }
+
+  public Map<String, String> getHeaders() {
+    HttpHeaders headers = getResponse().getResponse().getHeaders();
+    Map<String, String> headerMap = new HashMap<>();
+    for (final Entry<String, String> entry : headers) {
+      headerMap.put(entry.getKey(), entry.getValue());
+    }
+
+    return headerMap;
   }
 
   public List<String> getHeaderValues(String headerName) {
