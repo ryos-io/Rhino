@@ -38,10 +38,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <systemPropertyVariables>
             <STOP_AFTER>1</STOP_AFTER>
           </systemPropertyVariables>
         </configuration>
+        <version>2.21.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
