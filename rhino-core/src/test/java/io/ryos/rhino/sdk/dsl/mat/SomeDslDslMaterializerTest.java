@@ -5,9 +5,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import io.ryos.rhino.sdk.Simulation;
 import io.ryos.rhino.sdk.data.UserSessionImpl;
 import io.ryos.rhino.sdk.dsl.SomeDsl;
 import io.ryos.rhino.sdk.runners.EventDispatcher;
+import io.ryos.rhino.sdk.simulations.FilterSimulation;
 import io.ryos.rhino.sdk.users.data.UserImpl;
 import java.util.UUID;
 import org.junit.Rule;
@@ -26,6 +28,8 @@ public class SomeDslDslMaterializerTest {
 
   @Test
   public void testMaterialize() {
+    Simulation.getInstance("classpath:///rhino.properties",
+        FilterSimulation.class);
 
     var user = new UserSessionImpl(
         new UserImpl("user", UUID.randomUUID().toString(), "", ""));

@@ -45,7 +45,6 @@ public class ReactiveMultiUserCollabSimulation {
 
   private static final String X_REQUEST_ID = "X-Request-Id";
   private static final String X_API_KEY = "X-Api-Key";
-  private static final String FILES_ENDPOINT = getEndpoint("files");
 
   @UserProvider
   private OAuthUserProvider userProvider;
@@ -66,7 +65,7 @@ public class ReactiveMultiUserCollabSimulation {
     return http("PUT in Loop")
         .header(X_API_KEY, SimulationConfig.getApiKey())
         .auth()
-        .endpoint(session -> FILES_ENDPOINT + "/" + file)
+        .endpoint(session -> getEndpoint("files") + "/" + file)
         .upload(() -> file("classpath:///test.txt"))
         .put()
         .collect("uploads", Scope.SIMULATION);
@@ -77,7 +76,7 @@ public class ReactiveMultiUserCollabSimulation {
         .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
         .header(X_API_KEY, SimulationConfig.getApiKey())
         .auth()
-        .endpoint(session -> FILES_ENDPOINT)
+        .endpoint(session -> getEndpoint("files"))
         .upload(() -> file("classpath:///test.txt"))
         .put().saveTo("Prepare by PUT text.txt", Scope.SIMULATION);
   }
@@ -89,14 +88,14 @@ public class ReactiveMultiUserCollabSimulation {
             http("GET in Loop")
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint(session -> FILES_ENDPOINT)
+                .endpoint(session -> getEndpoint("files"))
             .get()))
         .define("userB", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + userProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
             .auth()
-            .endpoint(session -> FILES_ENDPOINT)
+            .endpoint(session -> getEndpoint("files"))
             .upload(() -> file("classpath:///test.txt"))
             .put())
         .run(http("GET text.txt")

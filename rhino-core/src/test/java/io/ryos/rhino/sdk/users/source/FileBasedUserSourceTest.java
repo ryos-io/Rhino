@@ -30,7 +30,7 @@ public class FileBasedUserSourceTest {
 
   private static final String CSV_EMPTY_FILE = "classpath:///test_users_empty.csv";
   private static final String CSV_FILE = "classpath:///test_users.csv";
-  private static final int EXPECTED_NUM_USERS = 9;
+  private static final int EXPECTED_NUM_USERS = 2;
 
   @Test
   public void testGetUsers() {
@@ -59,7 +59,7 @@ public class FileBasedUserSourceTest {
     var users = fileBasedUserSource.getUsers(4, Regions.EU);
     assertThat(users, notNullValue());
     assertThat(users.isEmpty(), equalTo(false));
-    assertThat(users.size(), equalTo(3));
+    assertThat(users.size(), equalTo(1));
   }
 
   @Test

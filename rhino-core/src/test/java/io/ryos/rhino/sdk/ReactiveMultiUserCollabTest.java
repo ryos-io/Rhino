@@ -35,13 +35,9 @@ import org.junit.Test;
 public class ReactiveMultiUserCollabTest {
 
   private static final String PROPERTIES_FILE = "classpath:///rhino.properties";
-  private static final int PORT = 8099;
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort()
-      .jettyAcceptors(2)
-      .jettyAcceptQueueSize(100)
-      .containerThreads(100));
+  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicPort());
 
   @Before
   public void setUp() {
@@ -101,7 +97,7 @@ public class ReactiveMultiUserCollabTest {
 
     Simulation.getInstance(PROPERTIES_FILE, ReactiveMultiUserCollabSimulation.class).times(1);
 
-    Thread.sleep(2000);
+    Thread.sleep(3000);
 
     wireMockRule.verify(3, putRequestedFor(urlEqualTo("/api/files")));
     wireMockRule.verify(1, getRequestedFor(urlEqualTo("/api/files/newAsset")));

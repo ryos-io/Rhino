@@ -71,9 +71,9 @@ public class Simulation {
     }
   }
 
-  public static Simulation getInstance(final String path, final Class<?> simulationClass) {
+  public static Simulation getInstance(final String propsPath, final Class<?> simulationClass) {
     if (INSTANCE == null) {
-      INSTANCE = new Simulation(path, simulationClass);
+      INSTANCE = new Simulation(propsPath, simulationClass);
     }
     return INSTANCE;
   }
