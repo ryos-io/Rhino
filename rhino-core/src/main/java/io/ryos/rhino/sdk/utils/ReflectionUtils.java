@@ -73,21 +73,6 @@ public class ReflectionUtils {
     }
   }
 
-  /* Find the first annotation type, clazzAnnotation, on field declarations of the clazz.  */
-  public static <T extends Annotation> Pair<Optional<Field>, T> findFieldByAnnotation(
-      final Class clazz,
-      final Class<T> clazzA) {
-
-    var field = Arrays.stream(clazz.getDeclaredFields())
-        .filter(m -> Arrays.stream(m.getDeclaredAnnotations())
-            .anyMatch(clazzA::isInstance))
-        .findFirst();
-
-    return new Pair<>(field,
-        field.map(f -> f.getDeclaredAnnotationsByType(clazzA)[0])
-            .orElseThrow());
-  }
-
   /**
    * get the list of annotations along with {@link Field} instances.
    */
@@ -136,20 +121,6 @@ public class ReflectionUtils {
       return (T) method.invoke(declaring, args);
     } catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e.getCause().getMessage());
-      throw new RhinoFrameworkError(
-          "Cannot invoke the method with step: " + method.getName() + "()", e);
-    }
-  }
-
-  public static <T> T executeStaticMethod(Method method, Object... args) {
-    Objects.requireNonNull(method);
-
-    try {
-      return (T) method.invoke(null, args);
-    } catch (NullPointerException npe) {
-      throw new IllegalMethodSignatureException(
-          "@Prepare/@CleanUp annotation must be used on public static methods.");
-    } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RhinoFrameworkError(
           "Cannot invoke the method with step: " + method.getName() + "()", e);
     }
