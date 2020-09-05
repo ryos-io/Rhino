@@ -4,6 +4,7 @@
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
   <img src="https://img.shields.io/badge/rhino--core-2.2.0.M1-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=ryos-io_Rhino&metric=alert_status"/>
   <a href="https://javadoc.io/doc/io.ryos.rhino/rhino-core"><img src="https://javadoc.io/badge2/io.ryos.rhino/rhino-core/javadoc.svg" border=0></a>
 </p>
 
