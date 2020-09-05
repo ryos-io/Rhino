@@ -35,7 +35,7 @@ public class CollaborativeUploadLoadSimulation {
   @Dsl(name = "Upload File")
   public DslBuilder testUploadAndGetFile() {
     return dsl()
-        .session("2. User", () -> userProvider.take())
+        .define("2. User", () -> userProvider.take())
         .run(http("PUT text.txt")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
