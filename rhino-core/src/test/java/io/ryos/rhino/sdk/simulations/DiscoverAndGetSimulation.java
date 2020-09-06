@@ -35,21 +35,8 @@ public class DiscoverAndGetSimulation {
   public DslBuilder loadTestDiscoverAndGet() {
     return dsl().measure("measure 1",
         run(getDiscovery())
-            .map(MapperBuilder.in("result").doMap(r -> extractEndpoint((HttpDslData) r))
-                .collect("endpoint"))
+            .map(MapperBuilder.in("result").doMap(r -> extractEndpoint((HttpDslData) r)).collect("endpoint"))
           .run(getRequest()));
-  }
-
-  @Dsl(name = "Load DSL GET")
-  public DslBuilder loadTestDiscoverAndGet2() {
-    return dsl().measure("measure 2",
-        run(http("Discovery Request 3")
-            .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + UUID.randomUUID().toString()))
-            .header(X_API_KEY, SimulationConfig.getApiKey())
-            .auth()
-            .endpoint(DISCOVERY_ENDPOINT)
-            .get()
-            .saveTo("result")));
   }
 
   private HttpDsl getRequest() {
