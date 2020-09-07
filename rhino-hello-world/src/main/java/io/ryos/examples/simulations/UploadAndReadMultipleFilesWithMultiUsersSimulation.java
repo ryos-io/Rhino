@@ -64,8 +64,8 @@ public class UploadAndReadMultipleFilesWithMultiUsersSimulation {
   public DslBuilder setUp() {
     return dsl()
         .session("files", FILES_TO_UPLOAD)
-        .forEach(session("files"), this::uploadFile, "uploadedFiles")
-        .forEach(session("files"), this::getMetadata, "metadata")
+        .forEach(session("files"), this::uploadFile)
+        .forEach(session("files"), this::getMetadata)
         .map(MapperBuilder.in(global("metadata"))
             .doMap(o -> ((HttpResponse)o).getResponseBodyAsString())
             .collect("ids", SessionDslItem.Scope.SIMULATION));
