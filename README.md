@@ -2,7 +2,7 @@
 <p align="center">
   <a href="https://gitter.im/ryos-io/Rhino"><img src="https://badges.gitter.im/ryos-io/Rhino.svg" border=0></a>
   <img src="https://travis-ci.org/ryos-io/Rhino.svg?branch=master" />
-  <img src="https://img.shields.io/badge/rhino--core-2.2.0.M1-72c247" />
+  <img src="https://img.shields.io/badge/rhino--core-2.2.0-72c247" />
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
   <a href="https://sonarcloud.io/dashboard?id=ryos-io_Rhino"><img src="https://sonarcloud.io/api/project_badges/measure?project=ryos-io_Rhino&metric=alert_status" border=0/></a>
   <a href="https://javadoc.io/doc/io.ryos.rhino/rhino-core"><img src="https://javadoc.io/badge2/io.ryos.rhino/rhino-core/javadoc.svg" border=0></a>
@@ -47,7 +47,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>2.2.0.M1</version>
+  <version>2.2.0</version>
 </dependency>
 ```
 
