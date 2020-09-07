@@ -47,7 +47,7 @@ Add maven dependency into your project:
 <dependency>
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-core</artifactId>
-  <version>2.2.0.M1</version>
+  <version>2.2.0</version>
 </dependency>
 ```
 
