@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <groupId>io.ryos.rhino</groupId>
   <artifactId>rhino-archetype</artifactId>
-  <version>2.2.1</version>
+  <version>2.2.2-SNAPSHOT</version>
   <modelVersion>4.0.0</modelVersion>
   <name>Rhino Archetype</name>
   <description>Rhino: Annotation-based JUnit-style load and performance testing framework
@@ -28,7 +28,7 @@
     <connection>scm:git:${project.link}</connection>
     <developerConnection>scm:git:${project.link}</developerConnection>
     <url>${project.url}</url>
-    <tag>2.2.1</tag>
+    <tag>1.7.0</tag>
   </scm>
 
   <properties>
