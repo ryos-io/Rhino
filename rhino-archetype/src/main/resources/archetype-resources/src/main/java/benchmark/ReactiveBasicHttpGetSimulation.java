@@ -54,7 +54,7 @@ public class ReactiveBasicHttpGetSimulation {
                     .endpoint(FILES_ENDPOINT)
                     .get()
                     .saveTo("result"),
-                resulting("201"));
+                resulting("200"));
     }
 }
 

@@ -9,7 +9,6 @@
     <resources>
         <resource>src/main/resources/test_users.csv</resource>
         <resource>src/main/resources/rhino.properties</resource>
-        <resource>src/main/resources/log4j2.xml</resource>
         <resource>src/main/resources/docker-compose.yml</resource>
     </resources>
 </archetype>
