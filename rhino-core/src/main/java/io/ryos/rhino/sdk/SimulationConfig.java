@@ -22,7 +22,6 @@ import io.ryos.rhino.sdk.io.ConfigResource;
 import io.ryos.rhino.sdk.users.source.UserSource;
 import io.ryos.rhino.sdk.users.source.UserSource.SourceType;
 import io.ryos.rhino.sdk.utils.Environment;
-import io.ryos.rhino.sdk.validators.PropsValidatorImpl;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
@@ -93,10 +92,6 @@ public class SimulationConfig {
 
     try (var is = new ConfigResource(path).getInputStream()) {
       properties.load(is);
-
-      var propsValidator = new PropsValidatorImpl();
-      propsValidator.validate(properties);
-
     } catch (IOException e) {
       ExceptionUtils.rethrow(e, RhinoIOException.class, "Cannot read rhino.properties file.");
     }
@@ -315,10 +310,6 @@ public class SimulationConfig {
     return simulationId;
   }
 
-  String getPackageToScan() {
-    return instance.getProperty(PACKAGE_TO_SCAN);
-  }
-
   String getDebugHttp() {
     return instance.getProperty("debug.http");
   }
@@ -360,10 +351,6 @@ public class SimulationConfig {
 
   public static String getServiceEndpoint() {
     return instance.getEndpoint();
-  }
-
-  public static String getPackage() {
-    return instance.getPackageToScan();
   }
 
   public static String getClientId() {

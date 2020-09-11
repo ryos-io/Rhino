@@ -71,6 +71,11 @@ public class Simulation {
     }
   }
 
+  public static Simulation getInstance(final String propsPath, final String fqClassName)
+      throws ClassNotFoundException {
+    return getInstance(propsPath, Class.forName(fqClassName));
+  }
+
   public static Simulation getInstance(final String propsPath, final Class<?> simulationClass) {
     if (INSTANCE == null) {
       INSTANCE = new Simulation(propsPath, simulationClass);
@@ -168,7 +173,7 @@ public class Simulation {
   private void verifyRunners() {
     if (simulationRunners.isEmpty()) {
       throw new SimulationNotFoundException(
-          "ERROR: No simulation found in '" + SimulationConfig.getPackage() + "'.");
+          "ERROR: No simulation found.");
     }
   }
 
