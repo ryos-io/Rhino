@@ -1,12 +1,11 @@
 {
   "dashboard": {
-    "id": null,
-    "uid": null,
-    "title": "${SIMULATION_NAME}",
-    "tags": [ "Rhino PAP" ],
-    "timezone": "browser",
-    "version": 0,
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "links": [],
     "panels": [
+
       {
         "description": "Number of nodes\n",
         "gridPos": {
@@ -20,7 +19,7 @@
         "options": {
           "fieldOptions": {
             "calcs": [
-              "count"
+              "last"
             ],
             "defaults": {
               "decimals": -31,
@@ -65,7 +64,7 @@
             "groupBy": [
               {
                 "params": [
-                  "$__interval"
+                  "1s"
                 ],
                 "type": "time"
               }
@@ -73,8 +72,8 @@
             "measurement": "user_${SIMULATION_NAME}",
             "orderByTime": "ASC",
             "policy": "default",
-            "query": "SELECT count(distinct(\"id\")) FROM \"user_${SIMULATION_NAME}\" WHERE $timeFilter GROUP BY time($__interval)",
-            "rawQuery": true,
+            "query": "SELECT count(distinct(\"id\")) FROM \"user_${SIMULATION_NAME}\" WHERE $timeFilter GROUP BY time(1s)",
+            "rawQuery": false,
             "refId": "A",
             "resultFormat": "time_series",
             "select": [
@@ -172,7 +171,7 @@
             "orderByTime": "ASC",
             "policy": "default",
             "query": "SELECT count(distinct(\"node\")) FROM \"simulation_${SIMULATION_NAME}\" WHERE $timeFilter GROUP BY time($__interval)",
-            "rawQuery": true,
+            "rawQuery": false,
             "refId": "A",
             "resultFormat": "time_series",
             "select": [
@@ -307,8 +306,6 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": "InfluxDB",
-        "description": "",
         "fill": 1,
         "gridPos": {
           "h": 6,
@@ -316,7 +313,7 @@
           "x": 0,
           "y": 5
         },
-        "id": 2,
+        "id": 10,
         "legend": {
           "avg": false,
           "current": false,
@@ -329,7 +326,7 @@
         "lines": true,
         "linewidth": 1,
         "links": [],
-        "nullPointMode": "connected",
+        "nullPointMode": "null",
         "options": {},
         "percentage": false,
         "pointradius": 2,
@@ -341,7 +338,6 @@
         "steppedLine": false,
         "targets": [
           {
-            "alias": "Avg RT",
             "groupBy": [
               {
                 "params": [
@@ -351,13 +347,7 @@
               },
               {
                 "params": [
-                  "scenario"
-                ],
-                "type": "tag"
-              },
-              {
-                "params": [
-                  "null"
+                  "linear"
                 ],
                 "type": "fill"
               }
@@ -365,8 +355,6 @@
             "measurement": "simulation_${SIMULATION_NAME}",
             "orderByTime": "ASC",
             "policy": "default",
-            "query": "SELECT mean(\"pt\") FROM \"${SCENARIO_1}\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
-            "rawQuery": false,
             "refId": "A",
             "resultFormat": "time_series",
             "select": [
@@ -379,64 +367,18 @@
                 },
                 {
                   "params": [],
-                  "type": "mean"
-                }
-              ]
-            ],
-            "tags": []
-          },
-          {
-            "alias": "Number of users",
-            "groupBy": [
-              {
-                "params": [
-                  "$__interval"
-                ],
-                "type": "time"
-              },
-              {
-                "params": [
-                  "null"
-                ],
-                "type": "fill"
-              }
-            ],
-            "hide": false,
-            "measurement": "user_${SIMULATION_NAME}",
-            "orderByTime": "ASC",
-            "policy": "default",
-            "query": "SELECT sum(\"id\") FROM \"user_${SIMULATION_NAME}\" WHERE (\"\"scenario\"\" = ''${SCENARIO_1}'') AND $timeFilter GROUP BY time($__interval) fill(null)",
-            "rawQuery": false,
-            "refId": "B",
-            "resultFormat": "time_series",
-            "select": [
-              [
-                {
-                  "params": [
-                    "id"
-                  ],
-                  "type": "field"
-                },
-                {
-                  "params": [],
                   "type": "sum"
                 }
               ]
             ],
-            "tags": [
-              {
-                "key": "scenario",
-                "operator": "=",
-                "value": "${SCENARIO_1}"
-              }
-            ]
+            "tags": []
           }
         ],
         "thresholds": [],
         "timeFrom": null,
         "timeRegions": [],
         "timeShift": null,
-        "title": "Scenario: ${SCENARIO_1}",
+        "title": "Number of Requests (per Second)",
         "tooltip": {
           "shared": true,
           "sort": 0,
@@ -477,6 +419,132 @@
       {
         "aliasColors": {},
         "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "InfluxDB",
+        "description": "",
+        "fill": 1,
+        "gridPos": {
+          "h": 6,
+          "w": 21,
+          "x": 0,
+          "y": 11
+        },
+        "id": 2,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {},
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "alias": "Mean Response Type",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "scenario"
+                ],
+                "type": "tag"
+              },
+              {
+                "params": [
+                  "linear"
+                ],
+                "type": "fill"
+              }
+            ],
+            "measurement": "simulation_${SIMULATION_NAME}",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "query": "SELECT mean(\"pt\") FROM \"${SCENARIO_1}\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+            "rawQuery": false,
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "pt"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "mean"
+                }
+              ]
+            ],
+            "tags": []
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Scenario: ${SCENARIO_1}",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "transparent": true,
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Response Time (ms)",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
         "cacheTimeout": null,
         "dashLength": 10,
         "dashes": false,
@@ -486,7 +554,7 @@
           "h": 6,
           "w": 21,
           "x": 0,
-          "y": 11
+          "y": 17
         },
         "id": 8,
         "legend": {
@@ -532,7 +600,7 @@
               },
               {
                 "params": [
-                  "null"
+                  "linear"
                 ],
                 "type": "fill"
               }
@@ -582,6 +650,137 @@
         },
         "yaxes": [
           {
+            "decimals": null,
+            "format": "short",
+            "label": "Response Time (ms)",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "cacheTimeout": null,
+        "dashLength": 10,
+        "dashes": false,
+        "description": "",
+        "fill": 7,
+        "gridPos": {
+          "h": 6,
+          "w": 21,
+          "x": 0,
+          "y": 23
+        },
+        "id": 11,
+        "legend": {
+          "alignAsTable": false,
+          "avg": true,
+          "current": false,
+          "hideEmpty": false,
+          "hideZero": false,
+          "max": false,
+          "min": true,
+          "rightSide": false,
+          "show": true,
+          "total": true,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {},
+        "percentage": false,
+        "pluginVersion": "6.2.1",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": true,
+        "targets": [
+          {
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "status"
+                ],
+                "type": "tag"
+              },
+              {
+                "params": [
+                  "linear"
+                ],
+                "type": "fill"
+              }
+            ],
+            "measurement": "simulation_${SIMULATION_NAME}",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "query": "SELECT distinct(\"pt\") FROM \"simulation_${SIMULATION_NAME}\" WHERE $timeFilter GROUP BY time($__interval), \"step\" fill(null)",
+            "rawQuery": false,
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "pt"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "sum"
+                }
+              ]
+            ],
+            "tags": []
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Status",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "transparent": true,
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
             "format": "short",
             "label": null,
             "logBase": 1,
@@ -604,10 +803,15 @@
         }
       }
     ],
+    "refresh": "5s",
     "schemaVersion": 18,
     "style": "dark",
-    "refresh": "5s",
-    "editable": true,
+    "tags": [
+      "Rhino PAP"
+    ],
+    "templating": {
+      "list": []
+    },
     "time": {
       "from": "now-5m",
       "to": "now"
@@ -636,6 +840,11 @@
         "7d",
         "30d"
       ]
-    }
+    },
+    "timezone": "browser",
+    "uud": null,
+    "id": null,
+    "title": "${SIMULATION_NAME}",
+    "version": 0
   }
 }
