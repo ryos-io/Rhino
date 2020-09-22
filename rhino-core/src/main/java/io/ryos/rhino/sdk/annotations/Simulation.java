@@ -23,6 +23,9 @@ import java.lang.annotation.RetentionPolicy;
  * {@link Simulation} annotation is used to mark classes as Simulation entities. Simulation
  * entities contain the load test methods as well as metadata describing how to generate load
  * against a service instance under test.
+ * <br>
+ * If you wish you can override this annotation's properties als via System properties,e.g.
+ * <code>-Dsimulation.durationInMins.io.ryos.rhino.test.ReactiveSleepTestSimulation=10</code>
  * <p>
  *
  * @author Erhan Bagdemir
@@ -51,6 +54,9 @@ public @interface Simulation {
   /**
    * The number of users that simulation employs. The user source must provide as many users that
    * the simulation requires, otherwise the simulation will not start.
+   * <br>
+   * If you wish you can override this annotation's properties als via System properties,e.g.
+   * <code>-Dsimulation.maxNumberOfUsers.io.ryos.rhino.test.ReactiveSleepTestSimulation=10</code>
    * <p>
    *
    * @return Number of users that Simulation requires.
@@ -59,6 +65,9 @@ public @interface Simulation {
 
   /**
    * Duration of the Simulation in minutes.
+   * <br>
+   * If you wish you can override this annotation's properties als via System properties,e.g.
+   * <code>-Dsimulation.durationInMins.io.ryos.rhino.test.ReactiveSleepTestSimulation=60</code>
    * <p>
    *
    * @return duration of the Simulation in minutes.

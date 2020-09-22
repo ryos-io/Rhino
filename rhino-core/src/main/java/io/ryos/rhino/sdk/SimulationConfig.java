@@ -298,8 +298,22 @@ public class SimulationConfig {
             .getProperty(prefix + key, properties.getProperty(prefix + key, "0"));
     var startRps = Integer.parseInt(val.apply("startRps"));
     var targetRps = Integer.parseInt(val.apply("targetRps"));
-    var duration = Duration.ofSeconds(Long.parseLong(val.apply("durationInMins")));
+    var duration = Duration.ofMinutes(Long.parseLong(val.apply("durationInMins")));
     return new RampupInfo(startRps, targetRps, duration);
+  }
+
+  private Duration getDuration(String name, int durationInMinsFallback) {
+    String property = "simulation.durationInMins." + name;
+    var duration = Duration
+        .ofMinutes(Long.parseLong(System.getProperty(property, "" + durationInMinsFallback)));
+    return duration;
+  }
+
+  private int getMaxNumberOfUsers(final String name, final int maxNumberOfUsersFallback) {
+    String property = "simulation.maxNumberOfUsers." + name;
+    var maxNumberOfUsers =
+        Integer.parseInt(System.getProperty(property, "" + maxNumberOfUsersFallback));
+    return maxNumberOfUsers;
   }
 
   public static String getSimulationOutputStyle() {
@@ -455,6 +469,19 @@ public class SimulationConfig {
 
   public static RampupInfo getRampupInfo(Class simulation) {
     return instance.getRampupInfo(simulation.getCanonicalName());
+  }
+
+  public static Duration getDuration(Class simulation) {
+    var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) simulation
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+    return instance.getDuration(simulation.getCanonicalName(), simAnnotation.durationInMins());
+  }
+
+  public static int getMaxNumberOfUsers(Class simulation) {
+    var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) simulation
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+    return instance
+        .getMaxNumberOfUsers(simulation.getCanonicalName(), simAnnotation.maxNumberOfUsers());
   }
 
   public static boolean isServiceAuthenticationEnabled() {
