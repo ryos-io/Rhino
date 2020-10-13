@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static reactor.core.publisher.Flux.range;
 import static reactor.core.publisher.Mono.fromFuture;
 
-import io.ryos.rhino.sdk.runners.Rampup;
 import io.ryos.rhino.sdk.runners.Throttler.Limit;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -181,22 +180,6 @@ class FluxTests {
         .doOnComplete(latch::countDown)
         .subscribe(n -> LOG.info("" + n));
 
-    latch.await();
-  }
-
-  @Test
-  @Disabled("Long running verification tests.")
-  void testRampump2() throws InterruptedException {
-    final var latch = new CountDownLatch(1);
-
-    final long start = 1;
-    final long end = 4;
-
-    Flux.range(0, 1000)
-        .transform(Rampup.rampup(start, end, Duration.ofSeconds(5)))
-        .take(Duration.ofSeconds(10))
-        .doOnComplete(latch::countDown)
-        .subscribe(n -> LOG.info("" + n));
     latch.await();
   }
 }

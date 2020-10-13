@@ -70,7 +70,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
-    var rampupInfo = getRampupInfo(clazz, simAnnotation);
     var throttlingInfo = getThrottlingInfo(clazz, simAnnotation);
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
     var grafanaInfo = getGrafanaInfo(clazz);
@@ -108,9 +107,9 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
             ? runnerAnnotation.clazz()
             : ReactiveHttpSimulationRunner.class)
         .withSimulation(simAnnotation.name())
-        .withDuration(SimulationConfig.getDuration(clazz))
+        .withDuration(SimulationConfig.getDuration())
         .withUserRegion(simAnnotation.userRegion())
-        .withInjectUser(SimulationConfig.getMaxNumberOfUsers(clazz))
+        .withInjectUser(SimulationConfig.getMaxNumberOfUsers())
         .withLogWriter(validateLogFile(logger))
         .withInflux(enableInflux)
         .withBefore(findMethodWith(clazz, Before.class).orElse(null))
@@ -120,7 +119,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withDSLMethods(dslMethods)
         .withTestInstance(testInstance)
         .withThrottling(throttlingInfo)
-        .withRampUp(rampupInfo)
         .withGrafana(grafanaInfo)
         .build();
   }
@@ -159,29 +157,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         duration = throttlingAnnotation.durationInMins();
       }
       return new ThrottlingInfo(throttlingAnnotation.rps(), Duration.ofMinutes(duration));
-    }
-    return null;
-  }
-
-  private RampupInfo getRampupInfo(Class clazz, Simulation simAnnotation) {
-    var rampUpAnnotation = (io.ryos.rhino.sdk.annotations.RampUp) clazz
-        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
-    RampupInfo rampupInfo = SimulationConfig.getRampupInfo(clazz);
-    if (rampUpAnnotation != null) {
-      var duration = rampupInfo.getDuration() == Duration.ZERO
-          ? simAnnotation.durationInMins()
-          : rampupInfo.getDuration().toMinutes();
-      if (rampUpAnnotation.durationInMins() >= 0) {
-        duration = rampUpAnnotation.durationInMins();
-      }
-      return new RampupInfo(
-          (rampupInfo.getStartRps() == 0)
-              ? rampUpAnnotation.startRps()
-              : rampupInfo.getStartRps(),
-          (rampupInfo.getTargetRps() == 0)
-              ? rampUpAnnotation.targetRps()
-              : rampupInfo.getTargetRps(),
-          Duration.ofMinutes(duration));
     }
     return null;
   }

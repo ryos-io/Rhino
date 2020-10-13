@@ -61,7 +61,7 @@ public class Simulation {
     try {
       Runtime.getRuntime().addShutdownHook(new Thread(Simulation.this::stop));
       Application.showBranding();
-      initializeConfiguration(path);
+      initializeConfiguration(path, simulationClass);
 
       this.metadata = extractJobFromClass(simulationClass);
       this.simulationRunners = getSimulationRunners(Collections.singletonList(metadata));
@@ -90,8 +90,8 @@ public class Simulation {
     return Optional.empty();
   }
 
-  private void initializeConfiguration(final String path) {
-    SimulationConfig.newInstance(path, getEnvironment());
+  private void initializeConfiguration(final String path, final Class<?> simulationClass) {
+    SimulationConfig.newInstance(path, getEnvironment(), simulationClass);
   }
 
   private SimulationMetadata extractJobFromClass(final Class<?> simulationClass) {
