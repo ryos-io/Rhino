@@ -27,7 +27,8 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.function.UnaryOperator;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * Simulation configuration instances are used to configure Rhino tests.
@@ -55,8 +56,11 @@ public class SimulationConfig {
   private final Properties properties;
   private final String environment;
   private final String simulationId;
+  private final Class<?> simulationClass;
 
-  private SimulationConfig(final String path, final Environment environment) {
+  private SimulationConfig(final String path, final Environment environment,
+      final Class<?> simulationClass) {
+    this.simulationClass = simulationClass;
     this.properties = new Properties();
     this.pathToConfig = path;
     this.environment = environment.toString();
@@ -74,16 +78,17 @@ public class SimulationConfig {
    *
    * @param path Path to the configuration properties.
    * @param environment Environment of {@link Environment}.
+   * @param simulationClass
    * @return A new {@link SimulationConfig}.
    */
   public static synchronized SimulationConfig newInstance(final String path,
-      final Environment environment) {
+      final Environment environment, final Class<?> simulationClass) {
 
     if (instance != null && instance.pathToConfig.equals(path)) {
       return instance;
     }
 
-    instance = new SimulationConfig(path, environment);
+    instance = new SimulationConfig(path, environment, simulationClass);
 
     return instance;
   }
@@ -293,13 +298,37 @@ public class SimulationConfig {
 
   private RampupInfo getRampupInfo(String name) {
     String prefix = "simulation.rampup." + name + ".";
-    UnaryOperator<String> val =
-        key -> System
-            .getProperty(prefix + key, properties.getProperty(prefix + key, "0"));
-    var startRps = Integer.parseInt(val.apply("startRps"));
-    var targetRps = Integer.parseInt(val.apply("targetRps"));
-    var duration = Duration.ofMinutes(Long.parseLong(val.apply("durationInMins")));
+    RampupInfo annotation = getRampupInfoPerAnnotation();
+    BiFunction<String, Supplier<String>, String> val =
+        (key, defaulter) -> System
+            .getProperty(prefix + key, properties.getProperty(prefix + key, defaulter.get()));
+    var startRps = Integer.parseInt(val.apply("startRps", () -> "" + annotation.getStartRps()));
+    var targetRps = Integer.parseInt(val.apply("targetRps", () -> "" + annotation.getTargetRps()));
+    var duration = Duration.ofMinutes(
+        Long.parseLong(
+            val.apply("durationInMins", () -> "" + annotation.getDuration().toMinutes())));
     return new RampupInfo(startRps, targetRps, duration);
+  }
+
+  private RampupInfo getRampupInfoPerAnnotation() {
+    var simAnnotation = getSimulationClass()
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+    var rampUpAnnotation = getSimulationClass()
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.RampUp.class);
+
+    if (rampUpAnnotation != null) {
+      Duration duration;
+      if (rampUpAnnotation.durationInMins() >= 0) {
+        duration = Duration.ofMinutes(rampUpAnnotation.durationInMins());
+      } else {
+        duration = Duration.ofMinutes(simAnnotation.durationInMins());
+      }
+      return new RampupInfo(
+          rampUpAnnotation.startRps(),
+          rampUpAnnotation.targetRps(),
+          duration);
+    }
+    return new RampupInfo(0, 0, Duration.ZERO);
   }
 
   private Duration getDuration(String name, int durationInMinsFallback) {
@@ -322,6 +351,10 @@ public class SimulationConfig {
 
   private String getSimId() {
     return simulationId;
+  }
+
+  private Class<?> getConfigSimulationClass() {
+    return simulationClass;
   }
 
   String getDebugHttp() {
@@ -467,21 +500,32 @@ public class SimulationConfig {
     return instance.getServiceAuthClientSecret();
   }
 
-  public static RampupInfo getRampupInfo(Class simulation) {
-    return instance.getRampupInfo(simulation.getCanonicalName());
+  public static RampupInfo getRampupInfo() {
+    return instance.getRampupInfo(getSimulationClass().getCanonicalName());
   }
 
-  public static Duration getDuration(Class simulation) {
-    var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) simulation
-        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
-    return instance.getDuration(simulation.getCanonicalName(), simAnnotation.durationInMins());
+  public static boolean isRampupDefined() {
+    RampupInfo rampupInfo = instance.getRampupInfo(getSimulationClass().getCanonicalName());
+    return rampupInfo.getTargetRps() > 0;
   }
 
-  public static int getMaxNumberOfUsers(Class simulation) {
-    var simAnnotation = (io.ryos.rhino.sdk.annotations.Simulation) simulation
+  public static Class<?> getSimulationClass() {
+    return instance.getConfigSimulationClass();
+  }
+
+  public static Duration getDuration() {
+    var simAnnotation = getSimulationClass()
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
     return instance
-        .getMaxNumberOfUsers(simulation.getCanonicalName(), simAnnotation.maxNumberOfUsers());
+        .getDuration(getSimulationClass().getCanonicalName(), simAnnotation.durationInMins());
+  }
+
+  public static int getMaxNumberOfUsers() {
+    var simAnnotation = getSimulationClass()
+        .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Simulation.class);
+    return instance
+        .getMaxNumberOfUsers(getSimulationClass().getCanonicalName(),
+            simAnnotation.maxNumberOfUsers());
   }
 
   public static boolean isServiceAuthenticationEnabled() {

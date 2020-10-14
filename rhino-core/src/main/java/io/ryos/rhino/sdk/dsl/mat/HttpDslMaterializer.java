@@ -33,6 +33,7 @@ import io.ryos.rhino.sdk.dsl.impl.HttpDslImpl.RetryInfo;
 import io.ryos.rhino.sdk.dsl.utils.SessionUtils;
 import io.ryos.rhino.sdk.exceptions.RetryFailedException;
 import io.ryos.rhino.sdk.exceptions.RetryableOperationException;
+import io.ryos.rhino.sdk.runners.Rampup;
 import io.ryos.rhino.sdk.users.BasicAuthRequestStrategy;
 import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
@@ -61,7 +62,9 @@ import reactor.core.publisher.Mono;
 public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
+  public static final Rampup INSTANCE = Rampup.getInstance();
   private final HttpDsl dslItem;
+
   public HttpDslMaterializer(HttpDsl dslItem) {
     this.dslItem = dslItem;
   }
@@ -71,6 +74,10 @@ public class HttpDslMaterializer implements DslMaterializer {
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
 
     var responseMono = Mono.just(userSession)
+        .delayUntil(session -> {
+          Mono.delay(INSTANCE.getTimeToWait()).block();
+          return Mono.just(session);
+        })
         .flatMap(session -> {
           if (dslItem.isWaitResult()) {
             try {
@@ -83,7 +90,6 @@ public class HttpDslMaterializer implements DslMaterializer {
             } catch (ExecutionException e) {
               e.printStackTrace();
             }
-
             return null;
           }
 
@@ -98,7 +104,8 @@ public class HttpDslMaterializer implements DslMaterializer {
             .map(hr -> isRequestRetriable(retryInfo, hr))
             .retryWhen(companion -> companion.zipWith(
                 Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
-                  if (index < retryInfo.getNumOfRetries() + 1 && error instanceof RetryableOperationException) {
+                  if (index < retryInfo.getNumOfRetries() + 1
+                      && error instanceof RetryableOperationException) {
                     return index;
                   } else {
                     throw Exceptions.propagate(new RetryFailedException(error));

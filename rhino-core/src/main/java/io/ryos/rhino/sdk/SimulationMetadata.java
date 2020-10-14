@@ -22,8 +22,8 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.instanceOf;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.data.Scenario;
 import io.ryos.rhino.sdk.data.UserSession;
-import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
+import io.ryos.rhino.sdk.dsl.DslMethod;
 import io.ryos.rhino.sdk.dsl.MaterializableDslItem;
 import io.ryos.rhino.sdk.reporting.SimulationLogFormatter;
 import io.ryos.rhino.sdk.runners.SimulationRunner;
@@ -87,12 +87,6 @@ public class SimulationMetadata {
    * <p>
    */
   private ThrottlingInfo throttlingInfo;
-
-  /**
-   * Ramp-up info.
-   * <p>
-   */
-  private RampupInfo rampUpInfo;
 
   /**
    * Grafana configuration.
@@ -175,7 +169,6 @@ public class SimulationMetadata {
     this.simulationName = builder.simulation;
     this.testInstance = builder.testInstance;
     this.numberOfUsers = builder.injectUser;
-    this.rampUpInfo = builder.rampUpInfo;
     this.simulationClass = builder.simulationClass;
     this.scenarios = builder.scenarios;
     this.dslBuilders = builder.dslBuilders;
@@ -274,10 +267,6 @@ public class SimulationMetadata {
     return throttlingInfo;
   }
 
-  public RampupInfo getRampUpInfo() {
-    return rampUpInfo;
-  }
-
   public String getUserRegion() {
     return userRegion;
   }
@@ -303,12 +292,6 @@ public class SimulationMetadata {
      * <p>
      */
     private int injectUser;
-
-    /**
-     * Ramp up count defines the number of users being injected per second.
-     * <p>
-     */
-    private RampupInfo rampUpInfo;
 
     private ThrottlingInfo throttlingInfo;
 
@@ -424,11 +407,6 @@ public class SimulationMetadata {
 
     public Builder withInjectUser(final int injectUser) {
       this.injectUser = injectUser;
-      return this;
-    }
-
-    public Builder withRampUp(final RampupInfo rampUp) {
-      this.rampUpInfo = rampUp;
       return this;
     }
 

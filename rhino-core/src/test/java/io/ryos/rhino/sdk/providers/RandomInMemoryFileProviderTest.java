@@ -16,7 +16,8 @@ public class RandomInMemoryFileProviderTest {
   @Test
   public void testRandomInMemoryFileProvider() throws IOException {
     SimulationConfig
-        .newInstance("classpath:///rhino_RandomInMemoryFileProvider.properties", Environment.DEV);
+        .newInstance("classpath:///rhino_RandomInMemoryFileProvider.properties", Environment.DEV,
+            RandomInMemoryFileProviderTest.class);
     final RandomInMemoryFileProvider provider = new RandomInMemoryFileProvider();
     final RandomInMemoryFile file = provider.take();
     final String mimeType = file.getMimeType();

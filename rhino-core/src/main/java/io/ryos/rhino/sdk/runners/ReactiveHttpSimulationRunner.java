@@ -100,7 +100,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
-    flux = appendRampUp(flux);
     flux = appendThrottling(flux);
     flux = appendTake(flux, getRepeats(numberOfRepeats));
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))

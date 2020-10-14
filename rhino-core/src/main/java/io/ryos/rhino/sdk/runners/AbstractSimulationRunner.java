@@ -75,15 +75,6 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
     return flux;
   }
 
-  protected Flux<UserSession> appendRampUp(Flux<UserSession> flux) {
-    var rampUpInfo = getSimulationMetadata().getRampUpInfo();
-    if (rampUpInfo != null) {
-      flux = flux.transform(Rampup.rampup(rampUpInfo.getStartRps(), rampUpInfo.getTargetRps(),
-          rampUpInfo.getDuration()));
-    }
-    return flux;
-  }
-
   protected Flux<UserSession> appendTake(Flux<UserSession> flux, int stopAfter) {
     if (stopAfter > 0) {
       flux = flux.take(stopAfter);
