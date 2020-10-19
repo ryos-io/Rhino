@@ -72,6 +72,18 @@ class FluxTests {
         .verify(ofSeconds(5));
   }
 
+  @Test
+  void fluxing() {
+    // flatmapping two fluxes -> create one publisher with interleaved emissions
+    Flux.range(1, 3)
+        // shit only one created, other ranged not emitted
+        .zipWith(Mono.just("somedata")) // [1,somedata]
+        .log()
+        .zipWith(Mono.delay(Duration.ofSeconds(1)))
+        .doOnEach(System.out::println)
+        .blockLast();
+  }
+
   /*
    * I don't suggest use sampling as a throttling method for HTTP requests.
    * The problem is that it does not apply backpressure.

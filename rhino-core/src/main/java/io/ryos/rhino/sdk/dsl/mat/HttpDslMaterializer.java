@@ -62,7 +62,7 @@ import reactor.core.publisher.Mono;
 public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
-  public static final Rampup INSTANCE = Rampup.getInstance();
+  private static final Rampup INSTANCE = Rampup.getInstance();
   private final HttpDsl dslItem;
 
   public HttpDslMaterializer(HttpDsl dslItem) {
@@ -73,31 +73,31 @@ public class HttpDslMaterializer implements DslMaterializer {
 
     var httpSpecAsyncHandler = new HttpSpecAsyncHandler(userSession, dslItem);
 
-    var responseMono = Mono.just(userSession)
-        .delayUntil(session -> {
-          Mono.delay(INSTANCE.getTimeToWait()).block();
-          return Mono.just(session);
-        })
-        .flatMap(session -> {
-          if (dslItem.isWaitResult()) {
-            try {
-              return Mono
-                  .just(HttpClient.INSTANCE.getClient()
-                      .executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler)
-                      .toCompletableFuture().get());
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            } catch (ExecutionException e) {
-              e.printStackTrace();
-            }
-            return null;
-          }
+    var sessionMono = Mono.just(userSession);
+    if (SimulationConfig.isRampupDefined()) {
+      sessionMono.delayElement(INSTANCE.getTimeToWait());
+    }
 
+    var responseMono = sessionMono.flatMap(session -> {
+      if (dslItem.isWaitResult()) {
+        try {
           return Mono
-              .fromCompletionStage(
-                  HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem
-                      , session), httpSpecAsyncHandler).toCompletableFuture());
-        });
+              .just(HttpClient.INSTANCE.getClient()
+                  .executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler)
+                  .toCompletableFuture().get());
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        }
+        return null;
+      }
+
+      return Mono
+          .fromCompletionStage(
+              HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem
+                  , session), httpSpecAsyncHandler).toCompletableFuture());
+    });
 
     var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
         responseMono.map(HttpResponse::new)
