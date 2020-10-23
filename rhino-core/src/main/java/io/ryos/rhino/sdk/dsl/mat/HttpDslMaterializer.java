@@ -50,6 +50,7 @@ import org.asynchttpclient.Response;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * MaterializableDslItem materializer takes the spec instances and convert them into reactor components, that are to
@@ -75,7 +76,13 @@ public class HttpDslMaterializer implements DslMaterializer {
 
     var sessionMono = Mono.just(userSession);
     if (SimulationConfig.isRampupDefined()) {
-      sessionMono.delayElement(INSTANCE.getTimeToWait());
+      sessionMono =
+          sessionMono
+              .zipWith(Mono.defer(() -> Mono.just(INSTANCE.getTimeToWait())))
+              // getTimeToWait is no synchronised, so operate on one thread only
+              .subscribeOn(Schedulers.single())
+              //              .log() // check where the operation above is run on
+              .flatMap(pair -> Mono.just(pair.getT1()).delayElement(pair.getT2()));
     }
 
     var responseMono = sessionMono.flatMap(session -> {
@@ -86,17 +93,16 @@ public class HttpDslMaterializer implements DslMaterializer {
                   .executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler)
                   .toCompletableFuture().get());
         } catch (InterruptedException e) {
-          e.printStackTrace();
         } catch (ExecutionException e) {
-          e.printStackTrace();
+          LOG.error(e);
         }
-        return null;
+        return Mono.empty();
       }
 
       return Mono
-          .fromCompletionStage(
-              HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(dslItem
-                  , session), httpSpecAsyncHandler).toCompletableFuture());
+          .fromFuture(
+              HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
+                  dslItem, session), httpSpecAsyncHandler).toCompletableFuture());
     });
 
     var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->

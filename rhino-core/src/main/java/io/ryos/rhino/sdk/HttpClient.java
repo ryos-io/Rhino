@@ -21,6 +21,7 @@ public enum HttpClient {
     var httpClientConfig = Dsl.config()
         .setKeepAlive(true)
         .setMaxConnections(SimulationConfig.getMaxConnections())
+        .setMaxConnectionsPerHost(SimulationConfig.getMaxConnections())
         .setConnectTimeout(SimulationConfig.getHttpConnectTimeout())
         .setHandshakeTimeout(SimulationConfig.getHttpHandshakeTimeout())
         .setReadTimeout(SimulationConfig.getHttpReadTimeout())

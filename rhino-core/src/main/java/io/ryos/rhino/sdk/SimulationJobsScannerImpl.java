@@ -30,8 +30,6 @@ import io.ryos.rhino.sdk.annotations.Grafana;
 import io.ryos.rhino.sdk.annotations.Influx;
 import io.ryos.rhino.sdk.annotations.Logging;
 import io.ryos.rhino.sdk.annotations.Provider;
-import io.ryos.rhino.sdk.annotations.Simulation;
-import io.ryos.rhino.sdk.annotations.Throttle;
 import io.ryos.rhino.sdk.annotations.UserProvider;
 import io.ryos.rhino.sdk.data.Pair;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
@@ -52,7 +50,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -70,7 +67,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.UserRepository.class));
     var runnerAnnotation = (io.ryos.rhino.sdk.annotations.Runner) clazz
         .getDeclaredAnnotation(io.ryos.rhino.sdk.annotations.Runner.class);
-    var throttlingInfo = getThrottlingInfo(clazz, simAnnotation);
     var enableInflux = clazz.getDeclaredAnnotation(Influx.class) != null;
     var grafanaInfo = getGrafanaInfo(clazz);
 
@@ -118,7 +114,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .withDsls(dsls)
         .withDSLMethods(dslMethods)
         .withTestInstance(testInstance)
-        .withThrottling(throttlingInfo)
         .withGrafana(grafanaInfo)
         .build();
   }
@@ -145,18 +140,6 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
     var grafanaAnnotation = (Grafana) clazz.<Grafana>getDeclaredAnnotation(Grafana.class);
     if (grafanaAnnotation != null) {
       return new GrafanaInfo(grafanaAnnotation.dashboard(), grafanaAnnotation.name());
-    }
-    return null;
-  }
-
-  private ThrottlingInfo getThrottlingInfo(Class clazz, Simulation simAnnotation) {
-    var throttlingAnnotation = (Throttle) clazz.getDeclaredAnnotation(Throttle.class);
-    if (throttlingAnnotation != null) {
-      var duration = simAnnotation.durationInMins();
-      if (throttlingAnnotation.durationInMins() >= 0) {
-        duration = throttlingAnnotation.durationInMins();
-      }
-      return new ThrottlingInfo(throttlingAnnotation.rps(), Duration.ofMinutes(duration));
     }
     return null;
   }

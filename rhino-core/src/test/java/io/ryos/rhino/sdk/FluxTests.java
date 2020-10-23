@@ -1,18 +1,24 @@
 package io.ryos.rhino.sdk;
 
-import static io.ryos.rhino.sdk.runners.Throttler.throttle;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static reactor.core.publisher.Flux.range;
 import static reactor.core.publisher.Mono.fromFuture;
 
-import io.ryos.rhino.sdk.runners.Throttler.Limit;
+import io.ryos.rhino.sdk.runners.Rampup;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -22,9 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
 
+@Disabled
 class FluxTests {
   private static final Logger LOG = LoggerFactory.getLogger(FluxTests.class);
 
@@ -81,6 +90,30 @@ class FluxTests {
         .log()
         .zipWith(Mono.delay(Duration.ofSeconds(1)))
         .doOnEach(System.out::println)
+        .blockLast();
+  }
+
+  @Test
+  void bla() {
+    Mono.just("hello").take(Duration.ofSeconds(5))
+        .flatMap(v -> Mono.just(v).delayElement(Duration.ofSeconds(10)))
+        .log()
+        .block();
+  }
+
+  @Test
+  void ramupWithLoops() {
+    // flatmapping two fluxes -> create one publisher with interleaved emissions
+    Rampup rampup = new Rampup(Instant.now(), 1, 100, ofSeconds(5));
+    rampup.getTimeToWait();
+    rampup.getTimeToWait();
+    Flux.range(1, 100)
+        // #delayElement is not dynamic (same delay is used for repeats)
+        // with flatmap everything is calculated a head which results in a wrong ramp up
+        .flatMap(val -> Mono.just(val).delayElement(rampup.getTimeToWait()))
+        .repeat(2)
+        .log()
+        .take(Duration.ofSeconds(10))
         .blockLast();
   }
 
@@ -143,6 +176,42 @@ class FluxTests {
         .verify();
   }
 
+  @Test
+  void TestFutures() {
+    Instant start = Instant.now();
+    CompletableFuture<String> future = supplyAsync(() -> {
+      while (Instant.now().isBefore(start.plus(5, ChronoUnit.SECONDS))) {
+        System.out.println("fuck uuuu");
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      return "HELLO";
+    }, Executors.newSingleThreadExecutor());
+
+    fromFuture(future)
+        .doOnError(e -> System.out.println("GOT AN ERROR"))
+        .doFinally(signalType -> {
+          if (signalType == SignalType.CANCEL) {
+            future.cancel(false);
+          }
+        })
+        .map(val -> val.toLowerCase())
+        .log()
+        .as(StepVerifier::create)
+        //        .expectComplete()
+        .thenCancel()
+        .verify();
+    assertThat("future is not cancelled", future.isCancelled());
+    try {
+      future.join();
+    } catch (CancellationException e) {
+      System.out.println("Was cancelled");
+    }
+  }
+
   /**
    * For 3 seconds generate 2 elements per second.
    * Generate 4 elements per second for 3 seconds, after
@@ -180,19 +249,59 @@ class FluxTests {
   }
 
   @Test
-  @Disabled("Long running verification tests.")
-  void testThrottling() throws InterruptedException {
-    final var latch = new CountDownLatch(1);
-    final Limit limit = Limit.of(1, Duration.ofSeconds(5));
-    final Limit limit2 = Limit.of(4, Duration.ofSeconds(5));
-    Flux.range(0, 1000)
-        .flatMap(d -> Mono.just(d * 2))
-        .transform(throttle(limit, limit2))
-        .take(ofSeconds(15))
-        .doOnComplete(latch::countDown)
-        .subscribe(n -> LOG.info("" + n));
+  void testThreads() {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    ExecutorService single = Executors.newSingleThreadExecutor();
+    Flux.range(0, 100)
+        .publishOn(Schedulers.single())
+        .map(n -> n + "fo")
+        .log()
+        .flatMap(
+            n -> Mono.fromFuture(supplyAsync(() -> {
+              try {
+                Thread.sleep(1000);
+                return n + "fu";
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+              return "failed";
+            }, executorService)))
+        .log()
+        .blockLast();
 
-    latch.await();
+  }
+
+  @Test
+  void testThreads2() {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    ExecutorService single = Executors.newSingleThreadExecutor();
+    range(0, 1000)
+        .flatMap(n ->
+            Mono.just(n)
+                .zipWith(
+                    Mono.defer(() -> {
+                      LOG.info("SAD STORY");
+                      return Mono.just(100);
+                    })
+                )
+                .subscribeOn(Schedulers.single())
+                .log()
+                .flatMap(
+                    pair -> Mono.just(pair.getT1()).delayElement(ofMillis(pair.getT2())))
+                .flatMap(d -> fromFuture(supplyAsync(() -> {
+                  try {
+                    Thread.sleep(1000);
+                    return d + "fu";
+                  } catch (InterruptedException e) {
+                    e.printStackTrace();
+                  }
+                  return "failed";
+                }, executorService)))
+                .map(d -> d + "fi")
+        )
+        .log()
+        .blockLast();
+
   }
 }
 

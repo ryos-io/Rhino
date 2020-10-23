@@ -83,12 +83,6 @@ public class SimulationMetadata {
   private String userRegion;
 
   /**
-   * Throttling info.
-   * <p>
-   */
-  private ThrottlingInfo throttlingInfo;
-
-  /**
    * Grafana configuration.
    * <p>
    */
@@ -181,7 +175,6 @@ public class SimulationMetadata {
     this.enableInflux = builder.enableInflux;
     this.runner = builder.runner;
     this.reportingURI = builder.reportingURI;
-    this.throttlingInfo = builder.throttlingInfo;
     this.userRegion = builder.userRegion;
     this.grafanaInfo = builder.grafanaInfo;
   }
@@ -263,10 +256,6 @@ public class SimulationMetadata {
     return testInstance;
   }
 
-  public ThrottlingInfo getThrottlingInfo() {
-    return throttlingInfo;
-  }
-
   public String getUserRegion() {
     return userRegion;
   }
@@ -292,8 +281,6 @@ public class SimulationMetadata {
      * <p>
      */
     private int injectUser;
-
-    private ThrottlingInfo throttlingInfo;
 
     /**
      * Simulation class, is the one with the {@link io.ryos.rhino.sdk.annotations.Simulation}
@@ -407,11 +394,6 @@ public class SimulationMetadata {
 
     public Builder withInjectUser(final int injectUser) {
       this.injectUser = injectUser;
-      return this;
-    }
-
-    public Builder withThrottling(final ThrottlingInfo throttlingInfo) {
-      this.throttlingInfo = throttlingInfo;
       return this;
     }
 

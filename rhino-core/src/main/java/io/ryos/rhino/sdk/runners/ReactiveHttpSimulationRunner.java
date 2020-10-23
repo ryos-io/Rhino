@@ -21,6 +21,7 @@ import static io.ryos.rhino.sdk.utils.ReflectionUtils.executeMethod;
 
 import io.ryos.rhino.sdk.CyclicIterator;
 import io.ryos.rhino.sdk.HttpClient;
+import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.Context;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -30,6 +31,7 @@ import io.ryos.rhino.sdk.dsl.mat.DslMethodMaterializer;
 import io.ryos.rhino.sdk.users.repositories.CyclicUserSessionRepositoryImpl;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +64,7 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
   private final Condition continueCondition;
   private final Lock masterLock;
+  private Instant startTime;
 
   public ReactiveHttpSimulationRunner(final Context context) {
     super(context.<SimulationMetadata>get(JOB).orElseThrow());
@@ -100,7 +103,6 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
 
     var flux = Flux.fromStream(Stream.generate(userSessionProvider::take));
 
-    flux = appendThrottling(flux);
     flux = appendTake(flux, getRepeats(numberOfRepeats));
     flux = flux.zipWith(Flux.fromStream(stream(dslIterator)))
         .doOnError(t -> LOG.error("Something unexpected happened", t))
@@ -111,8 +113,12 @@ public class ReactiveHttpSimulationRunner extends AbstractSimulationRunner {
         .doOnComplete(() -> signalCompletion(() -> this.isPipelineCompleted = true));
 
     this.subscribe = flux.subscribe();
+    startTime = Instant.now();
 
-    awaitIf(() -> !isPipelineCompleted);
+    awaitIf(() -> {
+      boolean expired = startTime.plus(SimulationConfig.getDuration()).isBefore(Instant.now());
+      return !expired && !isPipelineCompleted;
+    });
 
     cleanup(userList);
 

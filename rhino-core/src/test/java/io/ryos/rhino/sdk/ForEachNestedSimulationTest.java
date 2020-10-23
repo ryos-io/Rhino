@@ -22,6 +22,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.http.UniformDistribution;
 import io.ryos.rhino.sdk.simulations.ForEachNestedSimulation;
 import io.ryos.rhino.sdk.utils.TestUtils;
 import org.junit.After;
@@ -60,7 +61,7 @@ public class ForEachNestedSimulationTest {
     wmServer.stubFor(WireMock.get(urlEqualTo("/api/discovery"))
         .willReturn(aResponse()
             .withStatus(200)
-            .withFixedDelay(100)
+            .withRandomDelay(new UniformDistribution(1000, 1000))
             .withBody("{\"endpoint\": \"http://localhost:" + PORT + "/api/resource\"}")));
 
     TestUtils.overridePorts(PORT);
