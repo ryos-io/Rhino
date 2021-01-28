@@ -43,7 +43,7 @@ public class SimulationConfig {
   private static final String PACKAGE_TO_SCAN = "packageToScan";
   private static final int PAR_RATIO = 5;
   private static final int MAX_PAR = 1000;
-  private static final int MAX_CONN = 1000;
+  private static final int MAX_CONN = 100;
   private static final String SIM_ID = "SIM_ID";
   private static final int DEFAULT_BATCH_DURATION = 200;
   private static final int DEFAULT_BATCH_ACTIONS = 1000;

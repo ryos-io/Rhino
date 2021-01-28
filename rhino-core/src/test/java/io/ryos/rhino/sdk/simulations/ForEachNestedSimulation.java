@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.annotations.Dsl;
+import io.ryos.rhino.sdk.annotations.RampUp;
 import io.ryos.rhino.sdk.annotations.Simulation;
 import io.ryos.rhino.sdk.annotations.UserRepository;
 import io.ryos.rhino.sdk.dsl.DslBuilder;
@@ -36,6 +37,7 @@ import java.util.UUID;
 
 @Simulation(name = "Reactive Multi-User Test")
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
+@RampUp(startRps = 0, targetRps = 100)
 public class ForEachNestedSimulation {
 
   private static final String DISCOVERY_ENDPOINT = getEndpoint("discovery");
@@ -56,9 +58,9 @@ public class ForEachNestedSimulation {
                     .header(X_API_KEY, SimulationConfig.getApiKey())
                     .auth()
                     .endpoint(DISCOVERY_ENDPOINT)
-                    .get()
-                    .collect("list.outer")
-                    .waitResult())
+                    .get())
+                //                    .collect("list.outer")
+                //                    .waitResult())
                 .forEach(in(session("j")).exec(j ->
                     dsl()
                         .run(collect(http("Discovery Request -2")

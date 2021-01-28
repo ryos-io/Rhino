@@ -1,19 +1,3 @@
-/*************************************************************************
- * ADOBE CONFIDENTIAL
- * ___________________
- *
- * Copyright 2020 Adobe
- * All Rights Reserved.
- *
- * NOTICE: All information contained herein is, and remains
- * the property of Adobe and its suppliers, if any. The intellectual
- * and technical concepts contained herein are proprietary to Adobe
- * and its suppliers and are protected by all applicable intellectual
- * property laws, including trade secret and copyright laws.
- * Dissemination of this information or reproduction of this material
- * is strictly forbidden unless prior written permission is obtained
- * from Adobe.
- **************************************************************************/
 package io.ryos.rhino.sdk.runners;
 
 import io.ryos.rhino.sdk.RampupInfo;
@@ -21,9 +5,10 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
 public class Rampup {
   private static final Logger LOG = LoggerFactory.getLogger(Rampup.class);
@@ -34,8 +19,8 @@ public class Rampup {
   // timestamp of lastRequest
   private Instant lastRequestTime;
   // getTimeToWait
-  private final long startRps;
-  private final long targetRps;
+  private final double startRps;
+  private final double targetRps;
   private final Duration duration;
 
   private static Rampup INSTANCE;
@@ -59,32 +44,53 @@ public class Rampup {
     return INSTANCE;
   }
 
-  public synchronized Duration getTimeToWait() {
-    Instant now = Instant.now();
-    long durationSec = startTime.until(now, ChronoUnit.SECONDS);
-    long rps = targetRps;
-    if (durationSec <= duration.toSeconds()) {
-      rps = (long) Math.floor(startRps + slope * durationSec);
-    }
-    if (lastRequestTime == null) {
-      lastRequestTime = now;
-      return Duration.ZERO;
-    }
-    // else
-    Duration timeAdvanced = Duration.ofMillis(lastRequestTime.until(now, ChronoUnit.MILLIS));
-    Duration nextTick = Duration.ofNanos((long) (Math.floor((1d / rps) * 1e9)));
-    Duration nextTickInMillis = nextTick.minus(timeAdvanced);
-    LOG.debug("advancedMs{}, nextTickInMs={}, rps={}, durationSec={}, slope={}",
-        timeAdvanced.toMillis(), nextTickInMillis.toMillis(), rps, durationSec, slope);
-    if (nextTickInMillis.toMillis() < 0) {
-      lastRequestTime = now;
-      return Duration.ZERO;
-    }
-    lastRequestTime = now.plus(nextTickInMillis);
-    return nextTickInMillis;
+  synchronized public Duration getTimeToWait() {
+    return getTimeToWait(Instant::now);
   }
 
-  public <T> Mono<T> mono() {
-    return (Mono<T>) Mono.delay(getTimeToWait());
+  Duration getTimeToWait(Supplier<Instant> clock) {
+    var now = clock.get();
+    lastRequestTime = lastRequestTime == null ? now : lastRequestTime;
+    // time advanced since beginning
+    var virtualTimeAdvanced = Duration.of(
+        startTime.until(lastRequestTime, ChronoUnit.MILLIS), ChronoUnit.MILLIS);
+    // correct if real time advanced more
+    var realTimeAdvanced = Duration.of(
+        startTime.until(now, ChronoUnit.MILLIS), ChronoUnit.MILLIS);
+
+    Duration realTimeBonus = Duration.ZERO;
+    if (realTimeAdvanced.compareTo(virtualTimeAdvanced) > 0) {
+      realTimeBonus = realTimeAdvanced.minus(virtualTimeAdvanced);
+      LOG.debug("Oh shit, have to correct time! Correcting next time by {}: ",
+          realTimeBonus);
+    }
+
+    var tickResult = calcTick(virtualTimeAdvanced, realTimeBonus);
+    var rps = tickResult.getKey();
+    var tick = tickResult.getValue();
+    var delay = virtualTimeAdvanced.minus(realTimeAdvanced).plus(tick);
+
+    if (delay.isNegative()) {
+      delay = Duration.ZERO;
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "lastRequestTime={}, advancedMs={}, tick={}, delayMs={}, rps={}",
+          lastRequestTime.toEpochMilli(), virtualTimeAdvanced.toMillis(), tick.toMillis(),
+          delay.toMillis(), rps);
+    }
+    lastRequestTime = startTime.plus(virtualTimeAdvanced.plus(realTimeBonus).plus(tick));
+    return delay;
+  }
+
+  private Map.Entry<Double, Duration> calcTick(final Duration virtualTimeAdvanced,
+      final Duration realTimeBonus) {
+    double rps = targetRps;
+    Duration timeAdvanced = virtualTimeAdvanced.plus(realTimeBonus);
+    if (timeAdvanced.compareTo(duration) < 0) {
+      rps = startRps + (slope * (timeAdvanced.toMillis() / 1e3D));
+    }
+    long millis = (long) ((1d / rps) * 1e3D);
+    return Map.entry(rps, Duration.ofMillis(millis));
   }
 }

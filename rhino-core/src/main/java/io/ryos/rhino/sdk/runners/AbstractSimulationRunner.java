@@ -16,8 +16,6 @@
 
 package io.ryos.rhino.sdk.runners;
 
-import static io.ryos.rhino.sdk.runners.Throttler.throttle;
-
 import io.ryos.rhino.sdk.SimulationConfig;
 import io.ryos.rhino.sdk.SimulationMetadata;
 import io.ryos.rhino.sdk.data.UserSession;
@@ -63,16 +61,6 @@ public abstract class AbstractSimulationRunner implements SimulationRunner {
       stopAfter = Integer.parseInt(numberOfTurns);
     }
     return stopAfter;
-  }
-
-  protected Flux<UserSession> appendThrottling(Flux<UserSession> flux) {
-    var throttlingInfo = getSimulationMetadata().getThrottlingInfo();
-    if (throttlingInfo != null) {
-      var rpsLimit = Throttler.Limit.of(throttlingInfo.getRps(),
-          throttlingInfo.getDuration());
-      flux = flux.transform(throttle(rpsLimit));
-    }
-    return flux;
   }
 
   protected Flux<UserSession> appendTake(Flux<UserSession> flux, int stopAfter) {

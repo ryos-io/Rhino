@@ -2,14 +2,17 @@
 <Configuration status="info">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="-- %m%n"/>
+            <PatternLayout pattern="[%p] %d [%t] %x %c %M - %m%n"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="error">
+        <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="io.ryos.rhino" level="info" additivity="false">
+        <Logger name="io.ryos.rhino" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.ryos.rhino.sdk.runners.Rampup" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>
