@@ -39,7 +39,6 @@ import io.ryos.rhino.sdk.users.OAuth2RequestStrategy;
 import io.ryos.rhino.sdk.users.data.User;
 import io.ryos.rhino.sdk.users.oauth.OAuthUserImpl;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.NotImplementedException;
@@ -50,7 +49,6 @@ import org.asynchttpclient.Response;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * MaterializableDslItem materializer takes the spec instances and convert them into reactor components, that are to
@@ -63,7 +61,7 @@ import reactor.core.scheduler.Schedulers;
 public class HttpDslMaterializer implements DslMaterializer {
 
   private static final Logger LOG = LogManager.getLogger(HttpDslMaterializer.class);
-  private static final Rampup INSTANCE = Rampup.getInstance();
+  private static final Rampup rampUp = Rampup.getInstance();
   private final HttpDsl dslItem;
 
   public HttpDslMaterializer(HttpDsl dslItem) {
@@ -76,47 +74,28 @@ public class HttpDslMaterializer implements DslMaterializer {
 
     var sessionMono = Mono.just(userSession);
     if (SimulationConfig.isRampupDefined()) {
-      sessionMono =
-          sessionMono
-              .zipWith(Mono.defer(() -> Mono.just(INSTANCE.getTimeToWait())))
-              // getTimeToWait is no synchronised, so operate on one thread only
-              .subscribeOn(Schedulers.single())
-              //              .log() // check where the operation above is run on
-              .flatMap(pair -> Mono.just(pair.getT1()).delayElement(pair.getT2()));
+      sessionMono = rampUp.rampUp(userSession);
     }
 
-    var responseMono = sessionMono.flatMap(session -> {
-      if (dslItem.isWaitResult()) {
-        try {
-          return Mono
-              .just(HttpClient.INSTANCE.getClient()
-                  .executeRequest(buildHttpRequest(dslItem, session), httpSpecAsyncHandler)
-                  .toCompletableFuture().get());
-        } catch (InterruptedException e) {
-        } catch (ExecutionException e) {
-          LOG.error(e);
-        }
-        return Mono.empty();
-      }
+    var responseMono = sessionMono.flatMap(session -> Mono
+        .fromFuture(HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
+            dslItem, session), httpSpecAsyncHandler).toCompletableFuture()));
 
-      return Mono
-          .fromFuture(
-              HttpClient.INSTANCE.getClient().executeRequest(buildHttpRequest(
-                  dslItem, session), httpSpecAsyncHandler).toCompletableFuture());
-    });
-
-    var retriableMono = Optional.ofNullable(dslItem.getRetryInfo()).map(retryInfo ->
-        responseMono.map(HttpResponse::new)
-            .map(hr -> isRequestRetriable(retryInfo, hr))
-            .retryWhen(companion -> companion.zipWith(
-                Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
-                  if (index < retryInfo.getNumOfRetries() + 1
-                      && error instanceof RetryableOperationException) {
-                    return index;
-                  } else {
-                    throw Exceptions.propagate(new RetryFailedException(error));
-                  }
-                }))).orElse(responseMono);
+    RetryInfo retryInfo = dslItem.getRetryInfo();
+    var retriableMono = responseMono;
+    if (retryInfo != null) {
+      retriableMono = responseMono.map(HttpResponse::new)
+          .map(hr -> isRequestRetriable(retryInfo, hr))
+          .retryWhen(companion -> companion.zipWith(
+              Flux.range(1, retryInfo.getNumOfRetries() + 1), (error, index) -> {
+                if (index < retryInfo.getNumOfRetries() + 1
+                    && error instanceof RetryableOperationException) {
+                  return index;
+                } else {
+                  throw Exceptions.propagate(new RetryFailedException(error));
+                }
+              }));
+    }
 
     return retriableMono
         .map(result -> dslItem.handleResult(userSession, new HttpResponse(result)))

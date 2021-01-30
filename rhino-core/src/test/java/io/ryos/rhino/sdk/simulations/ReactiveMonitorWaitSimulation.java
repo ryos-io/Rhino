@@ -55,8 +55,7 @@ public class ReactiveMonitorWaitSimulation {
             .upload(() -> file("classpath:///test.txt"))
             .endpoint(session -> FILES_ENDPOINT)
             .put()
-            .saveTo("result")
-            .waitResult())
+            .saveTo("result"))
         .run(http("Monitor")
             .header(session -> headerValue(X_REQUEST_ID, "Rhino-" + uuidProvider.take()))
             .header(X_API_KEY, SimulationConfig.getApiKey())
@@ -64,7 +63,6 @@ public class ReactiveMonitorWaitSimulation {
             .endpoint(session -> MONITOR_ENDPOINT)
             .get()
             .saveTo("result")
-            .waitResult()
             .retryIf(response -> response.getStatusCode() != 200, 2)
         );
   }

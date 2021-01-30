@@ -12,6 +12,7 @@ import io.ryos.rhino.sdk.runners.Rampup;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -19,7 +20,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.Dsl;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -102,18 +109,150 @@ class FluxTests {
   }
 
   @Test
-  void ramupWithLoops() {
-    // flatmapping two fluxes -> create one publisher with interleaved emissions
-    Rampup rampup = new Rampup(Instant.now(), 1, 100, ofSeconds(5));
-    rampup.getTimeToWait();
-    rampup.getTimeToWait();
-    Flux.range(1, 100)
-        // #delayElement is not dynamic (same delay is used for repeats)
-        // with flatmap everything is calculated a head which results in a wrong ramp up
-        .flatMap(val -> Mono.just(val).delayElement(rampup.getTimeToWait()))
-        .repeat(2)
+  void testDelayElements() {
+    Flux.fromStream(
+        IntStream.range(0, 10).mapToObj(i -> "request" + i))
         .log()
-        .take(Duration.ofSeconds(10))
+        .delayElements(Duration.ofSeconds(1)) // requests 32 elements from stream to delay each
+        .log()
+        .blockLast(); // requests everything (unbound)
+  }
+
+  @Test
+  void testFlatmapAndDelayElement() {
+    AtomicInteger counter = new AtomicInteger();
+    Flux.fromStream(
+        IntStream.range(0, 10).mapToObj(i -> "request" + i))
+        .log()
+        // jokes on you if you expected that each elements comes with an increasing delay
+        // since the next operator requests multiple elements at once
+        // delay is constant since the nth element waits n seconds until it comes - 1el/s
+        // delays are executed on a shared thread pool
+        // each thread calls onNext when it is time
+        .flatMap(str -> {
+          System.out.println("waiting " + counter.get());
+          return Mono.just(str).delayElement(ofSeconds(counter.getAndAdd(1)));
+        })
+        .log()
+        .blockLast(); // requests everything (unbound)
+  }
+
+  @Test
+  void testDelayUntil() {
+    AtomicInteger counter = new AtomicInteger();
+    Flux.fromStream(
+        IntStream.range(0, 10).mapToObj(i -> "request" + i))
+        .log()
+        .delayUntil(str ->
+            // delayed Mono is executed on a thread from a thread pool
+            // but delays are scheduled one after another because delayUntil blocks execution
+            Mono.just(str).delayElement(Duration.ofSeconds(counter.getAndAdd(1))))
+        .log()
+        .blockLast(); // requests everything (unbound)
+  }
+
+  @Test
+  void rampupWithDelayElement() {
+    AtomicInteger counter = new AtomicInteger(10);
+    Flux.fromStream(IntStream.range(0, 10).mapToObj(i -> "request" + i))
+        .log()
+        .delayUntil(str ->
+            // delayed Mono is executed on a thread from a thread pool
+            // but delays are scheduled one after another because delayUntil blocks execution
+            Mono.just(str).delayElement(Duration.ofMillis(100L * counter.getAndDecrement())))
+        // by default buffers 256 elements before it starts mapping
+        //        .log()
+        .flatMap(str ->
+            // ruft onNext auf flatMap auf
+            Mono.fromCompletionStage(
+                Dsl.asyncHttpClient().executeRequest(
+                    new RequestBuilder()
+                        .setMethod("GET")
+                        .setUrl("https://google.de")
+                        .build())
+                    .toCompletableFuture())) // a short delay is expected since flatmap waits for some elements to process in parallel
+        .map(Response::getStatusCode)
+        .log()
+        .blockLast();
+  }
+
+  @Test
+  void rampup2() {
+    AsyncHttpClient asyncHttpClient = Dsl.asyncHttpClient();
+    Duration duration = ofSeconds(60);
+    var rampup = new Rampup(1, 60, duration);
+    AtomicInteger counter = new AtomicInteger();
+    // this is broken - delay is completely ignored
+    Flux.fromStream(IntStream.range(0, 100000).boxed())
+        .flatMap(str -> {
+          return rampup.rampUp(str).flatMap(v -> {
+            LOG.info("time({}): {}", str, Instant.now());
+            counter.incrementAndGet();
+            return Mono.fromCompletionStage(
+                asyncHttpClient.executeRequest(
+                    new RequestBuilder()
+                        .setMethod("GET")
+                        .setUrl("https://google.de")
+                        .build())
+                    .toCompletableFuture()
+                    .thenApply(response -> Map.entry(v, response.getStatusCode()))
+                    .thenApply(res -> {
+                      //                      System.out.println("time:" + Instant.now().toString());
+                      counter.decrementAndGet();
+                      return res;
+                    }));
+          });
+        })
+        //        .log()
+        .take(duration)
+        .blockLast();
+  }
+
+  @Test
+  public void test() {
+    Flux.just("a", "b", "c").log().blockLast();
+    //[INFO] 2021-01-31 17:12:59,105 [main] [] reactor.Flux.Array.1 info - | onSubscribe([Synchronous Fuseable] FluxArray.ArraySubscription)
+    //[INFO] 2021-01-31 17:12:59,112 [main] [] reactor.Flux.Array.1 info - | request(unbounded)
+    //[INFO] 2021-01-31 17:12:59,114 [main] [] reactor.Flux.Array.1 info - | onNext(a)
+    //[INFO] 2021-01-31 17:12:59,117 [main] [] reactor.Flux.Array.1 info - | onNext(b)
+    //[INFO] 2021-01-31 17:12:59,119 [main] [] reactor.Flux.Array.1 info - | onNext(c)
+    //[INFO] 2021-01-31 17:12:59,122 [main] [] reactor.Flux.Array.1 info - | onComplete()
+  }
+
+  @Test
+  public void test2() {
+    final Flux<String> flux = Flux.just("a", "b", "c");
+    flux.delayElements(Duration.ofSeconds(1)).log().blockLast();
+    //[INFO] 2021-01-31 17:15:59,061 [main] [] reactor.Flux.ConcatMap.1 info - onSubscribe(FluxConcatMap.ConcatMapImmediate)
+    //        [INFO] 2021-01-31 17:15:59,067 [main] [] reactor.Flux.ConcatMap.1 info - request(unbounded)
+    //        [INFO] 2021-01-31 17:16:00,114 [parallel-1] [] reactor.Flux.ConcatMap.1 info - onNext(a)
+    //        [INFO] 2021-01-31 17:16:01,115 [parallel-2] [] reactor.Flux.ConcatMap.1 info - onNext(b)
+    //        [INFO] 2021-01-31 17:16:02,116 [parallel-3] [] reactor.Flux.ConcatMap.1 info - onNext(c)
+    //        [INFO] 2021-01-31 17:16:02,117 [parallel-3] [] reactor.Flux.ConcatMap.1 info - onComplete()
+
+  }
+
+  @Test
+  public void test3() {
+    final Flux<Integer> flux = Flux.just(1, 2, 3, 4, 5);
+    // delay wirkt sich auf alle auf einmal aus
+    flux.flatMap(v -> {
+      if (v % 2 == 0) {
+        return Mono.just(v); // these will be go through everything
+      }
+      return Mono.just(v).delayElement(Duration.ofSeconds(v * 2));
+    })
+        .flatMap(v -> Mono.fromCompletionStage(
+            CompletableFuture.supplyAsync(() -> {
+              System.out.println("start " + v + " " + Instant.now());
+              try {
+                Thread.sleep(1000);
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+              System.out.println("end " + v + " " + Instant.now());
+              return v + "fuck";
+            }))).log()
         .blockLast();
   }
 

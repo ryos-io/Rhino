@@ -23,7 +23,7 @@ public @interface RampUp {
    *
    * @return Start RPS.
    */
-  long startRps() default 0;
+  long startRps() default 1;
 
   /**
    * Target request-per-second.

@@ -37,10 +37,6 @@ public interface HttpDsl extends RetriableDsl<HttpResponse>,
     GET, HEAD, PUT, POST, OPTIONS, DELETE, PATCH
   }
 
-  HttpDsl waitResult();
-
-  boolean isWaitResult();
-
   // Getters
   Method getMethod();
 

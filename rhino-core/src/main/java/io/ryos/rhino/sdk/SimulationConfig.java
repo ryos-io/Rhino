@@ -298,16 +298,26 @@ public class SimulationConfig {
 
   private RampupInfo getRampupInfo(String name) {
     String prefix = "simulation.rampup." + name + ".";
-    RampupInfo annotation = getRampupInfoPerAnnotation();
+    RampupInfo info = getRampupInfoPerAnnotation();
+    if (info == RampupInfo.none()) {
+      return info;
+
+    }
     BiFunction<String, Supplier<String>, String> val =
         (key, defaulter) -> System
             .getProperty(prefix + key, properties.getProperty(prefix + key, defaulter.get()));
-    var startRps = Integer.parseInt(val.apply("startRps", () -> "" + annotation.getStartRps()));
-    var targetRps = Integer.parseInt(val.apply("targetRps", () -> "" + annotation.getTargetRps()));
+    var startRps = Integer.parseInt(val.apply("startRps", () -> "" + info.getStartRps()));
+    if (startRps < 1) {
+      throw new IllegalArgumentException("StartRps must be greater than 0");
+    }
+    var targetRps = Integer.parseInt(val.apply("targetRps", () -> "" + info.getTargetRps()));
+    if (targetRps < startRps) {
+      throw new IllegalArgumentException("TargetRps must be greater than startRps");
+    }
     var duration = Duration.ofMinutes(
         Long.parseLong(
-            val.apply("durationInMins", () -> "" + annotation.getDuration().toMinutes())));
-    return new RampupInfo(startRps, targetRps, duration);
+            val.apply("durationInMins", () -> "" + info.getDuration().toMinutes())));
+    return RampupInfo.ofDefault(startRps, targetRps, duration);
   }
 
   private RampupInfo getRampupInfoPerAnnotation() {
@@ -323,12 +333,12 @@ public class SimulationConfig {
       } else {
         duration = Duration.ofMinutes(simAnnotation.durationInMins());
       }
-      return new RampupInfo(
+      return RampupInfo.ofDefault(
           rampUpAnnotation.startRps(),
           rampUpAnnotation.targetRps(),
           duration);
     }
-    return new RampupInfo(0, 0, Duration.ZERO);
+    return RampupInfo.none();
   }
 
   private Duration getDuration(String name, int durationInMinsFallback) {
@@ -506,7 +516,7 @@ public class SimulationConfig {
 
   public static boolean isRampupDefined() {
     RampupInfo rampupInfo = instance.getRampupInfo(getSimulationClass().getCanonicalName());
-    return rampupInfo.getTargetRps() > 0;
+    return rampupInfo != RampupInfo.none();
   }
 
   public static Class<?> getSimulationClass() {
