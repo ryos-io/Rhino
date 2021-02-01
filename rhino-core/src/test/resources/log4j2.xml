@@ -12,7 +12,7 @@
         <Logger name="io.ryos.rhino" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Logger name="io.ryos.rhino.sdk.runners.Rampup" level="debug" additivity="false">
+        <Logger name="io.ryos.rhino.sdk.runners.Rampup" level="info" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>

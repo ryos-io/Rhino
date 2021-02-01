@@ -58,7 +58,6 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   private Supplier<User> userSupplier;
   private RetryInfo retryInfo;
   private HttpResponse response;
-  private boolean waitResult = false;
 
   /**
    * Creates a new {@link HttpDslImpl}.
@@ -312,12 +311,6 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   }
 
   @Override
-  public HttpDsl waitResult() {
-    this.waitResult = true;
-    return this;
-  }
-
-  @Override
   public List<Function<UserSession, Entry<String, List<String>>>> getHeaders() {
     return headers;
   }
@@ -375,10 +368,6 @@ public class HttpDslImpl extends AbstractSessionDslItem implements HttpDsl, Http
   @Override
   public RetryInfo getRetryInfo() {
     return retryInfo;
-  }
-
-  public boolean isWaitResult() {
-    return waitResult;
   }
 
   @Override

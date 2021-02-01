@@ -5,92 +5,115 @@ import io.ryos.rhino.sdk.SimulationConfig;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 public class Rampup {
-  private static final Logger LOG = LoggerFactory.getLogger(Rampup.class);
-
-  // start time
-  private final Instant startTime;
-  private final double slope;
-  // timestamp of lastRequest
-  private Instant lastRequestTime;
-  // getTimeToWait
-  private final double startRps;
-  private final double targetRps;
-  private final Duration duration;
-
   private static Rampup INSTANCE;
 
-  public Rampup(final Instant startTime, final long startRps, final long targetRps,
-      final Duration duration) {
-    this.startTime = startTime;
-    this.startRps = startRps;
-    this.targetRps = targetRps;
-    this.duration = duration;
-    slope = Math.abs(((double) (targetRps - startRps)) / duration.toSeconds());
+  private static class VirtualTime implements Comparable<VirtualTime> {
+    private Instant start;
+    private Instant lastTime;
+
+    public VirtualTime(final Instant start) {
+      this.start = start;
+      this.lastTime = start;
+    }
+
+    public void advance(Duration duration) {
+      lastTime = lastTime.plus(duration);
+    }
+
+    public void until(Instant time) {
+      lastTime = lastTime.plus(time.toEpochMilli(), ChronoUnit.MILLIS);
+    }
+
+    public static VirtualTime from(VirtualTime virtualTime) {
+      VirtualTime o = new VirtualTime(virtualTime.start);
+      o.until(o.lastTime);
+      return o;
+    }
+
+    public Duration delta() {
+      return Duration.between(start, lastTime);
+    }
+
+    @Override
+    public int compareTo(final VirtualTime o) {
+      return this.delta().compareTo(o.delta());
+    }
   }
 
-  public static synchronized Rampup getInstance() {
+  private static final Logger LOG = LoggerFactory.getLogger(Rampup.class);
+
+  private VirtualTime virtualTime;
+  private final long startRps;
+
+  private final double slope;
+  private long actualRps = 0;
+  private long delayMultiplicator = 0;
+  private final long targetRps;
+
+  public static Rampup getInstance() {
     if (INSTANCE == null) {
       RampupInfo rampupInfo = SimulationConfig.getRampupInfo();
-      INSTANCE = new Rampup(Instant.now(), rampupInfo.getStartRps(), rampupInfo.getTargetRps(),
+      if (rampupInfo == RampupInfo.none()) {
+        return null;
+      }
+      if (rampupInfo.getStartRps() < 0) {
+        throw new IllegalArgumentException("StartRps must be greater than 0");
+      }
+      if (rampupInfo.getTargetRps() < rampupInfo.getStartRps()) {
+        throw new IllegalArgumentException("TargetRps must be greater than startRps");
+      }
+      INSTANCE = new Rampup(rampupInfo.getStartRps(), rampupInfo.getTargetRps(),
           rampupInfo.getDuration());
       return INSTANCE;
     }
     return INSTANCE;
   }
 
-  synchronized public Duration getTimeToWait() {
-    return getTimeToWait(Instant::now);
+  public Rampup(final long startRps, final long targetRps,
+      final Duration duration) {
+    this.startRps = startRps;
+    this.targetRps = targetRps;
+    if (startRps == targetRps) {
+      slope = 0;
+    } else {
+      slope = ((double) (targetRps - startRps)) / duration.toSeconds();
+    }
   }
 
-  Duration getTimeToWait(Supplier<Instant> clock) {
-    var now = clock.get();
-    lastRequestTime = lastRequestTime == null ? now : lastRequestTime;
-    // time advanced since beginning
-    var virtualTimeAdvanced = Duration.of(
-        startTime.until(lastRequestTime, ChronoUnit.MILLIS), ChronoUnit.MILLIS);
-    // correct if real time advanced more
-    var realTimeAdvanced = Duration.of(
-        startTime.until(now, ChronoUnit.MILLIS), ChronoUnit.MILLIS);
-
-    Duration realTimeBonus = Duration.ZERO;
-    if (realTimeAdvanced.compareTo(virtualTimeAdvanced) > 0) {
-      realTimeBonus = realTimeAdvanced.minus(virtualTimeAdvanced);
-      LOG.debug("Oh shit, have to correct time! Correcting next time by {}: ",
-          realTimeBonus);
+  public VirtualTime getVirtualTime() {
+    if (virtualTime == null) {
+      virtualTime = new VirtualTime(Instant.now());
     }
-
-    var tickResult = calcTick(virtualTimeAdvanced, realTimeBonus);
-    var rps = tickResult.getKey();
-    var tick = tickResult.getValue();
-    var delay = virtualTimeAdvanced.minus(realTimeAdvanced).plus(tick);
-
-    if (delay.isNegative()) {
-      delay = Duration.ZERO;
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(
-          "lastRequestTime={}, advancedMs={}, tick={}, delayMs={}, rps={}",
-          lastRequestTime.toEpochMilli(), virtualTimeAdvanced.toMillis(), tick.toMillis(),
-          delay.toMillis(), rps);
-    }
-    lastRequestTime = startTime.plus(virtualTimeAdvanced.plus(realTimeBonus).plus(tick));
-    return delay;
+    return virtualTime;
   }
 
-  private Map.Entry<Double, Duration> calcTick(final Duration virtualTimeAdvanced,
-      final Duration realTimeBonus) {
-    double rps = targetRps;
-    Duration timeAdvanced = virtualTimeAdvanced.plus(realTimeBonus);
-    if (timeAdvanced.compareTo(duration) < 0) {
-      rps = startRps + (slope * (timeAdvanced.toMillis() / 1e3D));
+  public <T> Mono<T> rampUp(T value) {
+    var res = Mono.just(value);
+    actualRps++;
+    var rps = startRps;
+    if (slope > 0) {
+      rps = Math.min((long) ((slope * (getVirtualTime().delta().toMillis() / 1000d)) + startRps),
+          targetRps);
     }
-    long millis = (long) ((1d / rps) * 1e3D);
-    return Map.entry(rps, Duration.ofMillis(millis));
+    LOG.debug("actualRps={}, targetRps={}, advancedTimeS={}, delayMultiplicator={}",
+        actualRps, rps, getVirtualTime().delta().toSeconds(), delayMultiplicator);
+
+    // delay everything, otherwise i can't use flatmap
+    Duration interval = Duration.ofSeconds(1);
+    Duration delay = interval.multipliedBy(delayMultiplicator);
+    if (actualRps >= rps) {
+      delayMultiplicator++;
+      getVirtualTime().advance(interval);
+      res = res.delayElement(delay);
+      actualRps = 0;
+    }
+
+    //    LOG.debug("delayMs={}", delay.toMillis());
+    return res.delayElement(delay);
   }
 }

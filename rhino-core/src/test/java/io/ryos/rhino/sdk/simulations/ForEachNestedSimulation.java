@@ -35,9 +35,9 @@ import io.ryos.rhino.sdk.dsl.DslBuilder;
 import io.ryos.rhino.sdk.users.repositories.OAuthUserRepositoryFactoryImpl;
 import java.util.UUID;
 
-@Simulation(name = "Reactive Multi-User Test")
+@Simulation(name = "Reactive Multi-User Test", durationInMins = 1)
 @UserRepository(factory = OAuthUserRepositoryFactoryImpl.class)
-@RampUp(startRps = 0, targetRps = 100)
+@RampUp(startRps = 1, targetRps = 100)
 public class ForEachNestedSimulation {
 
   private static final String DISCOVERY_ENDPOINT = getEndpoint("discovery");
@@ -60,7 +60,6 @@ public class ForEachNestedSimulation {
                     .endpoint(DISCOVERY_ENDPOINT)
                     .get())
                 //                    .collect("list.outer")
-                //                    .waitResult())
                 .forEach(in(session("j")).exec(j ->
                     dsl()
                         .run(collect(http("Discovery Request -2")
@@ -82,6 +81,6 @@ public class ForEachNestedSimulation {
             .auth()
             .endpoint(DISCOVERY_ENDPOINT)
             .get()
-            .saveTo("result").waitResult());
+            .saveTo("result"));
   }
 }
