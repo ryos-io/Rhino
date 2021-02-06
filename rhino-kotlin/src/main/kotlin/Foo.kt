@@ -2,8 +2,10 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import java.util.concurrent.CompletableFuture
 
-// add coroutineScope so that all coroutines in this method are managed (e.g. canceled on an exception)
 fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
+// add coroutineScope so that all coroutines in this method are managed (e.g. canceled on an exception)
+// coroutineScope is a suspending function which suspends until all inner suspendable functions finished
 suspend fun processA(): Double = coroutineScope {
     log("processing...")
     delay(1000)
