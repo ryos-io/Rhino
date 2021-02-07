@@ -2,7 +2,7 @@
 <Configuration status="info">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%p] %d [%t] %x %c %M - %m%n"/>
+            <PatternLayout pattern="[%p] %d | %t | %c: %m%n"/>
         </Console>
     </Appenders>
     <Loggers>
