@@ -12,7 +12,7 @@ private val LOG = LoggerFactory.getLogger(RateLimiter::class.java)
 // - can only rate limit independent requests
 class RateLimiter(
     private val startRps: Int,
-    targetRps: Int,
+    private val targetRps: Int,
     private val end: Duration,
     private val interval: Duration = 100.milliseconds,
     // scope to launch deferred process
@@ -52,7 +52,7 @@ class RateLimiter(
 
     private fun calcRequestsPerInterval(): Double {
         // rps = a * t + startRps
-        val currentRps = min((slope * duration.inSeconds) + startRps, targetRate)
+        val currentRps = min((slope * duration.inSeconds) + startRps, targetRps.toDouble())
         // 1 rps, 500ms interval => 0,5 requests per 500ms
         return (currentRps / 1000) * interval.inMilliseconds
     }
