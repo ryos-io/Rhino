@@ -1,3 +1,6 @@
+import client.model.Event
+import client.model.Request
+import client.model.Response
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
@@ -41,13 +44,6 @@ class Config(
     }
 }
 
-class Request
-class Response
-
-sealed class Event {
-    class RequestSent(val request: Request) : Event()
-}
-
 class Client internal constructor(val config: Config, val rateLimiter: ReceiveChannel<Int>) :
     Closeable {
 
@@ -70,6 +66,7 @@ class Client internal constructor(val config: Config, val rateLimiter: ReceiveCh
 }
 
 fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
+    val config = Config.Builder().apply(configure).build()
     val rateLimiter = produce {
         var x = 1
         while (true) {
@@ -77,7 +74,7 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
             delay(1000)
         }
     }
-    return Client(Config.Builder().apply(configure).build(), rateLimiter)
+    return Client(config, rateLimiter)
 }
 
 

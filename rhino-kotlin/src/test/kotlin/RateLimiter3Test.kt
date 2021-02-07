@@ -1,5 +1,7 @@
 import assertk.assertThat
 import assertk.assertions.hasSize
+import client.model.Event
+import client.model.Request
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineDispatcher
