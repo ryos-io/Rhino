@@ -6,10 +6,14 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import java.io.Closeable
+import org.slf4j.LoggerFactory
+import java.lang.Double.min
 import kotlin.random.Random
 import kotlin.time.Duration
+import kotlin.time.milliseconds
 import kotlin.time.minutes
+
+private val LOG = LoggerFactory.getLogger(Client::class.java)
 
 @DslMarker
 annotation class ConfigDsl
@@ -45,7 +49,7 @@ class Config(
 }
 
 class Client internal constructor(val config: Config, val rateLimiter: ReceiveChannel<Int>) :
-    Closeable {
+    AutoCloseable {
 
     inner class RequestBuilder {
         suspend fun get(): Response = coroutineScope {
@@ -65,17 +69,54 @@ class Client internal constructor(val config: Config, val rateLimiter: ReceiveCh
     }
 }
 
+// create client in a coroutine scope so that the underlying channel is managed
+// which means it will be canceled automatically when something wents wrong
 fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
     val config = Config.Builder().apply(configure).build()
-    val rateLimiter = produce {
-        var x = 1
+
+    val rateLimiter = produce(capacity = 1000) {
+        val rateConfig = config.rateLimit
+        val slope: Double =
+            (rateConfig.targetRps - rateConfig.startRps) / rateConfig.timeSpan.inSeconds
+        val interval: Duration = 1000.milliseconds
+        val startRatePerInterval =
+            if (slope != 0.toDouble()) (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds else (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds
+        val targetRatePerInterval =
+            if (slope != 0.toDouble()) (rateConfig.targetRps / 1000.toDouble()) * interval.inMilliseconds else startRatePerInterval
+        var counter = 0
+        var duration = Duration.ZERO
+
+        // TODO refactor slope==0 and slope!=0 into different components
         while (true) {
-            send(x++)
-            delay(1000)
+            // durationMs/intervalMs => iteration
+            // startRatesPerInterval + slope * iteration
+            val requestPerInterval = if (slope != 0.toDouble()) {
+                min(
+                    (slope * duration.inMilliseconds / interval.inMilliseconds) + startRatePerInterval,
+                    targetRatePerInterval
+                )
+            } else {
+                startRatePerInterval * (duration.inMilliseconds / interval.inMilliseconds)
+            }
+            val requests = requestPerInterval.toInt()
+            if (counter < requests) {
+//                LOG.debug("allowing $requests")
+                repeat(requests) {
+                    counter++
+                    send(counter)
+                }
+                if (slope == 0.toDouble()) {
+                    duration = Duration.ZERO
+                } else {
+                    duration += interval
+                    delay(interval)
+                }
+            } else {
+                duration += interval
+                delay(interval)
+            }
+            counter = 0
         }
     }
     return Client(config, rateLimiter)
 }
-
-
-

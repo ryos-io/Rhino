@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import java.lang.Integer.min
 import kotlin.time.seconds
 
 private val LOG = LoggerFactory.getLogger(RateLimiter3Test::class.java)
@@ -24,6 +25,35 @@ class RateLimiter3Test {
             rateLimit {
                 startRps = 1
                 targetRps = 1
+                timeSpan = 1000.seconds
+            }
+
+            addListener {
+                when (it) {
+                    is Event.RequestSent -> requests.add(it.request)
+                }
+            }
+        }
+        // TODO should not be needed to close since underlying channel is managed by this scope - needs to be tested
+        client.use {
+            // run multiple scenarios in order to hold request rate otherwise one scenario
+            // could cause a drop when a request takes longer than the 1s interval
+            repeat(3) {
+                launch { scenario(client) }
+            }
+            repeat(9) {
+                assertThat(requests).hasSize(it)
+                advanceTimeBy(1000)
+            }
+        }
+    }
+
+    @Test
+    fun `test ramp up from 1 to 10 rps`(): Unit = testCoroutineScope.runBlockingTest {
+        val client = Client {
+            rateLimit {
+                startRps = 1
+                targetRps = 11
                 timeSpan = 10.seconds
             }
 
@@ -33,16 +63,21 @@ class RateLimiter3Test {
                 }
             }
         }
+        val requestsPerScenario = 3
+        val scenarioRepeats = 3
+        val totalRequests = requestsPerScenario * scenarioRepeats
         client.use {
-            // run multiple scenarios in order to hold request rate otherwise one scenario
-            // could cause a drop when a request takes longer than the 1s interval
-            repeat(3) {
+            repeat(scenarioRepeats) {
                 launch { scenario(client) }
             }
-            (1 until 10).forEach {
-                assertThat(requests).hasSize(it)
+            var count = 0
+            repeat(totalRequests) {
+                count += it + 1
+                count = min(count, totalRequests)
+                assertThat(requests).hasSize(count)
                 advanceTimeBy(1000)
             }
+
         }
     }
 
