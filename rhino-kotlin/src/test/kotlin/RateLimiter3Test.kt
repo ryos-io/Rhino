@@ -7,32 +7,41 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import kotlin.time.seconds
 
 private val LOG = LoggerFactory.getLogger(RateLimiter3Test::class.java)
 
 class RateLimiter3Test {
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
     private val testCoroutineScope = TestCoroutineScope(testCoroutineDispatcher)
-    private val requests = mutableListOf<Int>()
+    private val requests = mutableListOf<Request>()
 
     @Test
     fun `test constant rate of 1rps`(): Unit = testCoroutineScope.runBlockingTest {
         val client = Client {
-            rampUp {
+            rateLimit {
                 startRps = 1
                 targetRps = 1
-                timespan = 10.seconds
+                timeSpan = 10.seconds
+            }
+
+            addListener {
+                when (it) {
+                    is Event.RequestSent -> requests.add(it.request)
+                }
             }
         }
-        repeat(3) {
-            launch { scenario(client) }
+        client.use {
+            // run multiple scenarios in order to hold request rate otherwise one scenario
+            // could cause a drop when a request takes longer than the 1s interval
+            repeat(3) {
+                launch { scenario(client) }
+            }
+            (1 until 10).forEach {
+                assertThat(requests).hasSize(it)
+                advanceTimeBy(1000)
+            }
         }
-        assertThat(requests).hasSize(1)
-        advanceTimeBy(1000)
-        assertThat(requests).hasSize(2)
-        advanceTimeBy(1000)
-        assertThat(requests).hasSize(3)
-        client.close()
     }
 
     suspend fun scenario(client: Client) = coroutineScope {
