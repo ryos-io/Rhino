@@ -12,43 +12,42 @@ import kotlin.time.seconds
 private val LOG: Logger = LoggerFactory.getLogger("ClientExample")
 
 fun main() = runBlocking<Unit> {
-    val simDuration = 100.seconds
-    val requests = AtomicInteger(0)
-    val client = Client {
-        rateLimit {
-            startRps = 200
-            targetRps = 300
-            timeSpan = simDuration
-        }
-
-        addListener {
-            when (it) {
-                is Event.RequestSent -> requests.getAndIncrement()
+    val simDuration = 60.seconds
+    withTimeout(simDuration) {
+        val requests = AtomicInteger(0)
+        val client = Client(this) {
+            rateLimit {
+                startRps = 360
+                targetRps = 360
+                timeSpan = simDuration
             }
-        }
-    }
-    client.use {
-        var lastTime = Instant.now()
-        withTimeout(simDuration) {
-            launch {
-                var lastCount = 0
-                while (true) {
-                    delay(1000.milliseconds)
-                    val now = Instant.now()
-                    val count = requests.get()
-                    val intervalMs = Duration.between(lastTime, now).toMillis().toDouble()
-                    lastTime = now
-                    val rps = ((count - lastCount) / intervalMs) * 1000
-                    lastCount = count
-                    LOG.debug("Current RPS: ${rps.toInt()}, total: $count")
+
+            addListener {
+                when (it) {
+                    is Event.RequestSent -> requests.getAndIncrement()
                 }
             }
-            val parallelScenarios = 1000
-            repeat(parallelScenarios) {
-                launch(CoroutineName("scenario") + Dispatchers.Default) {
-                    while (true) {
-                        client.url("http://localhost:8080/foo").get()
-                    }
+        }
+        var lastTime = Instant.now()
+        launch {
+            var lastCount = 0
+            while (true) {
+                delay(1000.milliseconds)
+                val now = Instant.now()
+                val count = requests.get()
+                val intervalMs = Duration.between(lastTime, now).toMillis().toDouble()
+                lastTime = now
+                val rps = ((count - lastCount) / intervalMs) * 1000
+                lastCount = count
+                LOG.debug("Current RPS: ${rps.toInt()}, total: $count")
+            }
+        }
+        val parallelScenarios = 1000
+        repeat(parallelScenarios) {
+            launch(CoroutineName("scenario") + Dispatchers.Default) {
+                LOG.debug("started sceario $it")
+                while (true) {
+                    client.url("http://localhost:8080/foo").get()
                 }
             }
         }

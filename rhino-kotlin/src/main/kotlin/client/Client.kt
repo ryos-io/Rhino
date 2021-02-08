@@ -1,13 +1,12 @@
 import client.model.Event
 import client.model.Request
 import client.model.Response
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import java.lang.Double.min
+import java.util.concurrent.Executors
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.milliseconds
@@ -58,6 +57,7 @@ class Client internal constructor(val config: Config, val rateLimiter: ReceiveCh
             config.listeners.forEach {
                 it(Event.RequestSent(Request()))
             }
+//            LOG.debug("doing some request")
             delay(Random.nextLong(100, 500))
             Response()
         }
@@ -66,18 +66,30 @@ class Client internal constructor(val config: Config, val rateLimiter: ReceiveCh
     fun url(url: String) = RequestBuilder()
 
     override fun close() {
+        if (rateLimiter.isEmpty) {
+            LOG.debug("No worries, channel was already closed")
+        }
         rateLimiter.cancel()
     }
 }
 
+val defaultScope = CoroutineScope(
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher() + CoroutineName("RateLimiter")
+)
+
 // create client in a coroutine scope so that the underlying channel is managed
 // which means it will be canceled automatically when something wents wrong
-fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
+fun Client(scope: CoroutineScope): Client {
+    return Client(scope) {}
+}
+
+fun Client(scope: CoroutineScope, configure: Config.Builder.() -> Unit): Client {
     val config = Config.Builder().apply(configure).build()
 
-    val rateLimiter = produce(capacity = 1000) {
+    // TODO either fix interval bug (currently it has to be 1s) or just use 1s
+    val rateLimiter = scope.produce(capacity = 1000) {
         val rateConfig = config.rateLimit
-        val interval: Duration = 500.milliseconds
+        val interval: Duration = 1000.milliseconds
         val slopePerMs: Double =
             ((rateConfig.targetRps - rateConfig.startRps) / rateConfig.timeSpan.inSeconds) / 1000.0
         val startRatePerInterval = (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds
@@ -101,7 +113,7 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
             }
             val requests = requestPerInterval.toInt()
             if (counter < requests) {
-//                LOG.debug("allowing $requests for duration $duration")
+//                LOG.debug("counter: $counter, allowed requests: $requests, duration: $duration")
                 repeat(requests) {
                     counter++
                     send(counter)

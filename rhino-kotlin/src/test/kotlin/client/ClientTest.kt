@@ -23,7 +23,7 @@ class ClientTest {
 
     @Test
     fun `test constant rate of 1rps`(): Unit = testCoroutineScope.runBlockingTest {
-        val client = Client {
+        val client = Client(testCoroutineScope) {
             rateLimit {
                 startRps = 1
                 targetRps = 1
@@ -36,23 +36,20 @@ class ClientTest {
                 }
             }
         }
-        // TODO should not be needed to close since underlying channel is managed by this scope - needs to be tested
-        client.use {
-            // run multiple scenarios in order to hold request rate otherwise one scenario
-            // could cause a drop when a request takes longer than the 1s interval
-            repeat(3) {
-                launch { scenario(client) }
-            }
-            repeat(9) {
-                assertThat(requests).hasSize(it)
-                advanceTimeBy(1000)
-            }
+        // run multiple scenarios in order to hold request rate otherwise one scenario
+        // could cause a drop when a request takes longer than the 1s interval
+        repeat(3) {
+            launch { scenario(client) }
+        }
+        repeat(9) {
+            assertThat(requests).hasSize(it)
+            advanceTimeBy(1000)
         }
     }
 
     @Test
-    fun `test ramp up from 1 to 10 rps`(): Unit = testCoroutineScope.runBlockingTest {
-        val client = Client {
+    fun `test ramp up from 0 to 10 rps in 10s`(): Unit = testCoroutineScope.runBlockingTest {
+        val client = Client(testCoroutineScope) {
             rateLimit {
                 startRps = 0
                 targetRps = 10
@@ -66,23 +63,23 @@ class ClientTest {
             }
         }
         val requestsPerScenario = 3
-        val scenarioRepeats = 3
-        val totalRequests = requestsPerScenario * scenarioRepeats
-        client.use {
-            repeat(scenarioRepeats) {
-                launch { scenario(client) }
-            }
-            var count = 0
-            assertThat(requests).hasSize(0)
-            advanceTimeBy(1000) // +1
-            assertThat(requests).hasSize(1)
-            advanceTimeBy(1000) // +2
-            assertThat(requests).hasSize(3)
-            advanceTimeBy(1000) // +3
-            assertThat(requests).hasSize(6)
-            advanceTimeBy(1000)
-            assertThat(requests).hasSize(9)
+        val scenarioRepeats = 200
+        repeat(scenarioRepeats) {
+            launch { scenario(client) }
         }
+        var count = 0
+        repeat(10) {
+            count += it
+            assertThat(requests).hasSize(count)
+            advanceTimeBy(1000) // +1
+        }
+        // check if rate is hold
+        assertThat(requests).hasSize(55)
+        advanceTimeBy(1000)
+        assertThat(requests).hasSize(65)
+        advanceTimeBy(1000)
+        assertThat(requests).hasSize(75)
+        advanceTimeBy(1000)
     }
 
     suspend fun scenario(client: Client) = coroutineScope {
