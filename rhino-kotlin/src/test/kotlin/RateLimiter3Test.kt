@@ -9,7 +9,6 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.lang.Integer.min
 import kotlin.time.seconds
 
 private val LOG = LoggerFactory.getLogger(RateLimiter3Test::class.java)
@@ -52,8 +51,8 @@ class RateLimiter3Test {
     fun `test ramp up from 1 to 10 rps`(): Unit = testCoroutineScope.runBlockingTest {
         val client = Client {
             rateLimit {
-                startRps = 1
-                targetRps = 11
+                startRps = 0
+                targetRps = 10
                 timeSpan = 10.seconds
             }
 
@@ -71,13 +70,15 @@ class RateLimiter3Test {
                 launch { scenario(client) }
             }
             var count = 0
-            repeat(totalRequests) {
-                count += it + 1
-                count = min(count, totalRequests)
-                assertThat(requests).hasSize(count)
-                advanceTimeBy(1000)
-            }
-
+            assertThat(requests).hasSize(0)
+            advanceTimeBy(1000) // +1
+            assertThat(requests).hasSize(1)
+            advanceTimeBy(1000) // +2
+            assertThat(requests).hasSize(3)
+            advanceTimeBy(1000) // +3
+            assertThat(requests).hasSize(6)
+            advanceTimeBy(1000)
+            assertThat(requests).hasSize(9)
         }
     }
 

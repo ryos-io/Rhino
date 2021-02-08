@@ -2,8 +2,9 @@ import client.model.Event
 import kotlinx.coroutines.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.seconds
 
@@ -12,11 +13,11 @@ private val LOG: Logger = LoggerFactory.getLogger("Foo4")
 
 fun main() = runBlocking<Unit> {
     val simDuration = 100.seconds
-    var requests = AtomicInteger(0)
+    val requests = AtomicInteger(0)
     val client = Client {
         rateLimit {
             startRps = 200
-            targetRps = 401
+            targetRps = 300
             timeSpan = simDuration
         }
 
@@ -27,26 +28,27 @@ fun main() = runBlocking<Unit> {
         }
     }
     client.use {
+        var lastTime = Instant.now()
         withTimeout(simDuration) {
-            var interval = Duration.ZERO
             launch {
                 var lastCount = 0
                 while (true) {
                     delay(1000.milliseconds)
+                    val now = Instant.now()
                     val count = requests.get()
-                    val rps = count - lastCount
+                    val intervalMs = Duration.between(lastTime, now).toMillis().toDouble()
+                    lastTime = now
+                    val rps = ((count - lastCount) / intervalMs) * 1000
                     lastCount = count
-                    LOG.debug("Current RPS: $rps")
+                    LOG.debug("Current RPS: $rps, total: $count")
                 }
             }
             // TODO add worker queue
             launch {
                 while (true) {
-                    launch {
-                        repeat(500) {
-                            launch(Dispatchers.Default) {
-                                client.url("http://localhost:8080/foo").get()
-                            }
+                    repeat(1000) {
+                        launch(Dispatchers.IO) {
+                            client.url("http://localhost:8080/foo").get()
                         }
                     }
                     // allow to timeout (caps requests per second to

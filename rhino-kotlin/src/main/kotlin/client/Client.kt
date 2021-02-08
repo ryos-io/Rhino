@@ -12,6 +12,7 @@ import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.minutes
+import kotlin.time.seconds
 
 private val LOG = LoggerFactory.getLogger(Client::class.java)
 
@@ -76,23 +77,23 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
 
     val rateLimiter = produce(capacity = 1000) {
         val rateConfig = config.rateLimit
-        val slope: Double =
-            (rateConfig.targetRps - rateConfig.startRps) / rateConfig.timeSpan.inSeconds
-        val interval: Duration = 1000.milliseconds
-        val startRatePerInterval =
-            if (slope != 0.toDouble()) (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds else (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds
+        val interval: Duration = 500.milliseconds
+        val slopePerMs: Double =
+            ((rateConfig.targetRps - rateConfig.startRps) / rateConfig.timeSpan.inSeconds) / 1000.0
+        val startRatePerInterval = (rateConfig.startRps / 1000.toDouble()) * interval.inMilliseconds
         val targetRatePerInterval =
-            if (slope != 0.toDouble()) (rateConfig.targetRps / 1000.toDouble()) * interval.inMilliseconds else startRatePerInterval
+            if (slopePerMs != 0.toDouble()) (rateConfig.targetRps / 1000.toDouble()) * interval.inMilliseconds else startRatePerInterval
         var counter = 0
         var duration = Duration.ZERO
+        var lastDuration = Duration.ZERO
 
         // TODO refactor slope==0 and slope!=0 into different components
         while (true) {
             // durationMs/intervalMs => iteration
             // startRatesPerInterval + slope * iteration
-            val requestPerInterval = if (slope != 0.toDouble()) {
+            val requestPerInterval = if (slopePerMs != 0.toDouble()) {
                 min(
-                    (slope * duration.inMilliseconds / interval.inMilliseconds) + startRatePerInterval,
+                    (slopePerMs * duration.inMilliseconds) + startRatePerInterval,
                     targetRatePerInterval
                 )
             } else {
@@ -100,12 +101,12 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
             }
             val requests = requestPerInterval.toInt()
             if (counter < requests) {
-//                LOG.debug("allowing $requests")
+                LOG.debug("allowing $requests for duration $duration")
                 repeat(requests) {
                     counter++
                     send(counter)
                 }
-                if (slope == 0.toDouble()) {
+                if (slopePerMs == 0.toDouble()) {
                     duration = Duration.ZERO
                 } else {
                     duration += interval
@@ -115,7 +116,14 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
                 duration += interval
                 delay(interval)
             }
-            counter = 0
+            if (slopePerMs != 0.0) {
+                if (duration - lastDuration >= 1.seconds) {
+                    counter = 0
+                    lastDuration = duration
+                }
+            } else {
+                counter = 0
+            }
         }
     }
     return Client(config, rateLimiter)
