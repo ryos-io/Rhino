@@ -3,8 +3,8 @@ package client
 import Client
 import assertk.assertThat
 import assertk.assertions.hasSize
-import client.model.Event
 import client.model.Request
+import client.model.RequestSent
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineDispatcher
@@ -32,18 +32,20 @@ class ClientTest {
 
             addListener {
                 when (it) {
-                    is Event.RequestSent -> requests.add(it.request)
+                    is RequestSent -> requests.add(it.request)
                 }
             }
         }
-        // run multiple scenarios in order to hold request rate otherwise one scenario
-        // could cause a drop when a request takes longer than the 1s interval
-        repeat(3) {
-            launch { scenario(client) }
-        }
-        repeat(9) {
-            assertThat(requests).hasSize(it)
-            advanceTimeBy(1000)
+        client.use {
+            // run multiple scenarios in order to hold request rate otherwise one scenario
+            // could cause a drop when a request takes longer than the 1s interval
+            repeat(3) {
+                launch { scenario(client) }
+            }
+            repeat(9) {
+                assertThat(requests).hasSize(it)
+                advanceTimeBy(1000)
+            }
         }
     }
 
@@ -58,28 +60,30 @@ class ClientTest {
 
             addListener {
                 when (it) {
-                    is Event.RequestSent -> requests.add(it.request)
+                    is RequestSent -> requests.add(it.request)
                 }
             }
         }
-        val requestsPerScenario = 3
-        val scenarioRepeats = 200
-        repeat(scenarioRepeats) {
-            launch { scenario(client) }
+        client.use {
+            val requestsPerScenario = 3
+            val scenarioRepeats = 200
+            repeat(scenarioRepeats) {
+                launch { scenario(client) }
+            }
+            var count = 0
+            repeat(10) {
+                count += it
+                assertThat(requests).hasSize(count)
+                advanceTimeBy(1000) // +1
+            }
+            // check if rate is hold
+            assertThat(requests).hasSize(55)
+            advanceTimeBy(1000)
+            assertThat(requests).hasSize(65)
+            advanceTimeBy(1000)
+            assertThat(requests).hasSize(75)
+            advanceTimeBy(1000)
         }
-        var count = 0
-        repeat(10) {
-            count += it
-            assertThat(requests).hasSize(count)
-            advanceTimeBy(1000) // +1
-        }
-        // check if rate is hold
-        assertThat(requests).hasSize(55)
-        advanceTimeBy(1000)
-        assertThat(requests).hasSize(65)
-        advanceTimeBy(1000)
-        assertThat(requests).hasSize(75)
-        advanceTimeBy(1000)
     }
 
     suspend fun scenario(client: Client) = coroutineScope {

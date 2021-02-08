@@ -1,4 +1,4 @@
-import client.model.Event
+import client.model.RequestSent
 import kotlinx.coroutines.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,7 +24,7 @@ fun main() = runBlocking<Unit> {
 
             addListener {
                 when (it) {
-                    is Event.RequestSent -> requests.getAndIncrement()
+                    is RequestSent -> requests.getAndIncrement()
                 }
             }
         }

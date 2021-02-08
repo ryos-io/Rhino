@@ -1,5 +1,7 @@
-import client.model.Event
+import client.Monitor
+import client.model.EventListener
 import client.model.Request
+import client.model.RequestSent
 import client.model.Response
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -20,7 +22,7 @@ annotation class ConfigDsl
 
 @ConfigDsl
 class Config(
-    val rateLimit: RateLimit, val listeners: List<(Event) -> Unit> = listOf()
+    val rateLimit: RateLimit, val listeners: List<EventListener> = listOf()
 ) {
     class RateLimit(val startRps: Int, val targetRps: Int, val timeSpan: Duration) {
         class Builder {
@@ -32,7 +34,7 @@ class Config(
     }
 
     class Builder {
-        private val listeners: MutableList<(Event) -> Unit> = mutableListOf()
+        private val listeners: MutableList<EventListener> = mutableListOf()
         private var rateLimitBuilder: RateLimit.Builder = RateLimit.Builder()
 
 
@@ -40,7 +42,7 @@ class Config(
             rateLimitBuilder = RateLimit.Builder().apply(configure)
         }
 
-        fun addListener(listener: (Event) -> Unit) {
+        fun addListener(listener: EventListener) {
             listeners.add(listener)
         }
 
@@ -48,14 +50,17 @@ class Config(
     }
 }
 
-class Client internal constructor(val config: Config, val rateLimiter: ReceiveChannel<Int>) :
-    AutoCloseable {
+class Client internal constructor(
+    val config: Config,
+    val rateLimiter: ReceiveChannel<Int>,
+    val monitor: Monitor,
+) : AutoCloseable {
 
     inner class RequestBuilder {
         suspend fun get(): Response = coroutineScope {
             rateLimiter.receive()
             config.listeners.forEach {
-                it(Event.RequestSent(Request()))
+                it.onEvent(RequestSent(Request()))
             }
 //            LOG.debug("doing some request")
             delay(Random.nextLong(100, 500))
@@ -70,6 +75,7 @@ class Client internal constructor(val config: Config, val rateLimiter: ReceiveCh
             LOG.debug("No worries, channel was already closed")
         }
         rateLimiter.cancel()
+        monitor.close()
     }
 }
 
@@ -79,11 +85,15 @@ val defaultScope = CoroutineScope(
 
 // create client in a coroutine scope so that the underlying channel is managed
 // which means it will be canceled automatically when something wents wrong
-fun Client(scope: CoroutineScope): Client {
-    return Client(scope) {}
+fun Client(scope: CoroutineScope, monitor: Monitor = Monitor(scope)): Client {
+    return Client(scope, monitor) {}
 }
 
-fun Client(scope: CoroutineScope, configure: Config.Builder.() -> Unit): Client {
+fun Client(
+    scope: CoroutineScope,
+    monitor: Monitor = Monitor(scope),
+    configure: Config.Builder.() -> Unit
+): Client {
     val config = Config.Builder().apply(configure).build()
 
     // TODO either fix interval bug (currently it has to be 1s) or just use 1s
@@ -138,5 +148,5 @@ fun Client(scope: CoroutineScope, configure: Config.Builder.() -> Unit): Client 
             }
         }
     }
-    return Client(config, rateLimiter)
+    return Client(config, rateLimiter, monitor)
 }
