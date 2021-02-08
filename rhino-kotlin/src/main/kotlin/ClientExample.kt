@@ -9,7 +9,7 @@ import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 
-private val LOG: Logger = LoggerFactory.getLogger("Foo4")
+private val LOG: Logger = LoggerFactory.getLogger("ClientExample")
 
 fun main() = runBlocking<Unit> {
     val simDuration = 100.seconds
@@ -43,7 +43,6 @@ fun main() = runBlocking<Unit> {
                     LOG.debug("Current RPS: ${rps.toInt()}, total: $count")
                 }
             }
-            // TODO add worker queue
             val parallelScenarios = 1000
             repeat(parallelScenarios) {
                 launch(CoroutineName("scenario") + Dispatchers.Default) {

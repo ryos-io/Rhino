@@ -1,3 +1,6 @@
+package client
+
+import Client
 import assertk.assertThat
 import assertk.assertions.hasSize
 import client.model.Event
@@ -11,9 +14,9 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import kotlin.time.seconds
 
-private val LOG = LoggerFactory.getLogger(RateLimiter3Test::class.java)
+private val LOG = LoggerFactory.getLogger(ClientTest::class.java)
 
-class RateLimiter3Test {
+class ClientTest {
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
     private val testCoroutineScope = TestCoroutineScope(testCoroutineDispatcher)
     private val requests = mutableListOf<Request>()
