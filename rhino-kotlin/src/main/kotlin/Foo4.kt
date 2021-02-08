@@ -40,19 +40,16 @@ fun main() = runBlocking<Unit> {
                     lastTime = now
                     val rps = ((count - lastCount) / intervalMs) * 1000
                     lastCount = count
-                    LOG.debug("Current RPS: $rps, total: $count")
+                    LOG.debug("Current RPS: ${rps.toInt()}, total: $count")
                 }
             }
             // TODO add worker queue
-            launch {
-                while (true) {
-                    repeat(1000) {
-                        launch(Dispatchers.IO) {
-                            client.url("http://localhost:8080/foo").get()
-                        }
+            val parallelScenarios = 1000
+            repeat(parallelScenarios) {
+                launch(CoroutineName("scenario") + Dispatchers.Default) {
+                    while (true) {
+                        client.url("http://localhost:8080/foo").get()
                     }
-                    // allow to timeout (caps requests per second to
-                    delay(100)
                 }
             }
         }

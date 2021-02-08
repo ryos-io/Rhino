@@ -101,7 +101,7 @@ fun CoroutineScope.Client(configure: Config.Builder.() -> Unit): Client {
             }
             val requests = requestPerInterval.toInt()
             if (counter < requests) {
-                LOG.debug("allowing $requests for duration $duration")
+//                LOG.debug("allowing $requests for duration $duration")
                 repeat(requests) {
                     counter++
                     send(counter)
