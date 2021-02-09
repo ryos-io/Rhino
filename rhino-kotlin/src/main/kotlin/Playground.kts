@@ -6,19 +6,19 @@ import org.slf4j.LoggerFactory
 
 val LOG = LoggerFactory.getLogger("Playground")
 
-runBlocking {
-    val client = Client(this)
-    client.use {
-        launch {
-            while (isActive) {
-                it.url("httadadssas").get()
-                delay(100)
-            }
-        }
-    }
-    delay(500)
-    throw IllegalStateException("i throw something")
-}
+//runBlocking {
+//    val client = Client(this)
+//    client.use {
+//        launch {
+//            while (isActive) {
+//                it.url("httadadssas").get()
+//                delay(100)
+//            }
+//        }
+//    }
+//    delay(500)
+//    throw IllegalStateException("i throw something")
+//}
 
 //runBlocking {
 //    // cancels with other context
@@ -40,3 +40,15 @@ runBlocking {
 //    delay(100)
 //    throw IllegalStateException("OH SHIT")
 //}
+
+
+runBlocking {
+    launch {
+        while (isActive) {
+            delay(100)
+            LOG.debug("hello world")
+        }
+    }
+    delay(500)
+    throw IllegalStateException("fuck off")
+}

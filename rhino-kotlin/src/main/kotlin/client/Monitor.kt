@@ -3,57 +3,49 @@ package client
 import client.model.Event
 import client.model.RequestSent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import kotlin.time.Duration
+import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 private val LOG = LoggerFactory.getLogger(Monitor::class.java)
 
-class Monitor(scope: CoroutineScope) : AutoCloseable {
+class Monitor(scope: CoroutineScope, interval: Duration = 1000.milliseconds) : AutoCloseable {
     private var start: Instant = Instant.MIN
     private var currentTotalRequests = 0
     private var currentDuration = 0.seconds
     private var _status = Triple(0, currentTotalRequests, 0.seconds)
 
     private val eventConsumer: SendChannel<Event> = scope.actor(capacity = 1000) {
-        try {
-            consumeEach {
-                when (it) {
-                    is RequestSent -> {
-                        if (start == Instant.MIN) {
-                            start = Instant.now()
-                        }
-                        currentTotalRequests++
+        consumeEach {
+            LOG.debug("Got event: $it")
+            when (it) {
+                is RequestSent -> {
+                    if (start == Instant.MIN) {
+                        start = Instant.now()
                     }
+                    currentTotalRequests++
                 }
             }
-        } catch (e: Throwable) {
-            LOG.error("Got error: ${e.message}")
-            throw e
         }
     }
 
     private val monitorJob =
         scope.launch {
-            try {
-                while (isActive) {
-                    LOG.debug("Job: ${coroutineContext[Job]?.isActive}")
-                    LOG.debug("CoroutineContext: ${coroutineContext[Job]}")
-                    val lastTotalRequests = _status.second
-                    val rps = (currentTotalRequests - lastTotalRequests)
-                    _status = Triple(rps, currentTotalRequests, currentDuration)
-                    currentDuration += 1.seconds
-                }
-            } catch (e: Throwable) {
-                LOG.error("MonitorJob got error: ${e.message}")
-                throw e
+            while (coroutineContext.isActive) {
+                val lastTotalRequests = _status.second
+                val rps = (currentTotalRequests - lastTotalRequests)
+                _status = Triple(rps, currentTotalRequests, currentDuration)
+                LOG.debug("Calculated status: $_status")
+                currentDuration += 1.seconds
+                delay(interval)
             }
         }
 

@@ -3,12 +3,14 @@ import client.model.EventListener
 import client.model.Request
 import client.model.RequestSent
 import client.model.Response
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import org.slf4j.LoggerFactory
 import java.lang.Double.min
-import java.util.concurrent.Executors
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.milliseconds
@@ -79,10 +81,6 @@ class Client internal constructor(
     }
 }
 
-val defaultScope = CoroutineScope(
-    Executors.newSingleThreadExecutor().asCoroutineDispatcher() + CoroutineName("RateLimiter")
-)
-
 // create client in a coroutine scope so that the underlying channel is managed
 // which means it will be canceled automatically when something wents wrong
 fun Client(scope: CoroutineScope, monitor: Monitor = Monitor(scope)): Client {
@@ -110,7 +108,7 @@ fun Client(
         var lastDuration = Duration.ZERO
 
         // TODO refactor slope==0 and slope!=0 into different components
-        while (isActive) {
+        while (coroutineContext.isActive) {
             // durationMs/intervalMs => iteration
             // startRatesPerInterval + slope * iteration
             val requestPerInterval = if (slopePerMs != 0.toDouble()) {
