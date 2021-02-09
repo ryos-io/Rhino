@@ -3,10 +3,11 @@ package client
 import client.model.Event
 import client.model.RequestSent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -41,12 +42,18 @@ class Monitor(scope: CoroutineScope) : AutoCloseable {
 
     private val monitorJob =
         scope.launch {
-            while (true) {
-                val lastTotalRequests = _status.second
-                val rps = (currentTotalRequests - lastTotalRequests)
-                _status = Triple(rps, currentTotalRequests, currentDuration)
-                currentDuration += 1.seconds
-                delay(1000)
+            try {
+                while (isActive) {
+                    LOG.debug("Job: ${coroutineContext[Job]?.isActive}")
+                    LOG.debug("CoroutineContext: ${coroutineContext[Job]}")
+                    val lastTotalRequests = _status.second
+                    val rps = (currentTotalRequests - lastTotalRequests)
+                    _status = Triple(rps, currentTotalRequests, currentDuration)
+                    currentDuration += 1.seconds
+                }
+            } catch (e: Throwable) {
+                LOG.error("MonitorJob got error: ${e.message}")
+                throw e
             }
         }
 

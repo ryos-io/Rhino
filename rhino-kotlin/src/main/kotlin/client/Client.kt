@@ -110,7 +110,7 @@ fun Client(
         var lastDuration = Duration.ZERO
 
         // TODO refactor slope==0 and slope!=0 into different components
-        while (true) {
+        while (isActive) {
             // durationMs/intervalMs => iteration
             // startRatesPerInterval + slope * iteration
             val requestPerInterval = if (slopePerMs != 0.toDouble()) {

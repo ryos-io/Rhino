@@ -31,7 +31,7 @@ fun main() = runBlocking<Unit> {
         var lastTime = Instant.now()
         launch {
             var lastCount = 0
-            while (true) {
+            while (isActive) {
                 delay(1000.milliseconds)
                 val now = Instant.now()
                 val count = requests.get()
@@ -46,7 +46,7 @@ fun main() = runBlocking<Unit> {
         repeat(parallelScenarios) {
             launch(CoroutineName("scenario") + Dispatchers.Default) {
                 LOG.debug("started sceario $it")
-                while (true) {
+                while (isActive) {
                     client.url("http://localhost:8080/foo").get()
                 }
             }
