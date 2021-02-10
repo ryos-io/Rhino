@@ -53,16 +53,18 @@ class Config(
 }
 
 class Client internal constructor(
-    val config: Config,
-    val rateLimiter: ReceiveChannel<Int>,
+    private val config: Config,
+    private val rateLimiter: ReceiveChannel<Int>,
     val monitor: Monitor,
 ) : AutoCloseable {
-
     inner class RequestBuilder {
         suspend fun get(): Response = coroutineScope {
             rateLimiter.receive()
+            val requestSent = RequestSent(Request())
+
+            monitor.onEvent(requestSent)
             config.listeners.forEach {
-                it.onEvent(RequestSent(Request()))
+                it.onEvent(requestSent)
             }
 //            LOG.debug("doing some request")
             delay(Random.nextLong(100, 500))
@@ -73,9 +75,6 @@ class Client internal constructor(
     fun url(url: String) = RequestBuilder()
 
     override fun close() {
-        if (rateLimiter.isEmpty) {
-            LOG.debug("No worries, channel was already closed")
-        }
         rateLimiter.cancel()
         monitor.close()
     }

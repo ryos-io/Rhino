@@ -25,7 +25,7 @@ class MonitorTest {
             repeat(10) {
                 val i = it + 1
                 repeat(i) {
-                    monitor.send(RequestSent(Request()))
+                    monitor.onEvent(RequestSent(Request()))
                 }
                 val expectedCount = lastCount + i
                 assertThat(monitor.status).isEqualTo(
