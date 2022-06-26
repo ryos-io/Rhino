@@ -87,7 +87,7 @@ public class SimulationJobsScannerImpl implements SimulationJobsScanner {
         .collect(toList());
 
     if (dsls.isEmpty()) {
-      throw new SpecificationNotFoundException(clazz.getName());
+      throw new SpecificationNotFoundException("No dsl method with @Dsl annotation found in the simulation class: " + clazz.getName());
     }
 
     // Gather logging information from annotation.
